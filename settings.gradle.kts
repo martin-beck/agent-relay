@@ -31,3 +31,4 @@ plugins {
 
 rootProject.name = "Agent Relay"
 include(":app")
+include(":provider:api")
