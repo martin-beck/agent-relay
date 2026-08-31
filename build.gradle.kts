@@ -35,7 +35,7 @@ spotless {
         ktlint(libs.versions.ktlint.get()).editorConfigOverride(ktlintEditorConfig)
     }
     format("misc") {
-        target("*.md", ".gitignore", ".editorconfig", ".github/**/*.yml", ".github/**/*.yaml")
+        target("**/*.md", ".gitignore", ".editorconfig", ".github/**/*.yml", ".github/**/*.yaml")
         trimTrailingWhitespace()
         endWithNewline()
     }
