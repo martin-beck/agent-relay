@@ -1,4 +1,4 @@
-package dev.agentrelay.ssh.android
+package dev.agentrelay.storage.android
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
@@ -23,6 +23,7 @@ class EncryptedFileDocumentStoreTest {
     fun documentsAreEncryptedAuthenticatedAndAtomicallyReplaced() = runTest {
         val root = temporaryFolder.newFolder("secure")
         val store = EncryptedFileDocumentStore(
+            associatedDataPrefix = "agent-relay:test-store:v1",
             root = root,
             cipher = TestAesGcmCipher(),
             dispatcher = Dispatchers.Unconfined,
@@ -44,6 +45,41 @@ class EncryptedFileDocumentStoreTest {
         persisted.writeBytes(tampered)
         assertFailsWith<SecureStoreCorruptException> {
             store.read("credential:test")
+        }
+    }
+
+    @Test
+    fun associatedDataSeparatesStoreNamespaces() = runTest {
+        val root = temporaryFolder.newFolder("namespaced")
+        val cipher = TestAesGcmCipher()
+        val first = EncryptedFileDocumentStore(
+            root = root,
+            cipher = cipher,
+            associatedDataPrefix = "agent-relay:first:v1",
+            dispatcher = Dispatchers.Unconfined,
+        )
+        val second = EncryptedFileDocumentStore(
+            root = root,
+            cipher = cipher,
+            associatedDataPrefix = "agent-relay:second:v1",
+            dispatcher = Dispatchers.Unconfined,
+        )
+
+        first.write("same-document", "secret".encodeToByteArray())
+
+        assertFailsWith<SecureStoreCorruptException> {
+            second.read("same-document")
+        }
+    }
+
+    @Test
+    fun namespaceRejectsDirectoryTraversal() {
+        assertFailsWith<IllegalArgumentException> {
+            SecureDocumentNamespace(
+                directoryName = "../outside",
+                associatedDataPrefix = "agent-relay:test:v1",
+                keyAlias = "agent-relay.test",
+            )
         }
     }
 

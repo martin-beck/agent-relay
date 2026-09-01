@@ -1,4 +1,4 @@
-package dev.agentrelay.ssh.android
+package dev.agentrelay.storage.android
 
 import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
@@ -32,7 +32,7 @@ internal interface DocumentCipher {
     ): ByteArray
 }
 
-internal interface SecureDocumentStore {
+interface SecureDocumentStore {
     suspend fun read(documentId: String): ByteArray?
 
     suspend fun write(
@@ -43,20 +43,40 @@ internal interface SecureDocumentStore {
     suspend fun delete(documentId: String)
 }
 
-internal class EncryptedFileDocumentStore(
+data class SecureDocumentNamespace(
+    val directoryName: String,
+    val associatedDataPrefix: String,
+    val keyAlias: String,
+) {
+    init {
+        require(directoryName.matches(Regex("[a-z0-9][a-z0-9._-]{1,63}"))) {
+            "Secure document directory must be a bounded relative name"
+        }
+        require(associatedDataPrefix.isNotBlank() && associatedDataPrefix.length <= 128) {
+            "Secure document associated-data prefix must be bounded"
+        }
+        require(keyAlias.isNotBlank() && keyAlias.length <= 128) {
+            "Secure document key alias must be bounded"
+        }
+    }
+}
+
+class EncryptedFileDocumentStore internal constructor(
     private val root: File,
     private val cipher: DocumentCipher,
+    private val associatedDataPrefix: String,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : SecureDocumentStore {
     private val monitor = Any()
 
     constructor(
         context: Context,
-        keyAlias: String = AndroidKeystoreDocumentCipher.DEFAULT_KEY_ALIAS,
+        namespace: SecureDocumentNamespace,
         dispatcher: CoroutineDispatcher = Dispatchers.IO,
     ) : this(
-        root = File(context.noBackupFilesDir, STORE_DIRECTORY),
-        cipher = AndroidKeystoreDocumentCipher(keyAlias),
+        root = File(context.noBackupFilesDir, namespace.directoryName),
+        cipher = AndroidKeystoreDocumentCipher(namespace.keyAlias),
+        associatedDataPrefix = namespace.associatedDataPrefix,
         dispatcher = dispatcher,
     )
 
@@ -157,7 +177,7 @@ internal class EncryptedFileDocumentStore(
     }
 
     private fun associatedData(documentId: String): ByteArray =
-        "$ASSOCIATED_DATA_PREFIX:$documentId".encodeToByteArray()
+        "$associatedDataPrefix:$documentId".encodeToByteArray()
 
     private fun restrictToOwner(file: File) {
         file.setReadable(false, false)
@@ -171,13 +191,11 @@ internal class EncryptedFileDocumentStore(
     }
 
     companion object {
-        private const val STORE_DIRECTORY = "ssh-secure-store"
-        private const val ASSOCIATED_DATA_PREFIX = "agent-relay:ssh-store:v1"
         private const val MAX_DOCUMENT_BYTES = 16L * 1024L * 1024L
     }
 }
 
-internal class AndroidKeystoreDocumentCipher(
+private class AndroidKeystoreDocumentCipher(
     private val keyAlias: String,
 ) : DocumentCipher {
 
@@ -246,7 +264,6 @@ internal class AndroidKeystoreDocumentCipher(
     }
 
     companion object {
-        const val DEFAULT_KEY_ALIAS = "agent-relay.ssh.secure-store.v1"
         private val KEY_MONITOR = Any()
         private const val ANDROID_KEYSTORE = "AndroidKeyStore"
         private const val TRANSFORMATION = "AES/GCM/NoPadding"
@@ -260,7 +277,7 @@ internal class AndroidKeystoreDocumentCipher(
 sealed class SecureStoreException(message: String, cause: Throwable? = null) : Exception(message, cause)
 
 class SecureStoreUnavailableException(cause: Throwable? = null) :
-    SecureStoreException("The secure SSH store is unavailable", cause)
+    SecureStoreException("The secure local store is unavailable", cause)
 
 class SecureStoreCorruptException(cause: Throwable? = null) :
-    SecureStoreException("The secure SSH store could not be authenticated", cause)
+    SecureStoreException("The secure local store could not be authenticated", cause)

@@ -1,5 +1,6 @@
-package dev.agentrelay.ssh.android
+package dev.agentrelay.storage.android
 
+import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.runBlocking
@@ -8,27 +9,28 @@ import org.junit.runner.RunWith
 import java.util.UUID
 import kotlin.test.assertContentEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+
 @RunWith(AndroidJUnit4::class)
-class AndroidKeystoreDocumentCipherTest {
+class AndroidKeystoreDocumentStoreTest {
     @Test
     fun androidKeystoreRoundTripDoesNotPersistPlaintext() = runBlocking {
-        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
-        val documentId = "instrumented-" + UUID.randomUUID()
-        val keyId = "instrumented-" + UUID.randomUUID()
-        val store = encryptedSshDocumentStore(context)
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val suffix = UUID.randomUUID().toString()
+        val namespace = SecureDocumentNamespace(
+            directoryName = "instrumented-secure-store",
+            associatedDataPrefix = "agent-relay:instrumented-store:v1",
+            keyAlias = "agent-relay.instrumented.secure-store.$suffix",
+        )
+        val documentId = "instrumented-$suffix"
+        val store = EncryptedFileDocumentStore(context, namespace)
         val plaintext = "device-only-secret".encodeToByteArray()
 
-        val keyManager = AndroidKeystoreAgentKeyManager()
         try {
             store.write(documentId, plaintext)
+
             assertContentEquals(plaintext, store.read(documentId))
-            val key = keyManager.create(keyId)
-            assertTrue(key.sha256Fingerprint.startsWith("SHA256:"))
-            assertTrue(key.openSshPublicKey.startsWith("ecdsa-sha2-nistp256 "))
-            assertTrue(AndroidKeystoreAgentIdentityProvider(keyManager).identitiesFor(keyId) != null)
             val persisted = context.noBackupFilesDir
-                .resolve("ssh-secure-store")
+                .resolve(namespace.directoryName)
                 .listFiles()
                 .orEmpty()
                 .flatMap { it.readBytes().asIterable() }
@@ -36,7 +38,13 @@ class AndroidKeystoreDocumentCipherTest {
             assertFalse(persisted.decodeToString().contains("device-only-secret"))
         } finally {
             store.delete(documentId)
-            keyManager.delete(keyId)
+        }
+    }
+
+    @Test
+    fun namespacesRejectDirectoryTraversal() {
+        kotlin.test.assertFailsWith<IllegalArgumentException> {
+            SecureDocumentNamespace("../outside", "agent-relay:test:v1", "agent-relay.test")
         }
     }
 }

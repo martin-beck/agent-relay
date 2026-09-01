@@ -8,6 +8,8 @@ import dev.agentrelay.ssh.api.SshEndpoint
 import dev.agentrelay.ssh.api.SshHostKey
 import dev.agentrelay.ssh.api.SshProfile
 import dev.agentrelay.ssh.api.SshProfileId
+import dev.agentrelay.storage.android.SecureDocumentStore
+import dev.agentrelay.storage.android.SecureStoreCorruptException
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import java.util.concurrent.ConcurrentHashMap

@@ -6,6 +6,8 @@ import com.jcraft.jsch.Identity
 import com.jcraft.jsch.IdentityRepository
 import dev.agentrelay.ssh.jsch.JschAgentIdentityProvider
 import java.math.BigInteger
+import dev.agentrelay.storage.android.SecureStoreCorruptException
+import dev.agentrelay.storage.android.SecureStoreUnavailableException
 import java.nio.ByteBuffer
 import java.security.KeyPairGenerator
 import java.security.KeyStore

@@ -11,6 +11,11 @@ import dev.agentrelay.ssh.api.SshHostKeyStore
 import dev.agentrelay.ssh.api.SshProfile
 import dev.agentrelay.ssh.api.SshProfileId
 import dev.agentrelay.ssh.api.SshProfileStore
+import dev.agentrelay.storage.android.EncryptedFileDocumentStore
+import dev.agentrelay.storage.android.SecureDocumentNamespace
+import dev.agentrelay.storage.android.SecureDocumentStore
+import dev.agentrelay.storage.android.SecureStoreCorruptException
+import dev.agentrelay.storage.android.SecureStoreException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.KSerializer
@@ -23,7 +28,7 @@ class AndroidSshProfileStore internal constructor(
     private val documents: SecureDocumentStore,
     private val json: Json = secureStoreJson(),
 ) : SshProfileStore {
-    constructor(context: Context) : this(EncryptedFileDocumentStore(context))
+    constructor(context: Context) : this(encryptedSshDocumentStore(context))
 
     private val mutex = Mutex()
     private val serializer = ListSerializer(SshProfile.serializer())
@@ -104,7 +109,7 @@ class AndroidSshHostKeyStore internal constructor(
     private val documents: SecureDocumentStore,
     private val json: Json = secureStoreJson(),
 ) : SshHostKeyStore {
-    constructor(context: Context) : this(EncryptedFileDocumentStore(context))
+    constructor(context: Context) : this(encryptedSshDocumentStore(context))
 
     private val mutex = Mutex()
     private val serializer = ListSerializer(SshHostKey.serializer())
@@ -179,7 +184,7 @@ class AndroidSshHostKeyStore internal constructor(
 class AndroidKeystoreSshCredentialStore internal constructor(
     private val documents: SecureDocumentStore,
 ) : SshCredentialStore {
-    constructor(context: Context) : this(EncryptedFileDocumentStore(context))
+    constructor(context: Context) : this(encryptedSshDocumentStore(context))
 
     private val mutex = Mutex()
 
@@ -247,6 +252,18 @@ class AndroidKeystoreSshCredentialStore internal constructor(
         private const val MAX_CREDENTIAL_BYTES = 4 * 1024 * 1024
     }
 }
+
+internal val SSH_SECURE_DOCUMENT_NAMESPACE = SecureDocumentNamespace(
+    directoryName = "ssh-secure-store",
+    associatedDataPrefix = "agent-relay:ssh-store:v1",
+    keyAlias = "agent-relay.ssh.secure-store.v1",
+)
+
+internal fun encryptedSshDocumentStore(context: Context): SecureDocumentStore =
+    EncryptedFileDocumentStore(
+        context = context.applicationContext,
+        namespace = SSH_SECURE_DOCUMENT_NAMESPACE,
+    )
 
 private fun secureStoreJson() = Json {
     encodeDefaults = true

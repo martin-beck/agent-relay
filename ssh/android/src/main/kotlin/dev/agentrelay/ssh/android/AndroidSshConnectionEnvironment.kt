@@ -22,7 +22,7 @@ class AndroidSshConnectionEnvironment private constructor(
     companion object {
         fun create(context: Context): AndroidSshConnectionEnvironment {
             val applicationContext = context.applicationContext
-            val documents = EncryptedFileDocumentStore(applicationContext)
+            val documents = encryptedSshDocumentStore(applicationContext)
             val profiles = AndroidSshProfileStore(documents)
             val credentials = AndroidKeystoreSshCredentialStore(documents)
             val hostKeys = AndroidSshHostKeyStore(documents)

@@ -1,10 +1,9 @@
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
-    namespace = "dev.agentrelay.ssh.android"
+    namespace = "dev.agentrelay.storage.android"
     compileSdk = 36
 
     defaultConfig {
@@ -24,19 +23,16 @@ android {
 }
 
 dependencies {
-    api(project(":ssh:api"))
-    api(project(":ssh:jsch"))
-    implementation(project(":storage:android"))
+    implementation(libs.kotlinx.coroutines.core)
+
     testImplementation(kotlin("test"))
+    testImplementation(libs.junit)
+    androidTestImplementation(kotlin("test"))
     testImplementation(libs.kotlinx.coroutines.test)
-    implementation(libs.kotlinx.serialization.json)
 
     androidTestImplementation(libs.androidx.test.core)
-    androidTestImplementation(kotlin("test"))
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.junit)
     androidTestImplementation(libs.kotlinx.coroutines.core)
-
-    testImplementation(libs.junit)
 }
