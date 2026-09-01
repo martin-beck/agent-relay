@@ -56,9 +56,9 @@ jobs:
           profile: pixel_7_pro
           disable-animations: true
           script: |
-            set -euo pipefail
+            set -eu
             adb wait-for-device
-            test "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1"
+            test "$(adb shell getprop sys.boot_completed)" = "1"
             ./gradlew connectedDebugAndroidTest --stacktrace
 
       - name: Verify connected-test evidence
@@ -133,9 +133,9 @@ jobs:
           profile: ${{ matrix.profile }}
           disable-animations: true
           script: |
-            set -euo pipefail
+            set -eu
             adb wait-for-device
-            test "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1"
+            test "$(adb shell getprop sys.boot_completed)" = "1"
             ./gradlew connectedDebugAndroidTest --stacktrace
 
       - name: Verify connected-test evidence
