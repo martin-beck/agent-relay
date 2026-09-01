@@ -35,11 +35,12 @@ mutable update feeds and duplicate Dependabot. Upgrade proposals remain
 individually reviewed and must pass the complete gate before merge.
 
 Kover cannot ingest Android connected-test execution into its JVM aggregate.
-`SessionActionCardKt` and `SessionCreatorDialogKt` are presentation-only
-Compose files covered by the required device semantic/accessibility suite, so
-they are explicitly excluded from the JVM denominator. Their ViewModel,
-provider-ID translation, persistence, risk, validation, and UI-mapping logic
-remain included in Kover. Add another presentation exclusion only with a
+`SessionActionCardKt`, `SessionCreatorDialogKt`, and `SessionDetailPaneKt` are
+presentation-only Compose files covered by the required device
+semantic/accessibility suite, so they are explicitly excluded from the JVM
+denominator. Their ViewModel, provider-ID translation, persistence, risk,
+validation, artifact-transfer, and UI-mapping logic remain included in Kover.
+Add another presentation exclusion only with a
 required connected test that exercises the user-visible behavior; never exclude
 domain or orchestration logic to meet the percentage.
 
@@ -77,7 +78,8 @@ Agent Relay follows a layered approach drawn from mature Compose and Android
 projects:
 
 1. Pure mapper and ViewModel tests verify state transitions, capabilities,
-   errors, stale-event rejection, and labels without an emulator.
+   errors, stale-event rejection, safe artifact labels, transfer cancellation,
+   and partial-copy cleanup without an emulator.
 2. Compose semantic tests use realistic provider/session test doubles and assert
    what a user can identify and do. Tests select controls through user-visible
    text, role, state, or stable semantic purpose, not layout hierarchy or pixel
@@ -107,6 +109,12 @@ Gradle problems report. The API 28 run filters out the three API 34+
 accessibility-framework audits and requires all 15 remaining device tests.
 Emulator console, graphics, or teardown diagnostics can contain alarming words;
 CI relies on process status and parsed JUnit evidence rather than string grep.
+
+The connected app flow also verifies that a selected session exposes its changed
+files, safe relative path, refresh action, and save callback. JVM contract tests
+cover local real-path and SFTP canonical-path confinement plus source revision
+and checksum checks; they do not require private hosts or credentials in CI.
+
 
 Each screen or reusable component must have deterministic previews for the
 states it owns, including empty, loading, content, error, offline, changed

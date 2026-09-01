@@ -253,7 +253,8 @@ core.
 
 Initial-app progress: the UI now gates resume, send, active-turn steering, and
 interruption from provider capabilities and observed session state. It starts
-sessions with provider-neutral options from ready endpoints. Detach/close and
+sessions with provider-neutral options from ready endpoints. It also refreshes
+and safely exports provider-reported workspace files. Detach/close and richer
 artifact controls remain future work.
 
 - Probe installation, version, authentication, configuration, and protocol
@@ -327,6 +328,13 @@ duration, and result-tool linking remain future work.
   to the resulting tool event.
 
 ### Changed files and artifacts
+
+Initial-app progress: provider-reported changes now populate an encrypted
+per-session shelf. Local and SSH connections can export one regular,
+workspace-confined file through Android's document picker with bounded streaming,
+progress, cancellation, pre/post revision checks, SHA-256 verification, and
+best-effort partial cleanup. Preview, diff, image rendering, batch export, and
+long-term artifact history remain future work.
 
 - Maintain a per-session shelf of added, modified, renamed, and deleted files.
 - Preview text and images, show metadata, and provide a diff when available.

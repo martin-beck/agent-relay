@@ -29,6 +29,10 @@ application graph. It can:
 - resume supported saved sessions;
 - interrupt running or approval-waiting sessions when the provider supports
   interruption; and
+- retain an encrypted per-session shelf of provider-reported changed files;
+- refresh changed files for providers advertising that capability; and
+- save one checked, regular in-workspace file through Android's system document
+  picker with progress, cancellation, and source-change detection;
 - use focused navigation on compact screens and list-detail navigation on
   expanded screens.
 
@@ -94,6 +98,36 @@ resolved, redacted local audit record. Raw provider approval and question
 identifiers remain in encrypted persistence and are not exposed as UI or
 navigation keys.
 
+## Save a changed file
+
+1. Select a session whose connected agent advertises file changes.
+2. Under **Changed files**, select **Refresh changed files** when a fresh
+   provider query is needed.
+3. Review the safe workspace-relative name and availability message.
+4. Select **Save copy**, choose the destination in Android's system document
+   picker, and resolve any name collision there.
+5. Watch byte progress or select **Cancel saving**. A completed row reports that
+   the source checksum was verified and permits **Save another copy**.
+
+Only added, modified, or renamed files that normalize to a strict
+workspace-relative path are export candidates. Deleted files remain history
+entries. Files outside the workspace, files with an unknown workspace, and
+traversal paths are unavailable. Local access resolves real paths below both the
+app-controlled root and the session workspace. Secure Shell access uses
+canonical SFTP real paths and blocks symlink escapes. Both providers reject a
+candidate unless it resolves to a regular file.
+
+Immediately before export, the app records source size, modification time, and
+SHA-256. It streams bounded chunks, checks the size, revision, and digest during
+and after the read, and stops if the source changed. Failure or cancellation
+triggers best-effort deletion of the partial destination document. The system
+document picker grants access only to the selected destination; Agent Relay does
+not request broad shared-storage permission.
+
+Raw provider paths stay in encrypted session persistence. The UI and navigation
+receive a safe relative path or a bounded unavailability label plus fixed-length
+digest keys. Reconnect the session before saving if the provider is offline.
+
 ## Set up a Secure Shell connection
 
 1. Select **Add Secure Shell profile** under **Connections**.
@@ -125,13 +159,14 @@ The hub is an early development surface, not a release-ready agent client:
 - Local access does not bundle coding-agent command-line tools; a compatible
   executable must exist inside the application's sandbox before it can be
   discovered.
-- File and artifact transfer are not yet exposed by the app UI.
+- Changed-file preview, diff, image rendering, attachment upload, artifact
+  history management, and batch export are not yet implemented.
 - Queued send, explicit retry/cancel, voice input, and attachments are not yet
   implemented.
 - Timeline entries remain read-only. Rendering is bounded to 32,000 characters
   per entry and clearly marks truncation.
-- Speech, notifications, foreground/background session operation, and artifact
-  workflows are not implemented.
+- Speech, notifications, and foreground/background session operation are not
+  implemented.
 - No production release is published.
 
 Capability-dependent actions must remain unavailable, with an explanation, when
@@ -147,6 +182,12 @@ the selected agent or connection provider cannot implement them safely.
 - Android Keystore private keys are non-exportable; only their public key is displayed.
 - Local access must remain inside Android's application sandbox and configured
   working root.
+- Changed-file exports must use a strict workspace-relative path and a
+  provider-owned canonical file-access implementation.
+- A file must remain a regular file with the inspected size, modification time,
+  and SHA-256 for the complete export.
+- Export destinations must use Android's Storage Access Framework, never a broad
+  storage permission.
 - Approval decisions must display their connection, workspace, session, and
   requested scope.
 - Unsupported operations must be unavailable rather than emulated.

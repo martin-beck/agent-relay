@@ -32,11 +32,11 @@ schema without importing SSH configuration types.
 | --- | --- |
 | `:app` | Android entry point and Compose presentation |
 | `:connection:api` | Generic connection providers, provider-owned profile forms, lifecycle, identity challenges, and runtime access |
-| `:connection:local` | App-local process execution and workspace confinement |
+| `:connection:local` | App-local process execution plus canonical workspace-confined file access |
 | `:ssh:api` | SSH profiles, credentials, host keys, retry policy, and generic adapter |
-| `:ssh:jsch` | Maintained JSch transport and bounded POSIX command runtime |
+| `:ssh:jsch` | Maintained JSch transport, bounded POSIX commands, and canonical SFTP file access |
 | `:ssh:android` | Android SSH persistence, credentials, and non-exportable agent keys |
-| `:provider:api` | Agent descriptors, sessions, events, capabilities, and actions |
+| `:provider:api` | Agent descriptors, sessions, events, capabilities, actions, and the generic checked-file contract |
 | `:provider:*` | Codex, OpenCode, Continue, Claude, Cline, and Aider adapters |
 | `:session:api` | Durable provider-neutral session identity and repository |
 | `:session:android` | Encrypted Android session-hub document store |
@@ -91,6 +91,19 @@ them and owns persistence. SSH maps those fields to encrypted credential
 references or non-exportable Android Keystore agent keys. Successful edits
 invalidate an existing managed connection and refresh coordinator profiles.
 
+Changed files follow a separate read-only path. An agent provider reports file
+changes; the coordinator classifies each path against the session workspace and
+persists the result. Only a strict relative path can become a
+`RemoteFileReference`. The selected connection runtime supplies
+`RemoteFileAccess`: local access resolves canonical filesystem paths, while SSH
+uses canonical SFTP paths. Both inspect a regular file with SHA-256 immediately
+before export and stream bounded chunks while rechecking the revision and
+digest. The app writes those chunks only to a user-selected Storage Access
+Framework document, reports progress, and attempts to remove an incomplete
+document on failure or cancellation. This contract allows future connection
+providers to implement file access without adding transport assumptions to the
+session or UI layers.
+
 ## Security boundaries
 
 - Android's application sandbox is the local-process boundary.
@@ -100,7 +113,13 @@ invalidate an existing managed connection and refresh coordinator profiles.
 - Credentials stay outside command arguments, events, and diagnostic snapshots.
 - Stored secrets are never returned by a profile manager; replacement values
   cross one wipeable `CharArray`/byte-array boundary before encrypted storage.
-- Agent-provided file paths are normalized against the known workspace.
+- Raw agent-provided file paths remain in encrypted state and are normalized
+  against the known workspace before presentation or transfer.
+- Local and SFTP canonical-path checks block traversal and symlink escapes; only
+  regular files are readable.
+- Source size, modification time, and SHA-256 must match the inspected revision
+  for the whole export.
+- Android export uses a one-document SAF grant, not broad storage permission.
 - Output, protocol lines, retention, retries, and process lifetimes are bounded.
 
 See [Connection providers](CONNECTION_PROVIDERS.md) and
@@ -110,8 +129,9 @@ See [Connection providers](CONNECTION_PROVIDERS.md) and
 
 Connection lifecycle belongs to connection providers. Agent discovery and
 protocol state belong to agent providers. Durable drafts, unread activity,
-preferences, and transcript cache belong to the session repository. Compose is
-a projection of these sources and must not become a second authority.
+preferences, transcript cache, and changed-file records belong to the session
+repository. Transfer progress belongs to the short-lived UI controller. Compose
+is a projection of these sources and must not become a second authority.
 
 UI keys are derived from the complete provider-scoped locator. Session
 navigation uses a fixed SHA-256 digest so saved navigation state cannot expose a
