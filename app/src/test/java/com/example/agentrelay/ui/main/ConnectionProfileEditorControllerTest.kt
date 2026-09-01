@@ -18,6 +18,7 @@ import dev.agentrelay.connection.api.ConnectionProfileUpdate
 import dev.agentrelay.connection.api.ConnectionProfileValidationException
 import dev.agentrelay.connection.api.ConnectionProviderDescriptor
 import dev.agentrelay.connection.api.ConnectionProviderId
+import dev.agentrelay.session.api.SessionDraft
 import dev.agentrelay.session.api.SessionHubSnapshot
 import dev.agentrelay.session.api.SessionLocator
 import dev.agentrelay.session.runtime.SessionConnectionKey
@@ -297,6 +298,16 @@ private class FakeProfileRuntime(
     ): Boolean = false
 
     override suspend fun markSessionRead(locator: SessionLocator) = Unit
+
+    override suspend fun updateDraft(locator: SessionLocator, draft: SessionDraft) = Unit
+
+    override suspend fun resumeSession(locator: SessionLocator) = Unit
+
+    override suspend fun sendInput(locator: SessionLocator, text: String) = Unit
+
+    override suspend fun steerActiveTurn(locator: SessionLocator, text: String) = Unit
+
+    override suspend fun interrupt(locator: SessionLocator) = Unit
 }
 
 private fun editor(profileId: ConnectionProfileId?) = ConnectionProfileEditor(

@@ -53,6 +53,10 @@ fun MainNavigation() {
                 SessionDetailRoute(
                     state = uiState,
                     onBack = onBack,
+                    onDraftChanged = mainViewModel::updateSessionDraft,
+                    onSubmitDraft = mainViewModel::submitSessionDraft,
+                    onResumeSession = mainViewModel::resumeSession,
+                    onInterruptSession = mainViewModel::interruptSession,
                     modifier = Modifier.safeDrawingPadding(),
                 )
             }
