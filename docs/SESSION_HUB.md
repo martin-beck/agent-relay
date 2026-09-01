@@ -1,0 +1,160 @@
+# Session hub and offline state
+
+Status: Persistence foundation implemented; coordinator and UI pending
+Last verified: 2026-09-01
+
+The session layer is independent of both connection implementations and agent
+protocol implementations. It gives the app one durable identity and state model
+for sessions reached over SSH, on the Android device, or through a future
+connection provider.
+
+~~~text
+ConnectionProviderId
+  ConnectionProfileId
+    AgentProviderId
+      AgentSessionId
+~~~
+
+All four identifiers form SessionLocator. The stable storage key uses
+length-prefixed values rather than separators, so user-controlled profile or
+session values cannot create ambiguous keys. An SSH session and a local session
+with the same agent session identifier remain distinct.
+
+## Module boundaries
+
+:session:api owns:
+
+- provider-neutral session identity;
+- the latest observed provider and connection state;
+- local pin, archive, and notification preferences;
+- one independent draft and cursor selection per session;
+- unread and actionable activity records with exact event anchors;
+- a bounded recent transcript cache; and
+- the transactional repository and retention policy.
+
+:session:android owns the encrypted SessionHubStore implementation. It serializes
+primitive identifier values and enum names into a versioned document rather
+than requiring connection or agent modules to expose persistence annotations.
+
+Transport lifecycle remains in ConnectionProvider. Agent discovery, transcripts,
+turns, and approvals remain in AgentProvider. Compose state must derive from the
+session repository instead of storing a second authoritative copy.
+
+## Durable update rules
+
+PersistentSessionHubRepository loads and normalizes a complete snapshot before
+publishing it. Every mutation then follows one order:
+
+1. validate the referenced session and operation;
+2. build and normalize the next immutable snapshot;
+3. persist the complete next snapshot; and
+4. publish it through StateFlow only after the write succeeds.
+
+A failed encrypted write therefore leaves observers on the previous consistent
+snapshot. There is no window in which the UI reports a draft, unread transition,
+or preference that cannot be restored after process death.
+
+Provider event identifiers are idempotency keys scoped to the complete session
+locator. Replaying an already persisted activity performs no write and does not
+increment unread state again, while the same remote identifier in another
+session remains distinct. Mark-read uses an event-time boundary so opening older
+content cannot accidentally mark a newer event read. Approval and question
+records remain visible in the inbox until resolved even if they have already
+been read.
+
+Session observations and local preferences are separate. A fresh provider scan
+can update title, preview, execution state, timestamps, or connection labels
+without clearing pin, archive, mute, unread, draft, or cached transcript state.
+
+## Encryption and corruption behavior
+
+AndroidEncryptedSessionHubStore stores one authenticated document under
+noBackupFilesDir through :storage:android. It has a namespace isolated from SSH
+profiles and credentials:
+
+| Property | Session value |
+| --- | --- |
+| Directory | session-secure-store |
+| AES key alias | agent-relay.session.secure-store.v1 |
+| Authenticated-data prefix | agent-relay:session-store:v1 |
+| Document format | session-hub-v1, version 1 |
+
+The Android Keystore AES-GCM key, associated data, hashed file name, owner-only
+permissions, and atomic replacement behavior come from the shared secure
+document layer. Serialized plaintext byte arrays are zeroed after both reads
+and writes. Kotlin strings created during JSON decoding cannot be reliably
+zeroed, so session persistence must not be treated as a general secret vault.
+
+Malformed JSON, an unsupported format version, invalid identifiers, invalid
+enum values, duplicate sessions or activities, duplicate draft/transcript
+groups, dangling references, and duplicate transcript entries fail closed as
+SecureStoreCorruptException. Unknown fields are rejected. Corrupt data is not
+silently replaced with an empty hub.
+
+## Retention
+
+The default bounds are:
+
+- 200 session records;
+- 2,000 activity records across the hub; and
+- 500 cached transcript entries per session.
+
+Retention keeps pinned sessions first, then non-archived and most recently
+active sessions. Actionable approval and question records are retained before
+ordinary output when the activity bound is reached. Drafts, activities, and
+transcripts belonging to an evicted session are removed in the same snapshot,
+and unread counts are recomputed from retained activity.
+
+These are safety bounds, not a search or export policy. A future storage format
+may shard sessions while preserving the same repository contract.
+
+## Coordinator integration contract
+
+The next app layer should:
+
+1. enumerate profiles through ConnectionProviderRegistry without assuming SSH;
+2. connect the selected generic profile and obtain its RemoteAgentRuntime;
+3. construct compatible factories from AgentProviderRegistry;
+4. probe readiness and discover agent sessions;
+5. translate each result into SessionObservation using the full locator;
+6. subscribe to live agent events while the connection remains active;
+7. persist completed messages, approvals, questions, failures, reconnects, and
+   turn completion before notifying the UI; and
+8. restore drafts, unread state, transcript cache, and preferences immediately
+   while the provider reconnects.
+
+The coordinator must preserve independent managed connections and agent
+processes when the visible Compose destination changes. It must never downcast a
+runtime to SSH or infer that the local provider has hosts, credentials, or host
+keys.
+
+## Verification
+
+Focused verification:
+
+~~~bash
+./gradlew \
+  :session:api:test \
+  :session:android:testDebugUnitTest \
+  spotlessCheck
+~~~
+
+Coverage proves:
+
+- full-tuple identity across SSH, local, and multiple profiles;
+- preferences, drafts, inbox state, and transcripts across repository reopen;
+- idempotent activity replay and bounded mark-read behavior;
+- write-before-publish failure atomicity;
+- pinned/actionable retention ordering;
+- encrypted-store DTO round-trip across SSH and local sessions;
+- dedicated Keystore namespace and plaintext byte-array clearing; and
+- fail-closed malformed, version-mismatch, and duplicate-record handling.
+
+The Android Keystore implementation shares the instrumented coverage in
+:storage:android. It must still run on an emulator or device through
+connectedDebugAndroidTest before release.
+
+Not yet implemented in this layer are provider discovery coordination, event
+subscription, background notification dispatch, Compose presentation, or
+artifact transfer. Their extension boundary is defined here, but completion
+requires runtime and emulator evidence rather than this persistence suite alone.

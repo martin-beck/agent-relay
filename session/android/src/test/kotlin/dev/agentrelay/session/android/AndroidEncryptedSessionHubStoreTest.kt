@@ -1,0 +1,225 @@
+package dev.agentrelay.session.android
+
+import dev.agentrelay.connection.api.ConnectionProfileId
+import dev.agentrelay.connection.api.ConnectionProviderId
+import dev.agentrelay.provider.api.AgentMessageChannel
+import dev.agentrelay.provider.api.AgentProviderId
+import dev.agentrelay.provider.api.AgentSessionId
+import dev.agentrelay.provider.api.AgentSessionState
+import dev.agentrelay.provider.api.AgentTranscriptRole
+import dev.agentrelay.session.api.CachedTranscriptEntry
+import dev.agentrelay.session.api.SessionActivity
+import dev.agentrelay.session.api.SessionActivityType
+import dev.agentrelay.session.api.SessionDraft
+import dev.agentrelay.session.api.SessionHubSnapshot
+import dev.agentrelay.session.api.SessionLocator
+import dev.agentrelay.session.api.SessionNotificationPriority
+import dev.agentrelay.session.api.SessionObservation
+import dev.agentrelay.session.api.SessionPreferences
+import dev.agentrelay.session.api.SessionRecord
+import dev.agentrelay.storage.android.SecureDocumentStore
+import dev.agentrelay.storage.android.SecureStoreCorruptException
+import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import org.junit.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
+
+class AndroidEncryptedSessionHubStoreTest {
+    @Test
+    fun completeSnapshotRoundTripsAndPlaintextBuffersAreCleared() = runTest {
+        val documents = InMemoryDocuments()
+        val store = AndroidEncryptedSessionHubStore(documents)
+        val expected = completeSnapshot()
+
+        store.save(expected)
+
+        assertTrue(documents.lastWriteReference?.all { it == 0.toByte() } == true)
+        assertEquals(expected, store.load())
+        assertTrue(documents.lastReadReference?.all { it == 0.toByte() } == true)
+    }
+
+    @Test
+    fun sessionDataUsesDedicatedKeystoreNamespace() {
+        assertEquals("session-secure-store", SESSION_HUB_NAMESPACE.directoryName)
+        assertEquals("agent-relay:session-store:v1", SESSION_HUB_NAMESPACE.associatedDataPrefix)
+        assertEquals("agent-relay.session.secure-store.v1", SESSION_HUB_NAMESPACE.keyAlias)
+    }
+
+    @Test
+    fun malformedDocumentFailsClosedAndClearsReadBuffer() = runTest {
+        val documents = InMemoryDocuments("not-json".encodeToByteArray())
+        val store = AndroidEncryptedSessionHubStore(documents)
+
+        assertFailsWith<SecureStoreCorruptException> {
+            store.load()
+        }
+        assertTrue(documents.lastReadReference?.all { it == 0.toByte() } == true)
+    }
+
+    @Test
+    fun unsupportedVersionAndDuplicateRecordsFailClosed() = runTest {
+        val documents = InMemoryDocuments()
+        val store = AndroidEncryptedSessionHubStore(documents)
+        store.save(completeSnapshot())
+        val valid = Json.parseToJsonElement(documents.storedText()).jsonObject
+
+        documents.replace(
+            JsonObject(valid + ("formatVersion" to JsonPrimitive(2))).toString().encodeToByteArray(),
+        )
+        assertFailsWith<SecureStoreCorruptException> {
+            store.load()
+        }
+
+        val sessions = valid.getValue("sessions").jsonArray
+        documents.replace(
+            JsonObject(valid + ("sessions" to JsonArray(sessions + sessions.first())))
+                .toString()
+                .encodeToByteArray(),
+        )
+        assertFailsWith<SecureStoreCorruptException> {
+            store.load()
+        }
+    }
+
+    private class InMemoryDocuments(initial: ByteArray? = null) : SecureDocumentStore {
+        private var value: ByteArray? = initial?.copyOf()
+        var lastWriteReference: ByteArray? = null
+            private set
+        var lastReadReference: ByteArray? = null
+            private set
+
+        override suspend fun read(documentId: String): ByteArray? =
+            value?.copyOf()?.also { lastReadReference = it }
+
+        override suspend fun write(
+            documentId: String,
+            plaintext: ByteArray,
+        ) {
+            lastWriteReference = plaintext
+            value = plaintext.copyOf()
+        }
+
+        override suspend fun delete(documentId: String) {
+            value = null
+        }
+
+        fun replace(replacement: ByteArray) {
+            value = replacement.copyOf()
+        }
+
+        fun storedText(): String = checkNotNull(value).decodeToString()
+    }
+
+    companion object {
+        private val ssh = SessionLocator(
+            connectionProviderId = ConnectionProviderId("ssh.secure-shell"),
+            connectionProfileId = ConnectionProfileId("workstation"),
+            agentProviderId = AgentProviderId("codex"),
+            agentSessionId = AgentSessionId("remote-thread"),
+        )
+        private val local = SessionLocator(
+            connectionProviderId = ConnectionProviderId("local.device"),
+            connectionProfileId = ConnectionProfileId("local"),
+            agentProviderId = AgentProviderId("aider"),
+            agentSessionId = AgentSessionId("local-chat"),
+        )
+
+        private fun completeSnapshot() = SessionHubSnapshot(
+            sessions = listOf(
+                SessionRecord(
+                    observation = observation(
+                        locator = ssh,
+                        connectionLabel = "Workstation",
+                        connectionTarget = "developer@example.test:22",
+                        providerLabel = "Codex",
+                        state = AgentSessionState.WAITING_FOR_APPROVAL,
+                        updatedAt = 30L,
+                    ),
+                    preferences = SessionPreferences(
+                        pinned = true,
+                        notificationPriority = SessionNotificationPriority.ALL_ACTIVITY,
+                    ),
+                    unreadCount = 1,
+                    lastActivityAtEpochMillis = 30L,
+                ),
+                SessionRecord(
+                    observation = observation(
+                        locator = local,
+                        connectionLabel = "This device",
+                        connectionTarget = "Android app sandbox",
+                        providerLabel = "Aider",
+                        state = AgentSessionState.IDLE,
+                        updatedAt = 20L,
+                    ),
+                    preferences = SessionPreferences(archived = true),
+                    unreadCount = 0,
+                    lastActivityAtEpochMillis = 20L,
+                ),
+            ),
+            drafts = mapOf(
+                ssh to SessionDraft("Approve after review", 7, 12, 31L),
+            ),
+            activities = listOf(
+                SessionActivity(
+                    id = "approval:remote-thread:one",
+                    locator = ssh,
+                    type = SessionActivityType.APPROVAL_REQUIRED,
+                    summary = "Command approval required",
+                    eventAnchorId = "event-one",
+                    occurredAtEpochMillis = 30L,
+                ),
+            ),
+            transcripts = mapOf(
+                ssh to listOf(
+                    CachedTranscriptEntry(
+                        id = "message-one",
+                        turnId = "turn-one",
+                        role = AgentTranscriptRole.AGENT,
+                        channel = AgentMessageChannel.COMMENTARY,
+                        text = "I need approval before continuing.",
+                        createdAtEpochMillis = 29L,
+                        metadata = mapOf("model" to "gpt"),
+                    ),
+                ),
+                local to listOf(
+                    CachedTranscriptEntry(
+                        id = "message-two",
+                        turnId = null,
+                        role = AgentTranscriptRole.USER,
+                        channel = null,
+                        text = "Inspect this project.",
+                        createdAtEpochMillis = 19L,
+                    ),
+                ),
+            ),
+        )
+
+        private fun observation(
+            locator: SessionLocator,
+            connectionLabel: String,
+            connectionTarget: String,
+            providerLabel: String,
+            state: AgentSessionState,
+            updatedAt: Long,
+        ) = SessionObservation(
+            locator = locator,
+            connectionLabel = connectionLabel,
+            connectionTarget = connectionTarget,
+            projectPath = "/workspace/project",
+            agentProviderLabel = providerLabel,
+            title = "$providerLabel session",
+            preview = "Latest durable output",
+            agentState = state,
+            createdAtEpochMillis = 1L,
+            updatedAtEpochMillis = updatedAt,
+            metadata = mapOf("source" to "provider"),
+        )
+    }
+}
