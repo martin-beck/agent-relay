@@ -1,0 +1,53 @@
+name: Feature request
+description: Propose a focused Agent Relay improvement
+title: "feature: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the workflow without including real hosts, accounts, paths,
+        sessions, prompts, transcripts, credentials, or private provider setup.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What user problem should be solved?
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: Describe observable behavior rather than an implementation.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Android UI and accessibility
+        - Connection provider
+        - Agent provider
+        - Session runtime and storage
+        - Security and privacy
+        - Build, CI, or documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: capability
+    attributes:
+      label: Capability and security considerations
+      description: Note provider limitations, permissions, data handling, and failure behavior.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy review
+      options:
+        - label: This request contains only synthetic or non-sensitive examples.
+          required: true

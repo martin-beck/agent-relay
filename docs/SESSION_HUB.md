@@ -1,6 +1,6 @@
 # Session hub and offline state
 
-Status: Persistence foundation implemented; coordinator and UI pending
+Status: Persistence and coordinator foundations implemented; UI pending
 Last verified: 2026-09-01
 
 The session layer is independent of both connection implementations and agent
@@ -108,25 +108,29 @@ and unread counts are recomputed from retained activity.
 These are safety bounds, not a search or export policy. A future storage format
 may shard sessions while preserving the same repository contract.
 
-## Coordinator integration contract
+## Coordinator runtime
 
-The next app layer should:
+`:session:runtime` now:
 
-1. enumerate profiles through ConnectionProviderRegistry without assuming SSH;
-2. connect the selected generic profile and obtain its RemoteAgentRuntime;
-3. construct compatible factories from AgentProviderRegistry;
-4. probe readiness and discover agent sessions;
-5. translate each result into SessionObservation using the full locator;
-6. subscribe to live agent events while the connection remains active;
-7. persist completed messages, approvals, questions, failures, reconnects, and
-   turn completion before notifying the UI; and
-8. restore drafts, unread state, transcript cache, and preferences immediately
-   while the provider reconnects.
+1. enumerates generic profiles without assuming SSH;
+2. isolates profile discovery failures so one provider cannot hide another;
+3. opens an independent controller per complete connection profile;
+4. obtains `RemoteAgentRuntime` only from connected generic profiles;
+5. probes compatible agent factories and discovers sessions;
+6. projects sessions and live events through the complete locator;
+7. persists event state before exposing the updated hub;
+8. routes capability-checked prompts, interruption, approvals, and questions;
+   and
+9. cancels agent work and clears stale issues when a connection goes offline.
 
-The coordinator must preserve independent managed connections and agent
-processes when the visible Compose destination changes. It must never downcast a
+Duplicate provider/profile identifiers and invalid descriptors fail explicitly.
+Reconnects replace stale agent connections and collectors without allowing an
+older collector to mutate the new state. The coordinator does not downcast a
 runtime to SSH or infer that the local provider has hosts, credentials, or host
 keys.
+
+The application still needs to construct the registries, Android repository, and
+coordinator and bind their state to Compose.
 
 ## Verification
 
@@ -136,6 +140,7 @@ Focused verification:
 ./gradlew \
   :session:api:test \
   :session:android:testDebugUnitTest \
+  :session:runtime:test \
   spotlessCheck
 ~~~
 
@@ -154,7 +159,6 @@ The Android Keystore implementation shares the instrumented coverage in
 :storage:android. It must still run on an emulator or device through
 connectedDebugAndroidTest before release.
 
-Not yet implemented in this layer are provider discovery coordination, event
-subscription, background notification dispatch, Compose presentation, or
-artifact transfer. Their extension boundary is defined here, but completion
-requires runtime and emulator evidence rather than this persistence suite alone.
+Not yet implemented are application construction, background notification
+dispatch, Compose presentation, or artifact transfer. Their extension
+boundaries are defined here, but completion requires end-to-end device evidence.

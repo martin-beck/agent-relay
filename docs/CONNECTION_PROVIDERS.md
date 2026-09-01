@@ -38,8 +38,8 @@ or conditional branches in agent providers.
 ## SSH provider layout
 
 | Module | Responsibility |
-| :storage:android | Transport-neutral, namespaced Android Keystore document encryption with authenticated atomic files below noBackupFilesDir |
 | --- | --- |
+| :storage:android | Transport-neutral, namespaced Android Keystore document encryption with authenticated atomic files below noBackupFilesDir |
 | :ssh:api | Validated SSH profiles, authentication references, host-key records, bounded reconnect policy, independent managed sessions, and the generic connection-provider adapter |
 | :ssh:jsch | JSch transport, strict host-key repository, password/imported-key/agent authentication, POSIX command encoding, keepalive checks, and concurrent exec channels |
 | :ssh:android | Android Keystore encryption, no-backup document storage, profile and host-key persistence, credential persistence, and non-exportable Android agent keys |

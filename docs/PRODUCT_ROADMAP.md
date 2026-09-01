@@ -3,10 +3,11 @@
 Status: Living document
 Last updated: 2026-09-01
 
-Agent Relay is an Android control surface for coding agents running on remote
-machines. This roadmap describes the product behavior that should remain
-consistent across providers, even when an individual provider exposes fewer
-capabilities.
+Agent Relay is an Android control surface for coding agents running in connected
+environments. A connection can be local to the Android application, reached
+through SSH, or supplied by a future connection provider. This roadmap describes
+the product behavior that should remain consistent across providers, even when
+an individual provider exposes fewer capabilities.
 
 This document is a planning artifact, not a release promise. Priorities may move
 when implementation evidence, provider limitations, Android platform changes, or
@@ -14,8 +15,8 @@ security findings change the cost of a feature.
 
 ## Product principles
 
-1. **Make remote state visible.** A user should always know which host, project,
-   provider, session, and turn an action affects.
+1. **Make execution context visible.** A user should always know which
+   connection, project, provider, session, and turn an action affects.
 2. **Preserve user control.** Stop, steer, reconnect, retry, decline, and recover
    must remain available at the point where they matter.
 3. **Keep sessions independent.** A stalled host or provider must not block
