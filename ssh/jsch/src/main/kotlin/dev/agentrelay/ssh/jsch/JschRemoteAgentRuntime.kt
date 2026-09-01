@@ -43,6 +43,8 @@ class JschRemoteAgentRuntime internal constructor(
     private val channelConnectTimeout: Duration,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : RemoteAgentRuntime {
+    override val fileAccess: dev.agentrelay.provider.api.RemoteFileAccess =
+        JschRemoteFileAccess(session, channelConnectTimeout, dispatcher)
     init {
         require(channelConnectTimeout.isPositive()) { "SSH channel connect timeout must be positive" }
         require(channelConnectTimeout.inWholeMilliseconds <= Int.MAX_VALUE)

@@ -36,6 +36,8 @@ interface RemoteDuplexProcess {
 
 interface RemoteAgentRuntime {
     val hostId: String
+    val fileAccess: RemoteFileAccess?
+        get() = null
 
     suspend fun execute(command: RemoteCommand, timeout: Duration = 15.seconds): RemoteCommandResult
 
