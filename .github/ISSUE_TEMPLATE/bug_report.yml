@@ -1,0 +1,61 @@
+name: Bug report
+description: Report a reproducible Agent Relay defect
+title: "bug: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Agent Relay is a private development preview. Redact credentials, host
+        details, private paths, session IDs, prompts, transcripts, and provider
+        configuration before submitting.
+  - type: input
+    id: commit
+    attributes:
+      label: Affected commit
+      description: Full or abbreviated Git commit ID from the private repository.
+      placeholder: abc1234
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Android version, device or emulator, JDK, and operating system as relevant.
+      placeholder: Android 16 emulator; JDK 17
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      description: Use synthetic values and the smallest repeatable sequence.
+      placeholder: |
+        1. Build commit ...
+        2. Open ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Redacted evidence
+      description: Add minimal logs or screenshots only after removing private data.
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy review
+      options:
+        - label: I reviewed this report and every attachment for private or secret data.
+          required: true
