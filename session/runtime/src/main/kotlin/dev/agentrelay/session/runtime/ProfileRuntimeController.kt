@@ -123,8 +123,9 @@ internal class ProfileRuntimeController(
 
     suspend fun active(agentProviderId: AgentProviderId): ActiveAgentHandle =
         activeMutex.withLock {
-            activeAgents[agentProviderId]
-                ?: throw IllegalStateException("Agent provider is not connected for this profile")
+            checkNotNull(activeAgents[agentProviderId]) {
+                "Agent provider is not connected for this profile"
+            }
         }
 
     suspend fun refreshAgentSessions(agentProviderId: AgentProviderId): List<AgentSession> {

@@ -44,10 +44,11 @@ Before a supported release, the project still needs:
 
 - integration of the security-reviewed modules into the Android application;
 - real-device Android Keystore and lifecycle evidence;
-- a stable application ID and explicit backup/data-extraction policy;
+- a stable application ID and final backup/data-extraction policy review;
 - production signing and secret handling outside the repository;
 - adaptive UI review for identity, approval, and error presentation; and
 - end-to-end threat modeling and release privacy review.
 
-Android backup is currently enabled in the placeholder manifest. No production
-security claim should be inferred from a successful debug build.
+Android backup is disabled fail-closed while encrypted connection and session
+state are under development. Re-enabling any backup or device-transfer surface
+requires a threat-model and data-classification review.

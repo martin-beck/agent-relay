@@ -15,6 +15,11 @@ android {
         versionName = "1.0"
     }
 
+    lint {
+        // API upgrades require matching AGP/Gradle plus target-behavior device validation.
+        disable += "OldTargetApi"
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -44,20 +49,11 @@ kotlin {
 }
 
 dependencies {
-    // Connection providers
-    implementation(project(":connection:api"))
-    implementation(project(":connection:local"))
-    implementation(project(":ssh:api"))
-    implementation(project(":ssh:jsch"))
-    implementation(project(":ssh:android"))
-
     val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)
     androidTestImplementation(composeBom)
 
     // Core Android dependencies
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
 
     // Arch Components
@@ -72,20 +68,34 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     // Instrumented tests
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
-    debugImplementation(libs.androidx.compose.ui.test.manifest)
+    debugRuntimeOnly(libs.androidx.compose.ui.test.manifest)
 
     // Local tests: jUnit, coroutines, Android runner
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
 
     // Instrumented tests: jUnit rules and runners
-    androidTestImplementation(libs.androidx.test.core)
+    androidTestRuntimeOnly(libs.androidx.test.core)
     androidTestImplementation(libs.androidx.test.ext.junit)
-    androidTestImplementation(libs.androidx.test.runner)
-    androidTestImplementation(libs.androidx.test.espresso.core)
+    androidTestRuntimeOnly(libs.androidx.test.runner)
 
     // Navigation
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.androidx.navigation3.runtime)
-    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+    implementation(libs.androidx.activity)
+    implementation(libs.androidx.compose.animation)
+    implementation(libs.androidx.compose.foundation.layout)
+    implementation(libs.androidx.compose.foundation)
+    androidTestImplementation(libs.androidx.compose.runtime)
+    implementation(libs.androidx.compose.runtime)
+    implementation(libs.androidx.compose.ui.graphics)
+    androidTestImplementation(libs.androidx.compose.ui.test)
+    implementation(libs.androidx.compose.ui.text)
+    implementation(libs.androidx.compose.ui.unit)
+    implementation(libs.androidx.lifecycle.common)
+    implementation(libs.androidx.lifecycle.viewmodel)
+    androidTestImplementation(libs.junit)
+    implementation(libs.kotlinx.coroutines.core)
+    testImplementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.serialization.core)
 }

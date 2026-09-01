@@ -31,4 +31,8 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.serialization.core)
+    implementation(project(":connection:api"))
+    implementation(project(":provider:api"))
 }

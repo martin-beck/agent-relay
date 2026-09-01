@@ -246,8 +246,6 @@ class SshConnectionManager(
                     )
                     sleeper.wait(reconnectDelay)
                 }
-            } catch (cancelled: CancellationException) {
-                throw cancelled
             } finally {
                 synchronized(monitor) {
                     if (loopJob === currentJob) {
