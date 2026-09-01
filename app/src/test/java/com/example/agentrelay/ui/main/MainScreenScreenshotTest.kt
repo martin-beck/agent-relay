@@ -16,6 +16,10 @@ import androidx.compose.ui.unit.Density
 import com.example.agentrelay.theme.AgentRelayTheme
 import com.github.takahirom.roborazzi.RoborazziOptions
 import com.github.takahirom.roborazzi.captureRoboImage
+import java.util.Locale
+import java.util.TimeZone
+import org.junit.After
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -33,6 +37,23 @@ class MainScreenScreenshotTest {
 
     @get:Rule
     val composeTestRule = createAndroidComposeRule<ComponentActivity>()
+
+    private lateinit var originalLocale: Locale
+    private lateinit var originalTimeZone: TimeZone
+
+    @Before
+    fun configureDeterministicDateFormatting() {
+        originalLocale = Locale.getDefault()
+        originalTimeZone = TimeZone.getDefault()
+        Locale.setDefault(Locale.US)
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
+    }
+
+    @After
+    fun restoreDateFormatting() {
+        Locale.setDefault(originalLocale)
+        TimeZone.setDefault(originalTimeZone)
+    }
 
     @Test
     fun loadingCompactLight() {
