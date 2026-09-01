@@ -72,6 +72,11 @@ state.
 - **Interrupt turn** is available only for a supported running or approval-waiting
   state.
 
+With an external keyboard, Tab moves focus out of the multiline message field
+toward the available turn controls, Shift+Tab moves backward, and Enter
+activates the focused button. Tab navigation does not add a tab character to the
+draft.
+
 Draft text and cursor selection remain attached to the complete local-or-remote
 session identity. Editing is reflected immediately and written securely after a
 short debounce. Submission persists the exact draft before provider I/O; it is
