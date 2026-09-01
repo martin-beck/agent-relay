@@ -28,7 +28,7 @@ class OpenCodeProtocolMapperTest {
                   "id":"ses-1",
                   "title":"Fix parser",
                   "directory":"/workspace",
-                  "model":{"providerID":"ollama","id":"example-model"},
+                  "model":{"providerID":"example-provider","id":"example-model"},
                   "time":{"created":1700000000000,"updated":1700000005000},
                   "version":"1.18.23",
                   "summary":{"files":2,"additions":4,"deletions":1}
