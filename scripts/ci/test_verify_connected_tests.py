@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import importlib.util
-from pathlib import Path
 import sys
 import tempfile
 import unittest
+from pathlib import Path
 
 SCRIPT_PATH = Path(__file__).with_name("verify_connected_tests.py")
 SPEC = importlib.util.spec_from_file_location("verify_connected_tests", SCRIPT_PATH)

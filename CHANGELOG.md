@@ -47,6 +47,9 @@ supported release.
 - Build, install, usage, architecture, contribution, security, and release
   documentation.
 - Strict Kotlin warning, Detekt, Android lint, and dependency-declaration gates.
+- Reproducible Python, Markdown, YAML, TOML, XML, GitHub configuration,
+  spelling, link, workflow-security, repository-hygiene, and secret checks that
+  run through the same pinned pre-commit gate locally and in CI.
 - Aggregate Kover coverage verification with a 70% line floor.
 - Kotest property checks and bounded Jazzer fuzzing for POSIX command encoding.
 

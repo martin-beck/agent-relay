@@ -20,6 +20,8 @@ review. Delete the branch after merge.
 ## Required checks
 
 ```bash
+uv sync --locked --only-group quality
+uv run pre-commit run --all-files --show-diff-on-failure
 ./gradlew spotlessCheck detekt buildHealth test koverXmlReport koverVerify lintDebug assembleDebug --stacktrace
 ```
 
@@ -29,10 +31,13 @@ Verify deterministic UI baselines separately:
 ./gradlew :app:verifyRoborazziDebug --stacktrace
 ```
 
-Run relevant focused tests while developing. Device-dependent changes also need
-the appropriate `connectedDebugAndroidTest` evidence before release. UI changes
-must add or update the relevant deterministic preview, semantic test, and
-reviewed Roborazzi baseline. Run `:app:recordRoborazziDebug` and
+The repository check applies format-aware parsing, formatting, static analysis,
+schema validation, link validation, spelling, workflow security, and secret
+scanning to every tracked text format. Run relevant focused tests while
+developing. Device-dependent changes also need the appropriate
+`connectedDebugAndroidTest` evidence before release. UI changes must add or
+update the relevant deterministic preview, semantic test, and reviewed
+Roborazzi baseline. Run `:app:recordRoborazziDebug` and
 `:app:verifyRoborazziDebug` as separate invocations. Changes to input parsing,
 remote command construction, path handling, or protocol decoding should add a
 focused property or fuzz regression when practical.
@@ -44,7 +49,6 @@ JAZZER_FUZZ=1 ./gradlew :ssh:jsch:test \
   --tests 'dev.agentrelay.ssh.jsch.PosixCommandEncoderFuzzTest' \
   --rerun-tasks
 ```
-
 
 ## Pull request content
 

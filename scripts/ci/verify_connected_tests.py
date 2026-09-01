@@ -4,10 +4,10 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass
-from pathlib import Path
 import sys
 import xml.etree.ElementTree as ElementTree
+from dataclasses import dataclass
+from pathlib import Path
 
 RESULT_GLOB = "**/build/outputs/androidTest-results/connected/**/TEST-*.xml"
 
@@ -28,7 +28,7 @@ class TestCounts:
     def executed(self) -> int:
         return self.tests - self.skipped
 
-    def add(self, other: "TestCounts") -> None:
+    def add(self, other: TestCounts) -> None:
         self.tests += other.tests
         self.failures += other.failures
         self.errors += other.errors
@@ -68,7 +68,9 @@ def collect_evidence(root: Path) -> dict[str, TestCounts]:
             document = ElementTree.parse(report).getroot()
         except (ElementTree.ParseError, OSError) as failure:
             raise EvidenceError(f"{report}: JUnit XML could not be parsed") from failure
-        suites = [document] if document.tag == "testsuite" else list(document.findall("./testsuite"))
+        suites = (
+            [document] if document.tag == "testsuite" else list(document.findall("./testsuite"))
+        )
         if document.tag not in {"testsuite", "testsuites"} or not suites:
             raise EvidenceError(f"{report}: JUnit document contains no test suite")
         module_counts = modules.setdefault(_module_name(root, report), TestCounts())
@@ -100,11 +102,17 @@ def verify_evidence(
     for counts in modules.values():
         total.add(counts)
     if total.tests < minimum_tests:
-        raise EvidenceError(f"only {total.tests} tests were reported; expected at least {minimum_tests}")
+        raise EvidenceError(
+            f"only {total.tests} tests were reported; expected at least {minimum_tests}"
+        )
     if total.executed < minimum_executed:
-        raise EvidenceError(f"only {total.executed} tests executed; expected at least {minimum_executed}")
+        raise EvidenceError(
+            f"only {total.executed} tests executed; expected at least {minimum_executed}"
+        )
     if total.failures or total.errors:
-        raise EvidenceError(f"JUnit evidence contains {total.failures} failures and {total.errors} errors")
+        raise EvidenceError(
+            f"JUnit evidence contains {total.failures} failures and {total.errors} errors"
+        )
     return modules
 
 
