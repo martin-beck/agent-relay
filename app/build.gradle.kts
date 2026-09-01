@@ -46,6 +46,7 @@ kotlin {
 dependencies {
     // Connection providers
     implementation(project(":connection:api"))
+    implementation(project(":connection:local"))
     implementation(project(":ssh:api"))
     implementation(project(":ssh:jsch"))
     implementation(project(":ssh:android"))

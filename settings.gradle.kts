@@ -29,6 +29,7 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 include(":connection:api")
+include(":connection:local")
 include(":ssh:api")
 include(":ssh:jsch")
 include(":ssh:android")
