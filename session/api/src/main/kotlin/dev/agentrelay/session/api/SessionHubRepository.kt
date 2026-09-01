@@ -12,6 +12,7 @@ data class SessionEventUpdate(
     val transcriptEntry: CachedTranscriptEntry? = null,
     val activity: SessionActivity? = null,
     val actionRequest: SessionActionRequest? = null,
+    val artifact: SessionArtifact? = null,
 ) {
     init {
         require(observation == null || observation.locator == locator) {
@@ -23,6 +24,9 @@ data class SessionEventUpdate(
         require(actionRequest == null || actionRequest.locator == locator) {
             "Event action request locator does not match"
         }
+        require(artifact == null || artifact.locator == locator) {
+            "Event artifact locator does not match"
+        }
         require(
             activity?.actionRequestId == null ||
                 actionRequest == null ||
@@ -30,7 +34,13 @@ data class SessionEventUpdate(
         ) {
             "Event activity and action request identities do not match"
         }
-        require(observation != null || transcriptEntry != null || activity != null || actionRequest != null) {
+        require(
+            observation != null ||
+                transcriptEntry != null ||
+                activity != null ||
+                actionRequest != null ||
+                artifact != null,
+        ) {
             "Session event update must contain a durable change"
         }
     }
@@ -168,11 +178,14 @@ class PersistentSessionHubRepository private constructor(
                 }
             } ?: current.actionRequests
 
+            val updatedArtifacts = current.updatedArtifacts(update)
+
             val next = current.copy(
                 sessions = updatedSessions,
                 activities = updatedActivities,
                 transcripts = updatedTranscripts,
                 actionRequests = updatedActionRequests,
+                artifacts = updatedArtifacts,
             )
             if (next == current) current else next
         }
@@ -351,6 +364,7 @@ class PersistentSessionHubRepository private constructor(
                     activities = current.activities.filterNot { it.locator == locator },
                     transcripts = current.transcripts - locator,
                     actionRequests = current.actionRequests.filterNot { it.locator == locator },
+                    artifacts = current.artifacts.filterNot { it.locator == locator },
                 )
             }
         }
@@ -401,3 +415,29 @@ class InMemorySessionHubStore(
 
 private fun SessionHubSnapshot.requireSession(locator: SessionLocator): SessionRecord =
     session(locator) ?: throw NoSuchElementException("No session found for the supplied locator")
+
+private fun SessionHubSnapshot.updatedArtifacts(update: SessionEventUpdate): List<SessionArtifact> {
+    val workspaceChanged = update.observation?.let { incoming ->
+        session(update.locator)?.observation?.let { previous ->
+            previous.projectPath != incoming.projectPath
+        } ?: false
+    } ?: false
+    val candidates = if (workspaceChanged) {
+        artifacts.filterNot { it.locator == update.locator }
+    } else {
+        artifacts
+    }
+    val artifact = update.artifact ?: return candidates
+    val existingIndex = candidates.indexOfFirst {
+        it.locator == artifact.locator && it.id == artifact.id
+    }
+    if (existingIndex < 0) {
+        return candidates + artifact
+    }
+    if (candidates[existingIndex] == artifact) {
+        return candidates
+    }
+    return candidates.toMutableList().apply {
+        this[existingIndex] = artifact
+    }
+}

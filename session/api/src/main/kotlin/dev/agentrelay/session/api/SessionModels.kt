@@ -2,6 +2,7 @@ package dev.agentrelay.session.api
 
 import dev.agentrelay.connection.api.ConnectionProfileId
 import dev.agentrelay.connection.api.ConnectionProviderId
+import dev.agentrelay.provider.api.AgentFileChangeKind
 import dev.agentrelay.provider.api.AgentApprovalDecision
 import dev.agentrelay.provider.api.AgentApprovalType
 import dev.agentrelay.provider.api.AgentMessageChannel
@@ -249,6 +250,56 @@ data class SessionActionRequest(
             (candidate in APPROVING_DECISIONS && riskReasons.isNotEmpty())
 }
 
+enum class SessionArtifactAvailability {
+    DOWNLOADABLE,
+    DELETED,
+    OUTSIDE_WORKSPACE,
+    WORKSPACE_UNKNOWN,
+}
+
+data class SessionArtifact(
+    val id: String,
+    val locator: SessionLocator,
+    val providerPath: String,
+    val relativePath: String?,
+    val oldProviderPath: String?,
+    val oldRelativePath: String?,
+    val kind: AgentFileChangeKind,
+    val turnId: String?,
+    val availability: SessionArtifactAvailability,
+    val observedAtEpochMillis: Long,
+) {
+    init {
+        requireBounded(id, "Artifact id", MAX_ID_CHARS)
+        requireBounded(providerPath, "Artifact provider path", MAX_PATH_CHARS)
+        relativePath?.let { requireArtifactRelativePath(it, "Artifact relative path") }
+        oldProviderPath?.let { requireBounded(it, "Artifact old provider path", MAX_PATH_CHARS) }
+        oldRelativePath?.let { requireArtifactRelativePath(it, "Artifact old relative path") }
+        turnId?.let { requireBounded(it, "Artifact turn id", MAX_ID_CHARS) }
+        require(observedAtEpochMillis >= 0L)
+        when (availability) {
+            SessionArtifactAvailability.DOWNLOADABLE -> {
+                require(relativePath != null) { "A downloadable artifact requires a safe relative path" }
+                require(kind != AgentFileChangeKind.DELETED) {
+                    "A deleted artifact cannot be downloadable"
+                }
+            }
+            SessionArtifactAvailability.DELETED -> {
+                require(kind == AgentFileChangeKind.DELETED) {
+                    "Deleted availability requires a deleted file change"
+                }
+            }
+            SessionArtifactAvailability.OUTSIDE_WORKSPACE,
+            SessionArtifactAvailability.WORKSPACE_UNKNOWN,
+            -> {
+                require(relativePath == null) {
+                    "An unavailable artifact cannot expose a transfer path"
+                }
+            }
+        }
+    }
+}
+
 data class CachedTranscriptEntry(
     val id: String,
     val turnId: String?,
@@ -273,6 +324,7 @@ data class SessionHubSnapshot(
     val activities: List<SessionActivity> = emptyList(),
     val transcripts: Map<SessionLocator, List<CachedTranscriptEntry>> = emptyMap(),
     val actionRequests: List<SessionActionRequest> = emptyList(),
+    val artifacts: List<SessionArtifact> = emptyList(),
 ) {
     init {
         require(sessions.distinctBy { it.locator }.size == sessions.size) {
@@ -284,11 +336,15 @@ data class SessionHubSnapshot(
         require(actionRequests.distinctBy { it.locator to it.id }.size == actionRequests.size) {
             "Session snapshot contains duplicate action request identities"
         }
+        require(artifacts.distinctBy { it.locator to it.id }.size == artifacts.size) {
+            "Session snapshot contains duplicate artifact identities"
+        }
         val locators = sessions.mapTo(mutableSetOf()) { it.locator }
         require(drafts.keys.all(locators::contains)) { "A draft references an unknown session" }
         require(activities.all { it.locator in locators }) { "Activity references an unknown session" }
         require(transcripts.keys.all(locators::contains)) { "A transcript references an unknown session" }
         require(actionRequests.all { it.locator in locators }) { "An action request references an unknown session" }
+        require(artifacts.all { it.locator in locators }) { "An artifact references an unknown session" }
         val actionKeys = actionRequests.mapTo(mutableSetOf()) { it.locator to it.id }
         require(
             activities.all { activity ->
@@ -306,6 +362,13 @@ data class SessionHubSnapshot(
 
     fun actionRequest(locator: SessionLocator, id: String): SessionActionRequest? =
         actionRequests.firstOrNull { it.locator == locator && it.id == id }
+
+    fun sessionArtifacts(locator: SessionLocator): List<SessionArtifact> =
+        artifacts
+            .asSequence()
+            .filter { it.locator == locator }
+            .sortedByDescending(SessionArtifact::observedAtEpochMillis)
+            .toList()
 
     fun recentSessions(includeArchived: Boolean = false): List<SessionRecord> =
         sessions
@@ -337,12 +400,14 @@ data class SessionRetentionPolicy(
     val maximumActivities: Int = 2_000,
     val maximumTranscriptEntriesPerSession: Int = 500,
     val maximumActionRequests: Int = 2_000,
+    val maximumArtifacts: Int = 4_000,
 ) {
     init {
         require(maximumSessions > 0)
         require(maximumActivities > 0)
         require(maximumTranscriptEntriesPerSession > 0)
         require(maximumActionRequests > 0)
+        require(maximumArtifacts > 0)
     }
 }
 
@@ -374,6 +439,13 @@ internal fun SessionHubSnapshot.normalized(policy: SessionRetentionPolicy): Sess
         )
         .take(policy.maximumActionRequests)
         .sortedBy { it.receivedAtEpochMillis }
+        .toList()
+    val retainedArtifacts = artifacts
+        .asSequence()
+        .filter { it.locator in retainedLocators }
+        .sortedByDescending(SessionArtifact::observedAtEpochMillis)
+        .take(policy.maximumArtifacts)
+        .sortedBy(SessionArtifact::observedAtEpochMillis)
         .toList()
     val retainedActionKeys = retainedActionRequests.mapTo(mutableSetOf()) { it.locator to it.id }
     val normalizedActivities = retainedActivities.filter { activity ->
@@ -409,12 +481,25 @@ internal fun SessionHubSnapshot.normalized(policy: SessionRetentionPolicy): Sess
         activities = normalizedActivities,
         transcripts = normalizedTranscripts,
         actionRequests = retainedActionRequests,
+        artifacts = retainedArtifacts,
     )
 }
 
 private fun requireBounded(value: String, label: String, maximum: Int) {
     require(value.isNotBlank()) { "$label must not be blank" }
     require(value.length <= maximum) { "$label is too large" }
+}
+
+private fun requireArtifactRelativePath(value: String, label: String) {
+    requireBounded(value, label, MAX_PATH_CHARS)
+    require(!value.startsWith('/') && !value.startsWith('\\')) {
+        "$label must stay relative to the workspace"
+    }
+    require('\\' !in value) { "$label must use forward slashes" }
+    val segments = value.split('/')
+    require(segments.all { it.isNotEmpty() && it != "." && it != ".." }) {
+        "$label contains an unsafe segment"
+    }
 }
 
 private fun validateMetadata(metadata: Map<String, String>) {

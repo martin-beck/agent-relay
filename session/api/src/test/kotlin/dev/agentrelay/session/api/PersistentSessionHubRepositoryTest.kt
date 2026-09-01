@@ -4,6 +4,7 @@ import dev.agentrelay.connection.api.ConnectionProfileId
 import dev.agentrelay.connection.api.ConnectionProviderId
 import dev.agentrelay.provider.api.AgentApprovalDecision
 import dev.agentrelay.provider.api.AgentApprovalType
+import dev.agentrelay.provider.api.AgentFileChangeKind
 import dev.agentrelay.provider.api.AgentMessageChannel
 import dev.agentrelay.provider.api.AgentProviderId
 import dev.agentrelay.provider.api.AgentSessionId
@@ -270,6 +271,77 @@ class PersistentSessionHubRepositoryTest {
         )
         assertEquals(SessionActionState.RESOLVED, reopened.snapshot.value.actionRequests.single().state)
         assertTrue(reopened.snapshot.value.activities.single().isResolved)
+    }
+
+    @Test
+    fun artifactEventsAreAtomicIdempotentAndRemovedWithTheirSession() = runTest {
+        val store = RecordingStore()
+        val repository = PersistentSessionHubRepository.open(store)
+        val session = locator("local.device", "local", "artifact-session")
+        repository.upsertSession(observation(session, updatedAt = 1L))
+        val artifact = SessionArtifact(
+            id = "artifact-one",
+            locator = session,
+            providerPath = "/workspace/project/report.txt",
+            relativePath = "report.txt",
+            oldProviderPath = null,
+            oldRelativePath = null,
+            kind = AgentFileChangeKind.MODIFIED,
+            turnId = "turn-one",
+            availability = SessionArtifactAvailability.DOWNLOADABLE,
+            observedAtEpochMillis = 2L,
+        )
+        val update = SessionEventUpdate(locator = session, artifact = artifact)
+
+        repository.applyEvent(update)
+        val savesAfterFirstEvent = store.saveCount
+        repository.applyEvent(update)
+
+        assertEquals(savesAfterFirstEvent, store.saveCount)
+        assertEquals(listOf(artifact), repository.snapshot.value.sessionArtifacts(session))
+        val reclassified = artifact.copy(
+            relativePath = null,
+            availability = SessionArtifactAvailability.OUTSIDE_WORKSPACE,
+            observedAtEpochMillis = 3L,
+        )
+        repository.applyEvent(SessionEventUpdate(locator = session, artifact = reclassified))
+        assertEquals(
+            listOf(reclassified),
+            repository.snapshot.value.sessionArtifacts(session),
+        )
+
+        repository.applyEvent(
+            SessionEventUpdate(
+                locator = session,
+                observation = observation(session, updatedAt = 4L).copy(
+                    projectPath = "/workspace/replacement",
+                ),
+            ),
+        )
+        assertTrue(repository.snapshot.value.artifacts.isEmpty())
+
+        repository.removeSession(session)
+        assertTrue(repository.snapshot.value.artifacts.isEmpty())
+    }
+
+    @Test
+    fun artifactModelRejectsUnsafeTransferPaths() {
+        val session = locator("local.device", "local", "artifact-validation")
+
+        assertFailsWith<IllegalArgumentException> {
+            SessionArtifact(
+                id = "unsafe",
+                locator = session,
+                providerPath = "../secret",
+                relativePath = "../secret",
+                oldProviderPath = null,
+                oldRelativePath = null,
+                kind = AgentFileChangeKind.MODIFIED,
+                turnId = null,
+                availability = SessionArtifactAvailability.DOWNLOADABLE,
+                observedAtEpochMillis = 1L,
+            )
+        }
     }
 
     @Test

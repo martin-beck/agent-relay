@@ -10,11 +10,14 @@ import dev.agentrelay.connection.api.ConnectionProviderRegistry
 import dev.agentrelay.connection.api.ConnectionState
 import dev.agentrelay.provider.api.AgentApprovalDecision
 import dev.agentrelay.provider.api.AgentCapability
-import dev.agentrelay.provider.api.AgentChangedFile
 import dev.agentrelay.provider.api.AgentProviderRegistry
 import dev.agentrelay.provider.api.AgentSession
+import dev.agentrelay.provider.api.RemoteFileReference
 import dev.agentrelay.provider.api.StartSessionOptions
 import dev.agentrelay.session.api.CachedTranscriptEntry
+import dev.agentrelay.session.api.SessionArtifact
+import dev.agentrelay.session.api.SessionArtifactAvailability
+import dev.agentrelay.session.api.SessionEventUpdate
 import dev.agentrelay.session.api.SessionHubRepository
 import dev.agentrelay.session.api.SessionLocator
 import kotlinx.coroutines.CancellationException
@@ -197,10 +200,58 @@ class SessionCoordinator(
         )
     }
 
-    suspend fun changedFiles(locator: SessionLocator): List<AgentChangedFile> {
+    suspend fun changedFiles(locator: SessionLocator): List<SessionArtifact> {
         val active = controller(locator.connectionKey()).active(locator.agentProviderId)
         requireCapability(active, AgentCapability.FILE_CHANGES)
-        return active.connection.changedFiles(locator.agentSessionId)
+        val observation = repository.snapshot.value.session(locator)?.observation
+            ?: throw NoSuchElementException("No session found")
+        val artifacts = active.connection.changedFiles(locator.agentSessionId)
+            .map { file ->
+                SessionArtifactMapper.map(
+                    file = file,
+                    locator = locator,
+                    workspaceRoot = observation.projectPath,
+                    now = now(),
+                )
+            }
+            .distinctBy(SessionArtifact::id)
+        artifacts.forEach { artifact ->
+            repository.applyEvent(
+                SessionEventUpdate(
+                    locator = locator,
+                    artifact = artifact,
+                ),
+            )
+        }
+        return artifacts
+    }
+
+    suspend fun prepareArtifactDownload(
+        locator: SessionLocator,
+        artifactId: String,
+    ): PreparedArtifactDownload {
+        val artifact = repository.snapshot.value.sessionArtifacts(locator)
+            .firstOrNull { it.id == artifactId }
+            ?: throw NoSuchElementException("No session artifact found")
+        require(artifact.availability == SessionArtifactAvailability.DOWNLOADABLE) {
+            "Session artifact is not downloadable"
+        }
+        val workspaceRoot = repository.snapshot.value.session(locator)
+            ?.observation
+            ?.projectPath
+            ?: error("Session workspace is unavailable")
+        val active = controller(locator.connectionKey()).active(locator.agentProviderId)
+        requireCapability(active, AgentCapability.FILE_CHANGES)
+        val fileAccess = requireNotNull(active.runtime.fileAccess) {
+            "Connection does not support workspace file access"
+        }
+        val reference = RemoteFileReference(workspaceRoot, checkNotNull(artifact.relativePath))
+        val sourceSnapshot = fileAccess.inspect(reference, calculateSha256 = true)
+        return PreparedArtifactDownload(
+            artifact = artifact,
+            sourceSnapshot = sourceSnapshot,
+            chunks = fileAccess.read(reference, sourceSnapshot.revision),
+        )
     }
 
     suspend fun shutdown() {
@@ -405,11 +456,6 @@ class SessionCoordinator(
         }
     }
 
-    private fun SessionLocator.connectionKey() = SessionConnectionKey(
-        providerId = connectionProviderId,
-        profileId = connectionProfileId,
-    )
-
     private fun profileIssueId(providerId: String): String = PROFILE_ISSUE_PREFIX + providerId
 
     private fun setupIssueId(key: SessionConnectionKey): String =
@@ -422,6 +468,10 @@ class SessionCoordinator(
     }
 }
 
+private fun SessionLocator.connectionKey() = SessionConnectionKey(
+    providerId = connectionProviderId,
+    profileId = connectionProfileId,
+)
 class SessionActionDeliveryUncertainException :
     IllegalStateException(
         "The provider response could not be confirmed. Do not retry this request; wait for a newly identified provider request.",

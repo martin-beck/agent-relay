@@ -153,7 +153,10 @@ internal class FakeManagedConnection(
     )
 }
 
-internal data class FakeRuntime(override val hostId: String) : RemoteAgentRuntime {
+internal data class FakeRuntime(
+    override val hostId: String,
+    override val fileAccess: dev.agentrelay.provider.api.RemoteFileAccess? = null,
+) : RemoteAgentRuntime {
     override suspend fun execute(command: RemoteCommand, timeout: Duration): RemoteCommandResult =
         error("Fake agent providers do not execute commands")
 

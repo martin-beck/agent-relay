@@ -15,6 +15,7 @@ import dev.agentrelay.session.api.SessionActivity
 import dev.agentrelay.session.api.SessionActivityType
 import dev.agentrelay.session.api.SessionActionRequest
 import dev.agentrelay.session.api.SessionActionRisk
+import dev.agentrelay.session.api.SessionArtifact
 import dev.agentrelay.session.api.SessionLocator
 import dev.agentrelay.session.api.SessionObservation
 import dev.agentrelay.session.api.SessionQuestion
@@ -26,12 +27,13 @@ internal data class SessionEventProjection(
     val activity: SessionActivity? = null,
     val transcriptEntry: CachedTranscriptEntry? = null,
     val actionRequest: SessionActionRequest? = null,
+    val artifact: SessionArtifact? = null,
     val state: AgentSessionState? = null,
     val preview: String? = null,
 ) {
     val isEmpty: Boolean
         get() = listOf(activity, transcriptEntry, actionRequest, state, preview)
-            .all { it == null }
+            .all { it == null } && artifact == null
 }
 
 internal object SessionDataMapper {
@@ -105,6 +107,7 @@ internal object SessionDataMapper {
         event: AgentEvent,
         locator: SessionLocator,
         now: Long,
+        workspaceRoot: String? = null,
     ): SessionEventProjection = when (event) {
         is AgentEvent.TextDelta -> SessionEventProjection()
         is AgentEvent.MessageCompleted -> {
@@ -158,7 +161,14 @@ internal object SessionDataMapper {
             }
         }
         is AgentEvent.ApprovalRequested -> approvalEvent(event, locator, now)
-        is AgentEvent.FileChanged -> SessionEventProjection()
+        is AgentEvent.FileChanged -> SessionEventProjection(
+            artifact = SessionArtifactMapper.map(
+                file = event.file,
+                locator = locator,
+                workspaceRoot = workspaceRoot,
+                now = now,
+            ),
+        )
         is AgentEvent.TurnCompleted -> {
             val anchor = boundedIdentifier(
                 "turn",
