@@ -31,6 +31,7 @@ plugins {
 include(":connection:api")
 include(":ssh:api")
 include(":ssh:jsch")
+include(":ssh:android")
 
 rootProject.name = "Agent Relay"
 include(":app")

@@ -44,6 +44,12 @@ kotlin {
 }
 
 dependencies {
+    // Connection providers
+    implementation(project(":connection:api"))
+    implementation(project(":ssh:api"))
+    implementation(project(":ssh:jsch"))
+    implementation(project(":ssh:android"))
+
     val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)
     androidTestImplementation(composeBom)

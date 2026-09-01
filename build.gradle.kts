@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.android.library) apply false
     alias(libs.plugins.compose.compiler) apply false
     alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.kotlin.serialization) apply false
@@ -11,6 +12,7 @@ val ktlintEditorConfig = mapOf(
     "ij_kotlin_allow_trailing_comma_on_call_site" to "true",
     "ktlint_function_naming_ignore_when_annotated_with" to "Composable, Test",
     "ktlint_standard_backing-property-naming" to "disabled",
+    "ktlint_standard_import-ordering" to "disabled",
     "ktlint_standard_binary-expression-wrapping" to "disabled",
     "ktlint_standard_chain-method-continuation" to "disabled",
     "ktlint_standard_class-signature" to "disabled",
