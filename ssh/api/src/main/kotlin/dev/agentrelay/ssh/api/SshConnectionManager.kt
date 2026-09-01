@@ -35,7 +35,11 @@ class SshConnectionManager(
     private val sleeper: SshDelay = SshDelay { delay(it) },
     private val random: SshRandom = SshRandom(Random.Default::nextDouble),
 ) : Closeable {
-    private val authenticationResolver = SshAuthenticationResolver(credentialStore)
+    private val routeResolver = SshConnectionRouteResolver(
+        profiles = profileStore,
+        credentialStore = credentialStore,
+        hostKeys = hostKeyStore,
+    )
     private val managerJob = SupervisorJob()
     private val scope = CoroutineScope(managerJob + dispatcher)
     private val sessions = ConcurrentHashMap<SshProfileId, ManagedSession>()
@@ -256,8 +260,8 @@ class SshConnectionManager(
         }
 
         private suspend fun tryConnect(profile: SshProfile, attempt: Int): SshFailure? {
-            val authentication = try {
-                authenticationResolver.resolve(profile)
+            val route = try {
+                routeResolver.resolve(profile)
             } catch (failure: Throwable) {
                 return failure.toSshFailure()
             }
@@ -266,11 +270,8 @@ class SshConnectionManager(
             return try {
                 val startedAt = clock.epochMillis()
                 setConnecting(attempt, SshConnectPhase.OPENING_SOCKET, startedAt)
-                val trustedKeys = hostKeyStore.trustedKeys(profile.endpoint)
                 opened = connector.connect(
-                    profile = profile,
-                    authentication = authentication,
-                    trustedHostKeys = trustedKeys,
+                    route = route,
                     phaseListener = SshConnectPhaseListener { phase ->
                         setConnecting(attempt, phase, startedAt)
                     },
@@ -316,7 +317,7 @@ class SshConnectionManager(
             } catch (failure: Throwable) {
                 failure.toSshFailure()
             } finally {
-                authentication.close()
+                route.close()
                 synchronized(monitor) {
                     if (connection === opened) {
                         connection = null

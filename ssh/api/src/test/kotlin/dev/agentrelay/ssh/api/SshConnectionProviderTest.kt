@@ -109,12 +109,11 @@ class SshConnectionProviderTest {
 
     private class TrustConnector(private val candidate: SshHostKey) : SshConnector {
         override suspend fun connect(
-            profile: SshProfile,
-            authentication: ResolvedSshAuthentication,
-            trustedHostKeys: List<SshHostKey>,
+            route: SshConnectionRoute,
             phaseListener: SshConnectPhaseListener,
         ): SshTransportConnection {
-            if (trustedHostKeys.none { it.publicKeyBase64 == candidate.publicKeyBase64 }) {
+            val destination = route.destination
+            if (destination.trustedHostKeys.none { it.publicKeyBase64 == candidate.publicKeyBase64 }) {
                 throw SshHostKeyApprovalRequiredException(
                     SshHostKeyChallenge(
                         candidate = candidate,
@@ -126,7 +125,7 @@ class SshConnectionProviderTest {
             return object : SshTransportConnection {
                 private var connected = true
                 override val runtime: RemoteAgentRuntime = object : RemoteAgentRuntime {
-                    override val hostId: String = profile.id.value
+                    override val hostId: String = destination.profile.id.value
                     override suspend fun execute(
                         command: RemoteCommand,
                         timeout: Duration,

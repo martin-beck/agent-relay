@@ -73,6 +73,8 @@ data class SshProfile(
     val endpoint: SshEndpoint,
     val username: String,
     val authentication: SshAuthentication,
+    val jumpHostProfileId: SshProfileId? = null,
+    val appManagedKeyId: String? = null,
     val createdAtEpochMillis: Long,
     val updatedAtEpochMillis: Long,
 ) {
@@ -87,6 +89,15 @@ data class SshProfile(
         require(createdAtEpochMillis >= 0L && updatedAtEpochMillis >= createdAtEpochMillis) {
             "SSH profile timestamps are inconsistent"
         }
+        require(jumpHostProfileId != id) {
+            "An SSH profile cannot use itself as a jump host"
+        }
+        require(
+            appManagedKeyId == null ||
+                appManagedKeyId.isNotBlank() &&
+                appManagedKeyId.length <= 256 &&
+                appManagedKeyId.none(Char::isISOControl),
+        ) { "App-managed SSH key id must be a bounded printable identifier" }
     }
 }
 

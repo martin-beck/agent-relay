@@ -25,9 +25,7 @@ interface SshTransportConnection : AutoCloseable {
 
 interface SshConnector {
     suspend fun connect(
-        profile: SshProfile,
-        authentication: ResolvedSshAuthentication,
-        trustedHostKeys: List<SshHostKey>,
+        route: SshConnectionRoute,
         phaseListener: SshConnectPhaseListener = SshConnectPhaseListener {},
     ): SshTransportConnection
 }

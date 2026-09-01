@@ -6,8 +6,14 @@ import dev.agentrelay.connection.api.ConnectionProfileId
 import dev.agentrelay.connection.api.ConnectionProfileUpdate
 import dev.agentrelay.connection.api.ConnectionProviderId
 import dev.agentrelay.connection.api.ConnectionProfileValidationException
+import dev.agentrelay.provider.api.RemoteAgentRuntime
+import dev.agentrelay.provider.api.RemoteCommand
+import dev.agentrelay.provider.api.RemoteCommandResult
+import dev.agentrelay.provider.api.RemoteDuplexProcess
 import java.util.ArrayDeque
 import java.util.Arrays
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -120,18 +126,16 @@ class SshConnectionProfileManagerTest {
     }
 
     @Test
-    fun agentKeyCollisionIsRetriedAndDeleteRemovesKeyAndUnsharedHostTrust() = runTest {
-        val fixture = Fixture("profile", "collision", "fresh")
-        val collidingKeyId = "ssh-profile.agent-collision"
-        fixture.agentKeys.keys[collidingKeyId] = agentPublicKey(collidingKeyId)
+    fun appManagedKeyPersistsAcrossAuthenticationChangesUntilProfileDeletion() = runTest {
+        val fixture = Fixture("profile", "password")
 
         val created = profileUpdate(authentication = "agent-backed").use {
             fixture.manager.save(it)
         }
         val profile = fixture.profiles.profile(SshProfileId(created.profile.id.value))!!
         val authentication = assertIs<SshAuthentication.AgentBacked>(profile.authentication)
-        assertEquals("ssh-profile.agent-fresh", authentication.keyId)
-        assertTrue(collidingKeyId in fixture.agentKeys.keys)
+        assertEquals("ssh-profile.device-key.v1", authentication.keyId)
+        assertEquals(authentication.keyId, profile.appManagedKeyId)
 
         val editor = fixture.manager.editor(created.profile.id)
         val publicKeyField = editor.fields.single {
@@ -140,12 +144,63 @@ class SshConnectionProfileManagerTest {
         assertTrue(publicKeyField.value.contains(authentication.keyId))
         assertFalse(publicKeyField.value.contains("PRIVATE"))
 
+        profileUpdate(
+            profileId = created.profile.id,
+            authentication = "password",
+            password = "replacement password",
+        ).use { fixture.manager.save(it) }
+        val passwordProfile = fixture.profiles.profile(profile.id)!!
+        assertIs<SshAuthentication.Password>(passwordProfile.authentication)
+        assertEquals(authentication.keyId, passwordProfile.appManagedKeyId)
+        assertTrue(authentication.keyId in fixture.agentKeys.keys)
+        assertTrue(fixture.agentKeys.deleted.isEmpty())
+
         fixture.manager.delete(created.profile.id)
 
         assertNull(fixture.profiles.profile(profile.id))
         assertEquals(setOf(authentication.keyId), fixture.agentKeys.deleted)
-        assertTrue(collidingKeyId in fixture.agentKeys.keys)
         assertEquals(listOf(profile.endpoint), fixture.hostKeys.deleted)
+    }
+
+    @Test
+    fun savedProfilesExposeInstallAndKeyOnlyProbeOperationsThroughGenericManager() = runTest {
+        val fixture = Fixture("profile", "password")
+        val created = profileUpdate(password = "saved password").use {
+            fixture.manager.save(it)
+        }
+
+        val editor = fixture.manager.editor(created.profile.id)
+
+        assertEquals(
+            listOf(
+                SshConnectionProfileManager.INSTALL_PUBLIC_KEY,
+                SshConnectionProfileManager.VERIFY_KEY_LOGIN,
+            ),
+            editor.operations.map { it.id },
+        )
+        assertTrue(editor.operations.first().requiresConfirmation)
+        assertFalse(editor.operations.last().requiresConfirmation)
+
+        val installed = fixture.manager.performOperation(
+            created.profile.id,
+            SshConnectionProfileManager.INSTALL_PUBLIC_KEY,
+        )
+        val verified = fixture.manager.performOperation(
+            created.profile.id,
+            SshConnectionProfileManager.VERIFY_KEY_LOGIN,
+        )
+
+        assertTrue(installed.notice.contains("installed"))
+        assertTrue(verified.notice.contains("succeeded"))
+        assertEquals(2, fixture.connector.connections.size)
+        assertEquals(1, fixture.connector.connections.first().commands.size)
+        assertEquals(1, fixture.connector.connections.last().heartbeats)
+        assertIs<ResolvedSshAuthentication.Password>(
+            fixture.connector.routes.first().destination.authentication,
+        )
+        assertIs<ResolvedSshAuthentication.AgentBacked>(
+            fixture.connector.routes.last().destination.authentication,
+        )
     }
 
     @Test
@@ -205,6 +260,8 @@ class SshConnectionProfileManagerTest {
         assertTrue(fixture.profiles.values.isEmpty())
         assertTrue(fixture.credentials.values.isEmpty())
         assertEquals(1, fixture.credentials.deleted.size)
+        assertTrue(fixture.agentKeys.keys.isEmpty())
+        assertEquals(setOf("ssh-profile.device-key.v1"), fixture.agentKeys.deleted)
 
         val secret = secret("never log this")
         assertFalse(secret.toString().contains("never log this"))
@@ -309,18 +366,103 @@ class SshConnectionProfileManagerTest {
         }
     }
 
+    @Test
+    fun configuredProfileCanBeSelectedAsJumpHostAndCannotBeDeletedWhileReferenced() = runTest {
+        val fixture = Fixture("target", "password")
+        val gateway = profile(
+            id = "gateway",
+            credentialId = SshCredentialId("gateway-password"),
+        ).copy(
+            label = "Gateway",
+            endpoint = SshEndpoint("gateway.example.test"),
+        )
+        fixture.profiles.values[gateway.id] = gateway
+
+        val editor = fixture.manager.editor(null)
+        val jumpHost = editor.fields.single {
+            it.id == SshConnectionProfileManager.JUMP_HOST
+        }
+        assertEquals("direct", jumpHost.value)
+        assertEquals(
+            listOf("direct", gateway.id.value),
+            jumpHost.options.map { it.value },
+        )
+        assertEquals(
+            gateway.endpoint.displayName,
+            jumpHost.options.single { it.value == gateway.id.value }.supportingText,
+        )
+
+        val saved = profileUpdate(
+            password = "password",
+            jumpHost = gateway.id.value,
+        ).use { fixture.manager.save(it) }
+        val destinationId = SshProfileId(saved.profile.id.value)
+        assertEquals(
+            gateway.id,
+            fixture.profiles.profile(destinationId)?.jumpHostProfileId,
+        )
+        assertFailsWith<IllegalStateException> {
+            fixture.manager.delete(ConnectionProfileId(gateway.id.value))
+        }
+        assertTrue(gateway.id in fixture.profiles.values)
+    }
+
+    @Test
+    fun jumpHostSelectionRejectsSelfMissingProfilesAndIndirectCycles() = runTest {
+        val fixture = Fixture()
+        val target = profile(
+            id = "target",
+            credentialId = SshCredentialId("target-password"),
+        )
+        val gateway = profile(
+            id = "gateway",
+            credentialId = SshCredentialId("gateway-password"),
+        ).copy(jumpHostProfileId = target.id)
+        fixture.profiles.values[target.id] = target
+        fixture.profiles.values[gateway.id] = gateway
+        val targetId = ConnectionProfileId(target.id.value)
+
+        listOf(
+            target.id.value to "cycle",
+            gateway.id.value to "cycle",
+            "missing" to "no longer available",
+        ).forEach { (selected, expectedMessage) ->
+            val invalid = assertFailsWith<ConnectionProfileValidationException> {
+                profileUpdate(
+                    profileId = targetId,
+                    jumpHost = selected,
+                ).use { fixture.manager.save(it) }
+            }
+            assertTrue(
+                invalid.fieldErrors.getValue(SshConnectionProfileManager.JUMP_HOST)
+                    .contains(expectedMessage),
+            )
+        }
+        assertEquals(target, fixture.profiles.profile(target.id))
+    }
+
     private class Fixture(vararg ids: String) {
         val profiles = MutableProfileStore()
         val credentials = MutableCredentialStore()
         val hostKeys = RecordingHostKeyStore()
         val agentKeys = RecordingAgentKeyManager()
+        val connector = ProfileOperationConnector()
         var now = 100L
         private val generatedIds = ArrayDeque(ids.toList())
+        private val managedKeys = SshManagedKeyService(
+            profiles = profiles,
+            credentialStore = credentials,
+            hostKeys = hostKeys,
+            agentKeys = agentKeys,
+            connector = connector,
+            clock = SshClock { now },
+        )
         val manager = SshConnectionProfileManager(
             profiles = profiles,
             credentials = credentials,
             hostKeys = hostKeys,
             agentKeys = agentKeys,
+            managedKeys = managedKeys,
             clock = SshClock { now },
             idGenerator = { generatedIds.removeFirst() },
         )
@@ -408,6 +550,52 @@ private class RecordingAgentKeyManager : SshAgentKeyManager {
     }
 }
 
+private class ProfileOperationConnector : SshConnector {
+    val routes = mutableListOf<SshConnectionRoute>()
+    val connections = mutableListOf<ProfileOperationConnection>()
+
+    override suspend fun connect(
+        route: SshConnectionRoute,
+        phaseListener: SshConnectPhaseListener,
+    ): SshTransportConnection {
+        routes += route
+        return ProfileOperationConnection().also(connections::add)
+    }
+}
+
+private class ProfileOperationConnection : SshTransportConnection {
+    val commands = mutableListOf<RemoteCommand>()
+    var heartbeats = 0
+    private var closed = false
+
+    override val runtime: RemoteAgentRuntime = object : RemoteAgentRuntime {
+        override val hostId: String = "profile-operation"
+
+        override suspend fun execute(
+            command: RemoteCommand,
+            timeout: Duration,
+        ): RemoteCommandResult {
+            commands += command
+            return RemoteCommandResult(0, "", "")
+        }
+
+        override suspend fun openProcess(command: RemoteCommand): RemoteDuplexProcess =
+            error("Profile operation tests do not open processes")
+    }
+
+    override val isConnected: Boolean
+        get() = !closed
+
+    override suspend fun heartbeat(): Duration {
+        heartbeats += 1
+        return 1.milliseconds
+    }
+
+    override fun close() {
+        closed = true
+    }
+}
+
 private fun profileUpdate(
     profileId: ConnectionProfileId? = null,
     label: String = "Development server",
@@ -416,6 +604,7 @@ private fun profileUpdate(
     privateKey: String? = null,
     passphraseMode: String = "none",
     passphrase: String? = null,
+    jumpHost: String = "direct",
 ): ConnectionProfileUpdate = ConnectionProfileUpdate(
     providerId = SshConnectionProvider.ID,
     profileId = profileId,
@@ -426,6 +615,7 @@ private fun profileUpdate(
         privateKey = privateKey,
         passphraseMode = passphraseMode,
         passphrase = passphrase,
+        jumpHost = jumpHost,
     ),
 )
 
@@ -436,11 +626,13 @@ private fun profileFields(
     privateKey: String? = null,
     passphraseMode: String = "none",
     passphrase: String? = null,
+    jumpHost: String = "direct",
 ): Map<ConnectionProfileFieldId, ConnectionProfileFieldInput> = buildMap {
     put(SshConnectionProfileManager.LABEL, text(label))
     put(SshConnectionProfileManager.HOST, text("example.test"))
     put(SshConnectionProfileManager.PORT, text("22"))
     put(SshConnectionProfileManager.USERNAME, text("developer"))
+    put(SshConnectionProfileManager.JUMP_HOST, text(jumpHost))
     put(SshConnectionProfileManager.AUTHENTICATION, text(authentication))
     put(SshConnectionProfileManager.PASSPHRASE_MODE, text(passphraseMode))
     password?.let { put(SshConnectionProfileManager.PASSWORD, secret(it)) }
@@ -477,5 +669,5 @@ private fun agentPublicKey(keyId: String) = SshAgentPublicKey(
     keyId = keyId,
     algorithm = "ssh-ed25519",
     sha256Fingerprint = "SHA256:AAAAAAAAAAAAAAAAAAAAAA",
-    openSshPublicKey = "ssh-ed25519 AAAA $keyId",
+    openSshPublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5 $keyId",
 )
