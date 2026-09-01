@@ -38,6 +38,10 @@ supported release.
   superseded credentials or agent keys.
 - Formatter inputs are restricted to source trees and real Gradle scripts so
   parallel Android build output cannot cause transient formatting failures.
+- UI CI now verifies completed emulator boot and independently requires clean
+  multi-module JUnit evidence, uploads reports from every connected-test module,
+  and retains Gradle's problems report instead of relying on failure-looking log
+  text or an app-only artifact.
 
 ### Security
 

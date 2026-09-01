@@ -47,8 +47,16 @@ Generate human-readable reports while investigating:
 ```
 
 Reports are written below `build/reports/detekt`,
-`build/reports/dependency-analysis`, and `build/reports/kover`, plus each
-Android module's `build/reports` directory. CI retains them for 14 days.
+`build/reports/dependency-analysis`, `build/reports/kover`, and
+`build/reports/problems`, plus each Android module's `build/reports` directory.
+CI retains them for 14 days.
+
+Gradle 9 currently produces a problems report because Detekt 1.23.8, the latest
+stable Detekt release, calls a reporting API scheduled for removal in Gradle 10.
+The warning originates in the Detekt plugin rather than project build logic.
+Agent Relay retains the report and will adopt a compatible stable Detekt release
+before moving to Gradle 10; it does not replace analyzer or test failure gates.
+Pre-release Detekt 2 builds are not used merely to hide this warning.
 
 ## UI usability and accessibility
 
@@ -77,11 +85,18 @@ projects:
 
 The `Android UI verification` workflow runs the semantic flow suite and
 Compose Accessibility Test Framework checks on an API 36 phone for every pull
-request and push to `main`. Its weekly/manual matrix also runs the same suite
-on the minimum API phone and an API 36 tablet. Device results are retained as CI
-artifacts. The API 28 run skips only the API 34+ accessibility-framework audit;
-semantic behavior tests still run.
+request and push to `main`. The emulator script explicitly verifies completed
+Android boot before starting Gradle. A separate XML parser then requires clean
+JUnit evidence from the app, SSH Android, and storage Android modules, with at
+least 12 discovered and 10 executed tests. This prevents a missing device,
+missing report, or accidentally empty suite from appearing green.
 
+The weekly/manual matrix runs the same suite on the minimum API phone and an
+API 36 tablet. CI artifacts retain reports from every tested module plus the
+Gradle problems report. The API 28 run skips only the two API 34+ accessibility-
+framework audits; at least ten semantic and secure-storage tests still execute.
+Emulator console, graphics, or teardown diagnostics can contain alarming words;
+CI relies on process status and parsed JUnit evidence rather than string grep.
 
 Each screen or reusable component must have deterministic previews for the
 states it owns, including empty, loading, content, error, offline, changed

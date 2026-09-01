@@ -55,7 +55,19 @@ jobs:
           arch: x86_64
           profile: pixel_7_pro
           disable-animations: true
-          script: ./gradlew connectedDebugAndroidTest --stacktrace
+          script: |
+            set -eu
+            adb wait-for-device
+            test "$(adb shell getprop sys.boot_completed)" = "1"
+            ./gradlew connectedDebugAndroidTest --stacktrace
+
+      - name: Verify connected-test evidence
+        run: |
+          python3 scripts/ci/verify_connected_tests.py --root . \
+            --minimum-tests 12 --minimum-executed 10 \
+            --require-module app \
+            --require-module ssh/android \
+            --require-module storage/android
 
       - name: Upload UI test evidence
         if: ${{ !cancelled() }}
@@ -63,9 +75,10 @@ jobs:
         with:
           name: ui-test-results-current-phone-${{ github.run_attempt }}
           path: |
-            app/build/outputs/androidTest-results/connected/**
-            app/build/reports/androidTests/connected/**
-          if-no-files-found: warn
+            **/build/outputs/androidTest-results/connected/**
+            **/build/reports/androidTests/connected/**
+            build/reports/problems/**
+          if-no-files-found: error
           retention-days: 14
 
   extended-matrix:
@@ -119,7 +132,19 @@ jobs:
           arch: x86_64
           profile: ${{ matrix.profile }}
           disable-animations: true
-          script: ./gradlew connectedDebugAndroidTest --stacktrace
+          script: |
+            set -eu
+            adb wait-for-device
+            test "$(adb shell getprop sys.boot_completed)" = "1"
+            ./gradlew connectedDebugAndroidTest --stacktrace
+
+      - name: Verify connected-test evidence
+        run: |
+          python3 scripts/ci/verify_connected_tests.py --root . \
+            --minimum-tests 12 --minimum-executed 10 \
+            --require-module app \
+            --require-module ssh/android \
+            --require-module storage/android
 
       - name: Upload UI test evidence
         if: ${{ !cancelled() }}
@@ -127,7 +152,8 @@ jobs:
         with:
           name: ui-test-results-${{ matrix.name }}-${{ github.run_attempt }}
           path: |
-            app/build/outputs/androidTest-results/connected/**
-            app/build/reports/androidTests/connected/**
-          if-no-files-found: warn
+            **/build/outputs/androidTest-results/connected/**
+            **/build/reports/androidTests/connected/**
+            build/reports/problems/**
+          if-no-files-found: error
           retention-days: 14
