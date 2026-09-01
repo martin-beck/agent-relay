@@ -28,6 +28,11 @@ internal class MainScreenViewModel(
     private val busyConnectionKeys = MutableStateFlow<Set<String>>(emptySet())
     private var runtime: SessionHubRuntime? = null
     private var initializationJob: Job? = null
+    private val profileEditor = ConnectionProfileEditorController(
+        scope = viewModelScope,
+        runtime = { runtime },
+        reportError = { operationError.value = it },
+    )
 
     val uiState: StateFlow<MainScreenUiState> = mutableUiState.asStateFlow()
 
@@ -50,6 +55,18 @@ internal class MainScreenViewModel(
             it.refreshProfiles()
         }
     }
+    fun addProfile(providerId: String) = profileEditor.add(providerId)
+
+    fun editProfile(connectionKey: String) = profileEditor.edit(connectionKey)
+
+    fun updateProfileField(fieldId: String, value: String) =
+        profileEditor.updateField(fieldId, value)
+
+    fun dismissProfileEditor() = profileEditor.dismiss()
+    fun saveProfile() = profileEditor.save()
+    fun requestProfileDeletion() = profileEditor.requestDeletion()
+    fun cancelProfileDeletion() = profileEditor.cancelDeletion()
+    fun deleteProfile() = profileEditor.delete()
 
     fun connect(connectionKey: String) {
         performConnection(
@@ -150,16 +167,16 @@ internal class MainScreenViewModel(
                         operationError,
                         busyConnectionKeys,
                     ) { coordinator, sessions, selected, error, busy ->
-                        MainScreenUiState.Ready(
-                            SessionHubUiMapper.map(
-                                coordinator = coordinator,
-                                sessions = sessions,
-                                connectionProviders = opened.connectionProviders,
-                                selectedSessionKey = selected,
-                                operationError = error,
-                                busyConnectionKeys = busy,
-                            ),
+                        SessionHubUiMapper.map(
+                            coordinator = coordinator,
+                            sessions = sessions,
+                            connectionProviders = opened.connectionProviders,
+                            selectedSessionKey = selected,
+                            operationError = error,
+                            busyConnectionKeys = busy,
                         )
+                    }.combine(profileEditor.state) { hub, editor ->
+                        MainScreenUiState.Ready(hub, editor)
                     }.collect { mutableUiState.value = it }
                 }
                 try {
@@ -247,5 +264,8 @@ internal sealed interface MainScreenUiState {
 
     data class FatalError(val message: String) : MainScreenUiState
 
-    data class Ready(val hub: SessionHubUiModel) : MainScreenUiState
+    data class Ready(
+        val hub: SessionHubUiModel,
+        val profileEditor: ConnectionProfileEditorUiState? = null,
+    ) : MainScreenUiState
 }

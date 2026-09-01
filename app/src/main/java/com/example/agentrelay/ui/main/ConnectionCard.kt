@@ -37,6 +37,7 @@ internal fun ConnectionCard(
     onDisconnect: () -> Unit,
     onTrustIdentity: (Boolean) -> Unit,
     onRejectIdentity: () -> Unit,
+    onEdit: () -> Unit,
 ) {
     ElevatedCard(Modifier.fillMaxWidth()) {
         Column(
@@ -117,6 +118,14 @@ internal fun ConnectionCard(
                         enabled = !connection.isBusy,
                     ) {
                         Text("Disconnect")
+                    }
+                }
+                if (connection.canEdit) {
+                    TextButton(
+                        onClick = onEdit,
+                        enabled = !connection.isBusy,
+                    ) {
+                        Text("Edit profile")
                     }
                 }
                 if (connection.isBusy) {

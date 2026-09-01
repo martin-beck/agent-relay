@@ -17,6 +17,7 @@ import androidx.compose.ui.test.tryPerformAccessibilityChecks
 import androidx.compose.ui.unit.dp
 import androidx.test.filters.SdkSuppress
 import com.example.agentrelay.theme.AgentRelayTheme
+import dev.agentrelay.connection.api.ConnectionProfileFieldType
 import dev.agentrelay.provider.api.AgentSessionState
 import dev.agentrelay.session.api.SessionActivityType
 import org.junit.Rule
@@ -56,6 +57,50 @@ class MainScreenTest {
         check(recorder.replaceIdentity)
         check(recorder.selectedKey == "session-key")
         check(recorder.openedKey == "session-key")
+    }
+
+    @Test
+    fun profileManagementIsDiscoverableFromProviderAndExistingConnection() {
+        val recorder = ActionRecorder()
+        setContent(MainScreenUiState.Ready(testHub()), recorder)
+
+        composeTestRule
+            .onNodeWithText("Add Secure Shell profile")
+            .performScrollTo()
+            .performClick()
+        composeTestRule.onNodeWithText("Edit profile").performScrollTo().performClick()
+
+        check(recorder.addedProvider == "ssh.secure-shell")
+        check(recorder.editedConnection == "ssh-key")
+    }
+
+    @Test
+    fun profileEditorExposesProviderFieldsErrorsAndDestructiveConfirmation() {
+        val recorder = ActionRecorder()
+        setContent(MainScreenUiState.Ready(testHub(), testEditor()), recorder)
+
+        composeTestRule.onNodeWithText("Edit Secure Shell profile").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Correct the highlighted profile fields.").assertIsDisplayed()
+        composeTestRule.onNodeWithText("A secret is stored. Leave this blank to keep it.").assertExists()
+        composeTestRule.onNodeWithText("Imported private key").performClick()
+        composeTestRule.onNodeWithText("Delete").performClick()
+
+        check(recorder.updatedField == "authentication" to "imported-key")
+        check(recorder.deleteRequested)
+    }
+
+    @Test
+    fun profileDeletionRequiresExplicitConfirmation() {
+        val recorder = ActionRecorder()
+        setContent(
+            MainScreenUiState.Ready(testHub(), testEditor().copy(confirmDelete = true)),
+            recorder,
+        )
+
+        composeTestRule.onNodeWithText("Delete connection profile?").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Cancel").performClick()
+
+        check(recorder.deleteCancelled)
     }
 
     @Test
@@ -108,6 +153,16 @@ class MainScreenTest {
         composeTestRule.onRoot().tryPerformAccessibilityChecks()
     }
 
+    @SdkSuppress(minSdkVersion = 34)
+    @Test
+    fun profileEditorPassesAutomatedAccessibilityChecks() {
+        val recorder = ActionRecorder()
+        setContent(MainScreenUiState.Ready(testHub(), testEditor()), recorder)
+
+        composeTestRule.enableAccessibilityChecks()
+        composeTestRule.onRoot().tryPerformAccessibilityChecks()
+    }
+
     private fun setContent(
         state: MainScreenUiState,
         recorder: ActionRecorder,
@@ -130,6 +185,11 @@ private class ActionRecorder {
     var replaceIdentity = false
     var selectedKey: String? = null
     var openedKey: String? = null
+    var addedProvider: String? = null
+    var editedConnection: String? = null
+    var updatedField: Pair<String, String>? = null
+    var deleteRequested = false
+    var deleteCancelled = false
 
     fun actions() = SessionHubActions(
         retry = { retryCount++ },
@@ -144,6 +204,11 @@ private class ActionRecorder {
         selectSession = { selectedKey = it },
         openSession = { openedKey = it },
         dismissError = {},
+        addProfile = { addedProvider = it },
+        editProfile = { editedConnection = it },
+        updateProfileField = { id, value -> updatedField = id to value },
+        requestProfileDeletion = { deleteRequested = true },
+        cancelProfileDeletion = { deleteCancelled = true },
     )
 }
 
@@ -180,6 +245,7 @@ private fun testHub(): SessionHubUiModel {
                 canDisconnect = false,
                 isBusy = false,
                 identityChallenge = null,
+                canEdit = false,
             ),
             ConnectionUiModel(
                 stableKey = "ssh-key",
@@ -202,6 +268,7 @@ private fun testHub(): SessionHubUiModel {
                     isChangedIdentity = true,
                     previousFingerprints = listOf("SHA256:old-test-fingerprint"),
                 ),
+                canEdit = true,
             ),
         ),
         sessions = listOf(session),
@@ -231,5 +298,67 @@ private fun testHub(): SessionHubUiModel {
         selectedSessionKey = "session-key",
         operationError = null,
         isRefreshingProfiles = false,
+        manageableConnectionProviders = listOf(
+            ConnectionProviderUiModel(
+                stableKey = "ssh.secure-shell",
+                name = "Secure Shell",
+            ),
+        ),
     )
 }
+
+private fun testEditor() = ConnectionProfileEditorUiState.Editing(
+    providerId = "ssh.secure-shell",
+    profileId = "ssh-profile",
+    title = "Edit Secure Shell profile",
+    fields = listOf(
+        ConnectionProfileFieldUiModel(
+            id = "profile-label",
+            label = "Profile name",
+            type = ConnectionProfileFieldType.TEXT,
+            value = "Test fixture",
+            supportingText = null,
+            required = true,
+            maxLength = 128,
+            options = emptyList(),
+            visibleWhen = emptyList(),
+            hasStoredSecret = false,
+        ),
+        ConnectionProfileFieldUiModel(
+            id = "authentication",
+            label = "Authentication",
+            type = ConnectionProfileFieldType.SINGLE_CHOICE,
+            value = "password",
+            supportingText = null,
+            required = true,
+            maxLength = 256,
+            options = listOf(
+                ConnectionProfileFieldOptionUiModel("password", "Password", null),
+                ConnectionProfileFieldOptionUiModel(
+                    "imported-key",
+                    "Imported private key",
+                    "Paste an OpenSSH or PEM private key.",
+                ),
+            ),
+            visibleWhen = emptyList(),
+            hasStoredSecret = false,
+        ),
+        ConnectionProfileFieldUiModel(
+            id = "password",
+            label = "Password",
+            type = ConnectionProfileFieldType.PASSWORD,
+            value = "",
+            supportingText = "Stored securely.",
+            required = false,
+            maxLength = 16_384,
+            options = emptyList(),
+            visibleWhen = listOf(
+                ConnectionProfileFieldConditionUiModel("authentication", "password"),
+            ),
+            hasStoredSecret = true,
+        ),
+    ),
+    canDelete = true,
+    fieldErrors = mapOf("profile-label" to "Enter a profile name."),
+    error = "Correct the highlighted profile fields.",
+)

@@ -84,7 +84,14 @@ class SessionHubUiMapperTest {
             sessions = sessionSnapshot,
             connectionProviders = listOf(
                 descriptor(localProvider, "Local"),
-                descriptor(sshProvider, "Secure Shell"),
+                descriptor(
+                    sshProvider,
+                    "Secure Shell",
+                    setOf(
+                        ConnectionCapability.MULTIPLEXED_PROCESSES,
+                        ConnectionCapability.PROFILE_MANAGEMENT,
+                    ),
+                ),
             ),
             selectedSessionKey = sshLocator.stableUiKey,
             operationError = null,
@@ -99,6 +106,9 @@ class SessionHubUiMapperTest {
         assertEquals(32_000, mapped.selectedSession?.transcript?.single()?.text?.length)
         assertTrue(mapped.selectedSession?.transcript?.single()?.wasTruncated == true)
         assertFalse(mapped.sessions.single { it.title == "Local session" }.stableKey == sshLocator.stableUiKey)
+        assertEquals(listOf("Secure Shell"), mapped.manageableConnectionProviders.map { it.name })
+        assertFalse(mapped.connections.single { it.providerName == "Local" }.canEdit)
+        assertTrue(mapped.connections.single { it.providerName == "Secure Shell" }.canEdit)
     }
 
     @Test
@@ -299,9 +309,10 @@ private fun profile(
 private fun descriptor(
     id: ConnectionProviderId,
     name: String,
+    capabilities: Set<ConnectionCapability> = setOf(ConnectionCapability.MULTIPLEXED_PROCESSES),
 ) = ConnectionProviderDescriptor(
     id = id,
     displayName = name,
     providerVersion = "1.0",
-    capabilities = setOf(ConnectionCapability.MULTIPLEXED_PROCESSES),
+    capabilities = capabilities,
 )

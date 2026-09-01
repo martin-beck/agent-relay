@@ -80,6 +80,7 @@ internal class AgentRelayGraph(private val context: Context) {
             )
             CoordinatorSessionHubRuntime(
                 coordinator = coordinator,
+                connections = connections,
                 connectionProviders = connections.descriptors(),
             )
         } catch (failure: Throwable) {

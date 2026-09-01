@@ -1,5 +1,6 @@
 package com.example.agentrelay.ui.main
 
+import dev.agentrelay.connection.api.ConnectionCapability
 import dev.agentrelay.connection.api.ConnectionDisconnectReason
 import dev.agentrelay.connection.api.ConnectionIdentityDisposition
 import dev.agentrelay.connection.api.ConnectionProviderDescriptor
@@ -25,6 +26,12 @@ internal data class SessionHubUiModel(
     val selectedSessionKey: String?,
     val operationError: String?,
     val isRefreshingProfiles: Boolean,
+    val manageableConnectionProviders: List<ConnectionProviderUiModel> = emptyList(),
+)
+
+internal data class ConnectionProviderUiModel(
+    val stableKey: String,
+    val name: String,
 )
 
 internal data class ConnectionUiModel(
@@ -42,6 +49,7 @@ internal data class ConnectionUiModel(
     val canDisconnect: Boolean,
     val isBusy: Boolean,
     val identityChallenge: IdentityChallengeUiModel?,
+    val canEdit: Boolean = false,
 )
 
 internal enum class ConnectionStatus {
@@ -126,6 +134,9 @@ internal object SessionHubUiMapper {
         val connectionProviderNames = connectionProviders.associate {
             it.id to it.displayName
         }
+        val manageableProviderIds = connectionProviders
+            .filter { ConnectionCapability.PROFILE_MANAGEMENT in it.capabilities }
+            .associateBy(ConnectionProviderDescriptor::id)
         val connections = coordinator.profiles.map { profile ->
             val key = SessionConnectionKey(profile.providerId, profile.id)
             val state = coordinator.connectionStates[key]
@@ -163,6 +174,7 @@ internal object SessionHubUiMapper {
                             previousFingerprints = challenge.previouslyTrustedFingerprints,
                         )
                     },
+                canEdit = profile.providerId in manageableProviderIds,
             )
         }
         val sessionModels = sessions.recentSessions().map { record ->
@@ -208,6 +220,9 @@ internal object SessionHubUiMapper {
             selectedSessionKey = selectedSessionKey,
             operationError = operationError,
             isRefreshingProfiles = coordinator.isRefreshingProfiles,
+            manageableConnectionProviders = manageableProviderIds.values.map {
+                ConnectionProviderUiModel(it.id.value, it.displayName)
+            }.sortedBy(ConnectionProviderUiModel::name),
         )
     }
 

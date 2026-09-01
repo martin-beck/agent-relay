@@ -9,8 +9,11 @@ import dev.agentrelay.connection.api.ConnectionDisconnectReason
 import dev.agentrelay.connection.api.ConnectionIdentityChallenge
 import dev.agentrelay.connection.api.ConnectionIdentityDecision
 import dev.agentrelay.connection.api.ConnectionIdentityDisposition
+import dev.agentrelay.connection.api.ConnectionProfileEditor
 import dev.agentrelay.connection.api.ConnectionProfileId
+import dev.agentrelay.connection.api.ConnectionProfileSaveResult
 import dev.agentrelay.connection.api.ConnectionProfileSummary
+import dev.agentrelay.connection.api.ConnectionProfileUpdate
 import dev.agentrelay.connection.api.ConnectionProviderDescriptor
 import dev.agentrelay.connection.api.ConnectionProviderId
 import dev.agentrelay.connection.api.ConnectionState
@@ -242,6 +245,22 @@ private class FakeSessionHubRuntime(
     override suspend fun refreshProfiles() {
         refreshCount += 1
         check(!failRefresh)
+    }
+
+    override suspend fun profileEditor(
+        providerId: ConnectionProviderId,
+        profileId: ConnectionProfileId?,
+    ): ConnectionProfileEditor = error("Profile management is not configured for this test")
+
+    override suspend fun saveProfile(
+        update: ConnectionProfileUpdate,
+    ): ConnectionProfileSaveResult = error("Profile management is not configured for this test")
+
+    override suspend fun deleteProfile(
+        providerId: ConnectionProviderId,
+        profileId: ConnectionProfileId,
+    ) {
+        error("Profile management is not configured for this test")
     }
 
     override suspend fun connect(key: SessionConnectionKey) {
