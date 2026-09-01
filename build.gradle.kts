@@ -28,15 +28,24 @@ val ktlintEditorConfig = mapOf(
     "ktlint_standard_multiline-loop" to "disabled",
 )
 
+val kotlinSourceTrees = subprojects.map { project ->
+    project.fileTree("src") {
+        include("**/*.kt")
+    }
+}
+val kotlinGradleFiles = files(
+    rootProject.file("build.gradle.kts"),
+    rootProject.file("settings.gradle.kts"),
+    subprojects.map { project -> project.file("build.gradle.kts") },
+)
+
 spotless {
     kotlin {
-        target("**/*.kt")
-        targetExclude("**/build/**")
+        target(kotlinSourceTrees)
         ktlint(libs.versions.ktlint.get()).editorConfigOverride(ktlintEditorConfig)
     }
     kotlinGradle {
-        target("**/*.gradle.kts")
-        targetExclude("**/build/**")
+        target(kotlinGradleFiles)
         ktlint(libs.versions.ktlint.get()).editorConfigOverride(ktlintEditorConfig)
     }
     format("misc") {

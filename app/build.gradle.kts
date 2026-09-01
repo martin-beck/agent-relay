@@ -12,6 +12,7 @@ android {
         minSdk = 28
         targetSdk = 36
         versionCode = 1
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         versionName = "1.0"
     }
 
@@ -60,14 +61,32 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
 
+    // Provider-neutral connection and session runtime
+    implementation(project(":connection:api"))
+    implementation(project(":connection:local"))
+    implementation(project(":provider:api"))
+    implementation(project(":provider:aider"))
+    implementation(project(":provider:claude"))
+    implementation(project(":provider:cline"))
+    implementation(project(":provider:codex"))
+    implementation(project(":provider:continue"))
+    implementation(project(":provider:opencode"))
+    implementation(project(":session:android"))
+    implementation(project(":session:api"))
+    implementation(project(":session:runtime"))
+    implementation(project(":ssh:android"))
+
     // Compose
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.runtime.annotation)
     // Tooling
     debugImplementation(libs.androidx.compose.ui.tooling)
     // Instrumented tests
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4.accessibility)
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation(libs.accessibility.test.framework)
     debugRuntimeOnly(libs.androidx.compose.ui.test.manifest)
 
     // Local tests: jUnit, coroutines, Android runner
@@ -77,7 +96,7 @@ dependencies {
     // Instrumented tests: jUnit rules and runners
     androidTestRuntimeOnly(libs.androidx.test.core)
     androidTestImplementation(libs.androidx.test.ext.junit)
-    androidTestRuntimeOnly(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.runner)
 
     // Navigation
     implementation(libs.androidx.navigation3.ui)
