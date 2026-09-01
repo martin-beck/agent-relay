@@ -9,7 +9,6 @@ import dev.agentrelay.connection.api.ConnectionProfileSummary
 import dev.agentrelay.connection.api.ConnectionProviderRegistry
 import dev.agentrelay.connection.api.ConnectionState
 import dev.agentrelay.provider.api.AgentApprovalDecision
-import dev.agentrelay.provider.api.AgentApprovalId
 import dev.agentrelay.provider.api.AgentCapability
 import dev.agentrelay.provider.api.AgentChangedFile
 import dev.agentrelay.provider.api.AgentProviderRegistry
@@ -44,6 +43,7 @@ class SessionCoordinator(
     private val controllers = mutableMapOf<SessionConnectionKey, ProfileRuntimeController>()
     private val mutableSnapshot = MutableStateFlow(SessionCoordinatorSnapshot())
     private var closed = false
+    private val actionResponses = SessionActionResponseCoordinator(repository, ::now)
 
     val snapshot: StateFlow<SessionCoordinatorSnapshot> = mutableSnapshot.asStateFlow()
 
@@ -178,15 +178,23 @@ class SessionCoordinator(
         active.connection.interrupt(locator.agentSessionId)
     }
 
-    suspend fun respondToApproval(
+    suspend fun respondToAction(
         locator: SessionLocator,
-        approvalId: AgentApprovalId,
+        requestId: String,
         decision: AgentApprovalDecision,
         answers: Map<String, List<String>> = emptyMap(),
+        additionalConfirmationGiven: Boolean = false,
     ) {
         val active = controller(locator.connectionKey()).active(locator.agentProviderId)
         requireCapability(active, AgentCapability.APPROVALS)
-        active.connection.respondToApproval(approvalId, decision, answers)
+        actionResponses.respond(
+            active = active,
+            locator = locator,
+            requestId = requestId,
+            decision = decision,
+            answers = answers,
+            additionalConfirmationGiven = additionalConfirmationGiven,
+        )
     }
 
     suspend fun changedFiles(locator: SessionLocator): List<AgentChangedFile> {
@@ -413,3 +421,13 @@ class SessionCoordinator(
         const val PROFILE_ISSUE_PREFIX = "profile-discovery:"
     }
 }
+
+class SessionActionDeliveryUncertainException :
+    IllegalStateException(
+        "The provider response could not be confirmed. Do not retry this request; wait for a newly identified provider request.",
+    )
+
+class SessionActionAuditFailureException :
+    IllegalStateException(
+        "The provider accepted the response, but its local audit state could not be confirmed.",
+    )

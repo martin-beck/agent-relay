@@ -2,6 +2,8 @@ package dev.agentrelay.session.api
 
 import dev.agentrelay.connection.api.ConnectionProfileId
 import dev.agentrelay.connection.api.ConnectionProviderId
+import dev.agentrelay.provider.api.AgentApprovalDecision
+import dev.agentrelay.provider.api.AgentApprovalType
 import dev.agentrelay.provider.api.AgentMessageChannel
 import dev.agentrelay.provider.api.AgentProviderId
 import dev.agentrelay.provider.api.AgentSessionId
@@ -106,6 +108,7 @@ data class SessionActivity(
     val type: SessionActivityType,
     val summary: String,
     val eventAnchorId: String?,
+    val actionRequestId: String? = null,
     val occurredAtEpochMillis: Long,
     val isRead: Boolean = false,
     val isResolved: Boolean = false,
@@ -114,6 +117,7 @@ data class SessionActivity(
         requireBounded(id, "Activity id", MAX_ID_CHARS)
         requireBounded(summary, "Activity summary", MAX_ACTIVITY_CHARS)
         eventAnchorId?.let { requireBounded(it, "Event anchor id", MAX_ID_CHARS) }
+        actionRequestId?.let { requireBounded(it, "Action request id", MAX_ID_CHARS) }
         require(occurredAtEpochMillis >= 0L)
         require(!isResolved || type == SessionActivityType.APPROVAL_REQUIRED || type == SessionActivityType.QUESTION) {
             "Only actionable activity can be resolved"
@@ -123,6 +127,126 @@ data class SessionActivity(
     val requiresAction: Boolean
         get() = !isResolved &&
             (type == SessionActivityType.APPROVAL_REQUIRED || type == SessionActivityType.QUESTION)
+}
+
+enum class SessionActionState {
+    PENDING,
+    DELIVERING,
+    RESOLVED,
+}
+
+enum class SessionActionRisk {
+    DESTRUCTIVE_COMMAND,
+    BROAD_FILESYSTEM_ACCESS,
+    CREDENTIAL_ACCESS,
+    NETWORK_EXPANSION,
+    EXTERNAL_TOOL,
+}
+
+data class SessionQuestionOption(
+    val label: String,
+    val description: String? = null,
+) {
+    init {
+        requireBounded(label, "Question option", MAX_QUESTION_OPTION_CHARS)
+        description?.let { requireBounded(it, "Question option description", MAX_DESCRIPTION_CHARS) }
+    }
+}
+
+data class SessionQuestion(
+    val id: String,
+    val providerQuestionId: String,
+    val header: String?,
+    val prompt: String,
+    val options: List<SessionQuestionOption> = emptyList(),
+    val allowsOther: Boolean = true,
+    val allowsMultiple: Boolean = false,
+) {
+    init {
+        requireBounded(id, "Question id", MAX_ID_CHARS)
+        requireBounded(providerQuestionId, "Provider question id", MAX_PROVIDER_REQUEST_ID_CHARS)
+        header?.let { requireBounded(it, "Question header", MAX_LABEL_CHARS) }
+        requireBounded(prompt, "Question prompt", MAX_DESCRIPTION_CHARS)
+        require(options.size <= MAX_QUESTION_OPTIONS) { "Question has too many options" }
+        require(options.distinctBy { it.label }.size == options.size) {
+            "Question contains duplicate options"
+        }
+        require(options.isNotEmpty() || allowsOther) {
+            "Question must provide an option or allow a written answer"
+        }
+    }
+}
+
+data class SessionActionRequest(
+    val id: String,
+    val providerApprovalId: String,
+    val locator: SessionLocator,
+    val turnId: String?,
+    val type: AgentApprovalType,
+    val title: String,
+    val description: String?,
+    val command: String?,
+    val workingDirectory: String?,
+    val questions: List<SessionQuestion>,
+    val availableDecisions: Set<AgentApprovalDecision>,
+    val riskReasons: Set<SessionActionRisk>,
+    val receivedAtEpochMillis: Long,
+    val state: SessionActionState = SessionActionState.PENDING,
+    val decision: AgentApprovalDecision? = null,
+    val answeredQuestionIds: Set<String> = emptySet(),
+    val additionalConfirmationGiven: Boolean = false,
+    val decisionAtEpochMillis: Long? = null,
+) {
+    init {
+        requireBounded(id, "Action request id", MAX_ID_CHARS)
+        requireBounded(providerApprovalId, "Provider approval id", MAX_PROVIDER_REQUEST_ID_CHARS)
+        turnId?.let { requireBounded(it, "Action turn id", MAX_ID_CHARS) }
+        requireBounded(title, "Action title", MAX_TITLE_CHARS)
+        description?.let { requireBounded(it, "Action description", MAX_DESCRIPTION_CHARS) }
+        command?.let { requireBounded(it, "Action command", MAX_COMMAND_CHARS) }
+        workingDirectory?.let { requireBounded(it, "Action working directory", MAX_PATH_CHARS) }
+        require(questions.size <= MAX_QUESTIONS) { "Action request has too many questions" }
+        require(questions.distinctBy { it.id }.size == questions.size) {
+            "Action request contains duplicate questions"
+        }
+        require(availableDecisions.isNotEmpty()) { "Action request exposes no decisions" }
+        require(receivedAtEpochMillis >= 0L)
+        require(answeredQuestionIds.all { answer -> questions.any { it.id == answer } }) {
+            "Action decision references an unknown question"
+        }
+        when (state) {
+            SessionActionState.PENDING -> {
+                require(
+                    decision == null && decisionAtEpochMillis == null &&
+                        answeredQuestionIds.isEmpty() && !additionalConfirmationGiven,
+                ) {
+                    "A pending action cannot contain a decision"
+                }
+            }
+            SessionActionState.DELIVERING,
+            SessionActionState.RESOLVED,
+            -> {
+                require(decision != null && decisionAtEpochMillis != null) {
+                    "A delivered action requires decision audit data"
+                }
+                require(decision in availableDecisions) { "Action decision was not offered by the provider" }
+                require(decisionAtEpochMillis >= 0L)
+                require(decision == AgentApprovalDecision.SUBMIT || answeredQuestionIds.isEmpty()) {
+                    "Only submitted question answers may record answered question ids"
+                }
+                require(!requiresAdditionalConfirmation(decision) || additionalConfirmationGiven) {
+                    "A high-risk or session-wide approval requires additional confirmation"
+                }
+            }
+        }
+    }
+
+    val requiresAction: Boolean
+        get() = state != SessionActionState.RESOLVED
+
+    fun requiresAdditionalConfirmation(candidate: AgentApprovalDecision): Boolean =
+        candidate == AgentApprovalDecision.APPROVE_FOR_SESSION ||
+            (candidate in APPROVING_DECISIONS && riskReasons.isNotEmpty())
 }
 
 data class CachedTranscriptEntry(
@@ -148,6 +272,7 @@ data class SessionHubSnapshot(
     val drafts: Map<SessionLocator, SessionDraft> = emptyMap(),
     val activities: List<SessionActivity> = emptyList(),
     val transcripts: Map<SessionLocator, List<CachedTranscriptEntry>> = emptyMap(),
+    val actionRequests: List<SessionActionRequest> = emptyList(),
 ) {
     init {
         require(sessions.distinctBy { it.locator }.size == sessions.size) {
@@ -156,10 +281,20 @@ data class SessionHubSnapshot(
         require(activities.distinctBy { it.locator to it.id }.size == activities.size) {
             "Session snapshot contains duplicate activity identities"
         }
+        require(actionRequests.distinctBy { it.locator to it.id }.size == actionRequests.size) {
+            "Session snapshot contains duplicate action request identities"
+        }
         val locators = sessions.mapTo(mutableSetOf()) { it.locator }
         require(drafts.keys.all(locators::contains)) { "A draft references an unknown session" }
         require(activities.all { it.locator in locators }) { "Activity references an unknown session" }
         require(transcripts.keys.all(locators::contains)) { "A transcript references an unknown session" }
+        require(actionRequests.all { it.locator in locators }) { "An action request references an unknown session" }
+        val actionKeys = actionRequests.mapTo(mutableSetOf()) { it.locator to it.id }
+        require(
+            activities.all { activity ->
+                activity.actionRequestId == null || (activity.locator to activity.actionRequestId) in actionKeys
+            },
+        ) { "An activity references an unknown action request" }
         require(
             transcripts.values.all { entries ->
                 entries.distinctBy { it.id }.size == entries.size
@@ -168,6 +303,9 @@ data class SessionHubSnapshot(
     }
 
     fun session(locator: SessionLocator): SessionRecord? = sessions.firstOrNull { it.locator == locator }
+
+    fun actionRequest(locator: SessionLocator, id: String): SessionActionRequest? =
+        actionRequests.firstOrNull { it.locator == locator && it.id == id }
 
     fun recentSessions(includeArchived: Boolean = false): List<SessionRecord> =
         sessions
@@ -198,11 +336,13 @@ data class SessionRetentionPolicy(
     val maximumSessions: Int = 200,
     val maximumActivities: Int = 2_000,
     val maximumTranscriptEntriesPerSession: Int = 500,
+    val maximumActionRequests: Int = 2_000,
 ) {
     init {
         require(maximumSessions > 0)
         require(maximumActivities > 0)
         require(maximumTranscriptEntriesPerSession > 0)
+        require(maximumActionRequests > 0)
     }
 }
 
@@ -225,12 +365,26 @@ internal fun SessionHubSnapshot.normalized(policy: SessionRetentionPolicy): Sess
         .take(policy.maximumActivities)
         .sortedBy { it.occurredAtEpochMillis }
         .toList()
-    val unreadBySession = retainedActivities
+    val retainedActionRequests = actionRequests
+        .asSequence()
+        .filter { it.locator in retainedLocators }
+        .sortedWith(
+            compareByDescending<SessionActionRequest> { it.requiresAction }
+                .thenByDescending { it.receivedAtEpochMillis },
+        )
+        .take(policy.maximumActionRequests)
+        .sortedBy { it.receivedAtEpochMillis }
+        .toList()
+    val retainedActionKeys = retainedActionRequests.mapTo(mutableSetOf()) { it.locator to it.id }
+    val normalizedActivities = retainedActivities.filter { activity ->
+        activity.actionRequestId == null || (activity.locator to activity.actionRequestId) in retainedActionKeys
+    }
+    val unreadBySession = normalizedActivities
         .asSequence()
         .filterNot(SessionActivity::isRead)
         .groupingBy(SessionActivity::locator)
         .eachCount()
-    val newestActivityBySession = retainedActivities
+    val newestActivityBySession = normalizedActivities
         .groupBy(SessionActivity::locator)
         .mapValues { (_, values) -> values.maxOf(SessionActivity::occurredAtEpochMillis) }
     val normalizedSessions = retainedSessions.map { session ->
@@ -252,8 +406,9 @@ internal fun SessionHubSnapshot.normalized(policy: SessionRetentionPolicy): Sess
     return SessionHubSnapshot(
         sessions = normalizedSessions,
         drafts = drafts.filterKeys(retainedLocators::contains),
-        activities = retainedActivities,
+        activities = normalizedActivities,
         transcripts = normalizedTranscripts,
+        actionRequests = retainedActionRequests,
     )
 }
 
@@ -287,6 +442,18 @@ private const val MAX_PREVIEW_CHARS = 16_384
 private const val MAX_DRAFT_CHARS = 256 * 1024
 private const val MAX_ACTIVITY_CHARS = 16_384
 private const val MAX_TRANSCRIPT_ENTRY_CHARS = 1024 * 1024
+private const val MAX_DESCRIPTION_CHARS = 16_384
+private const val MAX_COMMAND_CHARS = 64 * 1024
+private const val MAX_QUESTIONS = 32
+private const val MAX_QUESTION_OPTIONS = 64
+private const val MAX_QUESTION_OPTION_CHARS = 4_096
+private const val MAX_PROVIDER_REQUEST_ID_CHARS = 4_096
 private const val MAX_METADATA_ENTRIES = 64
 private const val MAX_METADATA_KEY_CHARS = 256
 private const val MAX_METADATA_VALUE_CHARS = 4_096
+
+private val APPROVING_DECISIONS = setOf(
+    AgentApprovalDecision.APPROVE_ONCE,
+    AgentApprovalDecision.APPROVE_FOR_SESSION,
+    AgentApprovalDecision.SUBMIT,
+)

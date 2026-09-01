@@ -2,6 +2,8 @@ package dev.agentrelay.session.android
 
 import dev.agentrelay.connection.api.ConnectionProfileId
 import dev.agentrelay.connection.api.ConnectionProviderId
+import dev.agentrelay.provider.api.AgentApprovalDecision
+import dev.agentrelay.provider.api.AgentApprovalType
 import dev.agentrelay.provider.api.AgentMessageChannel
 import dev.agentrelay.provider.api.AgentProviderId
 import dev.agentrelay.provider.api.AgentSessionId
@@ -10,12 +12,17 @@ import dev.agentrelay.provider.api.AgentTranscriptRole
 import dev.agentrelay.session.api.CachedTranscriptEntry
 import dev.agentrelay.session.api.SessionActivity
 import dev.agentrelay.session.api.SessionActivityType
+import dev.agentrelay.session.api.SessionActionRequest
+import dev.agentrelay.session.api.SessionActionRisk
+import dev.agentrelay.session.api.SessionActionState
 import dev.agentrelay.session.api.SessionDraft
 import dev.agentrelay.session.api.SessionHubSnapshot
 import dev.agentrelay.session.api.SessionLocator
 import dev.agentrelay.session.api.SessionNotificationPriority
 import dev.agentrelay.session.api.SessionObservation
 import dev.agentrelay.session.api.SessionPreferences
+import dev.agentrelay.session.api.SessionQuestion
+import dev.agentrelay.session.api.SessionQuestionOption
 import dev.agentrelay.session.api.SessionRecord
 import dev.agentrelay.storage.android.SecureDocumentStore
 import dev.agentrelay.storage.android.SecureStoreCorruptException
@@ -86,6 +93,28 @@ class AndroidEncryptedSessionHubStoreTest {
         assertFailsWith<SecureStoreCorruptException> {
             store.load()
         }
+    }
+
+    @Test
+    fun legacyVersionOneDocumentWithoutActionFieldsStillLoads() = runTest {
+        val documents = InMemoryDocuments()
+        val store = AndroidEncryptedSessionHubStore(documents)
+        store.save(completeSnapshot())
+        val valid = Json.parseToJsonElement(documents.storedText()).jsonObject
+        val legacyActivities = JsonArray(
+            valid.getValue("activities").jsonArray.map { element ->
+                JsonObject(element.jsonObject - "actionRequestId")
+            },
+        )
+        val legacy = JsonObject(
+            (valid - "actionRequests") + ("activities" to legacyActivities),
+        )
+        documents.replace(legacy.toString().encodeToByteArray())
+
+        val restored = store.load()
+
+        assertTrue(restored.actionRequests.isEmpty())
+        assertEquals(null, restored.activities.single().actionRequestId)
     }
 
     private class InMemoryDocuments(initial: ByteArray? = null) : SecureDocumentStore {
@@ -173,6 +202,7 @@ class AndroidEncryptedSessionHubStoreTest {
                     type = SessionActivityType.APPROVAL_REQUIRED,
                     summary = "Command approval required",
                     eventAnchorId = "event-one",
+                    actionRequestId = "action-one",
                     occurredAtEpochMillis = 30L,
                 ),
             ),
@@ -197,6 +227,43 @@ class AndroidEncryptedSessionHubStoreTest {
                         text = "Inspect this project.",
                         createdAtEpochMillis = 19L,
                     ),
+                ),
+            ),
+            actionRequests = listOf(
+                SessionActionRequest(
+                    id = "action-one",
+                    providerApprovalId = "provider-approval-one",
+                    locator = ssh,
+                    turnId = "turn-one",
+                    type = AgentApprovalType.COMMAND,
+                    title = "Remove generated output",
+                    description = "Clean the generated output before rebuilding",
+                    command = "rm -rf /workspace/project/build",
+                    workingDirectory = "/workspace/project",
+                    questions = listOf(
+                        SessionQuestion(
+                            id = "question-scope",
+                            providerQuestionId = "scope",
+                            header = "Scope",
+                            prompt = "Apply once or for this session?",
+                            options = listOf(
+                                SessionQuestionOption("once", "Only this command"),
+                                SessionQuestionOption("session", "Similar commands this session"),
+                            ),
+                            allowsOther = false,
+                        ),
+                    ),
+                    availableDecisions = setOf(
+                        AgentApprovalDecision.SUBMIT,
+                        AgentApprovalDecision.CANCEL,
+                    ),
+                    riskReasons = setOf(SessionActionRisk.DESTRUCTIVE_COMMAND),
+                    receivedAtEpochMillis = 30L,
+                    state = SessionActionState.DELIVERING,
+                    decision = AgentApprovalDecision.SUBMIT,
+                    answeredQuestionIds = setOf("question-scope"),
+                    additionalConfirmationGiven = true,
+                    decisionAtEpochMillis = 31L,
                 ),
             ),
         )

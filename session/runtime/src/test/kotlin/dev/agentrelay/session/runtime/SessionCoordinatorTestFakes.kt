@@ -227,6 +227,7 @@ internal class FakeAgentConnection(
     val steeredInputs = mutableListOf<Pair<AgentSessionId, String>>()
     val interrupted = mutableListOf<AgentSessionId>()
     val approvalResponses = mutableListOf<Triple<AgentApprovalId, AgentApprovalDecision, Map<String, List<String>>>>()
+    var failApprovalResponses = false
 
     override suspend fun refreshSessions(): List<AgentSession> = sessions.value
 
@@ -288,6 +289,9 @@ internal class FakeAgentConnection(
         decision: AgentApprovalDecision,
         answers: Map<String, List<String>>,
     ) {
+        if (failApprovalResponses) {
+            error("Injected provider response failure with private transport details")
+        }
         approvalResponses += Triple(approvalId, decision, answers)
     }
 
