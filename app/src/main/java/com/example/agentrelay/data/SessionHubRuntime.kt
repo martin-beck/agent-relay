@@ -10,6 +10,7 @@ import dev.agentrelay.connection.api.ConnectionProviderId
 import dev.agentrelay.connection.api.ConnectionProviderRegistry
 
 import dev.agentrelay.connection.api.ConnectionProviderDescriptor
+import dev.agentrelay.session.api.SessionDraft
 import dev.agentrelay.session.api.SessionHubSnapshot
 import dev.agentrelay.session.api.SessionLocator
 import dev.agentrelay.session.runtime.SessionConnectionKey
@@ -46,6 +47,16 @@ internal interface SessionHubRuntime {
     ): Boolean
 
     suspend fun markSessionRead(locator: SessionLocator)
+
+    suspend fun updateDraft(locator: SessionLocator, draft: SessionDraft)
+
+    suspend fun resumeSession(locator: SessionLocator)
+
+    suspend fun sendInput(locator: SessionLocator, text: String)
+
+    suspend fun steerActiveTurn(locator: SessionLocator, text: String)
+
+    suspend fun interrupt(locator: SessionLocator)
 }
 
 internal class CoordinatorSessionHubRuntime(
@@ -93,5 +104,25 @@ internal class CoordinatorSessionHubRuntime(
 
     override suspend fun markSessionRead(locator: SessionLocator) {
         coordinator.repository.markSessionRead(locator)
+    }
+
+    override suspend fun updateDraft(locator: SessionLocator, draft: SessionDraft) {
+        coordinator.repository.updateDraft(locator, draft)
+    }
+
+    override suspend fun resumeSession(locator: SessionLocator) {
+        coordinator.attach(locator)
+    }
+
+    override suspend fun sendInput(locator: SessionLocator, text: String) {
+        coordinator.sendInput(locator, text)
+    }
+
+    override suspend fun steerActiveTurn(locator: SessionLocator, text: String) {
+        coordinator.steerActiveTurn(locator, text)
+    }
+
+    override suspend fun interrupt(locator: SessionLocator) {
+        coordinator.interrupt(locator)
     }
 }

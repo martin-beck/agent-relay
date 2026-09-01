@@ -20,15 +20,19 @@ import dev.agentrelay.connection.api.ConnectionState
 import dev.agentrelay.provider.api.AgentProviderId
 import dev.agentrelay.provider.api.AgentSessionId
 import dev.agentrelay.provider.api.AgentSessionState
+import dev.agentrelay.session.api.SessionDraft
 import dev.agentrelay.session.api.SessionHubSnapshot
 import dev.agentrelay.session.api.SessionLocator
 import dev.agentrelay.session.api.SessionObservation
 import dev.agentrelay.session.api.SessionRecord
 import dev.agentrelay.session.runtime.SessionConnectionKey
 import dev.agentrelay.session.runtime.SessionCoordinatorSnapshot
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -36,6 +40,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class MainScreenViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
@@ -144,6 +149,16 @@ class MainScreenViewModelTest {
             null,
             (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
         )
+        runtime.failRefresh = true
+        viewModel.refreshProfiles()
+        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+        assertEquals(
+            "Connection profiles could not be refreshed.",
+            (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
+        )
+        runtime.failRefresh = false
+        viewModel.clearOperationError()
+        mainDispatcherRule.dispatcher.scheduler.runCurrent()
 
         val stableConnectionKey =
             (viewModel.uiState.value as MainScreenUiState.Ready).hub.connections.single().stableKey
@@ -204,6 +219,324 @@ class MainScreenViewModelTest {
             (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
         )
 
+        viewModel.clearOperationError()
+        viewModel.submitSessionDraft("missing-session")
+        mainDispatcherRule.dispatcher.scheduler.runCurrent()
+        assertEquals(
+            "That session is no longer available.",
+            (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
+        )
+        viewModel.clearOperationError()
+        viewModel.updateSessionDraft("missing-session", "Keep this", 0, 9)
+        mainDispatcherRule.dispatcher.scheduler.runCurrent()
+        assertEquals(
+            "That session is no longer available.",
+            (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
+        )
+
+        viewModel.clearOperationError()
+        viewModel.resumeSession("missing-session")
+        mainDispatcherRule.dispatcher.scheduler.runCurrent()
+        assertEquals(
+            "That session is no longer available.",
+            (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
+        )
+
+        viewModel.viewModelScope.cancel()
+    }
+
+    @Test
+    fun draftValidationSaveFailureAndResumeStayProviderScoped() = runTest {
+        val providerId = ConnectionProviderId("local.device")
+        val key = SessionConnectionKey(providerId, ConnectionProfileId("this-device"))
+        val locator = SessionLocator(
+            connectionProviderId = providerId,
+            connectionProfileId = key.profileId,
+            agentProviderId = AgentProviderId("agent.codex"),
+            agentSessionId = AgentSessionId("saved-session"),
+        )
+        val runtime = FakeSessionHubRuntime(
+            providers = listOf(descriptor(providerId, "Local")),
+            coordinator = SessionCoordinatorSnapshot(profiles = listOf(profile(key, "This device"))),
+            sessions = SessionHubSnapshot(
+                sessions = listOf(session(locator, AgentSessionState.NOT_LOADED)),
+            ),
+        ).apply {
+            failDraftSave = true
+        }
+        val viewModel = MainScreenViewModel(clock = { -10L }) { runtime }
+        val scheduler = mainDispatcherRule.dispatcher.scheduler
+        scheduler.advanceUntilIdle()
+        val sessionKey = (viewModel.uiState.value as MainScreenUiState.Ready)
+            .hub.sessions.single().stableKey
+        viewModel.selectSession(sessionKey)
+        scheduler.runCurrent()
+
+        viewModel.submitSessionDraft(sessionKey)
+        scheduler.runCurrent()
+        assertEquals(
+            "Enter a message before sending.",
+            (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
+        )
+
+        viewModel.clearOperationError()
+        viewModel.updateSessionDraft(sessionKey, "x".repeat(32_001), 0, 0)
+        scheduler.runCurrent()
+        assertEquals(
+            "Session drafts are limited to 32000 characters.",
+            (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
+        )
+
+        viewModel.clearOperationError()
+        viewModel.updateSessionDraft(sessionKey, "Keep this saved", -5, 99)
+        scheduler.runCurrent()
+        val immediate = (viewModel.uiState.value as MainScreenUiState.Ready)
+            .hub.selectedSession?.composer
+        assertEquals(0, immediate?.selectionStart)
+        assertEquals(15, immediate?.selectionEnd)
+
+        scheduler.advanceTimeBy(300L)
+        scheduler.runCurrent()
+        val failedSave = viewModel.uiState.value as MainScreenUiState.Ready
+        assertEquals("The session draft could not be saved securely.", failedSave.hub.operationError)
+        assertEquals("Keep this saved", failedSave.hub.selectedSession?.composer?.draftText)
+        assertTrue(runtime.savedDrafts.isEmpty())
+
+        runtime.failDraftSave = false
+        viewModel.submitSessionDraft(sessionKey)
+        scheduler.advanceUntilIdle()
+        assertEquals(
+            "The session input could not be sent.",
+            (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
+        )
+        assertTrue(runtime.sent.isEmpty())
+        assertTrue(runtime.steered.isEmpty())
+
+        viewModel.resumeSession(sessionKey)
+        scheduler.advanceUntilIdle()
+        assertEquals(listOf(locator), runtime.resumed)
+
+        viewModel.viewModelScope.cancel()
+    }
+
+    @Test
+    fun sessionDraftIsImmediateDurableAndClearedOnlyAfterSuccessfulSend() = runTest {
+        val providerId = ConnectionProviderId("local.device")
+        val key = SessionConnectionKey(providerId, ConnectionProfileId("this-device"))
+        val locator = SessionLocator(
+            connectionProviderId = providerId,
+            connectionProfileId = key.profileId,
+            agentProviderId = AgentProviderId("agent.codex"),
+            agentSessionId = AgentSessionId("session-one"),
+        )
+        val runtime = FakeSessionHubRuntime(
+            providers = listOf(descriptor(providerId, "Local")),
+            coordinator = SessionCoordinatorSnapshot(profiles = listOf(profile(key, "This device"))),
+            sessions = SessionHubSnapshot(sessions = listOf(session(locator))),
+        )
+        val viewModel = MainScreenViewModel(clock = { 123L }) { runtime }
+        val scheduler = mainDispatcherRule.dispatcher.scheduler
+        scheduler.advanceUntilIdle()
+        val sessionKey = (viewModel.uiState.value as MainScreenUiState.Ready)
+            .hub.sessions.single().stableKey
+        viewModel.selectSession(sessionKey)
+        viewModel.updateSessionDraft(
+            sessionKey = sessionKey,
+            text = "Run the focused tests\nand report failures",
+            selectionStart = 4,
+            selectionEnd = 11,
+        )
+        scheduler.runCurrent()
+
+        val immediate = (viewModel.uiState.value as MainScreenUiState.Ready)
+            .hub.selectedSession?.composer
+        assertEquals("Run the focused tests\nand report failures", immediate?.draftText)
+        assertEquals(4, immediate?.selectionStart)
+        assertEquals(11, immediate?.selectionEnd)
+        assertTrue(runtime.savedDrafts.isEmpty())
+
+        scheduler.advanceTimeBy(300L)
+        scheduler.runCurrent()
+
+        assertEquals(locator, runtime.savedDrafts.single().first)
+        assertEquals(123L, runtime.savedDrafts.single().second.updatedAtEpochMillis)
+
+        viewModel.submitSessionDraft(sessionKey)
+        scheduler.advanceUntilIdle()
+
+        assertEquals(listOf(locator to "Run the focused tests\nand report failures"), runtime.sent)
+        assertEquals("", runtime.savedDrafts.last().second.text)
+        assertEquals(
+            "",
+            (viewModel.uiState.value as MainScreenUiState.Ready)
+                .hub.selectedSession?.composer?.draftText,
+        )
+        assertTrue(runtime.steered.isEmpty())
+
+        viewModel.viewModelScope.cancel()
+    }
+
+    @Test
+    fun failedImmediateSendKeepsDraftDurableAndVisible() = runTest {
+        val providerId = ConnectionProviderId("local.device")
+        val key = SessionConnectionKey(providerId, ConnectionProfileId("this-device"))
+        val locator = SessionLocator(
+            connectionProviderId = providerId,
+            connectionProfileId = key.profileId,
+            agentProviderId = AgentProviderId("agent.codex"),
+            agentSessionId = AgentSessionId("session-one"),
+        )
+        val runtime = FakeSessionHubRuntime(
+            providers = listOf(descriptor(providerId, "Local")),
+            coordinator = SessionCoordinatorSnapshot(profiles = listOf(profile(key, "This device"))),
+            sessions = SessionHubSnapshot(sessions = listOf(session(locator))),
+        ).apply {
+            failSend = true
+        }
+        val viewModel = MainScreenViewModel { runtime }
+        val scheduler = mainDispatcherRule.dispatcher.scheduler
+        scheduler.advanceUntilIdle()
+        val sessionKey = (viewModel.uiState.value as MainScreenUiState.Ready)
+            .hub.sessions.single().stableKey
+        viewModel.selectSession(sessionKey)
+        scheduler.runCurrent()
+
+        viewModel.updateSessionDraft(sessionKey, "Preserve this input", 19, 19)
+        scheduler.runCurrent()
+        viewModel.submitSessionDraft(sessionKey)
+        scheduler.advanceUntilIdle()
+
+        assertEquals("Preserve this input", runtime.savedDrafts.single().second.text)
+        val ready = viewModel.uiState.value as MainScreenUiState.Ready
+        assertEquals("Preserve this input", ready.hub.selectedSession?.composer?.draftText)
+        assertEquals("The session input could not be sent.", ready.hub.operationError)
+        assertTrue(runtime.sent.isEmpty())
+
+        viewModel.viewModelScope.cancel()
+    }
+
+    @Test
+    fun successfulSendReportsDraftCleanupFailureWithoutInvitingDuplicateDelivery() = runTest {
+        val providerId = ConnectionProviderId("local.device")
+        val key = SessionConnectionKey(providerId, ConnectionProfileId("this-device"))
+        val locator = SessionLocator(
+            connectionProviderId = providerId,
+            connectionProfileId = key.profileId,
+            agentProviderId = AgentProviderId("agent.codex"),
+            agentSessionId = AgentSessionId("session-one"),
+        )
+        val runtime = FakeSessionHubRuntime(
+            providers = listOf(descriptor(providerId, "Local")),
+            coordinator = SessionCoordinatorSnapshot(profiles = listOf(profile(key, "This device"))),
+            sessions = SessionHubSnapshot(sessions = listOf(session(locator))),
+        ).apply {
+            failDraftClear = true
+        }
+        val viewModel = MainScreenViewModel { runtime }
+        val scheduler = mainDispatcherRule.dispatcher.scheduler
+        scheduler.advanceUntilIdle()
+        val sessionKey = (viewModel.uiState.value as MainScreenUiState.Ready)
+            .hub.sessions.single().stableKey
+        viewModel.selectSession(sessionKey)
+        scheduler.runCurrent()
+
+        viewModel.updateSessionDraft(sessionKey, "Deliver once", 12, 12)
+        scheduler.runCurrent()
+        viewModel.submitSessionDraft(sessionKey)
+        scheduler.advanceUntilIdle()
+
+        val ready = viewModel.uiState.value as MainScreenUiState.Ready
+        assertEquals(listOf(locator to "Deliver once"), runtime.sent)
+        assertEquals("Deliver once", runtime.savedDrafts.single().second.text)
+        assertEquals("Deliver once", ready.hub.selectedSession?.composer?.draftText)
+        assertEquals(
+            "The message was delivered, but its saved draft could not be cleared securely.",
+            ready.hub.operationError,
+        )
+
+        viewModel.viewModelScope.cancel()
+    }
+
+    @Test
+    fun runningSessionRoutesSteeringAndInterruptThroughFullLocator() = runTest {
+        val providerId = ConnectionProviderId("ssh.secure-shell")
+        val key = SessionConnectionKey(providerId, ConnectionProfileId("shared-profile"))
+        val locator = SessionLocator(
+            connectionProviderId = providerId,
+            connectionProfileId = key.profileId,
+            agentProviderId = AgentProviderId("agent.codex"),
+            agentSessionId = AgentSessionId("shared-session"),
+        )
+        val draft = SessionDraft("Keep the current scope", 22, 22, 10)
+        val runtime = FakeSessionHubRuntime(
+            providers = listOf(descriptor(providerId, "Secure Shell")),
+            coordinator = SessionCoordinatorSnapshot(profiles = listOf(profile(key, "Test server"))),
+            sessions = SessionHubSnapshot(
+                sessions = listOf(session(locator, AgentSessionState.RUNNING)),
+                drafts = mapOf(locator to draft),
+            ),
+        )
+        val viewModel = MainScreenViewModel { runtime }
+        val scheduler = mainDispatcherRule.dispatcher.scheduler
+        scheduler.advanceUntilIdle()
+        val sessionKey = (viewModel.uiState.value as MainScreenUiState.Ready)
+            .hub.sessions.single().stableKey
+
+        viewModel.submitSessionDraft(sessionKey)
+        scheduler.advanceUntilIdle()
+        viewModel.interruptSession(sessionKey)
+        scheduler.advanceUntilIdle()
+
+        assertEquals(listOf(locator to draft.text), runtime.steered)
+        assertEquals(listOf(locator), runtime.interrupted)
+        assertTrue(runtime.sent.isEmpty())
+
+        viewModel.viewModelScope.cancel()
+    }
+
+    @Test
+    fun interactionEventsBeforeRuntimeInitializationAreSafeNoOps() = runTest {
+        val providerId = ConnectionProviderId("local.device")
+        val key = SessionConnectionKey(providerId, ConnectionProfileId("this-device"))
+        val locator = SessionLocator(
+            connectionProviderId = providerId,
+            connectionProfileId = key.profileId,
+            agentProviderId = AgentProviderId("agent.codex"),
+            agentSessionId = AgentSessionId("session-one"),
+        )
+        val runtime = FakeSessionHubRuntime(
+            providers = listOf(descriptor(providerId, "Local")),
+            coordinator = SessionCoordinatorSnapshot(profiles = listOf(profile(key, "This device"))),
+            sessions = SessionHubSnapshot(sessions = listOf(session(locator))),
+        )
+        val viewModel = MainScreenViewModel { runtime }
+
+        viewModel.refreshProfiles()
+        viewModel.connect(key.stableUiKey)
+        viewModel.updateSessionDraft(locator.stableUiKey, "Do not lose this", 0, 16)
+        viewModel.submitSessionDraft(locator.stableUiKey)
+        viewModel.resumeSession(locator.stableUiKey)
+        viewModel.interruptSession(locator.stableUiKey)
+        viewModel.addProfile(providerId.value)
+        viewModel.editProfile(key.stableUiKey)
+        viewModel.updateProfileField("profile-label", "Ignored")
+        viewModel.saveProfile()
+        viewModel.requestProfileDeletion()
+        viewModel.cancelProfileDeletion()
+        viewModel.deleteProfile()
+        viewModel.dismissProfileEditor()
+
+        assertEquals(MainScreenUiState.Loading, viewModel.uiState.value)
+        assertTrue(runtime.connected.isEmpty())
+        assertTrue(runtime.savedDrafts.isEmpty())
+        assertTrue(runtime.resumed.isEmpty())
+        assertTrue(runtime.interrupted.isEmpty())
+
+        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(1, runtime.refreshCount)
+        assertTrue(viewModel.uiState.value is MainScreenUiState.Ready)
+
         viewModel.viewModelScope.cancel()
     }
 
@@ -232,15 +565,23 @@ private class FakeSessionHubRuntime(
     override val connectionProviders = providers
     override val coordinatorSnapshot: StateFlow<SessionCoordinatorSnapshot> =
         MutableStateFlow(coordinator)
-    override val sessionSnapshot: StateFlow<SessionHubSnapshot> =
-        MutableStateFlow(sessions)
+    private val mutableSessionSnapshot = MutableStateFlow(sessions)
+    override val sessionSnapshot: StateFlow<SessionHubSnapshot> = mutableSessionSnapshot
     var failRefresh = false
     var failDisconnect = false
     var failMarkRead = false
+    var failDraftSave = false
+    var failDraftClear = false
+    var failSend = false
     var refreshCount = 0
     val connected = mutableListOf<SessionConnectionKey>()
     val markedRead = mutableListOf<SessionLocator>()
     val identityDecisions = mutableListOf<ConnectionIdentityDecision>()
+    val savedDrafts = mutableListOf<Pair<SessionLocator, SessionDraft>>()
+    val resumed = mutableListOf<SessionLocator>()
+    val sent = mutableListOf<Pair<SessionLocator, String>>()
+    val steered = mutableListOf<Pair<SessionLocator, String>>()
+    val interrupted = mutableListOf<SessionLocator>()
 
     override suspend fun refreshProfiles() {
         refreshCount += 1
@@ -284,6 +625,32 @@ private class FakeSessionHubRuntime(
         check(!failMarkRead)
         markedRead += locator
     }
+
+    override suspend fun updateDraft(locator: SessionLocator, draft: SessionDraft) {
+        check(!failDraftSave)
+        check(!failDraftClear || draft.text.isNotEmpty())
+        savedDrafts += locator to draft
+        mutableSessionSnapshot.value = mutableSessionSnapshot.value.copy(
+            drafts = mutableSessionSnapshot.value.drafts + (locator to draft),
+        )
+    }
+
+    override suspend fun resumeSession(locator: SessionLocator) {
+        resumed += locator
+    }
+
+    override suspend fun sendInput(locator: SessionLocator, text: String) {
+        check(!failSend)
+        sent += locator to text
+    }
+
+    override suspend fun steerActiveTurn(locator: SessionLocator, text: String) {
+        steered += locator to text
+    }
+
+    override suspend fun interrupt(locator: SessionLocator) {
+        interrupted += locator
+    }
 }
 
 private fun descriptor(
@@ -307,7 +674,10 @@ private fun profile(
     authenticationLabel = null,
 )
 
-private fun session(locator: SessionLocator) = SessionRecord(
+private fun session(
+    locator: SessionLocator,
+    state: AgentSessionState = AgentSessionState.IDLE,
+) = SessionRecord(
     observation = SessionObservation(
         locator = locator,
         connectionLabel = "Trusted server",
@@ -316,9 +686,10 @@ private fun session(locator: SessionLocator) = SessionRecord(
         agentProviderLabel = "Codex",
         title = "Session",
         preview = "Ready",
-        agentState = AgentSessionState.IDLE,
+        agentState = state,
         createdAtEpochMillis = 10,
         updatedAtEpochMillis = 20,
+        metadata = mapOf("can_accept_input" to "true"),
     ),
 )
 

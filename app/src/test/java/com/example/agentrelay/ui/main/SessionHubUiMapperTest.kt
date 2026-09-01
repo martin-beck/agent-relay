@@ -13,7 +13,9 @@ import dev.agentrelay.connection.api.ConnectionProfileSummary
 import dev.agentrelay.connection.api.ConnectionProviderDescriptor
 import dev.agentrelay.connection.api.ConnectionProviderId
 import dev.agentrelay.connection.api.ConnectionState
+import dev.agentrelay.provider.api.AgentCapability
 import dev.agentrelay.provider.api.AgentMessageChannel
+import dev.agentrelay.provider.api.AgentProviderDescriptor
 import dev.agentrelay.provider.api.AgentProviderId
 import dev.agentrelay.provider.api.AgentSessionId
 import dev.agentrelay.provider.api.AgentSessionState
@@ -21,10 +23,14 @@ import dev.agentrelay.provider.api.AgentTranscriptRole
 import dev.agentrelay.session.api.CachedTranscriptEntry
 import dev.agentrelay.session.api.SessionActivity
 import dev.agentrelay.session.api.SessionActivityType
+import dev.agentrelay.session.api.SessionDraft
 import dev.agentrelay.session.api.SessionHubSnapshot
 import dev.agentrelay.session.api.SessionLocator
 import dev.agentrelay.session.api.SessionObservation
 import dev.agentrelay.session.api.SessionRecord
+import dev.agentrelay.session.runtime.AgentEndpointKey
+import dev.agentrelay.session.runtime.AgentEndpointPhase
+import dev.agentrelay.session.runtime.AgentEndpointStatus
 import dev.agentrelay.session.runtime.SessionConnectionKey
 import dev.agentrelay.session.runtime.SessionCoordinatorIssue
 import dev.agentrelay.session.runtime.SessionCoordinatorIssueKind
@@ -105,10 +111,200 @@ class SessionHubUiMapperTest {
         assertEquals(1, mapped.selectedSession?.session?.requiresActionCount)
         assertEquals(32_000, mapped.selectedSession?.transcript?.single()?.text?.length)
         assertTrue(mapped.selectedSession?.transcript?.single()?.wasTruncated == true)
+        assertEquals("Final answer", mapped.selectedSession?.transcript?.single()?.roleLabel)
+        assertEquals(TimelineEntryKind.AGENT_FINAL, mapped.selectedSession?.transcript?.single()?.kind)
         assertFalse(mapped.sessions.single { it.title == "Local session" }.stableKey == sshLocator.stableUiKey)
         assertEquals(listOf("Secure Shell"), mapped.manageableConnectionProviders.map { it.name })
         assertFalse(mapped.connections.single { it.providerName == "Local" }.canEdit)
         assertTrue(mapped.connections.single { it.providerName == "Secure Shell" }.canEdit)
+    }
+
+    @Test
+    fun transcriptRolesAndChannelsMapToDistinctTimelineKinds() {
+        val connectionProviderId = ConnectionProviderId("local.device")
+        val profileId = ConnectionProfileId("this-device")
+        val sessionLocator = locator(connectionProviderId, profileId)
+        val cases = listOf(
+            Triple(
+                AgentTranscriptRole.USER,
+                null,
+                TimelineEntryKind.USER_MESSAGE to "You",
+            ),
+            Triple(
+                AgentTranscriptRole.TOOL,
+                null,
+                TimelineEntryKind.TOOL to "Tool",
+            ),
+            Triple(
+                AgentTranscriptRole.SYSTEM,
+                null,
+                TimelineEntryKind.SYSTEM to "System",
+            ),
+            Triple(
+                AgentTranscriptRole.AGENT,
+                AgentMessageChannel.COMMENTARY,
+                TimelineEntryKind.AGENT_COMMENTARY to "Agent commentary",
+            ),
+            Triple(
+                AgentTranscriptRole.AGENT,
+                AgentMessageChannel.FINAL,
+                TimelineEntryKind.AGENT_FINAL to "Final answer",
+            ),
+            Triple(
+                AgentTranscriptRole.AGENT,
+                AgentMessageChannel.PLAN,
+                TimelineEntryKind.PLAN to "Plan",
+            ),
+            Triple(
+                AgentTranscriptRole.AGENT,
+                AgentMessageChannel.REASONING_SUMMARY,
+                TimelineEntryKind.REASONING_SUMMARY to "Reasoning summary",
+            ),
+            Triple(
+                AgentTranscriptRole.AGENT,
+                AgentMessageChannel.SYSTEM,
+                TimelineEntryKind.SYSTEM to "System",
+            ),
+        )
+        val snapshot = SessionHubSnapshot(
+            sessions = listOf(record(sessionLocator, "Typed timeline", "This device")),
+            transcripts = mapOf(
+                sessionLocator to cases.mapIndexed { index, (role, channel, _) ->
+                    CachedTranscriptEntry(
+                        id = "entry-$index",
+                        turnId = null,
+                        role = role,
+                        channel = channel,
+                        text = "Entry $index",
+                        createdAtEpochMillis = index.toLong(),
+                    )
+                },
+            ),
+        )
+
+        val mapped = SessionHubUiMapper.map(
+            coordinator = SessionCoordinatorSnapshot(
+                profiles = listOf(profile(connectionProviderId, profileId, "This device")),
+            ),
+            sessions = snapshot,
+            connectionProviders = listOf(descriptor(connectionProviderId, "Local")),
+            selectedSessionKey = sessionLocator.stableUiKey,
+            operationError = null,
+            busyConnectionKeys = emptySet(),
+        )
+
+        assertEquals(
+            cases.map { it.third },
+            mapped.selectedSession?.transcript?.map { it.kind to it.roleLabel },
+        )
+    }
+
+    @Test
+    fun composerActionsFollowEndpointCapabilitiesAndDurableSessionState() {
+        val connectionProviderId = ConnectionProviderId("local.device")
+        val profileId = ConnectionProfileId("this-device")
+        val sessionLocator = locator(connectionProviderId, profileId)
+        val connectionKey = SessionConnectionKey(connectionProviderId, profileId)
+        val endpointKey = AgentEndpointKey(connectionKey, sessionLocator.agentProviderId)
+        val draft = SessionDraft(
+            text = "Check the focused tests",
+            selectionStart = 2,
+            selectionEnd = 7,
+            updatedAtEpochMillis = 10,
+        )
+
+        fun composer(
+            state: AgentSessionState,
+            capabilities: Set<AgentCapability>,
+            canAcceptInput: Boolean = true,
+            busy: Boolean = false,
+        ): SessionComposerUiModel {
+            val agentDescriptor = AgentProviderDescriptor(
+                id = sessionLocator.agentProviderId,
+                displayName = "Codex",
+                providerVersion = "1.0",
+                capabilities = capabilities,
+            )
+            val sessions = SessionHubSnapshot(
+                sessions = listOf(
+                    record(
+                        locator = sessionLocator,
+                        title = "Provider-aware interaction",
+                        connectionLabel = "This device",
+                        state = state,
+                        canAcceptInput = canAcceptInput,
+                    ),
+                ),
+                drafts = mapOf(sessionLocator to draft),
+            )
+            return checkNotNull(
+                SessionHubUiMapper.map(
+                    coordinator = SessionCoordinatorSnapshot(
+                        profiles = listOf(profile(connectionProviderId, profileId, "This device")),
+                        agentEndpoints = mapOf(
+                            endpointKey to AgentEndpointStatus(
+                                key = endpointKey,
+                                descriptor = agentDescriptor,
+                                phase = AgentEndpointPhase.READY,
+                                updatedAtEpochMillis = 20,
+                            ),
+                        ),
+                    ),
+                    sessions = sessions,
+                    connectionProviders = listOf(descriptor(connectionProviderId, "Local")),
+                    selectedSessionKey = sessionLocator.stableUiKey,
+                    operationError = null,
+                    busyConnectionKeys = emptySet(),
+                    busySessionKeys = if (busy) setOf(sessionLocator.stableUiKey) else emptySet(),
+                ).selectedSession?.composer,
+            )
+        }
+
+        val idle = composer(AgentSessionState.IDLE, emptySet())
+        assertEquals("Check the focused tests", idle.draftText)
+        assertEquals(2, idle.selectionStart)
+        assertEquals(7, idle.selectionEnd)
+        assertEquals(SessionSubmitMode.SEND, idle.submitMode)
+        assertTrue(idle.canSubmit)
+
+        val running = composer(
+            AgentSessionState.RUNNING,
+            setOf(AgentCapability.ACTIVE_TURN_STEERING, AgentCapability.TURN_INTERRUPT),
+        )
+        assertEquals(SessionSubmitMode.STEER, running.submitMode)
+        assertTrue(running.canSubmit)
+        assertTrue(running.canInterrupt)
+
+        val saved = composer(AgentSessionState.NOT_LOADED, setOf(AgentCapability.SESSION_RESUME))
+        assertTrue(saved.canResume)
+        assertFalse(saved.canSubmit)
+        assertTrue(saved.statusMessage?.contains("Resume") == true)
+
+        val unsupportedSteering = composer(AgentSessionState.RUNNING, emptySet())
+        assertFalse(unsupportedSteering.canSubmit)
+        assertTrue(unsupportedSteering.statusMessage?.contains("cannot steer") == true)
+
+        val busy = composer(AgentSessionState.IDLE, emptySet(), busy = true)
+        assertTrue(busy.isBusy)
+        assertFalse(busy.canSubmit)
+        val waiting = composer(
+            AgentSessionState.WAITING_FOR_APPROVAL,
+            setOf(AgentCapability.TURN_INTERRUPT),
+        )
+        assertTrue(waiting.canInterrupt)
+        assertTrue(waiting.statusMessage?.contains("pending approval") == true)
+
+        val unsupportedResume = composer(AgentSessionState.NOT_LOADED, emptySet())
+        assertFalse(unsupportedResume.canResume)
+        assertTrue(unsupportedResume.statusMessage?.contains("cannot safely resume") == true)
+
+        val readOnly = composer(
+            AgentSessionState.IDLE,
+            emptySet(),
+            canAcceptInput = false,
+        )
+        assertFalse(readOnly.canSubmit)
+        assertTrue(readOnly.statusMessage?.contains("read-only") == true)
     }
 
     @Test
@@ -279,6 +475,8 @@ private fun record(
     locator: SessionLocator,
     title: String?,
     connectionLabel: String,
+    state: AgentSessionState = AgentSessionState.IDLE,
+    canAcceptInput: Boolean = false,
 ) = SessionRecord(
     observation = SessionObservation(
         locator = locator,
@@ -288,9 +486,10 @@ private fun record(
         agentProviderLabel = "Codex",
         title = title,
         preview = "Session preview",
-        agentState = AgentSessionState.IDLE,
+        agentState = state,
         createdAtEpochMillis = 1,
         updatedAtEpochMillis = 2,
+        metadata = mapOf("can_accept_input" to canAcceptInput.toString()),
     ),
 )
 

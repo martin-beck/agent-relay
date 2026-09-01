@@ -67,11 +67,15 @@ local access, profiles, or future connection types.
    and
 6. the Compose layer observes durable state and sends capability-checked actions.
 
-All six layers are now connected for the first read-oriented session-hub slice.
+All six layers are now connected for the first interactive session-hub slice.
 An application-scoped graph owns encrypted store construction and registers both
 Local and Secure Shell plus all implemented agent factories. A navigation-scoped
 ViewModel combines coordinator and durable repository snapshots so destinations
 do not create duplicate runtimes or state authorities.
+Composer edits use an in-memory projection for immediate feedback while the
+ViewModel debounces writes to the encrypted session repository. Submission
+flushes the exact draft before provider I/O and clears it only after successful
+delivery; a failed action retains the durable draft and a sanitized UI error.
 
 Profile setup follows a separate provider-neutral path: Compose edits generic
 text, port, secret, choice, and read-only fields; the selected provider validates

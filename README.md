@@ -8,10 +8,10 @@ is another, and future connection types can implement the same boundary.
 
 > [!WARNING]
 > Agent Relay is an early development preview. The provider, connection, secure
-> storage, session coordination, and first adaptive session-hub UI are
-> implemented and tested. The composer, approvals, artifacts, background
-> delivery, and release hardening are not complete. The
-> APK is not yet a supported release.
+> storage, session coordination, adaptive session hub, and capability-gated text
+> composer are implemented and tested. Approval decisions, artifacts, offline
+> speech, background delivery, and release hardening are not complete. The APK
+> is not yet a supported release.
 
 This is a private, invite-only project. Access to the repository does not grant
 permission to redistribute source code, APKs, or project artifacts.
@@ -26,7 +26,7 @@ permission to redistribute source code, APKs, or project artifacts.
 | Codex, OpenCode, Continue, Claude, Cline, and Aider adapters | Implemented with contract tests; live checks where available |
 | Encrypted session hub and runtime coordinator | Implemented and unit tested |
 | Quality gates | Detekt, strict lint/Kotlin warnings, dependency analysis, 70% aggregate coverage, property tests, and bounded fuzzing |
-| Adaptive Compose UI and app integration | Provider-neutral connection/profile setup, session list, and transcript/activity detail implemented |
+| Adaptive Compose UI and app integration | Provider-neutral setup, typed timeline, durable text composer, and capability-gated resume/send/steer/interrupt implemented |
 | Signed release build and distribution | Not available |
 
 See the [product roadmap](docs/PRODUCT_ROADMAP.md) for planned behavior and
@@ -64,9 +64,12 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 The installed app opens the adaptive session hub, automatically exposes the
 app-sandboxed local profile, and can create or edit encrypted SSH profiles with
-password, imported-key, or Android Keystore authentication. Read [Installing](docs/INSTALLING.md)
-for artifact and device instructions and
-[Usage](docs/USAGE.md) for the exact implemented user-facing behavior.
+password, imported-key, or Android Keystore authentication. Session detail
+provides a typed timeline and one encrypted draft per provider-scoped session;
+resume, send, steering, and interruption appear only when the selected provider
+and session state support them. Read [Installing](docs/INSTALLING.md) for
+artifact and device instructions and [Usage](docs/USAGE.md) for the exact
+implemented behavior.
 
 ## Design
 

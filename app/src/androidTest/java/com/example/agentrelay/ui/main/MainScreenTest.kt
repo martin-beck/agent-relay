@@ -8,11 +8,13 @@ import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.accessibility.enableAccessibilityChecks
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.tryPerformAccessibilityChecks
 import androidx.compose.ui.unit.dp
 import androidx.test.filters.SdkSuppress
@@ -117,8 +119,33 @@ class MainScreenTest {
         }
 
         composeTestRule.onNodeWithText("Connections").assertExists()
-        composeTestRule.onNodeWithText("Transcript").assertExists()
+        composeTestRule.onNodeWithText("Timeline").assertExists()
         composeTestRule.onNodeWithText("Cached agent output").assertExists()
+    }
+
+    @Test
+    fun expandedComposerEditsSteersAndInterruptsSelectedSession() {
+        val recorder = ActionRecorder()
+        composeTestRule.setContent {
+            AgentRelayTheme {
+                MainScreenContent(
+                    state = MainScreenUiState.Ready(interactiveHub()),
+                    actions = recorder.actions(),
+                    modifier = Modifier.requiredSize(width = 1_000.dp, height = 820.dp),
+                )
+            }
+        }
+
+        composeTestRule
+            .onNodeWithTag("session-composer-input")
+            .performTextReplacement("Keep the provider-neutral scope")
+        composeTestRule.onNodeWithText("Steer active turn").performClick()
+        composeTestRule.onNodeWithText("Interrupt turn").performClick()
+
+        check(recorder.updatedDraft?.first == "session-key")
+        check(recorder.updatedDraft?.second == "Keep the provider-neutral scope")
+        check(recorder.submittedSession == "session-key")
+        check(recorder.interruptedSession == "session-key")
     }
 
     @Test
@@ -190,6 +217,10 @@ private class ActionRecorder {
     var updatedField: Pair<String, String>? = null
     var deleteRequested = false
     var deleteCancelled = false
+    var updatedDraft: Pair<String, String>? = null
+    var submittedSession: String? = null
+    var resumedSession: String? = null
+    var interruptedSession: String? = null
 
     fun actions() = SessionHubActions(
         retry = { retryCount++ },
@@ -209,6 +240,10 @@ private class ActionRecorder {
         updateProfileField = { id, value -> updatedField = id to value },
         requestProfileDeletion = { deleteRequested = true },
         cancelProfileDeletion = { deleteCancelled = true },
+        updateSessionDraft = { key, text, _, _ -> updatedDraft = key to text },
+        submitSessionDraft = { submittedSession = it },
+        resumeSession = { resumedSession = it },
+        interruptSession = { interruptedSession = it },
     )
 }
 
@@ -289,10 +324,20 @@ private fun testHub(): SessionHubUiModel {
                 TranscriptEntryUiModel(
                     id = "transcript",
                     roleLabel = "Agent",
+                    kind = TimelineEntryKind.AGENT_COMMENTARY,
                     text = "Cached agent output",
                     wasTruncated = false,
                     createdAtEpochMillis = 1_788_200_000_000,
                 ),
+            ),
+            composer = SessionComposerUiModel(
+                draftText = "Review the pending decision",
+                selectionStart = 27,
+                selectionEnd = 27,
+                submitMode = SessionSubmitMode.SEND,
+                canSubmit = false,
+                canInterrupt = true,
+                statusMessage = "Resolve the pending approval or question before sending more input.",
             ),
         ),
         selectedSessionKey = "session-key",
@@ -307,6 +352,32 @@ private fun testHub(): SessionHubUiModel {
     )
 }
 
+private fun interactiveHub(): SessionHubUiModel {
+    val hub = testHub()
+    val detail = checkNotNull(hub.selectedSession)
+    val runningSession = detail.session.copy(
+        agentState = AgentSessionState.RUNNING,
+        requiresActionCount = 0,
+    )
+    return hub.copy(
+        sessions = hub.sessions.map { session ->
+            if (session.stableKey == runningSession.stableKey) runningSession else session
+        },
+        selectedSession = detail.copy(
+            session = runningSession,
+            activities = emptyList(),
+            composer = SessionComposerUiModel(
+                draftText = "Keep the current scope",
+                selectionStart = 22,
+                selectionEnd = 22,
+                submitMode = SessionSubmitMode.STEER,
+                canSubmit = true,
+                canInterrupt = true,
+                statusMessage = null,
+            ),
+        ),
+    )
+}
 private fun testEditor() = ConnectionProfileEditorUiState.Editing(
     providerId = "ssh.secure-shell",
     profileId = "ssh-profile",

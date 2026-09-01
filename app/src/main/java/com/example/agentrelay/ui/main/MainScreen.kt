@@ -48,6 +48,10 @@ internal fun MainScreen(
             requestProfileDeletion = viewModel::requestProfileDeletion,
             cancelProfileDeletion = viewModel::cancelProfileDeletion,
             deleteProfile = viewModel::deleteProfile,
+            updateSessionDraft = viewModel::updateSessionDraft,
+            submitSessionDraft = viewModel::submitSessionDraft,
+            resumeSession = viewModel::resumeSession,
+            interruptSession = viewModel::interruptSession,
         )
     }
     MainScreenContent(
@@ -130,6 +134,10 @@ private fun AdaptiveSessionHub(
                 SessionDetailPane(
                     detail = hub.selectedSession,
                     modifier = Modifier.weight(0.56f),
+                    onDraftChanged = actions.updateSessionDraft,
+                    onSubmitDraft = actions.submitSessionDraft,
+                    onResumeSession = actions.resumeSession,
+                    onInterruptSession = actions.interruptSession,
                 )
             }
         } else {
@@ -162,6 +170,10 @@ internal data class SessionHubActions(
     val requestProfileDeletion: () -> Unit = {},
     val cancelProfileDeletion: () -> Unit = {},
     val deleteProfile: () -> Unit = {},
+    val updateSessionDraft: (String, String, Int, Int) -> Unit = { _, _, _, _ -> },
+    val submitSessionDraft: (String) -> Unit = {},
+    val resumeSession: (String) -> Unit = {},
+    val interruptSession: (String) -> Unit = {},
 )
 
 @Preview(showBackground = true)
