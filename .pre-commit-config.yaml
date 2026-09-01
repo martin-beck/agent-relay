@@ -94,7 +94,7 @@ repos:
         stages: [manual]
 
   - repo: https://github.com/crate-ci/typos
-    rev: c8866b658f1eb6ff60473fee711ef5304c63f898  # frozen: v1.50.1
+    rev: b859c0df7f391deba73030f79b957e62b4d81dc6  # frozen: varcon-core-v5.0.7
     hooks:
       - id: typos
         args: ["--force-exclude"]
