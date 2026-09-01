@@ -20,6 +20,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.agentrelay.theme.AgentRelayTheme
+import dev.agentrelay.provider.api.AgentApprovalDecision
 import dev.agentrelay.provider.api.AgentSessionState
 
 @Composable
@@ -52,6 +53,12 @@ internal fun MainScreen(
             submitSessionDraft = viewModel::submitSessionDraft,
             resumeSession = viewModel::resumeSession,
             interruptSession = viewModel::interruptSession,
+            openSessionCreator = viewModel::openSessionCreator,
+            updateSessionCreatorWorkingDirectory = viewModel::updateSessionCreatorWorkingDirectory,
+            updateSessionCreatorModel = viewModel::updateSessionCreatorModel,
+            dismissSessionCreator = viewModel::dismissSessionCreator,
+            startSession = viewModel::startSession,
+            respondToAction = viewModel::respondToAction,
         )
     }
     MainScreenContent(
@@ -104,6 +111,15 @@ internal fun MainScreenContent(
             state.profileEditor?.let { editor ->
                 ConnectionProfileEditorDialog(editor, actions)
             }
+            state.sessionCreator?.let { creator ->
+                SessionCreatorDialog(
+                    state = creator,
+                    onWorkingDirectoryChanged = actions.updateSessionCreatorWorkingDirectory,
+                    onModelChanged = actions.updateSessionCreatorModel,
+                    onDismiss = actions.dismissSessionCreator,
+                    onStart = actions.startSession,
+                )
+            }
         }
     }
 }
@@ -138,6 +154,7 @@ private fun AdaptiveSessionHub(
                     onSubmitDraft = actions.submitSessionDraft,
                     onResumeSession = actions.resumeSession,
                     onInterruptSession = actions.interruptSession,
+                    onRespondToAction = actions.respondToAction,
                 )
             }
         } else {
@@ -174,6 +191,18 @@ internal data class SessionHubActions(
     val submitSessionDraft: (String) -> Unit = {},
     val resumeSession: (String) -> Unit = {},
     val interruptSession: (String) -> Unit = {},
+    val openSessionCreator: (String) -> Unit = {},
+    val updateSessionCreatorWorkingDirectory: (String) -> Unit = {},
+    val updateSessionCreatorModel: (String) -> Unit = {},
+    val dismissSessionCreator: () -> Unit = {},
+    val startSession: () -> Unit = {},
+    val respondToAction: (
+        String,
+        String,
+        AgentApprovalDecision,
+        Map<String, List<String>>,
+        Boolean,
+    ) -> Unit = { _, _, _, _, _ -> },
 )
 
 @Preview(showBackground = true)

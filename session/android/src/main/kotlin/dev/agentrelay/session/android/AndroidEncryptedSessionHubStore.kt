@@ -3,11 +3,11 @@ package dev.agentrelay.session.android
 import android.content.Context
 import dev.agentrelay.connection.api.ConnectionProfileId
 import dev.agentrelay.connection.api.ConnectionProviderId
-import dev.agentrelay.provider.api.AgentMessageChannel
 import dev.agentrelay.provider.api.AgentProviderId
 import dev.agentrelay.provider.api.AgentSessionId
 import dev.agentrelay.session.api.CachedTranscriptEntry
 import dev.agentrelay.session.api.SessionActivity
+import dev.agentrelay.session.api.SessionActionRequest
 import dev.agentrelay.session.api.SessionDraft
 import dev.agentrelay.session.api.SessionHubSnapshot
 import dev.agentrelay.session.api.SessionHubStore
@@ -91,10 +91,11 @@ private data class SessionHubDocument(
     val drafts: List<SessionDraftDocument>,
     val activities: List<SessionActivityDocument>,
     val transcripts: List<SessionTranscriptDocument>,
+    val actionRequests: List<SessionActionRequestDocument> = emptyList(),
 )
 
 @Serializable
-private data class SessionLocatorDocument(
+internal data class SessionLocatorDocument(
     val connectionProviderId: String,
     val connectionProfileId: String,
     val agentProviderId: String,
@@ -150,10 +151,50 @@ private data class SessionActivityDocument(
     val occurredAtEpochMillis: Long,
     val isRead: Boolean,
     val isResolved: Boolean,
+    val actionRequestId: String? = null,
 )
 
 @Serializable
-private data class CachedTranscriptEntryDocument(
+internal data class SessionQuestionOptionDocument(
+    val label: String,
+    val description: String?,
+)
+
+@Serializable
+internal data class SessionQuestionDocument(
+    val id: String,
+    val providerQuestionId: String,
+    val header: String?,
+    val prompt: String,
+    val options: List<SessionQuestionOptionDocument>,
+    val allowsOther: Boolean,
+    val allowsMultiple: Boolean,
+)
+
+@Serializable
+internal data class SessionActionRequestDocument(
+    val id: String,
+    val providerApprovalId: String,
+    val locator: SessionLocatorDocument,
+    val turnId: String?,
+    val type: String,
+    val title: String,
+    val description: String?,
+    val command: String?,
+    val workingDirectory: String?,
+    val questions: List<SessionQuestionDocument>,
+    val availableDecisions: List<String>,
+    val riskReasons: List<String>,
+    val receivedAtEpochMillis: Long,
+    val state: String,
+    val decision: String?,
+    val answeredQuestionIds: List<String>,
+    val additionalConfirmationGiven: Boolean,
+    val decisionAtEpochMillis: Long?,
+)
+
+@Serializable
+internal data class CachedTranscriptEntryDocument(
     val id: String,
     val turnId: String?,
     val role: String,
@@ -180,6 +221,7 @@ private fun SessionHubSnapshot.toDocument() = SessionHubDocument(
             entries = entries.map(CachedTranscriptEntry::toDocument),
         )
     },
+    actionRequests = actionRequests.map(SessionActionRequest::toDocument),
 )
 
 private fun SessionHubDocument.toDomain(): SessionHubSnapshot {
@@ -196,17 +238,18 @@ private fun SessionHubDocument.toDomain(): SessionHubSnapshot {
         drafts = restoredDrafts,
         activities = activities.map(SessionActivityDocument::toDomain),
         transcripts = restoredTranscripts,
+        actionRequests = actionRequests.map(SessionActionRequestDocument::toDomain),
     )
 }
 
-private fun SessionLocator.toDocument() = SessionLocatorDocument(
+internal fun SessionLocator.toDocument() = SessionLocatorDocument(
     connectionProviderId = connectionProviderId.value,
     connectionProfileId = connectionProfileId.value,
     agentProviderId = agentProviderId.value,
     agentSessionId = agentSessionId.value,
 )
 
-private fun SessionLocatorDocument.toDomain() = SessionLocator(
+internal fun SessionLocatorDocument.toDomain() = SessionLocator(
     connectionProviderId = ConnectionProviderId(connectionProviderId),
     connectionProfileId = ConnectionProfileId(connectionProfileId),
     agentProviderId = AgentProviderId(agentProviderId),
@@ -291,6 +334,7 @@ private fun SessionActivity.toDocument() = SessionActivityDocument(
     occurredAtEpochMillis = occurredAtEpochMillis,
     isRead = isRead,
     isResolved = isResolved,
+    actionRequestId = actionRequestId,
 )
 
 private fun SessionActivityDocument.toDomain() = SessionActivity(
@@ -302,26 +346,7 @@ private fun SessionActivityDocument.toDomain() = SessionActivity(
     occurredAtEpochMillis = occurredAtEpochMillis,
     isRead = isRead,
     isResolved = isResolved,
-)
-
-private fun CachedTranscriptEntry.toDocument() = CachedTranscriptEntryDocument(
-    id = id,
-    turnId = turnId,
-    role = role.name,
-    channel = channel?.name,
-    text = text,
-    createdAtEpochMillis = createdAtEpochMillis,
-    metadata = metadata,
-)
-
-private fun CachedTranscriptEntryDocument.toDomain() = CachedTranscriptEntry(
-    id = id,
-    turnId = turnId,
-    role = enumValue(role),
-    channel = channel?.let { enumValue<AgentMessageChannel>(it) },
-    text = text,
-    createdAtEpochMillis = createdAtEpochMillis,
-    metadata = metadata,
+    actionRequestId = actionRequestId,
 )
 
 private fun <T, K> List<T>.requireUniqueBy(

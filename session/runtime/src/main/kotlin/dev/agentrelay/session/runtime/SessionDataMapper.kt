@@ -1,6 +1,7 @@
 package dev.agentrelay.session.runtime
 
 import dev.agentrelay.connection.api.ConnectionProfileSummary
+import dev.agentrelay.provider.api.AgentApproval
 import dev.agentrelay.provider.api.AgentApprovalType
 import dev.agentrelay.provider.api.AgentEvent
 import dev.agentrelay.provider.api.AgentProviderDescriptor
@@ -12,16 +13,26 @@ import dev.agentrelay.provider.api.AgentTranscriptRole
 import dev.agentrelay.session.api.CachedTranscriptEntry
 import dev.agentrelay.session.api.SessionActivity
 import dev.agentrelay.session.api.SessionActivityType
+import dev.agentrelay.session.api.SessionActionRequest
+import dev.agentrelay.session.api.SessionActionRisk
 import dev.agentrelay.session.api.SessionLocator
 import dev.agentrelay.session.api.SessionObservation
+import dev.agentrelay.session.api.SessionQuestion
+import dev.agentrelay.session.api.SessionQuestionOption
 import java.security.MessageDigest
+import java.util.Locale
 
 internal data class SessionEventProjection(
     val activity: SessionActivity? = null,
     val transcriptEntry: CachedTranscriptEntry? = null,
+    val actionRequest: SessionActionRequest? = null,
     val state: AgentSessionState? = null,
     val preview: String? = null,
-)
+) {
+    val isEmpty: Boolean
+        get() = listOf(activity, transcriptEntry, actionRequest, state, preview)
+            .all { it == null }
+}
 
 internal object SessionDataMapper {
     fun locator(
@@ -146,27 +157,7 @@ internal object SessionDataMapper {
                 )
             }
         }
-        is AgentEvent.ApprovalRequested -> {
-            val anchor = boundedIdentifier("approval", event.approval.id.value)
-            val question = event.approval.type == AgentApprovalType.USER_INPUT ||
-                event.approval.questions.isNotEmpty()
-            val summary = nonBlankSummary(
-                event.approval.title,
-                if (question) "Agent question requires an answer" else "Agent approval required",
-            )
-            SessionEventProjection(
-                activity = SessionActivity(
-                    id = ("approval:" + anchor).boundedActivityId(),
-                    locator = locator,
-                    type = if (question) SessionActivityType.QUESTION else SessionActivityType.APPROVAL_REQUIRED,
-                    summary = summary,
-                    eventAnchorId = anchor,
-                    occurredAtEpochMillis = now,
-                ),
-                state = AgentSessionState.WAITING_FOR_APPROVAL,
-                preview = summary,
-            )
-        }
+        is AgentEvent.ApprovalRequested -> approvalEvent(event, locator, now)
         is AgentEvent.FileChanged -> SessionEventProjection()
         is AgentEvent.TurnCompleted -> {
             val anchor = boundedIdentifier(
@@ -213,6 +204,139 @@ internal object SessionDataMapper {
             )
         }
     }
+
+    private fun approvalEvent(
+        event: AgentEvent.ApprovalRequested,
+        locator: SessionLocator,
+        now: Long,
+    ): SessionEventProjection {
+        val request = actionRequest(event.approval, locator, now)
+        val question = event.approval.type == AgentApprovalType.USER_INPUT ||
+            event.approval.questions.isNotEmpty()
+        val summary = nonBlankSummary(
+            event.approval.title,
+            if (question) "Agent question requires an answer" else "Agent approval required",
+        )
+        return SessionEventProjection(
+            activity = SessionActivity(
+                id = ("approval:" + request.id).boundedActivityId(),
+                locator = locator,
+                type = if (question) {
+                    SessionActivityType.QUESTION
+                } else {
+                    SessionActivityType.APPROVAL_REQUIRED
+                },
+                summary = summary,
+                eventAnchorId = request.id,
+                actionRequestId = request.id,
+                occurredAtEpochMillis = now,
+            ),
+            actionRequest = request,
+            state = AgentSessionState.WAITING_FOR_APPROVAL,
+            preview = summary,
+        )
+    }
+
+    private fun actionRequest(
+        approval: AgentApproval,
+        locator: SessionLocator,
+        now: Long,
+    ): SessionActionRequest {
+        val providerApprovalId = providerRequestId(approval.id.value, "Approval id")
+        val requestId = "action:" + digest(locator.stableKey + "\u0000" + providerApprovalId)
+        require(approval.questions.size <= MAX_QUESTIONS) { "Approval contains too many questions" }
+        val providerQuestionIds = approval.questions.map {
+            providerRequestId(it.id, "Question id")
+        }
+        require(providerQuestionIds.distinct().size == providerQuestionIds.size) {
+            "Approval contains duplicate question ids"
+        }
+        val questions = approval.questions.mapIndexed { index, question ->
+            val providerQuestionId = providerQuestionIds[index]
+            require(question.options.size <= MAX_QUESTION_OPTIONS) {
+                "Approval question contains too many options"
+            }
+            SessionQuestion(
+                id = "question:" + digest(requestId + "\u0000" + providerQuestionId),
+                providerQuestionId = providerQuestionId,
+                header = question.header?.let { boundedNullable(it, MAX_LABEL_CHARS) },
+                prompt = boundedRequired(
+                    question.prompt,
+                    question.header ?: "Agent question",
+                    MAX_DESCRIPTION_CHARS,
+                ),
+                options = question.options.map { option ->
+                    SessionQuestionOption(
+                        label = providerOptionLabel(option.label),
+                        description = option.description?.let {
+                            boundedNullable(it, MAX_DESCRIPTION_CHARS)
+                        },
+                    )
+                },
+                allowsOther = question.allowsOther,
+                allowsMultiple = question.allowsMultiple,
+            )
+        }
+        require(approval.availableDecisions.isNotEmpty()) { "Approval exposes no decisions" }
+        return SessionActionRequest(
+            id = requestId,
+            providerApprovalId = providerApprovalId,
+            locator = locator,
+            turnId = approval.turnId?.value?.takeIf(String::isNotBlank)?.let {
+                boundedIdentifier("turn", it)
+            },
+            type = approval.type,
+            title = boundedRequired(approval.title, "Agent action requires review", MAX_TITLE_CHARS),
+            description = approval.description?.let { boundedNullable(it, MAX_DESCRIPTION_CHARS) },
+            command = approval.command?.let { boundedNullable(it, MAX_COMMAND_CHARS) },
+            workingDirectory = approval.workingDirectory?.let { boundedNullable(it, MAX_PATH_CHARS) },
+            questions = questions,
+            availableDecisions = approval.availableDecisions,
+            riskReasons = actionRisks(approval),
+            receivedAtEpochMillis = now,
+        )
+    }
+
+    private fun providerRequestId(value: String, label: String): String {
+        require(value.isNotBlank()) { "$label must not be blank" }
+        require(value.length <= MAX_PROVIDER_REQUEST_ID_CHARS) { "$label is too large" }
+        return value
+    }
+
+    private fun providerOptionLabel(value: String): String {
+        require(value.isNotBlank()) { "Question option must not be blank" }
+        require(value.length <= MAX_QUESTION_OPTION_CHARS) { "Question option is too large" }
+        return value
+    }
+
+    private fun actionRisks(approval: AgentApproval): Set<SessionActionRisk> {
+        val text = listOfNotNull(
+            approval.title,
+            approval.description,
+            approval.command,
+            approval.workingDirectory,
+        ).joinToString("\n").lowercase(Locale.ROOT)
+        return buildSet {
+            if (approval.type == AgentApprovalType.EXTERNAL_TOOL) {
+                add(SessionActionRisk.EXTERNAL_TOOL)
+            }
+            if (DESTRUCTIVE_TERMS.any(text::contains)) {
+                add(SessionActionRisk.DESTRUCTIVE_COMMAND)
+            }
+            if (BROAD_FILESYSTEM_TERMS.any(text::contains) || isBroadPath(approval.workingDirectory)) {
+                add(SessionActionRisk.BROAD_FILESYSTEM_ACCESS)
+            }
+            if (CREDENTIAL_TERMS.any(text::contains)) {
+                add(SessionActionRisk.CREDENTIAL_ACCESS)
+            }
+            if (NETWORK_TERMS.any(text::contains)) {
+                add(SessionActionRisk.NETWORK_EXPANSION)
+            }
+        }
+    }
+
+    private fun isBroadPath(path: String?): Boolean =
+        path?.trim()?.lowercase(Locale.ROOT)?.trimEnd('/', '\\') in BROAD_PATHS
 
     private fun sessionMetadata(session: AgentSession): Map<String, String> {
         val sanitized = sanitizedMetadata(session.metadata).toMutableMap()
@@ -265,11 +389,6 @@ internal object SessionDataMapper {
     private fun String.boundedActivityId(): String =
         if (length <= MAX_ID_CHARS) this else "activity:" + digest(this)
 
-    private fun digest(value: String): String =
-        MessageDigest.getInstance("SHA-256")
-            .digest(value.encodeToByteArray())
-            .joinToString("") { "%02x".format(it) }
-
     private const val MAX_ID_CHARS = 512
     private const val MAX_LABEL_CHARS = 256
     private const val MAX_TITLE_CHARS = 1_024
@@ -277,7 +396,41 @@ internal object SessionDataMapper {
     private const val MAX_PREVIEW_CHARS = 16_384
     private const val MAX_ACTIVITY_CHARS = 16_384
     private const val MAX_TRANSCRIPT_CHARS = 1024 * 1024
+    private const val MAX_DESCRIPTION_CHARS = 16_384
+    private const val MAX_COMMAND_CHARS = 64 * 1024
+    private const val MAX_PROVIDER_REQUEST_ID_CHARS = 4_096
+    private const val MAX_QUESTIONS = 32
+    private const val MAX_QUESTION_OPTIONS = 64
+    private const val MAX_QUESTION_OPTION_CHARS = 4_096
     private const val MAX_METADATA_ENTRIES = 64
     private const val MAX_METADATA_KEY_CHARS = 256
     private const val MAX_METADATA_VALUE_CHARS = 4_096
+
+    private val DESTRUCTIVE_TERMS = listOf(
+        "rm -", "remove-item", "del /", "format ", "mkfs", "git clean",
+        "reset --hard", "drop database", "truncate table", "kubectl delete",
+        "terraform destroy", "shutdown", "reboot",
+    )
+    private val BROAD_FILESYSTEM_TERMS = listOf(
+        "entire filesystem",
+        "all files",
+        "recursive /",
+        " -rf /",
+        "chmod -r /",
+        "chown -r /",
+    )
+    private val CREDENTIAL_TERMS = listOf(
+        "credential", "password", "access token", "api token", "secret", "private key",
+        "authorized_keys", ".ssh", ".env", "keychain", "keystore", "vault",
+    )
+    private val NETWORK_TERMS = listOf(
+        "curl ", "wget ", "ssh ", "scp ", "sftp ", "netcat", "socat", "iptables",
+        "firewall", "port forward", "proxy", "vpn", "public listener",
+    )
+    private val BROAD_PATHS = setOf("", "/", "/home", "/root", "~", "\$home", "c:", "c:\\", "c:\\users")
 }
+
+private fun digest(value: String): String =
+    MessageDigest.getInstance("SHA-256")
+        .digest(value.encodeToByteArray())
+        .joinToString("") { "%02x".format(it) }

@@ -5,6 +5,8 @@ import dev.agentrelay.connection.api.ConnectionDisconnectReason
 import dev.agentrelay.connection.api.ConnectionIdentityDisposition
 import dev.agentrelay.connection.api.ConnectionProviderDescriptor
 import dev.agentrelay.connection.api.ConnectionState
+import dev.agentrelay.provider.api.AgentApprovalDecision
+import dev.agentrelay.provider.api.AgentApprovalType
 import dev.agentrelay.provider.api.AgentCapability
 import dev.agentrelay.provider.api.AgentMessageChannel
 import dev.agentrelay.provider.api.AgentSessionState
@@ -12,6 +14,9 @@ import dev.agentrelay.provider.api.AgentTranscriptRole
 import dev.agentrelay.session.api.CachedTranscriptEntry
 import dev.agentrelay.session.api.SessionActivity
 import dev.agentrelay.session.api.SessionActivityType
+import dev.agentrelay.session.api.SessionActionRequest
+import dev.agentrelay.session.api.SessionActionRisk
+import dev.agentrelay.session.api.SessionActionState
 import dev.agentrelay.session.api.SessionDraft
 import dev.agentrelay.session.api.SessionHubSnapshot
 import dev.agentrelay.session.api.SessionLocator
@@ -34,6 +39,8 @@ internal data class SessionHubUiModel(
     val operationError: String?,
     val isRefreshingProfiles: Boolean,
     val manageableConnectionProviders: List<ConnectionProviderUiModel> = emptyList(),
+    val sessionLaunchers: List<SessionLauncherUiModel> = emptyList(),
+    val attentionActions: List<SessionActionUiModel> = emptyList(),
 )
 
 internal data class ConnectionProviderUiModel(
@@ -91,11 +98,63 @@ internal data class SessionUiModel(
     val isPinned: Boolean,
 )
 
+internal data class SessionLauncherUiModel(
+    val stableKey: String,
+    val connectionLabel: String,
+    val connectionProviderName: String,
+    val agentProviderLabel: String,
+    val suggestedWorkingDirectory: String?,
+)
+
 internal data class SessionDetailUiModel(
     val session: SessionUiModel,
     val activities: List<SessionActivityUiModel>,
     val transcript: List<TranscriptEntryUiModel>,
     val composer: SessionComposerUiModel = SessionComposerUiModel(),
+    val actions: List<SessionActionUiModel> = emptyList(),
+)
+
+internal data class SessionActionUiModel(
+    val stableKey: String,
+    val sessionKey: String,
+    val title: String,
+    val typeLabel: String,
+    val description: String?,
+    val command: String?,
+    val scope: String?,
+    val connectionLabel: String,
+    val connectionProviderName: String,
+    val connectionTarget: String,
+    val agentProviderLabel: String,
+    val sessionTitle: String,
+    val questions: List<SessionQuestionUiModel>,
+    val decisions: List<SessionDecisionUiModel>,
+    val riskLabels: List<String>,
+    val state: SessionActionState,
+    val completedDecisionLabel: String?,
+    val additionalConfirmationGiven: Boolean,
+    val isBusy: Boolean,
+)
+
+internal data class SessionQuestionUiModel(
+    val stableKey: String,
+    val header: String?,
+    val prompt: String,
+    val options: List<SessionQuestionOptionUiModel>,
+    val allowsOther: Boolean,
+    val allowsMultiple: Boolean,
+)
+
+internal data class SessionQuestionOptionUiModel(
+    val label: String,
+    val description: String?,
+)
+
+internal data class SessionDecisionUiModel(
+    val decision: AgentApprovalDecision,
+    val label: String,
+    val requiresConfirmation: Boolean,
+    val isPositive: Boolean,
 )
 
 internal enum class SessionSubmitMode {
@@ -150,12 +209,21 @@ internal data class CoordinatorIssueUiModel(
 )
 
 internal val SessionConnectionKey.stableUiKey: String
-    get() = listOf(providerId.value, profileId.value)
-        .joinToString(separator = "") { value -> "${value.length}:$value" }
+    get() = stableHash(providerId.value, profileId.value)
+
+internal val AgentEndpointKey.stableUiKey: String
+    get() = stableHash(
+        connection.providerId.value,
+        connection.profileId.value,
+        agentProviderId.value,
+    )
 
 internal val SessionLocator.stableUiKey: String
-    get() = MessageDigest.getInstance("SHA-256")
-        .digest(stableKey.encodeToByteArray())
+    get() = stableHash(stableKey)
+
+private fun stableHash(vararg values: String): String =
+    MessageDigest.getInstance("SHA-256")
+        .digest(values.joinToString(separator = "") { "${it.length}:$it" }.encodeToByteArray())
         .joinToString(separator = "") { "%02x".format(it) }
 
 internal object SessionHubUiMapper {
@@ -167,106 +235,186 @@ internal object SessionHubUiMapper {
         operationError: String?,
         busyConnectionKeys: Set<String>,
         busySessionKeys: Set<String> = emptySet(),
+        busyActionKeys: Set<String> = emptySet(),
         draftOverrides: Map<String, SessionDraft> = emptyMap(),
     ): SessionHubUiModel {
-        val connectionProviderNames = connectionProviders.associate {
-            it.id to it.displayName
-        }
-        val manageableProviderIds = connectionProviders
+        val providerNames = connectionProviders.associate { it.id to it.displayName }
+        val manageableProviders = connectionProviders
             .filter { ConnectionCapability.PROFILE_MANAGEMENT in it.capabilities }
             .associateBy(ConnectionProviderDescriptor::id)
-        val connections = coordinator.profiles.map { profile ->
-            val key = SessionConnectionKey(profile.providerId, profile.id)
-            val state = coordinator.connectionStates[key]
-            val endpoints = coordinator.agentEndpoints.values.filter { it.key.connection == key }
-            ConnectionUiModel(
-                stableKey = key.stableUiKey,
-                providerName = connectionProviderNames[profile.providerId] ?: profile.providerId.value,
-                label = profile.label,
-                target = profile.target,
-                authenticationLabel = profile.authenticationLabel,
-                status = state.toUiStatus(),
-                statusDetail = state.toStatusDetail(),
-                connectedAgentCount = endpoints.count { it.phase == AgentEndpointPhase.READY },
-                agentCount = endpoints.size,
-                unavailableAgentCount = endpoints.count {
-                    it.phase == AgentEndpointPhase.UNAVAILABLE || it.phase == AgentEndpointPhase.FAILED
-                },
-                canConnect = state == null ||
-                    state is ConnectionState.Disconnected ||
-                    state is ConnectionState.Failed,
-                canDisconnect = state is ConnectionState.Connected ||
-                    state is ConnectionState.Connecting ||
-                    state is ConnectionState.Reconnecting ||
-                    state is ConnectionState.AwaitingIdentityTrust,
-                isBusy = key.stableUiKey in busyConnectionKeys,
-                identityChallenge = (state as? ConnectionState.AwaitingIdentityTrust)
-                    ?.challenge
-                    ?.let { challenge ->
-                        IdentityChallengeUiModel(
-                            endpoint = challenge.endpoint,
-                            algorithm = challenge.algorithm,
-                            fingerprint = challenge.sha256Fingerprint,
-                            isChangedIdentity =
-                            challenge.disposition == ConnectionIdentityDisposition.CHANGED,
-                            previousFingerprints = challenge.previouslyTrustedFingerprints,
-                        )
-                    },
-                canEdit = profile.providerId in manageableProviderIds,
-            )
-        }
-        val sessionModels = sessions.recentSessions().map { record ->
-            record.toUiModel(
-                connectionProviderName = connectionProviderNames[
-                    record.locator.connectionProviderId,
-                ] ?: record.locator.connectionProviderId.value,
-                activities = sessions.activities.filter { it.locator == record.locator },
-            )
-        }
-        val selected = selectedSessionKey?.let { key ->
-            val record = sessions.sessions.firstOrNull { it.locator.stableUiKey == key }
-            record?.let { selectedRecord ->
-                SessionDetailUiModel(
-                    session = selectedRecord.toUiModel(
-                        connectionProviderName = connectionProviderNames[
-                            selectedRecord.locator.connectionProviderId,
-                        ] ?: selectedRecord.locator.connectionProviderId.value,
-                        activities = sessions.activities.filter { activity ->
-                            activity.locator == selectedRecord.locator
-                        },
-                    ),
-                    activities = sessions.activities
-                        .asSequence()
-                        .filter { activity -> activity.locator == selectedRecord.locator }
-                        .sortedByDescending(SessionActivity::occurredAtEpochMillis)
-                        .map { it.toUiModel() }
-                        .toList(),
-                    transcript = sessions.transcripts[selectedRecord.locator]
-                        .orEmpty()
-                        .map { it.toUiModel() },
-                    composer = selectedRecord.toComposerUiModel(
-                        coordinator = coordinator,
-                        persistedDraft = sessions.drafts[selectedRecord.locator],
-                        overrideDraft = draftOverrides[selectedRecord.locator.stableUiKey],
-                        isBusy = selectedRecord.locator.stableUiKey in busySessionKeys,
-                    ),
-                )
-            }
-        }
+        val actions = actionModels(sessions, providerNames, busyActionKeys)
         return SessionHubUiModel(
             availableConnectionProviders = connectionProviders.map { it.displayName },
-            connections = connections,
-            sessions = sessionModels,
+            connections = connectionModels(
+                coordinator,
+                providerNames,
+                manageableProviders.keys,
+                busyConnectionKeys,
+            ),
+            sessions = sessionModels(sessions, providerNames),
             issues = coordinator.issues.values
                 .sortedByDescending { it.occurredAtEpochMillis }
                 .map { CoordinatorIssueUiModel(it.id, it.actionableMessage, it.recoverable) },
-            selectedSession = selected,
+            selectedSession = selectedDetail(
+                selectedSessionKey,
+                coordinator,
+                sessions,
+                providerNames,
+                actions,
+                busySessionKeys,
+                draftOverrides,
+            ),
             selectedSessionKey = selectedSessionKey,
             operationError = operationError,
             isRefreshingProfiles = coordinator.isRefreshingProfiles,
-            manageableConnectionProviders = manageableProviderIds.values.map {
-                ConnectionProviderUiModel(it.id.value, it.displayName)
-            }.sortedBy(ConnectionProviderUiModel::name),
+            manageableConnectionProviders = manageableProviders.values
+                .map { ConnectionProviderUiModel(it.id.value, it.displayName) }
+                .sortedBy(ConnectionProviderUiModel::name),
+            sessionLaunchers = sessionLaunchers(coordinator, sessions, providerNames),
+            attentionActions = actions.filter { it.state != SessionActionState.RESOLVED },
+        )
+    }
+
+    private fun connectionModels(
+        coordinator: SessionCoordinatorSnapshot,
+        providerNames: Map<dev.agentrelay.connection.api.ConnectionProviderId, String>,
+        manageableProviderIds: Set<dev.agentrelay.connection.api.ConnectionProviderId>,
+        busyConnectionKeys: Set<String>,
+    ): List<ConnectionUiModel> = coordinator.profiles.map { profile ->
+        val key = SessionConnectionKey(profile.providerId, profile.id)
+        val state = coordinator.connectionStates[key]
+        val endpoints = coordinator.agentEndpoints.values.filter { it.key.connection == key }
+        ConnectionUiModel(
+            stableKey = key.stableUiKey,
+            providerName = providerNames[profile.providerId] ?: profile.providerId.value,
+            label = profile.label,
+            target = profile.target,
+            authenticationLabel = profile.authenticationLabel,
+            status = state.toUiStatus(),
+            statusDetail = state.toStatusDetail(),
+            connectedAgentCount = endpoints.count { it.phase == AgentEndpointPhase.READY },
+            agentCount = endpoints.size,
+            unavailableAgentCount = endpoints.count {
+                it.phase == AgentEndpointPhase.UNAVAILABLE || it.phase == AgentEndpointPhase.FAILED
+            },
+            canConnect = state == null ||
+                state is ConnectionState.Disconnected ||
+                state is ConnectionState.Failed,
+            canDisconnect = state is ConnectionState.Connected ||
+                state is ConnectionState.Connecting ||
+                state is ConnectionState.Reconnecting ||
+                state is ConnectionState.AwaitingIdentityTrust,
+            isBusy = key.stableUiKey in busyConnectionKeys,
+            identityChallenge = (state as? ConnectionState.AwaitingIdentityTrust)
+                ?.challenge
+                ?.let { challenge ->
+                    IdentityChallengeUiModel(
+                        endpoint = challenge.endpoint,
+                        algorithm = challenge.algorithm,
+                        fingerprint = challenge.sha256Fingerprint,
+                        isChangedIdentity =
+                        challenge.disposition == ConnectionIdentityDisposition.CHANGED,
+                        previousFingerprints = challenge.previouslyTrustedFingerprints,
+                    )
+                },
+            canEdit = profile.providerId in manageableProviderIds,
+        )
+    }
+
+    private fun sessionModels(
+        sessions: SessionHubSnapshot,
+        providerNames: Map<dev.agentrelay.connection.api.ConnectionProviderId, String>,
+    ): List<SessionUiModel> = sessions.recentSessions().map { record ->
+        record.toUiModel(
+            connectionProviderName = providerNames[record.locator.connectionProviderId]
+                ?: record.locator.connectionProviderId.value,
+            activities = sessions.activities.filter { it.locator == record.locator },
+        )
+    }
+
+    private fun sessionLaunchers(
+        coordinator: SessionCoordinatorSnapshot,
+        sessions: SessionHubSnapshot,
+        providerNames: Map<dev.agentrelay.connection.api.ConnectionProviderId, String>,
+    ): List<SessionLauncherUiModel> = coordinator.agentEndpoints.values
+        .asSequence()
+        .filter { endpoint ->
+            endpoint.phase == AgentEndpointPhase.READY &&
+                AgentCapability.SESSION_START in endpoint.descriptor.capabilities
+        }
+        .mapNotNull { endpoint ->
+            val profile = coordinator.profile(endpoint.key.connection) ?: return@mapNotNull null
+            val suggestedWorkingDirectory = sessions.recentSessions()
+                .firstOrNull { record ->
+                    record.locator.connectionProviderId == endpoint.key.connection.providerId &&
+                        record.locator.connectionProfileId == endpoint.key.connection.profileId &&
+                        record.locator.agentProviderId == endpoint.key.agentProviderId
+                }
+                ?.observation
+                ?.projectPath
+            SessionLauncherUiModel(
+                stableKey = endpoint.key.stableUiKey,
+                connectionLabel = profile.label,
+                connectionProviderName = providerNames[profile.providerId]
+                    ?: profile.providerId.value,
+                agentProviderLabel = endpoint.descriptor.displayName,
+                suggestedWorkingDirectory = suggestedWorkingDirectory,
+            )
+        }
+        .sortedWith(
+            compareBy(SessionLauncherUiModel::connectionLabel)
+                .thenBy(SessionLauncherUiModel::agentProviderLabel),
+        )
+        .toList()
+
+    private fun actionModels(
+        sessions: SessionHubSnapshot,
+        providerNames: Map<dev.agentrelay.connection.api.ConnectionProviderId, String>,
+        busyActionKeys: Set<String>,
+    ): List<SessionActionUiModel> = sessions.actionRequests
+        .sortedByDescending(SessionActionRequest::receivedAtEpochMillis)
+        .mapNotNull { request ->
+            val record = sessions.session(request.locator) ?: return@mapNotNull null
+            request.toUiModel(
+                record = record,
+                connectionProviderName = providerNames[record.locator.connectionProviderId]
+                    ?: record.locator.connectionProviderId.value,
+                isBusy = request.id in busyActionKeys,
+            )
+        }
+
+    private fun selectedDetail(
+        selectedSessionKey: String?,
+        coordinator: SessionCoordinatorSnapshot,
+        sessions: SessionHubSnapshot,
+        providerNames: Map<dev.agentrelay.connection.api.ConnectionProviderId, String>,
+        actions: List<SessionActionUiModel>,
+        busySessionKeys: Set<String>,
+        draftOverrides: Map<String, SessionDraft>,
+    ): SessionDetailUiModel? {
+        val record = sessions.sessions.firstOrNull {
+            it.locator.stableUiKey == selectedSessionKey
+        } ?: return null
+        val activities = sessions.activities.filter { it.locator == record.locator }
+        return SessionDetailUiModel(
+            session = record.toUiModel(
+                connectionProviderName = providerNames[record.locator.connectionProviderId]
+                    ?: record.locator.connectionProviderId.value,
+                activities = activities,
+            ),
+            activities = activities
+                .sortedByDescending(SessionActivity::occurredAtEpochMillis)
+                .map { it.toUiModel() },
+            transcript = sessions.transcripts[record.locator]
+                .orEmpty()
+                .map { it.toUiModel() },
+            composer = record.toComposerUiModel(
+                coordinator = coordinator,
+                persistedDraft = sessions.drafts[record.locator],
+                overrideDraft = draftOverrides[record.locator.stableUiKey],
+                isBusy = record.locator.stableUiKey in busySessionKeys,
+            ),
+            actions = actions.filter { it.sessionKey == record.locator.stableUiKey },
         )
     }
 
@@ -288,6 +436,82 @@ internal object SessionHubUiMapper {
         lastActivityAtEpochMillis = lastActivityAtEpochMillis,
         isPinned = preferences.pinned,
     )
+
+    private fun SessionActionRequest.toUiModel(
+        record: SessionRecord,
+        connectionProviderName: String,
+        isBusy: Boolean,
+    ) = SessionActionUiModel(
+        stableKey = id,
+        sessionKey = locator.stableUiKey,
+        title = title,
+        typeLabel = type.uiLabel,
+        description = description,
+        command = command,
+        scope = workingDirectory ?: record.observation.projectPath,
+        connectionLabel = record.observation.connectionLabel,
+        connectionProviderName = connectionProviderName,
+        connectionTarget = record.observation.connectionTarget,
+        agentProviderLabel = record.observation.agentProviderLabel,
+        sessionTitle = record.observation.title?.takeIf(String::isNotBlank)
+            ?: record.observation.agentProviderLabel + " session",
+        questions = questions.map { question ->
+            SessionQuestionUiModel(
+                stableKey = question.id,
+                header = question.header,
+                prompt = question.prompt,
+                options = question.options.map { option ->
+                    SessionQuestionOptionUiModel(option.label, option.description)
+                },
+                allowsOther = question.allowsOther,
+                allowsMultiple = question.allowsMultiple,
+            )
+        },
+        decisions = availableDecisions
+            .sortedBy(AgentApprovalDecision::ordinal)
+            .map { candidate ->
+                SessionDecisionUiModel(
+                    decision = candidate,
+                    label = candidate.uiLabel,
+                    requiresConfirmation = requiresAdditionalConfirmation(candidate),
+                    isPositive = candidate in POSITIVE_DECISIONS,
+                )
+            },
+        riskLabels = riskReasons
+            .sortedBy(SessionActionRisk::ordinal)
+            .map { it.uiLabel },
+        state = state,
+        completedDecisionLabel = decision?.uiLabel,
+        additionalConfirmationGiven = additionalConfirmationGiven,
+        isBusy = isBusy || state == SessionActionState.DELIVERING,
+    )
+
+    private val AgentApprovalType.uiLabel: String
+        get() = when (this) {
+            AgentApprovalType.COMMAND -> "Command approval"
+            AgentApprovalType.FILE_CHANGE -> "File change approval"
+            AgentApprovalType.USER_INPUT -> "Question"
+            AgentApprovalType.PERMISSION -> "Permission request"
+            AgentApprovalType.EXTERNAL_TOOL -> "External tool approval"
+        }
+
+    private val AgentApprovalDecision.uiLabel: String
+        get() = when (this) {
+            AgentApprovalDecision.APPROVE_ONCE -> "Approve once"
+            AgentApprovalDecision.APPROVE_FOR_SESSION -> "Approve for session"
+            AgentApprovalDecision.SUBMIT -> "Submit answers"
+            AgentApprovalDecision.DECLINE -> "Decline"
+            AgentApprovalDecision.CANCEL -> "Cancel"
+        }
+
+    private val SessionActionRisk.uiLabel: String
+        get() = when (this) {
+            SessionActionRisk.DESTRUCTIVE_COMMAND -> "Destructive command"
+            SessionActionRisk.BROAD_FILESYSTEM_ACCESS -> "Broad filesystem access"
+            SessionActionRisk.CREDENTIAL_ACCESS -> "Credential or secret access"
+            SessionActionRisk.NETWORK_EXPANSION -> "Network access expansion"
+            SessionActionRisk.EXTERNAL_TOOL -> "External tool execution"
+        }
 
     private fun SessionActivity.toUiModel() = SessionActivityUiModel(
         id = id,
@@ -476,6 +700,12 @@ internal object SessionHubUiMapper {
     private val INTERRUPTIBLE_SESSION_STATES = setOf(
         AgentSessionState.RUNNING,
         AgentSessionState.WAITING_FOR_APPROVAL,
+    )
+
+    private val POSITIVE_DECISIONS = setOf(
+        AgentApprovalDecision.APPROVE_ONCE,
+        AgentApprovalDecision.APPROVE_FOR_SESSION,
+        AgentApprovalDecision.SUBMIT,
     )
 
     private const val MAX_RENDERED_TRANSCRIPT_CHARS = 32_000

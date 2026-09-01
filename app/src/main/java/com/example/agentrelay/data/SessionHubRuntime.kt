@@ -10,9 +10,12 @@ import dev.agentrelay.connection.api.ConnectionProviderId
 import dev.agentrelay.connection.api.ConnectionProviderRegistry
 
 import dev.agentrelay.connection.api.ConnectionProviderDescriptor
+import dev.agentrelay.provider.api.AgentApprovalDecision
+import dev.agentrelay.provider.api.StartSessionOptions
 import dev.agentrelay.session.api.SessionDraft
 import dev.agentrelay.session.api.SessionHubSnapshot
 import dev.agentrelay.session.api.SessionLocator
+import dev.agentrelay.session.runtime.AgentEndpointKey
 import dev.agentrelay.session.runtime.SessionConnectionKey
 import dev.agentrelay.session.runtime.SessionCoordinator
 import dev.agentrelay.session.runtime.SessionCoordinatorSnapshot
@@ -57,6 +60,19 @@ internal interface SessionHubRuntime {
     suspend fun steerActiveTurn(locator: SessionLocator, text: String)
 
     suspend fun interrupt(locator: SessionLocator)
+
+    suspend fun startSession(
+        endpoint: AgentEndpointKey,
+        options: StartSessionOptions,
+    ): SessionLocator
+
+    suspend fun respondToAction(
+        locator: SessionLocator,
+        requestId: String,
+        decision: AgentApprovalDecision,
+        answers: Map<String, List<String>>,
+        additionalConfirmationGiven: Boolean,
+    )
 }
 
 internal class CoordinatorSessionHubRuntime(
@@ -124,5 +140,26 @@ internal class CoordinatorSessionHubRuntime(
 
     override suspend fun interrupt(locator: SessionLocator) {
         coordinator.interrupt(locator)
+    }
+
+    override suspend fun startSession(
+        endpoint: AgentEndpointKey,
+        options: StartSessionOptions,
+    ): SessionLocator = coordinator.startSession(endpoint, options)
+
+    override suspend fun respondToAction(
+        locator: SessionLocator,
+        requestId: String,
+        decision: AgentApprovalDecision,
+        answers: Map<String, List<String>>,
+        additionalConfirmationGiven: Boolean,
+    ) {
+        coordinator.respondToAction(
+            locator = locator,
+            requestId = requestId,
+            decision = decision,
+            answers = answers,
+            additionalConfirmationGiven = additionalConfirmationGiven,
+        )
     }
 }

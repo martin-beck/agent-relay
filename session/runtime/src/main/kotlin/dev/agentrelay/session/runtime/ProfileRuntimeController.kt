@@ -352,12 +352,7 @@ internal class ProfileRuntimeController(
         val locator = SessionDataMapper.locator(endpoint(descriptor.id), event.sessionId)
         val now = now()
         val projection = SessionDataMapper.event(event, locator, now)
-        if (
-            projection.activity == null &&
-            projection.transcriptEntry == null &&
-            projection.state == null &&
-            projection.preview == null
-        ) {
+        if (projection.isEmpty) {
             return
         }
         try {
@@ -380,6 +375,7 @@ internal class ProfileRuntimeController(
                     observation = observation,
                     transcriptEntry = projection.transcriptEntry,
                     activity = projection.activity,
+                    actionRequest = projection.actionRequest,
                 ),
             )
             clearPersistenceIssue(descriptor)

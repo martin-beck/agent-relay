@@ -2,8 +2,13 @@ package com.example.agentrelay.ui.main
 
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.accessibility.enableAccessibilityChecks
@@ -20,7 +25,9 @@ import androidx.compose.ui.unit.dp
 import androidx.test.filters.SdkSuppress
 import com.example.agentrelay.theme.AgentRelayTheme
 import dev.agentrelay.connection.api.ConnectionProfileFieldType
+import dev.agentrelay.provider.api.AgentApprovalDecision
 import dev.agentrelay.provider.api.AgentSessionState
+import dev.agentrelay.session.api.SessionActionState
 import dev.agentrelay.session.api.SessionActivityType
 import org.junit.Rule
 import org.junit.Test
@@ -149,6 +156,135 @@ class MainScreenTest {
     }
 
     @Test
+    fun readyAgentEndpointExposesSessionLauncher() {
+        val recorder = ActionRecorder()
+        setContent(MainScreenUiState.Ready(actionHub()), recorder)
+
+        val hubList = composeTestRule.onNode(hasScrollAction())
+        hubList.performScrollToNode(hasText("Start Codex on Trusted server"))
+        composeTestRule.onNodeWithText("Start Codex on Trusted server").performClick()
+
+        check(recorder.openedSessionCreator == "launcher-key")
+    }
+
+    @Test
+    fun sessionCreatorExposesProviderNeutralSettings() {
+        val recorder = ActionRecorder()
+        composeTestRule.setContent {
+            AgentRelayTheme {
+                var creatorState by remember { mutableStateOf(testSessionCreator()) }
+                val actions = recorder.actions().copy(
+                    updateSessionCreatorWorkingDirectory = { value ->
+                        recorder.sessionWorkingDirectory = value
+                        creatorState = creatorState.copy(workingDirectory = value)
+                    },
+                    updateSessionCreatorModel = { value ->
+                        recorder.sessionModel = value
+                        creatorState = creatorState.copy(model = value)
+                    },
+                )
+                MainScreenContent(
+                    state = MainScreenUiState.Ready(
+                        hub = testHub(),
+                        sessionCreator = creatorState,
+                    ),
+                    actions = actions,
+                )
+            }
+        }
+
+        composeTestRule.onNodeWithText("Start a new session").assertIsDisplayed()
+        composeTestRule
+            .onNodeWithTag("session-working-directory")
+            .performTextReplacement("/workspace/new")
+        composeTestRule
+            .onNodeWithTag("session-model")
+            .performTextReplacement("test-model")
+        composeTestRule.onNodeWithTag("start-session").performClick()
+
+        check(recorder.sessionWorkingDirectory == "/workspace/new")
+        check(recorder.sessionModel == "test-model")
+        check(recorder.startSessionCount == 1)
+    }
+
+    @Test
+    fun sensitiveQuestionRequiresAnswerAndSecondConfirmation() {
+        val recorder = ActionRecorder()
+        composeTestRule.setContent {
+            AgentRelayTheme {
+                MainScreenContent(
+                    state = MainScreenUiState.Ready(actionHub()),
+                    actions = recorder.actions(),
+                    modifier = Modifier.requiredSize(width = 1_000.dp, height = 900.dp),
+                )
+            }
+        }
+
+        composeTestRule.onNodeWithText("Approvals and questions").assertExists()
+        composeTestRule.onNodeWithText("Approve once").assertDoesNotExist()
+        composeTestRule
+            .onNodeWithText("Submit answers")
+            .performScrollTo()
+            .assertIsNotEnabled()
+        composeTestRule
+            .onNodeWithText("Focused tests")
+            .performScrollTo()
+            .performClick()
+        composeTestRule.onNodeWithText("Submit answers").performClick()
+
+        check(recorder.actionResponse == null)
+        composeTestRule.onNodeWithTag("action-confirmation-dialog").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Confirm submit answers").performClick()
+
+        check(
+            recorder.actionResponse == RecordedActionResponse(
+                sessionKey = "session-key",
+                actionKey = "action-key",
+                decision = AgentApprovalDecision.SUBMIT,
+                answers = mapOf("question-key" to listOf("Focused tests")),
+                additionalConfirmationGiven = true,
+            ),
+        )
+    }
+
+    @Test
+    fun uncertainActionDeliveryCannotBeSubmittedAgain() {
+        val recorder = ActionRecorder()
+        val base = actionHub()
+        val delivering = base.attentionActions.single().copy(
+            state = SessionActionState.DELIVERING,
+            completedDecisionLabel = "Submit answers",
+            additionalConfirmationGiven = true,
+            isBusy = true,
+        )
+        val hub = base.copy(
+            attentionActions = listOf(delivering),
+            selectedSession = checkNotNull(base.selectedSession).copy(
+                actions = listOf(delivering),
+            ),
+        )
+        composeTestRule.setContent {
+            AgentRelayTheme {
+                MainScreenContent(
+                    state = MainScreenUiState.Ready(hub),
+                    actions = recorder.actions(),
+                    modifier = Modifier.requiredSize(width = 1_000.dp, height = 900.dp),
+                )
+            }
+        }
+
+        composeTestRule
+            .onNodeWithText(
+                "Response delivery is awaiting provider confirmation. Do not retry this request; " +
+                    "wait for a newly identified provider request or verify its state independently.",
+            )
+            .assertIsDisplayed()
+        composeTestRule.onNodeWithText("Submit answers").assertDoesNotExist()
+        composeTestRule.onNodeWithText("Cancel").assertDoesNotExist()
+        check(recorder.actionResponse == null)
+    }
+
+    @Test
     fun emptyHub_explainsHowToProceed() {
         val recorder = ActionRecorder()
         val emptyHub = testHub().copy(
@@ -190,6 +326,24 @@ class MainScreenTest {
         composeTestRule.onRoot().tryPerformAccessibilityChecks()
     }
 
+    @SdkSuppress(minSdkVersion = 34)
+    @Test
+    fun sensitiveActionPassesAutomatedAccessibilityChecks() {
+        val recorder = ActionRecorder()
+        composeTestRule.setContent {
+            AgentRelayTheme {
+                MainScreenContent(
+                    state = MainScreenUiState.Ready(actionHub()),
+                    actions = recorder.actions(),
+                    modifier = Modifier.requiredSize(width = 1_000.dp, height = 900.dp),
+                )
+            }
+        }
+
+        composeTestRule.enableAccessibilityChecks()
+        composeTestRule.onRoot().tryPerformAccessibilityChecks()
+    }
+
     private fun setContent(
         state: MainScreenUiState,
         recorder: ActionRecorder,
@@ -221,6 +375,11 @@ private class ActionRecorder {
     var submittedSession: String? = null
     var resumedSession: String? = null
     var interruptedSession: String? = null
+    var openedSessionCreator: String? = null
+    var sessionWorkingDirectory: String? = null
+    var sessionModel: String? = null
+    var startSessionCount = 0
+    var actionResponse: RecordedActionResponse? = null
 
     fun actions() = SessionHubActions(
         retry = { retryCount++ },
@@ -244,8 +403,29 @@ private class ActionRecorder {
         submitSessionDraft = { submittedSession = it },
         resumeSession = { resumedSession = it },
         interruptSession = { interruptedSession = it },
+        openSessionCreator = { openedSessionCreator = it },
+        updateSessionCreatorWorkingDirectory = { sessionWorkingDirectory = it },
+        updateSessionCreatorModel = { sessionModel = it },
+        startSession = { startSessionCount++ },
+        respondToAction = { sessionKey, actionKey, decision, answers, confirmed ->
+            actionResponse = RecordedActionResponse(
+                sessionKey,
+                actionKey,
+                decision,
+                answers,
+                confirmed,
+            )
+        },
     )
 }
+
+private data class RecordedActionResponse(
+    val sessionKey: String,
+    val actionKey: String,
+    val decision: AgentApprovalDecision,
+    val answers: Map<String, List<String>>,
+    val additionalConfirmationGiven: Boolean,
+)
 
 private fun testHub(): SessionHubUiModel {
     val session = SessionUiModel(
@@ -351,6 +531,79 @@ private fun testHub(): SessionHubUiModel {
         ),
     )
 }
+
+private fun actionHub(): SessionHubUiModel {
+    val hub = testHub()
+    val action = SessionActionUiModel(
+        stableKey = "action-key",
+        sessionKey = "session-key",
+        title = "Choose validation scope",
+        typeLabel = "Command approval",
+        description = "The provider needs a scope before continuing.",
+        command = "remove generated output",
+        scope = "/workspace/project",
+        connectionLabel = "Trusted server",
+        connectionProviderName = "Secure Shell",
+        connectionTarget = "Test endpoint",
+        agentProviderLabel = "Codex",
+        sessionTitle = "Investigate flaky build",
+        questions = listOf(
+            SessionQuestionUiModel(
+                stableKey = "question-key",
+                header = "Scope",
+                prompt = "Which tests should run?",
+                options = listOf(
+                    SessionQuestionOptionUiModel(
+                        label = "Focused tests",
+                        description = "Run the focused validation suite.",
+                    ),
+                ),
+                allowsOther = true,
+                allowsMultiple = false,
+            ),
+        ),
+        decisions = listOf(
+            SessionDecisionUiModel(
+                decision = AgentApprovalDecision.SUBMIT,
+                label = "Submit answers",
+                requiresConfirmation = true,
+                isPositive = true,
+            ),
+            SessionDecisionUiModel(
+                decision = AgentApprovalDecision.CANCEL,
+                label = "Cancel",
+                requiresConfirmation = false,
+                isPositive = false,
+            ),
+        ),
+        riskLabels = listOf("Credential or secret access"),
+        state = SessionActionState.PENDING,
+        completedDecisionLabel = null,
+        additionalConfirmationGiven = false,
+        isBusy = false,
+    )
+    return hub.copy(
+        sessionLaunchers = listOf(
+            SessionLauncherUiModel(
+                stableKey = "launcher-key",
+                connectionLabel = "Trusted server",
+                connectionProviderName = "Secure Shell",
+                agentProviderLabel = "Codex",
+                suggestedWorkingDirectory = "/workspace/project",
+            ),
+        ),
+        attentionActions = listOf(action),
+        selectedSession = checkNotNull(hub.selectedSession).copy(actions = listOf(action)),
+    )
+}
+
+private fun testSessionCreator() = SessionCreatorUiState(
+    launcherKey = "launcher-key",
+    connectionLabel = "Trusted server",
+    connectionProviderName = "Secure Shell",
+    agentProviderLabel = "Codex",
+    workingDirectory = "/workspace/project",
+)
 
 private fun interactiveHub(): SessionHubUiModel {
     val hub = testHub()

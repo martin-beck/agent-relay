@@ -11,6 +11,7 @@ data class SessionEventUpdate(
     val observation: SessionObservation? = null,
     val transcriptEntry: CachedTranscriptEntry? = null,
     val activity: SessionActivity? = null,
+    val actionRequest: SessionActionRequest? = null,
 ) {
     init {
         require(observation == null || observation.locator == locator) {
@@ -19,7 +20,17 @@ data class SessionEventUpdate(
         require(activity == null || activity.locator == locator) {
             "Event activity locator does not match"
         }
-        require(observation != null || transcriptEntry != null || activity != null) {
+        require(actionRequest == null || actionRequest.locator == locator) {
+            "Event action request locator does not match"
+        }
+        require(
+            activity?.actionRequestId == null ||
+                actionRequest == null ||
+                activity.actionRequestId == actionRequest.id,
+        ) {
+            "Event activity and action request identities do not match"
+        }
+        require(observation != null || transcriptEntry != null || activity != null || actionRequest != null) {
             "Session event update must contain a durable change"
         }
     }
@@ -60,6 +71,21 @@ interface SessionHubRepository {
         activityId: String,
     )
 
+    suspend fun beginActionResponse(
+        locator: SessionLocator,
+        requestId: String,
+        decision: dev.agentrelay.provider.api.AgentApprovalDecision,
+        answeredQuestionIds: Set<String>,
+        additionalConfirmationGiven: Boolean = false,
+        startedAtEpochMillis: Long,
+    )
+
+    suspend fun completeActionResponse(
+        locator: SessionLocator,
+        requestId: String,
+        completedAtEpochMillis: Long,
+    )
+
     suspend fun cacheTranscript(
         locator: SessionLocator,
         entries: List<CachedTranscriptEntry>,
@@ -94,12 +120,6 @@ class PersistentSessionHubRepository private constructor(
 
     override suspend fun applyEvent(update: SessionEventUpdate) {
         mutate { current ->
-            if (update.activity != null && current.activities.any {
-                    it.locator == update.activity.locator && it.id == update.activity.id
-                }
-            ) {
-                return@mutate current
-            }
             val existing = current.session(update.locator)
             require(existing != null || update.observation != null) {
                 "An event for an unknown session requires an observation"
@@ -134,10 +154,25 @@ class PersistentSessionHubRepository private constructor(
                 }
             } ?: current.activities
 
+            val updatedActionRequests = update.actionRequest?.let { request ->
+                val existingRequest = current.actionRequest(request.locator, request.id)
+                when (existingRequest?.state) {
+                    SessionActionState.DELIVERING,
+                    SessionActionState.RESOLVED,
+                    -> current.actionRequests
+                    SessionActionState.PENDING,
+                    null,
+                    -> current.actionRequests.filterNot {
+                        it.locator == request.locator && it.id == request.id
+                    } + request
+                }
+            } ?: current.actionRequests
+
             val next = current.copy(
                 sessions = updatedSessions,
                 activities = updatedActivities,
                 transcripts = updatedTranscripts,
+                actionRequests = updatedActionRequests,
             )
             if (next == current) current else next
         }
@@ -205,9 +240,88 @@ class PersistentSessionHubRepository private constructor(
             val activity = current.activities.firstOrNull { it.locator == locator && it.id == activityId }
                 ?: throw NoSuchElementException("No session activity found")
             require(activity.requiresAction) { "Session activity is not awaiting an action" }
+            require(activity.actionRequestId == null) {
+                "Provider action activity must be resolved through its offered decision"
+            }
             current.copy(
                 activities = current.activities.map {
                     if (it.locator == locator && it.id == activityId) it.copy(isResolved = true) else it
+                },
+            )
+        }
+    }
+
+    override suspend fun beginActionResponse(
+        locator: SessionLocator,
+        requestId: String,
+        decision: dev.agentrelay.provider.api.AgentApprovalDecision,
+        answeredQuestionIds: Set<String>,
+        additionalConfirmationGiven: Boolean,
+        startedAtEpochMillis: Long,
+    ) {
+        require(startedAtEpochMillis >= 0L)
+        mutate { current ->
+            val request = current.actionRequest(locator, requestId)
+                ?: throw NoSuchElementException("No action request found")
+            require(request.state == SessionActionState.PENDING) { "Action request is not pending" }
+            require(decision in request.availableDecisions) { "Decision was not offered by the provider" }
+            require(!request.requiresAdditionalConfirmation(decision) || additionalConfirmationGiven) {
+                "Additional confirmation is required for this decision"
+            }
+            val questionIds = request.questions.mapTo(mutableSetOf()) { it.id }
+            require(answeredQuestionIds.all(questionIds::contains)) { "Answers reference an unknown question" }
+            if (decision == dev.agentrelay.provider.api.AgentApprovalDecision.SUBMIT) {
+                require(answeredQuestionIds == questionIds) { "Every question requires an answer" }
+            } else {
+                require(answeredQuestionIds.isEmpty()) { "Only a submitted answer may include question ids" }
+            }
+            current.copy(
+                actionRequests = current.actionRequests.map {
+                    if (it.locator == locator && it.id == requestId) {
+                        it.copy(
+                            state = SessionActionState.DELIVERING,
+                            decision = decision,
+                            answeredQuestionIds = answeredQuestionIds,
+                            additionalConfirmationGiven = additionalConfirmationGiven,
+                            decisionAtEpochMillis = startedAtEpochMillis,
+                        )
+                    } else {
+                        it
+                    }
+                },
+            )
+        }
+    }
+
+    override suspend fun completeActionResponse(
+        locator: SessionLocator,
+        requestId: String,
+        completedAtEpochMillis: Long,
+    ) {
+        require(completedAtEpochMillis >= 0L)
+        mutate { current ->
+            val request = current.actionRequest(locator, requestId)
+                ?: throw NoSuchElementException("No action request found")
+            require(request.state == SessionActionState.DELIVERING) {
+                "Action request is not being delivered"
+            }
+            current.copy(
+                actionRequests = current.actionRequests.map {
+                    if (it.locator == locator && it.id == requestId) {
+                        it.copy(
+                            state = SessionActionState.RESOLVED,
+                            decisionAtEpochMillis = completedAtEpochMillis,
+                        )
+                    } else {
+                        it
+                    }
+                },
+                activities = current.activities.map {
+                    if (it.locator == locator && it.actionRequestId == requestId) {
+                        it.copy(isResolved = true)
+                    } else {
+                        it
+                    }
                 },
             )
         }
@@ -236,6 +350,7 @@ class PersistentSessionHubRepository private constructor(
                     drafts = current.drafts - locator,
                     activities = current.activities.filterNot { it.locator == locator },
                     transcripts = current.transcripts - locator,
+                    actionRequests = current.actionRequests.filterNot { it.locator == locator },
                 )
             }
         }

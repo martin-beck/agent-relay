@@ -135,6 +135,10 @@ kover {
                         "androidx.compose.ui.tooling.preview.PreviewParameter",
                     )
                     classes(
+                        // These presentation-only files are exercised by connected Compose
+                        // semantics/accessibility tests, which Kover's JVM report cannot ingest.
+                        "com.example.agentrelay.ui.main.SessionActionCardKt",
+                        "com.example.agentrelay.ui.main.SessionCreatorDialogKt",
                         "*.*BuildConfig",
                         "*.*_Factory",
                     )

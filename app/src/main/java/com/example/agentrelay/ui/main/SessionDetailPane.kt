@@ -51,6 +51,7 @@ internal fun SessionDetailRoute(
     onSubmitDraft: (String) -> Unit,
     onResumeSession: (String) -> Unit,
     onInterruptSession: (String) -> Unit,
+    onRespondToAction: SessionActionResponder,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier.fillMaxSize()) {
@@ -70,6 +71,7 @@ internal fun SessionDetailRoute(
                 onSubmitDraft = onSubmitDraft,
                 onResumeSession = onResumeSession,
                 onInterruptSession = onInterruptSession,
+                onRespondToAction = onRespondToAction,
             )
         }
     }
@@ -83,6 +85,7 @@ internal fun SessionDetailPane(
     onSubmitDraft: (String) -> Unit = {},
     onResumeSession: (String) -> Unit = {},
     onInterruptSession: (String) -> Unit = {},
+    onRespondToAction: SessionActionResponder = { _, _, _, _, _ -> },
 ) {
     if (detail == null) {
         Box(
@@ -104,6 +107,20 @@ internal fun SessionDetailPane(
     ) {
         item(key = "detail-header") {
             SessionDetailHeader(detail.session)
+        }
+        if (detail.actions.isNotEmpty()) {
+            item(key = "actions-heading") {
+                DetailHeading("Approvals and questions")
+            }
+            items(
+                detail.actions,
+                key = { "action:" + it.stableKey },
+            ) { action ->
+                SessionActionCard(
+                    action = action,
+                    onRespond = onRespondToAction,
+                )
+            }
         }
         item(key = "session-composer") {
             SessionComposer(

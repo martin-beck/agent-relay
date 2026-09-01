@@ -26,6 +26,12 @@ supported release.
   full-tuple resume/send/steer/interrupt routing, failed-send preservation, and
   typed timeline rendering for user, agent, plan, reasoning, tool, and system
   entries.
+- Provider-neutral session creation from ready agent endpoints with optional
+  working-directory and model settings.
+- Durable approval and question cards with exact execution context,
+  provider-offered decisions, complete answer validation, high-risk/session-wide
+  confirmation, uncertain-delivery protection, and a redacted resolved audit
+  record.
 - Semantic critical-flow UI tests and API 34+ automated accessibility checks,
   with API 36 phone pull-request CI and a scheduled minimum-API/tablet matrix.
 - Android verification workflow and Dependabot configuration.
@@ -44,8 +50,8 @@ supported release.
   parallel Android build output cannot cause transient formatting failures.
 - UI CI now verifies completed emulator boot and independently requires clean
   multi-module JUnit evidence, uploads reports from every connected-test module,
-  and retains Gradle's problems report instead of relying on failure-looking log
-  text or an app-only artifact.
+  publishes exact counts in the job summary, and retains Gradle's problems
+  report instead of relying on failure-looking log text or an app-only artifact.
 
 ### Security
 
@@ -58,9 +64,8 @@ supported release.
 
 ### Known limitations
 
-- The current session hub is an early control surface. Session creation,
-  approval decisions, queued/offline input, and artifact workflows are not yet
-  exposed.
+- The current session hub is an early control surface. Queued/offline input and
+  artifact workflows are not yet exposed.
 - Voice input and attachments are not yet integrated with the text composer.
 - Offline speech, background recovery/notifications, and secure file transfer
   are not yet wired into the application.

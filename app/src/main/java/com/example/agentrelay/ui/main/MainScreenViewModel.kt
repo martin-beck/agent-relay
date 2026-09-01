@@ -5,9 +5,13 @@ import androidx.lifecycle.viewModelScope
 import com.example.agentrelay.data.SessionHubRuntime
 import dev.agentrelay.connection.api.ConnectionIdentityDecision
 import dev.agentrelay.connection.api.ConnectionState
+import dev.agentrelay.provider.api.AgentApprovalDecision
 import dev.agentrelay.provider.api.AgentSessionState
+import dev.agentrelay.provider.api.StartSessionOptions
 import dev.agentrelay.session.api.SessionDraft
 import dev.agentrelay.session.api.SessionLocator
+import dev.agentrelay.session.runtime.SessionActionAuditFailureException
+import dev.agentrelay.session.runtime.SessionActionDeliveryUncertainException
 import dev.agentrelay.session.runtime.SessionConnectionKey
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -32,6 +36,7 @@ internal class MainScreenViewModel(
     private val operationError = MutableStateFlow<String?>(null)
     private val busyConnectionKeys = MutableStateFlow<Set<String>>(emptySet())
     private val sessionInteractions = MutableStateFlow(SessionInteractionState())
+    private val sessionCreator = MutableStateFlow<SessionCreatorUiState?>(null)
     private val draftSaveJobs = mutableMapOf<String, Job>()
     private var runtime: SessionHubRuntime? = null
     private var initializationJob: Job? = null
@@ -148,7 +153,15 @@ internal class MainScreenViewModel(
             return
         }
         selectedSessionKey.value = sessionKey
-        markRead(active, locator)
+        viewModelScope.launch {
+            try {
+                active.markSessionRead(locator)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Throwable) {
+                operationError.value = "The session read state could not be saved."
+            }
+        }
     }
 
     fun clearSelection() {
@@ -166,7 +179,11 @@ internal class MainScreenViewModel(
         selectionEnd: Int,
     ) {
         val active = runtime ?: return
-        val locator = sessionLocator(active, sessionKey) ?: return
+        val locator = active.findSessionLocator(sessionKey)
+        if (locator == null) {
+            operationError.value = "That session is no longer available."
+            return
+        }
         if (text.length > MAX_SESSION_DRAFT_CHARS) {
             operationError.value = "Session drafts are limited to $MAX_SESSION_DRAFT_CHARS characters."
             return
@@ -268,6 +285,133 @@ internal class MainScreenViewModel(
         failureMessage = "The active turn could not be interrupted.",
     ) { active, locator -> active.interrupt(locator) }
 
+    fun openSessionCreator(launcherKey: String) {
+        val launcher = (uiState.value as? MainScreenUiState.Ready)
+            ?.hub
+            ?.sessionLaunchers
+            ?.firstOrNull { it.stableKey == launcherKey }
+        if (launcher == null) {
+            operationError.value = "That agent endpoint is no longer ready."
+            return
+        }
+        operationError.value = null
+        sessionCreator.value = SessionCreatorUiState(
+            launcherKey = launcher.stableKey,
+            connectionLabel = launcher.connectionLabel,
+            connectionProviderName = launcher.connectionProviderName,
+            agentProviderLabel = launcher.agentProviderLabel,
+            workingDirectory = launcher.suggestedWorkingDirectory.orEmpty(),
+        )
+    }
+
+    fun updateSessionCreatorWorkingDirectory(value: String) {
+        if (value.length > MAX_WORKING_DIRECTORY_CHARS) {
+            operationError.value = "Working directories are limited to $MAX_WORKING_DIRECTORY_CHARS characters."
+            return
+        }
+        sessionCreator.update { current ->
+            current?.takeUnless(SessionCreatorUiState::isBusy)?.copy(workingDirectory = value) ?: current
+        }
+    }
+
+    fun updateSessionCreatorModel(value: String) {
+        if (value.length > MAX_MODEL_CHARS) {
+            operationError.value = "Model names are limited to $MAX_MODEL_CHARS characters."
+            return
+        }
+        sessionCreator.update { current ->
+            current?.takeUnless(SessionCreatorUiState::isBusy)?.copy(model = value) ?: current
+        }
+    }
+
+    fun dismissSessionCreator() {
+        if (sessionCreator.value?.isBusy != true) {
+            sessionCreator.value = null
+        }
+    }
+
+    fun startSession() {
+        val active = runtime ?: return
+        val creator = sessionCreator.value ?: return
+        if (creator.isBusy) {
+            return
+        }
+        val endpoint = active.coordinatorSnapshot.value.agentEndpoints.keys
+            .firstOrNull { it.stableUiKey == creator.launcherKey }
+        if (endpoint == null) {
+            sessionCreator.value = null
+            operationError.value = "That agent endpoint is no longer ready."
+            return
+        }
+        operationError.value = null
+        sessionCreator.value = creator.copy(isBusy = true)
+        viewModelScope.launch {
+            try {
+                val locator = active.startSession(
+                    endpoint = endpoint,
+                    options = StartSessionOptions(
+                        workingDirectory = creator.workingDirectory.trim().takeIf(String::isNotEmpty),
+                        model = creator.model.trim().takeIf(String::isNotEmpty),
+                    ),
+                )
+                selectedSessionKey.value = locator.stableUiKey
+                sessionCreator.value = null
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Throwable) {
+                sessionCreator.update { it?.copy(isBusy = false) }
+                operationError.value = "The new agent session could not be started."
+            }
+        }
+    }
+
+    fun respondToAction(
+        sessionKey: String,
+        actionKey: String,
+        decision: AgentApprovalDecision,
+        answers: Map<String, List<String>>,
+        additionalConfirmationGiven: Boolean,
+    ) {
+        val active = runtime ?: return
+        val request = active.sessionSnapshot.value.actionRequests.firstOrNull {
+            it.id == actionKey && it.locator.stableUiKey == sessionKey
+        }
+        if (request == null) {
+            operationError.value = "That approval or question is no longer available."
+            return
+        }
+        if (actionKey in sessionInteractions.value.busyActionKeys) {
+            return
+        }
+        operationError.value = null
+        sessionInteractions.update { current ->
+            current.copy(busyActionKeys = current.busyActionKeys + actionKey)
+        }
+        viewModelScope.launch {
+            try {
+                active.respondToAction(
+                    locator = request.locator,
+                    requestId = request.id,
+                    decision = decision,
+                    answers = answers,
+                    additionalConfirmationGiven = additionalConfirmationGiven,
+                )
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (failure: SessionActionDeliveryUncertainException) {
+                operationError.value = failure.message
+            } catch (failure: SessionActionAuditFailureException) {
+                operationError.value = failure.message
+            } catch (_: Throwable) {
+                operationError.value = "The approval or question response could not be applied."
+            } finally {
+                sessionInteractions.update { current ->
+                    current.copy(busyActionKeys = current.busyActionKeys - actionKey)
+                }
+            }
+        }
+    }
+
     private fun initialize() {
         initializationJob?.cancel()
         mutableUiState.value = MainScreenUiState.Loading
@@ -297,10 +441,17 @@ internal class MainScreenViewModel(
                             operationError = error,
                             busyConnectionKeys = operations.busyConnectionKeys,
                             busySessionKeys = operations.interactions.busySessionKeys,
+                            busyActionKeys = operations.interactions.busyActionKeys,
                             draftOverrides = operations.interactions.draftOverrides,
                         )
                     }.combine(profileEditor.state) { hub, editor ->
-                        MainScreenUiState.Ready(hub, editor)
+                        hub to editor
+                    }.combine(sessionCreator) { (hub, editor), creator ->
+                        MainScreenUiState.Ready(
+                            hub = hub,
+                            profileEditor = editor,
+                            sessionCreator = creator,
+                        )
                     }.collect { mutableUiState.value = it }
                 }
                 try {
@@ -373,7 +524,11 @@ internal class MainScreenViewModel(
         operation: suspend (SessionHubRuntime, SessionLocator) -> Unit,
     ) {
         val active = runtime ?: return
-        val locator = sessionLocator(active, sessionKey) ?: return
+        val locator = active.findSessionLocator(sessionKey)
+        if (locator == null) {
+            operationError.value = "That session is no longer available."
+            return
+        }
         if (sessionKey in sessionInteractions.value.busySessionKeys) {
             return
         }
@@ -396,41 +551,21 @@ internal class MainScreenViewModel(
         }
     }
 
-    private fun sessionLocator(
-        active: SessionHubRuntime,
-        sessionKey: String,
-    ): SessionLocator? {
-        val locator = active.sessionSnapshot.value.sessions
-            .firstOrNull { it.locator.stableUiKey == sessionKey }
-            ?.locator
-        if (locator == null) {
-            operationError.value = "That session is no longer available."
-        }
-        return locator
-    }
-
-    private fun markRead(
-        active: SessionHubRuntime,
-        locator: SessionLocator,
-    ) {
-        viewModelScope.launch {
-            try {
-                active.markSessionRead(locator)
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (_: Throwable) {
-                operationError.value = "The session read state could not be saved."
-            }
-        }
-    }
-
     private companion object {
         const val DRAFT_SAVE_DELAY_MILLIS = 300L
+        const val MAX_WORKING_DIRECTORY_CHARS = 4_096
+        const val MAX_MODEL_CHARS = 256
     }
 }
 
+private fun SessionHubRuntime.findSessionLocator(sessionKey: String): SessionLocator? =
+    sessionSnapshot.value.sessions
+        .firstOrNull { it.locator.stableUiKey == sessionKey }
+        ?.locator
+
 private data class SessionInteractionState(
     val busySessionKeys: Set<String> = emptySet(),
+    val busyActionKeys: Set<String> = emptySet(),
     val draftOverrides: Map<String, SessionDraft> = emptyMap(),
 )
 
@@ -447,5 +582,16 @@ internal sealed interface MainScreenUiState {
     data class Ready(
         val hub: SessionHubUiModel,
         val profileEditor: ConnectionProfileEditorUiState? = null,
+        val sessionCreator: SessionCreatorUiState? = null,
     ) : MainScreenUiState
 }
+
+internal data class SessionCreatorUiState(
+    val launcherKey: String,
+    val connectionLabel: String,
+    val connectionProviderName: String,
+    val agentProviderLabel: String,
+    val workingDirectory: String = "",
+    val model: String = "",
+    val isBusy: Boolean = false,
+)

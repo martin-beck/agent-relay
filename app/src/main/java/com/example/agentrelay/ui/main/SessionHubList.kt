@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -25,6 +26,7 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import dev.agentrelay.session.api.SessionActionState
 
 @Composable
 internal fun SessionHubList(
@@ -53,6 +55,23 @@ internal fun SessionHubList(
                 actionLabel = if (issue.recoverable) "Refresh" else null,
                 onAction = if (issue.recoverable) actions.refresh else null,
             )
+        }
+        if (hub.attentionActions.isNotEmpty()) {
+            item(key = "attention-heading") {
+                SectionHeading(
+                    title = "Needs attention",
+                    subtitle = "Review provider questions and approvals before work can continue.",
+                )
+            }
+            items(
+                hub.attentionActions,
+                key = { "attention:" + it.stableKey },
+            ) { action ->
+                AttentionActionCard(
+                    action = action,
+                    onReview = { onSelectSession(action.sessionKey) },
+                )
+            }
         }
         item(key = "connections-heading") {
             SectionHeading(
@@ -89,6 +108,7 @@ internal fun SessionHubList(
                 )
             }
         }
+        sessionLaunchers(hub.sessionLaunchers, actions.openSessionCreator)
         item(key = "sessions-heading") {
             SectionHeading(
                 title = "Recent sessions",
@@ -108,6 +128,35 @@ internal fun SessionHubList(
                     selected = session.stableKey == hub.selectedSessionKey,
                     onClick = { onSelectSession(session.stableKey) },
                 )
+            }
+        }
+    }
+}
+
+private fun LazyListScope.sessionLaunchers(
+    launchers: List<SessionLauncherUiModel>,
+    onOpen: (String) -> Unit,
+) {
+    if (launchers.isEmpty()) {
+        return
+    }
+    item(key = "start-sessions-heading") {
+        SectionHeading(
+            title = "Start a new session",
+            subtitle = "Choose a ready agent provider and optionally set its workspace and model.",
+        )
+    }
+    items(
+        launchers,
+        key = { "session-launcher:" + it.stableKey },
+    ) { launcher ->
+        OutlinedButton(
+            onClick = { onOpen(launcher.stableKey) },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Column {
+                Text("Start ${launcher.agentProviderLabel} on ${launcher.connectionLabel}")
+                Text(launcher.connectionProviderName, style = MaterialTheme.typography.labelSmall)
             }
         }
     }
@@ -207,6 +256,63 @@ private fun MessageCard(
                 TextButton(onClick = onAction) {
                     Text(actionLabel)
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AttentionActionCard(
+    action: SessionActionUiModel,
+    onReview: () -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth().semantics {
+            liveRegion = LiveRegionMode.Polite
+        },
+        colors = CardDefaults.cardColors(
+            containerColor = if (action.riskLabels.isNotEmpty()) {
+                MaterialTheme.colorScheme.errorContainer
+            } else {
+                MaterialTheme.colorScheme.tertiaryContainer
+            },
+        ),
+    ) {
+        Column(
+            modifier = Modifier.padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Text(
+                text = if (action.state == SessionActionState.DELIVERING) {
+                    "Response awaiting provider confirmation"
+                } else {
+                    action.typeLabel
+                },
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold,
+            )
+            Text(
+                text = action.title,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                text = action.connectionProviderName + "  -  " + action.connectionLabel +
+                    "  -  " + action.agentProviderLabel,
+                style = MaterialTheme.typography.bodySmall,
+            )
+            action.riskLabels.forEach { risk ->
+                Text(
+                    text = "Risk: $risk",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+            OutlinedButton(
+                onClick = onReview,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("Review in ${action.sessionTitle}")
             }
         }
     }

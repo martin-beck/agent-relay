@@ -15,7 +15,7 @@ bounded mutation fuzzing is scheduled separately.
 | Dependency analysis | Unused, transitive, and incorrectly scoped dependencies | Any advice fails, except one documented public-API edge |
 | JVM tests | Unit, contract, concurrency, and persistence behavior | Any failure fails |
 | Device UI tests | Semantic flows and API 34+ accessibility checks | API 36 phone fails pull requests; minimum API and tablet run weekly |
-| Kover | Aggregate JVM line coverage across modules | Less than 70% fails |
+| Kover | Aggregate JVM-testable line coverage across modules | Less than 70% fails |
 | Debug assembly | Packaging and resource integration | Any failure fails |
 
 The dependency-analysis exception for `:session:api` is intentionally narrow:
@@ -34,6 +34,15 @@ The `AndroidGradlePluginVersion`, `GradleDependency`, and
 mutable update feeds and duplicate Dependabot. Upgrade proposals remain
 individually reviewed and must pass the complete gate before merge.
 
+Kover cannot ingest Android connected-test execution into its JVM aggregate.
+`SessionActionCardKt` and `SessionCreatorDialogKt` are presentation-only
+Compose files covered by the required device semantic/accessibility suite, so
+they are explicitly excluded from the JVM denominator. Their ViewModel,
+provider-ID translation, persistence, risk, validation, and UI-mapping logic
+remain included in Kover. Add another presentation exclusion only with a
+required connected test that exercises the user-visible behavior; never exclude
+domain or orchestration logic to meet the percentage.
+
 Run the full local gate:
 
 ```bash
@@ -51,8 +60,8 @@ Reports are written below `build/reports/detekt`,
 `build/reports/problems`, plus each Android module's `build/reports` directory.
 CI retains them for 14 days.
 
-Gradle 9 currently produces a problems report because Detekt 1.23.8, the latest
-stable Detekt release, calls a reporting API scheduled for removal in Gradle 10.
+Gradle 9 currently produces a problems report because the pinned Detekt 1.23.8
+plugin calls a reporting API scheduled for removal in Gradle 10.
 The warning originates in the Detekt plugin rather than project build logic.
 Agent Relay retains the report and will adopt a compatible stable Detekt release
 before moving to Gradle 10; it does not replace analyzer or test failure gates.
@@ -88,13 +97,14 @@ Compose Accessibility Test Framework checks on an API 36 phone for every pull
 request and push to `main`. The emulator script explicitly verifies completed
 Android boot before starting Gradle. A separate XML parser then requires clean
 JUnit evidence from the app, SSH Android, and storage Android modules, with at
-least 12 discovered and 10 executed tests. This prevents a missing device,
-missing report, or accidentally empty suite from appearing green.
+least 18 discovered and 18 executed tests. This prevents a missing device,
+missing module report, skipped accessibility audit, or accidentally empty suite
+from appearing green.
 
 The weekly/manual matrix runs the same suite on the minimum API phone and an
 API 36 tablet. CI artifacts retain reports from every tested module plus the
-Gradle problems report. The API 28 run skips only the two API 34+ accessibility-
-framework audits; at least ten semantic and secure-storage tests still execute.
+Gradle problems report. The API 28 run filters out the three API 34+
+accessibility-framework audits and requires all 15 remaining device tests.
 Emulator console, graphics, or teardown diagnostics can contain alarming words;
 CI relies on process status and parsed JUnit evidence rather than string grep.
 

@@ -87,11 +87,19 @@ The Android Keystore instrumentation coverage requires an emulator or physical
 device:
 
 ```bash
-./gradlew :storage:android:connectedDebugAndroidTest   :ssh:android:connectedDebugAndroidTest
+./gradlew connectedDebugAndroidTest
 ```
 
-These connected tests are not yet part of hosted CI. A successful compile or JVM
-test does not substitute for real Android Keystore execution.
+Confirm that every expected module produced clean JUnit evidence:
+
+```bash
+python3 scripts/ci/verify_connected_tests.py --root . \
+  --minimum-tests 18 --minimum-executed 18 \
+  --require-module app --require-module ssh/android --require-module storage/android
+```
+
+The pull-request UI workflow runs the same suite on an API 36 emulator. A
+successful compile or JVM test does not substitute for device execution.
 
 ## CI
 
@@ -100,6 +108,9 @@ pinned to immutable commit SHAs, dependency updates are proposed by Dependabot,
 and test, quality, lint, and APK artifacts are retained for a limited time. The
 separate `.github/workflows/fuzz.yml` job runs on a weekly schedule and by
 manual dispatch so bounded mutation fuzzing does not slow every pull request.
+The `.github/workflows/ui.yml` job runs semantic UI, accessibility, SSH
+Android, and encrypted-storage tests, then parses each module's JUnit XML instead
+of treating emulator log text as the result.
 
 If a CI-only failure occurs, download the relevant report artifact from the
 workflow run and reproduce the exact failing Gradle task locally.

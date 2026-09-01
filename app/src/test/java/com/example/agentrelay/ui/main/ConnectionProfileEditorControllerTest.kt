@@ -18,9 +18,12 @@ import dev.agentrelay.connection.api.ConnectionProfileUpdate
 import dev.agentrelay.connection.api.ConnectionProfileValidationException
 import dev.agentrelay.connection.api.ConnectionProviderDescriptor
 import dev.agentrelay.connection.api.ConnectionProviderId
+import dev.agentrelay.provider.api.AgentApprovalDecision
+import dev.agentrelay.provider.api.StartSessionOptions
 import dev.agentrelay.session.api.SessionDraft
 import dev.agentrelay.session.api.SessionHubSnapshot
 import dev.agentrelay.session.api.SessionLocator
+import dev.agentrelay.session.runtime.AgentEndpointKey
 import dev.agentrelay.session.runtime.SessionConnectionKey
 import dev.agentrelay.session.runtime.SessionCoordinatorSnapshot
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -308,6 +311,19 @@ private class FakeProfileRuntime(
     override suspend fun steerActiveTurn(locator: SessionLocator, text: String) = Unit
 
     override suspend fun interrupt(locator: SessionLocator) = Unit
+
+    override suspend fun startSession(
+        endpoint: AgentEndpointKey,
+        options: StartSessionOptions,
+    ): SessionLocator = error("Session creation is not configured for profile editor tests")
+
+    override suspend fun respondToAction(
+        locator: SessionLocator,
+        requestId: String,
+        decision: AgentApprovalDecision,
+        answers: Map<String, List<String>>,
+        additionalConfirmationGiven: Boolean,
+    ) = Unit
 }
 
 private fun editor(profileId: ConnectionProfileId?) = ConnectionProfileEditor(

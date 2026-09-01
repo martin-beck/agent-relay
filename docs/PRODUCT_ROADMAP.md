@@ -252,8 +252,9 @@ core.
 ### Provider-aware session control
 
 Initial-app progress: the UI now gates resume, send, active-turn steering, and
-interruption from provider capabilities and observed session state. Session
-creation, detach/close, approval, and artifact controls remain future work.
+interruption from provider capabilities and observed session state. It starts
+sessions with provider-neutral options from ready endpoints. Detach/close and
+artifact controls remain future work.
 
 - Probe installation, version, authentication, configuration, and protocol
   compatibility before offering a provider.
@@ -306,6 +307,13 @@ send, explicit retry/cancel, attachments, and voice remain.
   unless explicitly requested.
 
 ### Approval inbox
+
+Initial-app progress: pending approvals and questions are persisted with their
+activity, expose only provider-offered decisions, validate every answer, require
+a second confirmation for positive risky or session-wide grants, and retain a
+redacted resolved audit record. Delivery is marked durable before provider I/O
+so an uncertain result cannot be retried accidentally. Grant revocation,
+duration, and result-tool linking remain future work.
 
 - Show provider, host, workspace, session, command or file scope, rationale, and
   requested duration in one review surface.
