@@ -91,28 +91,6 @@ class PersistentSessionHubRepositoryTest {
         val store = RecordingStore()
         val repository = PersistentSessionHubRepository.open(store)
         val session = locator("local.device", "local", "local-thread")
-
-        @Test
-        fun activityIdentityAndResolutionAreScopedToTheFullSessionLocator() = runTest {
-            val repository = PersistentSessionHubRepository.open(InMemorySessionHubStore())
-            val ssh = locator("ssh.secure-shell", "workstation", "shared-event-test")
-            val local = locator("local.device", "local", "shared-event-test")
-            repository.upsertSession(observation(ssh, updatedAt = 1L))
-            repository.upsertSession(observation(local, updatedAt = 1L))
-
-            repository.recordActivity(
-                activity("approval", ssh, SessionActivityType.APPROVAL_REQUIRED, 2L),
-            )
-            repository.recordActivity(
-                activity("approval", local, SessionActivityType.APPROVAL_REQUIRED, 2L),
-            )
-            repository.resolveActivity(local, "approval")
-
-            assertEquals(2, repository.snapshot.value.activities.size)
-            assertFalse(repository.snapshot.value.activities.single { it.locator == ssh }.isResolved)
-            assertTrue(repository.snapshot.value.activities.single { it.locator == local }.isResolved)
-        }
-
         repository.upsertSession(observation(session, updatedAt = 1L))
         val activity = activity(
             id = "output-1",
@@ -130,6 +108,86 @@ class PersistentSessionHubRepositoryTest {
         repository.markSessionRead(session, throughEpochMillis = 2L)
         assertEquals(0, repository.snapshot.value.session(session)?.unreadCount)
         assertTrue(repository.snapshot.value.activities.single().isRead)
+    }
+
+    @Test
+    fun activityIdentityAndResolutionAreScopedToTheFullSessionLocator() = runTest {
+        val repository = PersistentSessionHubRepository.open(InMemorySessionHubStore())
+        val ssh = locator("ssh.secure-shell", "workstation", "shared-event-test")
+        val local = locator("local.device", "local", "shared-event-test")
+        repository.upsertSession(observation(ssh, updatedAt = 1L))
+        repository.upsertSession(observation(local, updatedAt = 1L))
+
+        repository.recordActivity(
+            activity("approval", ssh, SessionActivityType.APPROVAL_REQUIRED, 2L),
+        )
+        repository.recordActivity(
+            activity("approval", local, SessionActivityType.APPROVAL_REQUIRED, 2L),
+        )
+        repository.resolveActivity(local, "approval")
+
+        assertEquals(2, repository.snapshot.value.activities.size)
+        assertFalse(repository.snapshot.value.activities.single { it.locator == ssh }.isResolved)
+        assertTrue(repository.snapshot.value.activities.single { it.locator == local }.isResolved)
+    }
+
+    @Test
+    fun providerEventPublishesObservationTranscriptAndUnreadAtomically() = runTest {
+        val session = locator("local.device", "local", "atomic-event")
+        val initial = SessionHubSnapshot(
+            sessions = listOf(SessionRecord(observation(session, updatedAt = 1L))),
+        )
+        val store = RecordingStore(initial)
+        val repository = PersistentSessionHubRepository.open(store)
+        val updatedObservation = observation(session, updatedAt = 2L).copy(
+            preview = "Completed output",
+            agentState = AgentSessionState.IDLE,
+        )
+        val update = SessionEventUpdate(
+            locator = session,
+            observation = updatedObservation,
+            transcriptEntry = transcript("completed", 2L),
+            activity = activity(
+                "completed",
+                session,
+                SessionActivityType.TURN_COMPLETED,
+                2L,
+            ),
+        )
+
+        repository.applyEvent(update)
+
+        assertEquals(1, store.saveCount)
+        assertEquals("Completed output", repository.snapshot.value.session(session)?.observation?.preview)
+        assertEquals("completed", repository.snapshot.value.transcripts[session]?.single()?.id)
+        assertEquals(1, repository.snapshot.value.totalUnread)
+
+        val savesAfterFirstEvent = store.saveCount
+        repository.applyEvent(update)
+        assertEquals(savesAfterFirstEvent, store.saveCount)
+    }
+
+    @Test
+    fun failedAtomicProviderEventPublishesNoneOfItsParts() = runTest {
+        val session = locator("local.device", "local", "atomic-failure")
+        val initial = SessionHubSnapshot(
+            sessions = listOf(SessionRecord(observation(session, updatedAt = 1L))),
+        )
+        val store = FailingStore(initial).apply { failWrites = true }
+        val repository = PersistentSessionHubRepository.open(store)
+
+        assertFailsWith<IllegalStateException> {
+            repository.applyEvent(
+                SessionEventUpdate(
+                    locator = session,
+                    observation = observation(session, updatedAt = 2L),
+                    transcriptEntry = transcript("unsaved", 2L),
+                    activity = activity("unsaved", session, SessionActivityType.NEW_OUTPUT, 2L),
+                ),
+            )
+        }
+
+        assertEquals(initial, repository.snapshot.value)
     }
 
     @Test
@@ -242,8 +300,10 @@ class PersistentSessionHubRepositoryTest {
         createdAtEpochMillis = at,
     )
 
-    private class RecordingStore : SessionHubStore {
-        private var value = SessionHubSnapshot()
+    private class RecordingStore(
+        initial: SessionHubSnapshot = SessionHubSnapshot(),
+    ) : SessionHubStore {
+        private var value = initial
         var saveCount = 0
 
         override suspend fun load(): SessionHubSnapshot = value

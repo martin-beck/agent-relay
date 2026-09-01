@@ -6,6 +6,25 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
+data class SessionEventUpdate(
+    val locator: SessionLocator,
+    val observation: SessionObservation? = null,
+    val transcriptEntry: CachedTranscriptEntry? = null,
+    val activity: SessionActivity? = null,
+) {
+    init {
+        require(observation == null || observation.locator == locator) {
+            "Event observation locator does not match"
+        }
+        require(activity == null || activity.locator == locator) {
+            "Event activity locator does not match"
+        }
+        require(observation != null || transcriptEntry != null || activity != null) {
+            "Session event update must contain a durable change"
+        }
+    }
+}
+
 interface SessionHubStore {
     suspend fun load(): SessionHubSnapshot
 
@@ -21,6 +40,8 @@ interface SessionHubRepository {
         locator: SessionLocator,
         preferences: SessionPreferences,
     )
+
+    suspend fun applyEvent(update: SessionEventUpdate)
 
     suspend fun updateDraft(
         locator: SessionLocator,
@@ -68,6 +89,57 @@ class PersistentSessionHubRepository private constructor(
             current.copy(
                 sessions = current.sessions.filterNot { it.locator == observation.locator } + updated,
             )
+        }
+    }
+
+    override suspend fun applyEvent(update: SessionEventUpdate) {
+        mutate { current ->
+            if (update.activity != null && current.activities.any {
+                    it.locator == update.activity.locator && it.id == update.activity.id
+                }
+            ) {
+                return@mutate current
+            }
+            val existing = current.session(update.locator)
+            require(existing != null || update.observation != null) {
+                "An event for an unknown session requires an observation"
+            }
+            val updatedRecord = when {
+                update.observation != null && existing != null ->
+                    existing.copy(observation = update.observation)
+                update.observation != null -> SessionRecord(update.observation)
+                else -> checkNotNull(existing)
+            }
+            val updatedSessions = current.sessions
+                .filterNot { it.locator == update.locator } + updatedRecord
+
+            val updatedTranscript = update.transcriptEntry?.let { entry ->
+                val existingEntries = current.transcripts[update.locator].orEmpty()
+                existingEntries.filterNot { it.id == entry.id } + entry
+            }
+            val updatedTranscripts = if (updatedTranscript == null) {
+                current.transcripts
+            } else {
+                current.transcripts + (update.locator to updatedTranscript)
+            }
+
+            val updatedActivities = update.activity?.let { activity ->
+                if (current.activities.any {
+                        it.locator == activity.locator && it.id == activity.id
+                    }
+                ) {
+                    current.activities
+                } else {
+                    current.activities + activity
+                }
+            } ?: current.activities
+
+            val next = current.copy(
+                sessions = updatedSessions,
+                activities = updatedActivities,
+                transcripts = updatedTranscripts,
+            )
+            if (next == current) current else next
         }
     }
 

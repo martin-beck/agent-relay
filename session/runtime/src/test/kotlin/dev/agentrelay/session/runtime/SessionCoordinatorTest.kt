@@ -1,0 +1,263 @@
+package dev.agentrelay.session.runtime
+
+import dev.agentrelay.connection.api.ConnectionProviderRegistry
+import dev.agentrelay.connection.api.ConnectionState
+import dev.agentrelay.provider.api.AgentApprovalDecision
+import dev.agentrelay.provider.api.AgentApprovalId
+import dev.agentrelay.provider.api.AgentEvent
+import dev.agentrelay.provider.api.AgentMessageChannel
+import dev.agentrelay.provider.api.AgentProviderRegistry
+import dev.agentrelay.provider.api.AgentSessionId
+import dev.agentrelay.provider.api.StartSessionOptions
+import dev.agentrelay.session.api.InMemorySessionHubStore
+import dev.agentrelay.session.api.PersistentSessionHubRepository
+import dev.agentrelay.session.api.SessionActivityType
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.runCurrent
+import kotlinx.coroutines.test.runTest
+import org.junit.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertNotEquals
+import kotlin.test.assertTrue
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class SessionCoordinatorTest {
+    @Test
+    fun oneProviderDiscoveryFailureDoesNotHideOtherConnectionProviders() = runTest {
+        val broken = FakeConnectionProvider(
+            providerId = "ssh",
+            profileId = "remote",
+            label = "Remote",
+            initialRuntime = FakeRuntime("remote"),
+            failProfileDiscovery = true,
+        )
+        val local = FakeConnectionProvider(
+            providerId = "local",
+            profileId = "device",
+            label = "This device",
+            initialRuntime = FakeRuntime("device"),
+        )
+        val coordinator = coordinator(listOf(broken, local), FakeAgentFactory())
+
+        try {
+            coordinator.refreshProfiles()
+            runCurrent()
+
+            assertEquals(listOf(local.summary), coordinator.snapshot.value.profiles)
+            assertTrue(
+                coordinator.snapshot.value.issues.values.any {
+                    it.kind == SessionCoordinatorIssueKind.PROFILE_DISCOVERY
+                },
+            )
+        } finally {
+            coordinator.shutdown()
+        }
+
+        assertEquals(1, broken.closeCount)
+        assertEquals(1, local.closeCount)
+    }
+
+    @Test
+    fun sameAgentSessionIdOnSshAndLocalRemainsFullyScoped() = runTest {
+        val ssh = FakeConnectionProvider(
+            providerId = "ssh",
+            profileId = "workstation",
+            label = "Workstation",
+            initialRuntime = FakeRuntime("ssh-host"),
+        )
+        val local = FakeConnectionProvider(
+            providerId = "local",
+            profileId = "device",
+            label = "This device",
+            initialRuntime = FakeRuntime("local-host"),
+        )
+        val agents = FakeAgentFactory()
+        val coordinator = coordinator(listOf(ssh, local), agents)
+
+        try {
+            coordinator.refreshProfiles()
+            runCurrent()
+            coordinator.connect(ssh.key())
+            coordinator.connect(local.key())
+            runCurrent()
+
+            val records = coordinator.repository.snapshot.value.sessions
+            assertEquals(2, records.size)
+            val sshLocator = records.single {
+                it.locator.connectionProviderId == ssh.descriptor.id
+            }.locator
+            val localLocator = records.single {
+                it.locator.connectionProviderId == local.descriptor.id
+            }.locator
+            assertEquals(AgentSessionId("shared-session"), sshLocator.agentSessionId)
+            assertEquals(AgentSessionId("shared-session"), localLocator.agentSessionId)
+            assertNotEquals(sshLocator, localLocator)
+            assertEquals(
+                setOf(AgentEndpointPhase.READY),
+                coordinator.snapshot.value.agentEndpoints.values.mapTo(mutableSetOf()) { it.phase },
+            )
+
+            agents.latest("local-host").emit(
+                AgentEvent.MessageCompleted(
+                    sessionId = AgentSessionId("shared-session"),
+                    turnId = null,
+                    itemId = "message-live",
+                    channel = AgentMessageChannel.FINAL,
+                    text = "Local result",
+                ),
+            )
+            runCurrent()
+
+            val snapshot = coordinator.repository.snapshot.value
+            assertEquals(0, snapshot.session(sshLocator)?.unreadCount)
+            assertEquals(1, snapshot.session(localLocator)?.unreadCount)
+            assertEquals(
+                listOf(SessionActivityType.NEW_OUTPUT),
+                snapshot.activities.filter { it.locator == localLocator }.map { it.type },
+            )
+            assertEquals(
+                setOf("cached:local-host:shared-session", "message-live"),
+                snapshot.transcripts.getValue(localLocator).mapTo(mutableSetOf()) { it.id },
+            )
+            assertTrue(snapshot.transcripts.values.flatten().none { it.id == "foreign-row" })
+        } finally {
+            coordinator.shutdown()
+        }
+    }
+
+    @Test
+    fun reconnectClosesStaleAgentConnectionAndRecordsDurableActivity() = runTest {
+        val local = FakeConnectionProvider(
+            providerId = "local",
+            profileId = "device",
+            label = "This device",
+            initialRuntime = FakeRuntime("initial"),
+        )
+        val agents = FakeAgentFactory()
+        val coordinator = coordinator(listOf(local), agents)
+
+        try {
+            coordinator.refreshProfiles()
+            runCurrent()
+            coordinator.connect(local.key())
+            runCurrent()
+            val first = agents.latest("initial")
+            val locator = coordinator.repository.snapshot.value.sessions.single().locator
+
+            local.managed.loseConnection()
+            runCurrent()
+
+            assertEquals(1, first.closeCount)
+            assertIs<ConnectionState.Reconnecting>(
+                coordinator.snapshot.value.connectionStates.getValue(local.key()),
+            )
+            assertEquals(
+                AgentEndpointPhase.OFFLINE,
+                coordinator.snapshot.value.agentEndpoints.values.single().phase,
+            )
+
+            local.managed.reconnectWith(FakeRuntime("replacement"))
+            runCurrent()
+
+            assertEquals(2, agents.connections.size)
+            assertEquals(0, agents.latest("replacement").closeCount)
+            assertTrue(
+                coordinator.repository.snapshot.value.activities.any {
+                    it.locator == locator && it.type == SessionActivityType.RECONNECTED
+                },
+            )
+            assertEquals(
+                AgentEndpointPhase.READY,
+                coordinator.snapshot.value.agentEndpoints.values.single().phase,
+            )
+        } finally {
+            coordinator.shutdown()
+        }
+
+        assertEquals(1, agents.latest("replacement").closeCount)
+    }
+
+    @Test
+    fun typedActionsRouteOnlyToTheSelectedConnectionAndAgentEndpoint() = runTest {
+        val ssh = FakeConnectionProvider(
+            providerId = "ssh",
+            profileId = "workstation",
+            label = "Workstation",
+            initialRuntime = FakeRuntime("ssh-host"),
+        )
+        val agents = FakeAgentFactory()
+        val coordinator = coordinator(listOf(ssh), agents)
+
+        try {
+            coordinator.refreshProfiles()
+            runCurrent()
+            coordinator.connect(ssh.key())
+            runCurrent()
+            val endpoint = AgentEndpointKey(ssh.key(), agents.providerId)
+            val existing = coordinator.repository.snapshot.value.sessions.single().locator
+            val connection = agents.latest("ssh-host")
+
+            assertEquals(existing, coordinator.attach(existing))
+            assertEquals(
+                listOf("cached:ssh-host:shared-session"),
+                coordinator.transcript(existing).map { it.id },
+            )
+            coordinator.sendInput(existing, "continue")
+            coordinator.steerActiveTurn(existing, "focus on tests")
+            coordinator.interrupt(existing)
+            val approvalId = AgentApprovalId("approval-1")
+            val answers = mapOf("scope" to listOf("once"))
+            coordinator.respondToApproval(
+                locator = existing,
+                approvalId = approvalId,
+                decision = AgentApprovalDecision.SUBMIT,
+                answers = answers,
+            )
+            val changes = coordinator.changedFiles(existing)
+            val started = coordinator.startSession(
+                endpoint,
+                StartSessionOptions(
+                    workingDirectory = "/workspace/new",
+                    model = "test-model",
+                ),
+            )
+            runCurrent()
+
+            assertEquals(existing.agentProviderId, started.agentProviderId)
+            assertEquals(existing.connectionProviderId, started.connectionProviderId)
+            assertEquals(existing.connectionProfileId, started.connectionProfileId)
+            assertEquals(listOf(AgentSessionId("shared-session") to "continue"), connection.sentInputs)
+            assertEquals(
+                listOf(AgentSessionId("shared-session") to "focus on tests"),
+                connection.steeredInputs,
+            )
+            assertEquals(listOf(AgentSessionId("shared-session")), connection.interrupted)
+            assertEquals(
+                listOf(Triple(approvalId, AgentApprovalDecision.SUBMIT, answers)),
+                connection.approvalResponses,
+            )
+            assertEquals("/workspace/ssh-host/result.txt", changes.single().remotePath)
+            assertTrue(coordinator.repository.snapshot.value.session(started) != null)
+        } finally {
+            coordinator.shutdown()
+        }
+    }
+
+    private suspend fun kotlinx.coroutines.test.TestScope.coordinator(
+        providers: List<FakeConnectionProvider>,
+        agents: FakeAgentFactory,
+    ): SessionCoordinator = SessionCoordinator(
+        connectionRegistry = ConnectionProviderRegistry(providers),
+        agentRegistry = AgentProviderRegistry(listOf(agents)),
+        repository = PersistentSessionHubRepository.open(InMemorySessionHubStore()),
+        dispatcher = StandardTestDispatcher(testScheduler),
+        clock = TickingCoordinatorClock(),
+    )
+
+    private fun FakeConnectionProvider.key() = SessionConnectionKey(
+        providerId = descriptor.id,
+        profileId = summary.id,
+    )
+}
