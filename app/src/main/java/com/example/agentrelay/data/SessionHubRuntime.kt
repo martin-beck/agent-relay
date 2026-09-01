@@ -12,10 +12,12 @@ import dev.agentrelay.connection.api.ConnectionProviderRegistry
 import dev.agentrelay.connection.api.ConnectionProviderDescriptor
 import dev.agentrelay.provider.api.AgentApprovalDecision
 import dev.agentrelay.provider.api.StartSessionOptions
+import dev.agentrelay.session.api.SessionArtifact
 import dev.agentrelay.session.api.SessionDraft
 import dev.agentrelay.session.api.SessionHubSnapshot
 import dev.agentrelay.session.api.SessionLocator
 import dev.agentrelay.session.runtime.AgentEndpointKey
+import dev.agentrelay.session.runtime.PreparedArtifactDownload
 import dev.agentrelay.session.runtime.SessionConnectionKey
 import dev.agentrelay.session.runtime.SessionCoordinator
 import dev.agentrelay.session.runtime.SessionCoordinatorSnapshot
@@ -60,6 +62,10 @@ internal interface SessionHubRuntime {
     suspend fun steerActiveTurn(locator: SessionLocator, text: String)
 
     suspend fun interrupt(locator: SessionLocator)
+
+    suspend fun refreshArtifacts(locator: SessionLocator): List<SessionArtifact>
+
+    suspend fun prepareArtifactDownload(locator: SessionLocator, artifactId: String): PreparedArtifactDownload
 
     suspend fun startSession(
         endpoint: AgentEndpointKey,
@@ -141,6 +147,14 @@ internal class CoordinatorSessionHubRuntime(
     override suspend fun interrupt(locator: SessionLocator) {
         coordinator.interrupt(locator)
     }
+
+    override suspend fun refreshArtifacts(locator: SessionLocator): List<SessionArtifact> =
+        coordinator.changedFiles(locator)
+
+    override suspend fun prepareArtifactDownload(
+        locator: SessionLocator,
+        artifactId: String,
+    ): PreparedArtifactDownload = coordinator.prepareArtifactDownload(locator, artifactId)
 
     override suspend fun startSession(
         endpoint: AgentEndpointKey,

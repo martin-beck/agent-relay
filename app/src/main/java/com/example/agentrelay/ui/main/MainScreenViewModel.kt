@@ -46,6 +46,11 @@ internal class MainScreenViewModel(
         reportError = { operationError.value = it },
     )
 
+    internal val artifactInteractions = ArtifactInteractionController(
+        scope = viewModelScope,
+        runtime = { runtime },
+        reportError = { operationError.value = it },
+    )
     val uiState: StateFlow<MainScreenUiState> = mutableUiState.asStateFlow()
 
     init {
@@ -422,8 +427,9 @@ internal class MainScreenViewModel(
                 val uiOperations = combine(
                     busyConnectionKeys,
                     sessionInteractions,
-                ) { busyConnections, interactions ->
-                    UiOperations(busyConnections, interactions)
+                    artifactInteractions.state,
+                ) { busyConnections, interactions, artifacts ->
+                    UiOperations(busyConnections, interactions, artifacts)
                 }
                 launch {
                     combine(
@@ -443,6 +449,8 @@ internal class MainScreenViewModel(
                             busySessionKeys = operations.interactions.busySessionKeys,
                             busyActionKeys = operations.interactions.busyActionKeys,
                             draftOverrides = operations.interactions.draftOverrides,
+                            artifactTransferStates = operations.artifacts.transfers,
+                            refreshingArtifactSessionKeys = operations.artifacts.refreshingSessionKeys,
                         )
                     }.combine(profileEditor.state) { hub, editor ->
                         hub to editor
@@ -572,6 +580,7 @@ private data class SessionInteractionState(
 private data class UiOperations(
     val busyConnectionKeys: Set<String>,
     val interactions: SessionInteractionState,
+    val artifacts: ArtifactInteractionState,
 )
 
 internal sealed interface MainScreenUiState {

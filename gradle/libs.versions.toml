@@ -37,6 +37,7 @@ androidx-compose-foundation-layout = { group = "androidx.compose.foundation", na
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3"}
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime" }
 androidx-compose-runtime-annotation = { group = "androidx.compose.runtime", name = "runtime-annotation" }
+androidx-compose-runtime-saveable = { group = "androidx.compose.runtime", name = "runtime-saveable" }
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui"}
 androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 androidx-compose-ui-test = { group = "androidx.compose.ui", name = "ui-test" }

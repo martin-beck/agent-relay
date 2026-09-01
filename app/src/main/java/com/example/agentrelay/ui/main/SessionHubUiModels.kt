@@ -17,11 +17,13 @@ import dev.agentrelay.session.api.SessionActivityType
 import dev.agentrelay.session.api.SessionActionRequest
 import dev.agentrelay.session.api.SessionActionRisk
 import dev.agentrelay.session.api.SessionActionState
+import dev.agentrelay.session.api.SessionArtifact
 import dev.agentrelay.session.api.SessionDraft
 import dev.agentrelay.session.api.SessionHubSnapshot
 import dev.agentrelay.session.api.SessionLocator
 import dev.agentrelay.session.api.SessionRecord
 import dev.agentrelay.session.runtime.AgentEndpointKey
+import dev.agentrelay.session.runtime.AgentEndpointStatus
 import dev.agentrelay.session.runtime.AgentEndpointPhase
 import dev.agentrelay.session.runtime.SessionConnectionKey
 import dev.agentrelay.session.runtime.SessionCoordinatorSnapshot
@@ -112,6 +114,38 @@ internal data class SessionDetailUiModel(
     val transcript: List<TranscriptEntryUiModel>,
     val composer: SessionComposerUiModel = SessionComposerUiModel(),
     val actions: List<SessionActionUiModel> = emptyList(),
+    val artifacts: List<SessionArtifactUiModel> = emptyList(),
+    val canRefreshArtifacts: Boolean = false,
+    val isRefreshingArtifacts: Boolean = false,
+)
+
+internal data class ArtifactTransferUiState(
+    val bytesWritten: Long = 0L,
+    val totalBytes: Long? = null,
+    val isRunning: Boolean = true,
+    val isComplete: Boolean = false,
+) {
+    init {
+        require(bytesWritten >= 0L)
+        require(totalBytes == null || totalBytes >= 0L)
+        require(totalBytes == null || bytesWritten <= totalBytes)
+        require(!isComplete || !isRunning)
+    }
+}
+
+internal data class SessionArtifactUiModel(
+    val stableKey: String,
+    val sessionKey: String,
+    val displayPath: String,
+    val changeLabel: String,
+    val availabilityMessage: String,
+    val suggestedFileName: String,
+    val isDownloadable: Boolean,
+    val canSave: Boolean,
+    val bytesWritten: Long,
+    val totalBytes: Long?,
+    val isExporting: Boolean,
+    val isExportComplete: Boolean,
 )
 
 internal data class SessionActionUiModel(
@@ -221,6 +255,9 @@ internal val AgentEndpointKey.stableUiKey: String
 internal val SessionLocator.stableUiKey: String
     get() = stableHash(stableKey)
 
+internal val SessionArtifact.stableUiKey: String
+    get() = stableHash(locator.stableKey, id)
+
 private fun stableHash(vararg values: String): String =
     MessageDigest.getInstance("SHA-256")
         .digest(values.joinToString(separator = "") { "${it.length}:$it" }.encodeToByteArray())
@@ -237,6 +274,8 @@ internal object SessionHubUiMapper {
         busySessionKeys: Set<String> = emptySet(),
         busyActionKeys: Set<String> = emptySet(),
         draftOverrides: Map<String, SessionDraft> = emptyMap(),
+        artifactTransferStates: Map<String, ArtifactTransferUiState> = emptyMap(),
+        refreshingArtifactSessionKeys: Set<String> = emptySet(),
     ): SessionHubUiModel {
         val providerNames = connectionProviders.associate { it.id to it.displayName }
         val manageableProviders = connectionProviders
@@ -263,6 +302,8 @@ internal object SessionHubUiMapper {
                 actions,
                 busySessionKeys,
                 draftOverrides,
+                artifactTransferStates,
+                refreshingArtifactSessionKeys,
             ),
             selectedSessionKey = selectedSessionKey,
             operationError = operationError,
@@ -391,11 +432,19 @@ internal object SessionHubUiMapper {
         actions: List<SessionActionUiModel>,
         busySessionKeys: Set<String>,
         draftOverrides: Map<String, SessionDraft>,
+        artifactTransferStates: Map<String, ArtifactTransferUiState>,
+        refreshingArtifactSessionKeys: Set<String>,
     ): SessionDetailUiModel? {
         val record = sessions.sessions.firstOrNull {
             it.locator.stableUiKey == selectedSessionKey
         } ?: return null
         val activities = sessions.activities.filter { it.locator == record.locator }
+        val artifactEndpoint = artifactEndpoint(coordinator, record.locator)
+        val providerReady = artifactEndpoint?.phase == AgentEndpointPhase.READY
+        val canRefreshArtifacts =
+            providerReady &&
+                AgentCapability.FILE_CHANGES in artifactEndpoint.descriptor.capabilities
+        val fileAccessAvailable = providerReady && artifactEndpoint.fileAccessAvailable
         return SessionDetailUiModel(
             session = record.toUiModel(
                 connectionProviderName = providerNames[record.locator.connectionProviderId]
@@ -415,7 +464,29 @@ internal object SessionHubUiMapper {
                 isBusy = record.locator.stableUiKey in busySessionKeys,
             ),
             actions = actions.filter { it.sessionKey == record.locator.stableUiKey },
+            artifacts = sessions.sessionArtifacts(record.locator)
+                .sortedByDescending(SessionArtifact::observedAtEpochMillis)
+                .map { artifact ->
+                    SessionArtifactUiMapper.map(
+                        artifact = artifact,
+                        transfer = artifactTransferStates[artifact.stableUiKey],
+                        providerReady = providerReady,
+                        fileAccessAvailable = fileAccessAvailable,
+                    )
+                },
+            canRefreshArtifacts = canRefreshArtifacts,
+            isRefreshingArtifacts =
+            record.locator.stableUiKey in refreshingArtifactSessionKeys,
         )
+    }
+
+    private fun artifactEndpoint(
+        coordinator: SessionCoordinatorSnapshot,
+        locator: SessionLocator,
+    ): AgentEndpointStatus? = coordinator.agentEndpoints.values.firstOrNull { endpoint ->
+        endpoint.key.connection.providerId == locator.connectionProviderId &&
+            endpoint.key.connection.profileId == locator.connectionProfileId &&
+            endpoint.key.agentProviderId == locator.agentProviderId
     }
 
     private fun SessionRecord.toUiModel(

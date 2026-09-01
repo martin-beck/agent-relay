@@ -52,6 +52,9 @@ internal fun SessionDetailRoute(
     onResumeSession: (String) -> Unit,
     onInterruptSession: (String) -> Unit,
     onRespondToAction: SessionActionResponder,
+    onRefreshArtifacts: (String) -> Unit,
+    onSaveArtifact: (String, String, String) -> Unit,
+    onCancelArtifact: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier.fillMaxSize()) {
@@ -72,6 +75,9 @@ internal fun SessionDetailRoute(
                 onResumeSession = onResumeSession,
                 onInterruptSession = onInterruptSession,
                 onRespondToAction = onRespondToAction,
+                onRefreshArtifacts = onRefreshArtifacts,
+                onSaveArtifact = onSaveArtifact,
+                onCancelArtifact = onCancelArtifact,
             )
         }
     }
@@ -86,6 +92,9 @@ internal fun SessionDetailPane(
     onResumeSession: (String) -> Unit = {},
     onInterruptSession: (String) -> Unit = {},
     onRespondToAction: SessionActionResponder = { _, _, _, _, _ -> },
+    onRefreshArtifacts: (String) -> Unit = {},
+    onSaveArtifact: (String, String, String) -> Unit = { _, _, _ -> },
+    onCancelArtifact: (String) -> Unit = {},
 ) {
     if (detail == null) {
         Box(
@@ -131,6 +140,45 @@ internal fun SessionDetailPane(
                 onInterruptSession = onInterruptSession,
             )
         }
+        item(key = "artifacts-heading") {
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                DetailHeading("Changed files")
+                if (detail.canRefreshArtifacts) {
+                    OutlinedButton(
+                        onClick = { onRefreshArtifacts(detail.session.stableKey) },
+                        enabled = !detail.isRefreshingArtifacts,
+                    ) {
+                        Text("Refresh changed files")
+                    }
+                }
+                if (detail.isRefreshingArtifacts) {
+                    CircularProgressIndicator()
+                }
+            }
+        }
+        if (detail.artifacts.isEmpty()) {
+            item(key = "artifacts-empty") {
+                DetailPlaceholder(
+                    if (detail.canRefreshArtifacts) {
+                        "No changed files are recorded. Refresh to ask the connected provider."
+                    } else {
+                        "This provider does not expose changed files for this session."
+                    },
+                )
+            }
+        } else {
+            items(detail.artifacts, key = { "artifact:" + it.stableKey }) { artifact ->
+                ArtifactCard(
+                    artifact = artifact,
+                    onSaveArtifact = onSaveArtifact,
+                    onCancelArtifact = onCancelArtifact,
+                )
+            }
+        }
         item(key = "timeline-heading") {
             DetailHeading("Timeline")
         }
@@ -155,6 +203,87 @@ internal fun SessionDetailPane(
         } else {
             items(detail.activities, key = { "activity:" + it.id }) { activity ->
                 ActivityCard(activity)
+            }
+        }
+    }
+}
+
+@Composable
+private fun ArtifactCard(
+    artifact: SessionArtifactUiModel,
+    onSaveArtifact: (String, String, String) -> Unit,
+    onCancelArtifact: (String) -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        ),
+    ) {
+        Column(
+            modifier = Modifier.padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                SelectionContainer(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = artifact.displayPath,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 4,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+                Text(
+                    text = artifact.changeLabel,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+            Text(
+                text = artifact.availabilityMessage,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (artifact.isExporting) {
+                CircularProgressIndicator()
+                Text(
+                    text = artifact.totalBytes?.let { totalBytes ->
+                        "${artifact.bytesWritten} of $totalBytes bytes saved"
+                    } ?: "${artifact.bytesWritten} bytes saved",
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                    style = MaterialTheme.typography.labelMedium,
+                )
+                OutlinedButton(onClick = { onCancelArtifact(artifact.stableKey) }) {
+                    Text("Cancel saving")
+                }
+            } else {
+                if (artifact.isExportComplete) {
+                    Text(
+                        text = "Copy saved and source checksum verified.",
+                        modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+                if (artifact.isDownloadable) {
+                    Button(
+                        onClick = {
+                            onSaveArtifact(
+                                artifact.sessionKey,
+                                artifact.stableKey,
+                                artifact.suggestedFileName,
+                            )
+                        },
+                        enabled = artifact.canSave,
+                    ) {
+                        Text(if (artifact.isExportComplete) "Save another copy" else "Save copy")
+                    }
+                }
             }
         }
     }

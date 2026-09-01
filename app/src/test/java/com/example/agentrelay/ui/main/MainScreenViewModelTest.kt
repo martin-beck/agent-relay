@@ -2,6 +2,7 @@ package com.example.agentrelay.ui.main
 
 import androidx.lifecycle.viewModelScope
 import com.example.agentrelay.MainDispatcherRule
+import com.example.agentrelay.data.ArtifactExportDestination
 import com.example.agentrelay.data.SessionHubRuntime
 import dev.agentrelay.connection.api.ConnectionCapability
 import dev.agentrelay.connection.api.ConnectionChallengeId
@@ -20,6 +21,7 @@ import dev.agentrelay.connection.api.ConnectionState
 import dev.agentrelay.provider.api.AgentApprovalDecision
 import dev.agentrelay.provider.api.AgentApprovalType
 import dev.agentrelay.provider.api.AgentCapability
+import dev.agentrelay.provider.api.AgentFileChangeKind
 import dev.agentrelay.provider.api.AgentProviderDescriptor
 import dev.agentrelay.provider.api.AgentProviderId
 import dev.agentrelay.provider.api.AgentSessionId
@@ -28,6 +30,8 @@ import dev.agentrelay.provider.api.StartSessionOptions
 import dev.agentrelay.session.api.SessionActionRequest
 import dev.agentrelay.session.api.SessionActionRisk
 import dev.agentrelay.session.api.SessionDraft
+import dev.agentrelay.session.api.SessionArtifact
+import dev.agentrelay.session.api.SessionArtifactAvailability
 import dev.agentrelay.session.api.SessionHubSnapshot
 import dev.agentrelay.session.api.SessionLocator
 import dev.agentrelay.session.api.SessionObservation
@@ -37,12 +41,15 @@ import dev.agentrelay.session.api.SessionRecord
 import dev.agentrelay.session.runtime.AgentEndpointKey
 import dev.agentrelay.session.runtime.AgentEndpointPhase
 import dev.agentrelay.session.runtime.AgentEndpointStatus
+import dev.agentrelay.session.runtime.PreparedArtifactDownload
 import dev.agentrelay.session.runtime.SessionConnectionKey
 import dev.agentrelay.session.runtime.SessionCoordinatorSnapshot
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -699,7 +706,7 @@ class MainScreenViewModelTest {
     }
 }
 
-private class FakeSessionHubRuntime(
+internal class FakeSessionHubRuntime(
     providers: List<ConnectionProviderDescriptor>,
     coordinator: SessionCoordinatorSnapshot,
     sessions: SessionHubSnapshot,
@@ -726,6 +733,12 @@ private class FakeSessionHubRuntime(
     val interrupted = mutableListOf<SessionLocator>()
     val startedSessions = mutableListOf<Pair<AgentEndpointKey, StartSessionOptions>>()
     val actionResponses = mutableListOf<ActionResponse>()
+    var refreshedArtifacts: List<SessionArtifact> = emptyList()
+    var refreshArtifactFailure: Throwable? = null
+    var preparedArtifactDownload: PreparedArtifactDownload? = null
+    var prepareArtifactFailure: Throwable? = null
+    val refreshArtifactRequests = mutableListOf<SessionLocator>()
+    val preparedArtifactRequests = mutableListOf<Pair<SessionLocator, String>>()
 
     override suspend fun refreshProfiles() {
         refreshCount += 1
@@ -796,6 +809,28 @@ private class FakeSessionHubRuntime(
         interrupted += locator
     }
 
+    override suspend fun refreshArtifacts(locator: SessionLocator): List<SessionArtifact> {
+        refreshArtifactFailure?.let { throw it }
+        refreshArtifactRequests += locator
+        val refreshedIds = refreshedArtifacts.map(SessionArtifact::id).toSet()
+        mutableSessionSnapshot.value = mutableSessionSnapshot.value.copy(
+            artifacts = mutableSessionSnapshot.value.artifacts.filterNot {
+                it.locator == locator && it.id in refreshedIds
+            } + refreshedArtifacts,
+        )
+        return refreshedArtifacts
+    }
+
+    override suspend fun prepareArtifactDownload(
+        locator: SessionLocator,
+        artifactId: String,
+    ): PreparedArtifactDownload {
+        preparedArtifactRequests += locator to artifactId
+        prepareArtifactFailure?.let { throw it }
+        return checkNotNull(preparedArtifactDownload) {
+            "Artifact download is not configured for this test"
+        }
+    }
     override suspend fun startSession(
         endpoint: AgentEndpointKey,
         options: StartSessionOptions,
@@ -830,7 +865,66 @@ private class FakeSessionHubRuntime(
     }
 }
 
-private data class ActionResponse(
+internal class FakeArtifactDestination : ArtifactExportDestination {
+    val writtenChunks = mutableListOf<ByteArray>()
+    var discardCount = 0
+
+    override suspend fun write(
+        chunks: Flow<ByteArray>,
+        onProgress: (Long) -> Unit,
+    ): Long {
+        var written = 0L
+        chunks.collect { chunk ->
+            writtenChunks += chunk.copyOf()
+            written += chunk.size
+            onProgress(written)
+        }
+        return written
+    }
+
+    override suspend fun discardPartial() {
+        discardCount += 1
+    }
+}
+
+internal fun artifact(locator: SessionLocator) = SessionArtifact(
+    id = "artifact-id",
+    locator = locator,
+    providerPath = "/workspace/project/reports/result.txt",
+    relativePath = "reports/result.txt",
+    oldProviderPath = null,
+    oldRelativePath = null,
+    kind = AgentFileChangeKind.MODIFIED,
+    turnId = "turn-1",
+    availability = SessionArtifactAvailability.DOWNLOADABLE,
+    observedAtEpochMillis = 100,
+)
+
+internal fun artifactCoordinator(
+    connectionKey: SessionConnectionKey,
+    agentProviderId: AgentProviderId,
+): SessionCoordinatorSnapshot {
+    val endpointKey = AgentEndpointKey(connectionKey, agentProviderId)
+    return SessionCoordinatorSnapshot(
+        profiles = listOf(profile(connectionKey, "Test connection")),
+        agentEndpoints = mapOf(
+            endpointKey to AgentEndpointStatus(
+                key = endpointKey,
+                descriptor = AgentProviderDescriptor(
+                    id = agentProviderId,
+                    displayName = "Codex",
+                    providerVersion = "1.0",
+                    capabilities = setOf(
+                        AgentCapability.FILE_CHANGES,
+                    ),
+                ),
+                phase = AgentEndpointPhase.READY,
+                updatedAtEpochMillis = 100,
+            ),
+        ),
+    )
+}
+internal data class ActionResponse(
     val locator: SessionLocator,
     val requestId: String,
     val decision: AgentApprovalDecision,

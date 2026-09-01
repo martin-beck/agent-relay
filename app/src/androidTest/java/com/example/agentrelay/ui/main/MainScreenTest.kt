@@ -128,6 +128,13 @@ class MainScreenTest {
         composeTestRule.onNodeWithText("Connections").assertExists()
         composeTestRule.onNodeWithText("Timeline").assertExists()
         composeTestRule.onNodeWithText("Cached agent output").assertExists()
+        composeTestRule.onNodeWithText("Changed files").assertExists()
+        composeTestRule.onNodeWithText("reports/result.txt").performScrollTo().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Refresh changed files").performScrollTo().performClick()
+        composeTestRule.onNodeWithText("Save copy").performScrollTo().performClick()
+
+        check(recorder.refreshedArtifactsFor == "session-key")
+        check(recorder.savedArtifact == Triple("session-key", "artifact-key", "result.txt"))
     }
 
     @Test
@@ -380,6 +387,8 @@ private class ActionRecorder {
     var sessionModel: String? = null
     var startSessionCount = 0
     var actionResponse: RecordedActionResponse? = null
+    var refreshedArtifactsFor: String? = null
+    var savedArtifact: Triple<String, String, String>? = null
 
     fun actions() = SessionHubActions(
         retry = { retryCount++ },
@@ -415,6 +424,10 @@ private class ActionRecorder {
                 answers,
                 confirmed,
             )
+        },
+        refreshArtifacts = { refreshedArtifactsFor = it },
+        saveArtifact = { sessionKey, artifactKey, fileName ->
+            savedArtifact = Triple(sessionKey, artifactKey, fileName)
         },
     )
 }
@@ -519,6 +532,23 @@ private fun testHub(): SessionHubUiModel {
                 canInterrupt = true,
                 statusMessage = "Resolve the pending approval or question before sending more input.",
             ),
+            artifacts = listOf(
+                SessionArtifactUiModel(
+                    stableKey = "artifact-key",
+                    sessionKey = "session-key",
+                    displayPath = "reports/result.txt",
+                    changeLabel = "Modified",
+                    availabilityMessage = "Ready to save a checked copy.",
+                    suggestedFileName = "result.txt",
+                    isDownloadable = true,
+                    canSave = true,
+                    bytesWritten = 0,
+                    totalBytes = null,
+                    isExporting = false,
+                    isExportComplete = false,
+                ),
+            ),
+            canRefreshArtifacts = true,
         ),
         selectedSessionKey = "session-key",
         operationError = null,
