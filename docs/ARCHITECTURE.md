@@ -16,8 +16,9 @@ agent is controlled. Neither the session layer nor an agent adapter assumes SSH.
                          |
                 :ssh:jsch + :ssh:android
 
-:speech:api is an independent on-device speech contract; Android capture,
-model storage, and inference adapters will depend on it.
+:speech:api <- :speech:android is an independent on-device speech stack.
+The Android layer owns verified app-private model activation and injectable
+audio/inference boundaries; no connection or agent provider depends on it.
 :storage:android is shared by Android persistence implementations.
 :session:api and :session:android persist provider-neutral session state.
 ```
@@ -37,6 +38,7 @@ schema without importing SSH configuration types.
 | `:connection:local` | App-local process execution plus canonical workspace-confined file access |
 | `:ssh:api` | SSH profiles, jump routes, credentials, managed-key enrollment and probes, host keys, retry policy, and generic adapter |
 | `:speech:api` | Auditable offline model metadata plus generation-safe download, recognition, and playback contracts |
+| `:speech:android` | App-private verified model activation plus path-confined package, PCM audio, playback, and offline-inference adapter boundaries |
 | `:ssh:jsch` | Maintained JSch transport, direct-tcpip jump chaining, bounded POSIX commands, and canonical SFTP file access |
 | `:ssh:android` | Android SSH persistence, credentials, and non-exportable agent keys |
 | `:provider:api` | Agent descriptors, sessions, events, capabilities, actions, and the generic checked-file contract |

@@ -2,15 +2,18 @@
 
 ## Status
 
-Agent Relay has a pure Kotlin `:speech:api` foundation. It does not yet request
-microphone permission, download a model, capture audio, transcribe speech, or
-play synthesized audio. No voice control should be presented as usable until
-the Android and inference implementations plus device evidence are complete.
+Agent Relay has a pure Kotlin `:speech:api` contract and a tested
+`:speech:android` backend foundation. It does not yet ship a production model
+catalog, HTTPS downloader, archive decoder, `AudioRecord` implementation,
+sherpa-onnx adapter, playback implementation, service coordinator, or Compose
+controls. No voice control should be presented as usable until those pieces and
+device evidence are complete.
 
 The contract keeps speech independent from connection and agent providers.
-Future Android, sherpa-onnx, model-storage, and Compose layers depend on this
+Android model storage and future sherpa-onnx and Compose layers depend on this
 boundary rather than adding microphone or native-inference concerns to session
-state.
+state. Package, audio, and inference adapters remain injected so deterministic
+tests do not require a microphone, network, or native model.
 
 ## Contract
 
@@ -30,16 +33,39 @@ Operation ids are a lifecycle boundary. A stop or cancel request must name the
 operation it observed. Implementations must ignore an obsolete request rather
 than stopping a newer capture or playback generation.
 
-## Planned implementation boundaries
+## Implemented Android foundation
 
-`:speech:android` will own:
+`:speech:android` now provides:
 
+- app-private no-backup model storage with catalog-order state;
+- injected package download and archive-decoder boundaries;
+- a path-confined extraction sink that exposes no destination directory, accepts
+  only bounded relative regular-file/directory entries, and rejects traversal,
+  ambiguous paths, duplicates, and oversized payloads;
+- declared storage-capacity and exact compressed-size checks before extraction;
+- SHA-256 verification before extraction and a ready marker written before
+  version/checksum-specific directory activation;
+- atomic directory moves where supported, safe fallback moves, obsolete-version
+  cleanup, crash-stale staging cleanup, cancellation, and removal;
+- restart and resolution checks that reject a marker without a safe non-empty
+  payload; and
+- bounded signed-16-bit PCM plus generation-scoped capture, inference,
+  synthesis, cancellation, and playback interfaces.
+
+The store never receives a model until a caller supplies a catalog descriptor
+that already passed the admission gate below. Download and archive
+implementations must be separately reviewed; the extraction interface cannot
+create a link or special-file entry.
+
+## Remaining implementation boundaries
+
+`:speech:android` must still add:
+
+- a production HTTPS downloader and reviewed archive decoder;
 - foreground-only microphone permission and `AudioRecord` capture;
-- app-specific model and temporary-audio storage;
-- storage-capacity checks, resumable progress, cancellation, and cleanup;
-- checksum verification before atomic package activation;
-- path-confined archive extraction that rejects links and traversal;
-- audio focus, playback routing, and interruption handling; and
+- resumable network progress and durable download restoration;
+- audio focus, playback routing, and interruption handling;
+- temporary-audio cleanup; and
 - Android lifecycle and permission-denial diagnostics.
 
 `:speech:sherpa` will own the pinned native/Kotlin sherpa-onnx adapter and map
@@ -96,11 +122,14 @@ because an upstream demo uses it.
 
 ## Verification plan
 
-- Pure contract tests reject unstable ids, malformed language tags, unsafe
-  sources, bad checksums, invalid sizes/progress, oversized text, and unredacted
-  failure codes.
-- Model-store tests cover truncated downloads, digest mismatch, archive
-  traversal, links, no-space failures, cancellation, replacement, and cleanup.
+- Current pure contract tests reject unstable ids, malformed language tags,
+  unsafe sources, bad checksums, invalid sizes/progress, oversized text, and
+  unredacted failure codes.
+- Current model-store tests cover exact activation/restoration/removal, crash
+  staging cleanup, missing ready payload, truncated/oversized downloads, digest
+  mismatch, archive traversal, installed-size limits, no-space failures,
+  cancellation, and checksum-version replacement. PCM/model/synthesis bounds
+  are also tested.
 - Reducer/service tests inject late callbacks to prove operation generations
   cannot affect replacements.
 - Inference adapter tests use small licensed fixtures and never require network
