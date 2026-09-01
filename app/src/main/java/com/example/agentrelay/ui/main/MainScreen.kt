@@ -27,10 +27,11 @@ import dev.agentrelay.provider.api.AgentSessionState
 internal fun MainScreen(
     viewModel: MainScreenViewModel,
     onOpenSession: (String) -> Unit,
+    onSaveArtifact: (String, String, String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val actions = remember(viewModel, onOpenSession) {
+    val actions = remember(viewModel, onOpenSession, onSaveArtifact) {
         SessionHubActions(
             retry = viewModel::retryInitialization,
             refresh = viewModel::refreshProfiles,
@@ -59,6 +60,9 @@ internal fun MainScreen(
             dismissSessionCreator = viewModel::dismissSessionCreator,
             startSession = viewModel::startSession,
             respondToAction = viewModel::respondToAction,
+            refreshArtifacts = viewModel.artifactInteractions::refreshArtifacts,
+            saveArtifact = onSaveArtifact,
+            cancelArtifactExport = viewModel.artifactInteractions::cancelArtifactExport,
         )
     }
     MainScreenContent(
@@ -155,6 +159,9 @@ private fun AdaptiveSessionHub(
                     onResumeSession = actions.resumeSession,
                     onInterruptSession = actions.interruptSession,
                     onRespondToAction = actions.respondToAction,
+                    onRefreshArtifacts = actions.refreshArtifacts,
+                    onSaveArtifact = actions.saveArtifact,
+                    onCancelArtifact = actions.cancelArtifactExport,
                 )
             }
         } else {
@@ -203,6 +210,9 @@ internal data class SessionHubActions(
         Map<String, List<String>>,
         Boolean,
     ) -> Unit = { _, _, _, _, _ -> },
+    val refreshArtifacts: (String) -> Unit = {},
+    val saveArtifact: (String, String, String) -> Unit = { _, _, _ -> },
+    val cancelArtifactExport: (String) -> Unit = {},
 )
 
 @Preview(showBackground = true)

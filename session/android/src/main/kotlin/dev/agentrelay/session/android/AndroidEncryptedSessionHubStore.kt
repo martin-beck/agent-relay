@@ -8,6 +8,7 @@ import dev.agentrelay.provider.api.AgentSessionId
 import dev.agentrelay.session.api.CachedTranscriptEntry
 import dev.agentrelay.session.api.SessionActivity
 import dev.agentrelay.session.api.SessionActionRequest
+import dev.agentrelay.session.api.SessionArtifact
 import dev.agentrelay.session.api.SessionDraft
 import dev.agentrelay.session.api.SessionHubSnapshot
 import dev.agentrelay.session.api.SessionHubStore
@@ -92,6 +93,7 @@ private data class SessionHubDocument(
     val activities: List<SessionActivityDocument>,
     val transcripts: List<SessionTranscriptDocument>,
     val actionRequests: List<SessionActionRequestDocument> = emptyList(),
+    val artifacts: List<SessionArtifactDocument> = emptyList(),
 )
 
 @Serializable
@@ -194,6 +196,20 @@ internal data class SessionActionRequestDocument(
 )
 
 @Serializable
+internal data class SessionArtifactDocument(
+    val id: String,
+    val locator: SessionLocatorDocument,
+    val providerPath: String,
+    val relativePath: String?,
+    val oldProviderPath: String?,
+    val oldRelativePath: String?,
+    val kind: String,
+    val turnId: String?,
+    val availability: String,
+    val observedAtEpochMillis: Long,
+)
+
+@Serializable
 internal data class CachedTranscriptEntryDocument(
     val id: String,
     val turnId: String?,
@@ -222,6 +238,7 @@ private fun SessionHubSnapshot.toDocument() = SessionHubDocument(
         )
     },
     actionRequests = actionRequests.map(SessionActionRequest::toDocument),
+    artifacts = artifacts.map(SessionArtifact::toDocument),
 )
 
 private fun SessionHubDocument.toDomain(): SessionHubSnapshot {
@@ -239,6 +256,7 @@ private fun SessionHubDocument.toDomain(): SessionHubSnapshot {
         activities = activities.map(SessionActivityDocument::toDomain),
         transcripts = restoredTranscripts,
         actionRequests = actionRequests.map(SessionActionRequestDocument::toDomain),
+        artifacts = artifacts.map(SessionArtifactDocument::toDomain),
     )
 }
 

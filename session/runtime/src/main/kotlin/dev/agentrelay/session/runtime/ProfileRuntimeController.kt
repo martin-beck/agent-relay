@@ -59,6 +59,7 @@ internal data class ActiveAgentHandle(
     val descriptor: AgentProviderDescriptor,
     val connection: AgentProviderConnection,
     val readiness: ProviderReadiness.Ready,
+    val runtime: RemoteAgentRuntime,
 )
 
 internal class ProfileRuntimeController(
@@ -243,7 +244,7 @@ internal class ProfileRuntimeController(
             require(connection.descriptor == descriptor) {
                 "Agent provider connection descriptor does not match its factory"
             }
-            val active = ActiveAgentHandle(descriptor, connection, readiness)
+            val active = ActiveAgentHandle(descriptor, connection, readiness, runtime)
             activeMutex.withLock {
                 activeAgents[descriptor.id] = active
             }
@@ -351,12 +352,17 @@ internal class ProfileRuntimeController(
     ) {
         val locator = SessionDataMapper.locator(endpoint(descriptor.id), event.sessionId)
         val now = now()
-        val projection = SessionDataMapper.event(event, locator, now)
+        val current = repository.snapshot.value.session(locator)?.observation
+        val projection = SessionDataMapper.event(
+            event = event,
+            locator = locator,
+            now = now,
+            workspaceRoot = current?.projectPath,
+        )
         if (projection.isEmpty) {
             return
         }
         try {
-            val current = repository.snapshot.value.session(locator)?.observation
             val base = current ?: SessionDataMapper.placeholderObservation(
                 profile = profile,
                 descriptor = descriptor,
@@ -376,6 +382,7 @@ internal class ProfileRuntimeController(
                     transcriptEntry = projection.transcriptEntry,
                     activity = projection.activity,
                     actionRequest = projection.actionRequest,
+                    artifact = projection.artifact,
                 ),
             )
             clearPersistenceIssue(descriptor)
@@ -453,6 +460,7 @@ internal class ProfileRuntimeController(
                 key = endpoint(descriptor.id),
                 descriptor = descriptor,
                 phase = phase,
+                fileAccessAvailable = phase == AgentEndpointPhase.READY && runtimeSignal.value?.fileAccess != null,
                 readiness = readiness,
                 sessionCount = sessionCount,
                 updatedAtEpochMillis = now(),

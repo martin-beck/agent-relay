@@ -31,6 +31,7 @@ with the same agent session identifier remain distinct.
 - unread and actionable activity records with exact event anchors;
 - durable approval/question requests and redacted decision audit state;
 - a bounded recent transcript cache; and
+- a bounded shelf of provider-reported changed-file records;
 - the transactional repository and retention policy.
 
 :session:android owns the encrypted SessionHubStore implementation. It serializes
@@ -109,14 +110,17 @@ The default bounds are:
 
 - 200 session records;
 - 2,000 activity records across the hub;
-- 2,000 approval or question requests across the hub; and
-- 500 cached transcript entries per session.
+- 2,000 approval or question requests across the hub;
+- 500 cached transcript entries per session; and
+- 4,000 changed-file records across the hub.
 
 Retention keeps pinned sessions first, then non-archived and most recently
 active sessions. Actionable approval and question records are retained before
 ordinary output when either bound is reached. Drafts, activities, action
-requests, and transcripts belonging to an evicted session are removed in the
-same snapshot, and unread counts are recomputed from retained activity.
+requests, transcripts, and changed-file records belonging to an evicted session
+are removed in the same snapshot, and unread counts are recomputed from retained
+activity. The newest changed-file records are selected within their global
+bound.
 
 These are safety bounds, not a search or export policy. A future storage format
 may shard sessions while preserving the same repository contract.
@@ -134,8 +138,10 @@ may shard sessions while preserving the same repository contract.
 7. projects sessions and live events through the complete locator;
 8. persists event and action state before exposing the updated hub;
 9. routes capability-checked prompts, interruption, approvals, and questions;
-   and
-10. cancels agent work and clears stale issues when a connection goes offline.
+10. maps provider file changes into durable workspace-relative artifact records;
+11. prepares revision- and SHA-256-checked file streams only through the
+    connected runtime's generic file-access boundary; and
+12. cancels agent work and clears stale issues when a connection goes offline.
 
 Duplicate provider/profile identifiers and invalid descriptors fail explicitly.
 Reconnects replace stale agent connections and collectors without allowing an
@@ -175,6 +181,19 @@ manager. The session hub exposes add controls only for providers advertising
 `PROFILE_MANAGEMENT`, marks their connection cards editable, and refreshes the
 coordinator only after a successful save or delete.
 
+Selected session detail also exposes a **Changed files** shelf when the agent
+advertises `FILE_CHANGES`. Refresh persists safe records before Compose observes
+them. Deleted, outside-workspace, and unknown-workspace entries remain visible
+with bounded labels but cannot be exported. A downloadable entry resolves back
+to the exact encrypted locator and artifact identity, then uses the connected
+runtime's `RemoteFileAccess` contract. Compose never receives a raw provider
+path.
+
+Android export uses the Storage Access Framework document picker. The transfer
+controller reports progress, supports cancellation, preserves completion state,
+and requests best-effort partial-document deletion for every failed or cancelled
+copy.
+
 ## Verification
 
 Focused verification:
@@ -205,6 +224,12 @@ Coverage proves:
 - provider-neutral session launch, exact full-locator action routing, and raw
   provider identifier isolation;
 - question validation and stable-ID-to-provider-ID translation;
+- artifact path classification, encrypted round-trip, retention, and atomic
+  event persistence;
+- local real-path and SFTP canonical-path confinement, including symlink escape
+  rejection;
+- pre/post revision, size, and SHA-256 source-change detection;
+- checked export progress, cancellation, redacted failure, and partial cleanup;
 - debounced draft persistence; and
 - failed immediate-send preservation without provider exception disclosure.
 
@@ -214,6 +239,7 @@ Android test, and two encrypted-storage Android tests. The evidence verifier
 independently checked all three module reports, the explicit emulator boot
 record, and the exact discovered/run/skipped/failure/error counts.
 
-Not yet implemented are queued or offline sending, voice input, artifact
-transfer, and background notification dispatch. The remaining workflows keep
-the same provider-neutral capability and full-locator boundaries.
+Not yet implemented are queued or offline sending, voice input, changed-file
+preview/diff/batch export, and background notification dispatch. The remaining
+workflows keep the same provider-neutral capability, safe-path, and full-locator
+boundaries.

@@ -18,10 +18,12 @@ import dev.agentrelay.session.api.SessionActivityType
 import dev.agentrelay.session.api.SessionActionRisk
 import dev.agentrelay.session.api.SessionActionState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
@@ -290,8 +292,48 @@ class SessionCoordinatorTest {
                     .single { it.actionRequestId == request.id }
                     .isResolved,
             )
-            assertEquals("/workspace/ssh-host/result.txt", changes.single().remotePath)
+            assertEquals("/workspace/ssh-host/result.txt", changes.single().providerPath)
+            assertEquals("result.txt", changes.single().relativePath)
+            assertEquals(
+                changes,
+                coordinator.repository.snapshot.value.sessionArtifacts(existing),
+            )
             assertTrue(coordinator.repository.snapshot.value.session(started) != null)
+        } finally {
+            coordinator.shutdown()
+        }
+    }
+
+    @Test
+    fun artifactDownloadUsesReviewedWorkspaceRelativeConnectionStream() = runTest {
+        val content = "artifact body".encodeToByteArray()
+        val fileAccess = FakeRemoteFileAccess(content)
+        val local = FakeConnectionProvider(
+            providerId = "local",
+            profileId = "device",
+            label = "This device",
+            initialRuntime = FakeRuntime("artifact-host", fileAccess),
+        )
+        val coordinator = coordinator(listOf(local), FakeAgentFactory())
+
+        try {
+            coordinator.refreshProfiles()
+            runCurrent()
+            coordinator.connect(local.key())
+            runCurrent()
+            val locator = coordinator.repository.snapshot.value.sessions.single().locator
+            assertTrue(coordinator.snapshot.value.agentEndpoints.values.single().fileAccessAvailable)
+            val artifact = coordinator.changedFiles(locator).single()
+
+            val download = coordinator.prepareArtifactDownload(locator, artifact.id)
+            val received = download.chunks.toList()
+                .fold(ByteArray(0)) { result, chunk -> result + chunk }
+
+            assertEquals("/workspace/artifact-host", fileAccess.inspectedReference?.workspaceRoot)
+            assertEquals("result.txt", fileAccess.inspectedReference?.relativePath)
+            assertEquals(fileAccess.inspectedReference, fileAccess.readReference)
+            assertEquals("0".repeat(64), download.sourceSnapshot.revision.sha256)
+            assertContentEquals(content, received)
         } finally {
             coordinator.shutdown()
         }

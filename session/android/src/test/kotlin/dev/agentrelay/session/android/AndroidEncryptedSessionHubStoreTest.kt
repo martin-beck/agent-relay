@@ -4,6 +4,7 @@ import dev.agentrelay.connection.api.ConnectionProfileId
 import dev.agentrelay.connection.api.ConnectionProviderId
 import dev.agentrelay.provider.api.AgentApprovalDecision
 import dev.agentrelay.provider.api.AgentApprovalType
+import dev.agentrelay.provider.api.AgentFileChangeKind
 import dev.agentrelay.provider.api.AgentMessageChannel
 import dev.agentrelay.provider.api.AgentProviderId
 import dev.agentrelay.provider.api.AgentSessionId
@@ -15,6 +16,8 @@ import dev.agentrelay.session.api.SessionActivityType
 import dev.agentrelay.session.api.SessionActionRequest
 import dev.agentrelay.session.api.SessionActionRisk
 import dev.agentrelay.session.api.SessionActionState
+import dev.agentrelay.session.api.SessionArtifact
+import dev.agentrelay.session.api.SessionArtifactAvailability
 import dev.agentrelay.session.api.SessionDraft
 import dev.agentrelay.session.api.SessionHubSnapshot
 import dev.agentrelay.session.api.SessionLocator
@@ -107,13 +110,14 @@ class AndroidEncryptedSessionHubStoreTest {
             },
         )
         val legacy = JsonObject(
-            (valid - "actionRequests") + ("activities" to legacyActivities),
+            (valid - "actionRequests" - "artifacts") + ("activities" to legacyActivities),
         )
         documents.replace(legacy.toString().encodeToByteArray())
 
         val restored = store.load()
 
         assertTrue(restored.actionRequests.isEmpty())
+        assertTrue(restored.artifacts.isEmpty())
         assertEquals(null, restored.activities.single().actionRequestId)
     }
 
@@ -264,6 +268,32 @@ class AndroidEncryptedSessionHubStoreTest {
                     answeredQuestionIds = setOf("question-scope"),
                     additionalConfirmationGiven = true,
                     decisionAtEpochMillis = 31L,
+                ),
+            ),
+            artifacts = listOf(
+                SessionArtifact(
+                    id = "artifact-one",
+                    locator = ssh,
+                    providerPath = "/workspace/project/reports/result.txt",
+                    relativePath = "reports/result.txt",
+                    oldProviderPath = null,
+                    oldRelativePath = null,
+                    kind = AgentFileChangeKind.MODIFIED,
+                    turnId = "turn-one",
+                    availability = SessionArtifactAvailability.DOWNLOADABLE,
+                    observedAtEpochMillis = 32L,
+                ),
+                SessionArtifact(
+                    id = "artifact-deleted",
+                    locator = local,
+                    providerPath = "old.log",
+                    relativePath = "old.log",
+                    oldProviderPath = null,
+                    oldRelativePath = null,
+                    kind = AgentFileChangeKind.DELETED,
+                    turnId = null,
+                    availability = SessionArtifactAvailability.DELETED,
+                    observedAtEpochMillis = 21L,
                 ),
             ),
         )

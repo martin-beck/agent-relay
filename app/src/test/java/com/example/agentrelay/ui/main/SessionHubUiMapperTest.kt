@@ -16,6 +16,7 @@ import dev.agentrelay.connection.api.ConnectionState
 import dev.agentrelay.provider.api.AgentApprovalDecision
 import dev.agentrelay.provider.api.AgentApprovalType
 import dev.agentrelay.provider.api.AgentCapability
+import dev.agentrelay.provider.api.AgentFileChangeKind
 import dev.agentrelay.provider.api.AgentMessageChannel
 import dev.agentrelay.provider.api.AgentProviderDescriptor
 import dev.agentrelay.provider.api.AgentProviderId
@@ -29,6 +30,8 @@ import dev.agentrelay.session.api.SessionActionState
 import dev.agentrelay.session.api.SessionActivity
 import dev.agentrelay.session.api.SessionActivityType
 import dev.agentrelay.session.api.SessionDraft
+import dev.agentrelay.session.api.SessionArtifact
+import dev.agentrelay.session.api.SessionArtifactAvailability
 import dev.agentrelay.session.api.SessionHubSnapshot
 import dev.agentrelay.session.api.SessionLocator
 import dev.agentrelay.session.api.SessionObservation
@@ -563,6 +566,93 @@ class SessionHubUiMapperTest {
         assertEquals(listOf("new", "old"), mapped.issues.map(CoordinatorIssueUiModel::id))
         assertEquals("A safe operation failed.", mapped.operationError)
         assertTrue(mapped.isRefreshingProfiles)
+    }
+
+    @Test
+    fun artifactUiExposesOnlyWorkspaceRelativePathsAndCapabilityDrivenActions() {
+        val providerId = ConnectionProviderId("ssh.secure-shell")
+        val profileId = ConnectionProfileId("test-profile")
+        val sessionLocator = locator(providerId, profileId)
+        val connectionKey = SessionConnectionKey(providerId, profileId)
+        val endpointKey = AgentEndpointKey(connectionKey, sessionLocator.agentProviderId)
+        val downloadable = SessionArtifact(
+            id = "downloadable",
+            locator = sessionLocator,
+            providerPath = "/workspace/reports/result.txt",
+            relativePath = "reports/result.txt",
+            oldProviderPath = null,
+            oldRelativePath = null,
+            kind = AgentFileChangeKind.MODIFIED,
+            turnId = "turn-1",
+            availability = SessionArtifactAvailability.DOWNLOADABLE,
+            observedAtEpochMillis = 20,
+        )
+        val outside = SessionArtifact(
+            id = "outside",
+            locator = sessionLocator,
+            providerPath = "/private/provider/details/secret.txt",
+            relativePath = null,
+            oldProviderPath = null,
+            oldRelativePath = null,
+            kind = AgentFileChangeKind.ADDED,
+            turnId = null,
+            availability = SessionArtifactAvailability.OUTSIDE_WORKSPACE,
+            observedAtEpochMillis = 10,
+        )
+        val mapped = SessionHubUiMapper.map(
+            coordinator = SessionCoordinatorSnapshot(
+                profiles = listOf(profile(providerId, profileId, "Test server")),
+                agentEndpoints = mapOf(
+                    endpointKey to AgentEndpointStatus(
+                        key = endpointKey,
+                        descriptor = AgentProviderDescriptor(
+                            id = sessionLocator.agentProviderId,
+                            displayName = "Codex",
+                            providerVersion = "1.0",
+                            capabilities = setOf(AgentCapability.FILE_CHANGES),
+                        ),
+                        phase = AgentEndpointPhase.READY,
+                        fileAccessAvailable = true,
+                        updatedAtEpochMillis = 30,
+                    ),
+                ),
+            ),
+            sessions = SessionHubSnapshot(
+                sessions = listOf(record(sessionLocator, "Artifacts", "Test server")),
+                artifacts = listOf(downloadable, outside),
+            ),
+            connectionProviders = listOf(descriptor(providerId, "Secure Shell")),
+            selectedSessionKey = sessionLocator.stableUiKey,
+            operationError = null,
+            busyConnectionKeys = emptySet(),
+        )
+
+        val artifacts = checkNotNull(mapped.selectedSession).artifacts
+        assertEquals(
+            listOf("reports/result.txt", "File outside workspace"),
+            artifacts.map(SessionArtifactUiModel::displayPath),
+        )
+        assertTrue(artifacts.first().canSave)
+        assertFalse(artifacts.last().isDownloadable)
+        assertFalse(
+            artifacts.any {
+                it.displayPath.contains("private") ||
+                    it.availabilityMessage.contains("secret")
+            },
+        )
+        assertTrue(checkNotNull(mapped.selectedSession).canRefreshArtifacts)
+
+        val withoutFileAccess = SessionArtifactUiMapper.map(
+            artifact = downloadable,
+            transfer = null,
+            providerReady = true,
+            fileAccessAvailable = false,
+        )
+        assertFalse(withoutFileAccess.canSave)
+        assertEquals(
+            "This connection does not support saving checked copies.",
+            withoutFileAccess.availabilityMessage,
+        )
     }
 }
 

@@ -16,6 +16,7 @@ import androidx.navigation3.ui.NavDisplay
 import com.example.agentrelay.ui.main.MainScreen
 import com.example.agentrelay.ui.main.MainScreenViewModel
 import com.example.agentrelay.ui.main.SessionDetailRoute
+import com.example.agentrelay.ui.main.rememberArtifactSaveRequest
 
 @Composable
 fun MainNavigation() {
@@ -26,6 +27,7 @@ fun MainNavigation() {
         }
     }
     val uiState by mainViewModel.uiState.collectAsStateWithLifecycle()
+    val saveArtifact = rememberArtifactSaveRequest(mainViewModel)
     val backStack = rememberNavBackStack(Main)
     val onBack: () -> Unit = {
         backStack.removeLastOrNull()
@@ -43,6 +45,7 @@ fun MainNavigation() {
                     onOpenSession = { key ->
                         backStack.add(SessionDetails(key))
                     },
+                    onSaveArtifact = saveArtifact,
                     modifier = Modifier.safeDrawingPadding().padding(16.dp),
                 )
             }
@@ -58,6 +61,9 @@ fun MainNavigation() {
                     onResumeSession = mainViewModel::resumeSession,
                     onInterruptSession = mainViewModel::interruptSession,
                     onRespondToAction = mainViewModel::respondToAction,
+                    onRefreshArtifacts = mainViewModel.artifactInteractions::refreshArtifacts,
+                    onSaveArtifact = saveArtifact,
+                    onCancelArtifact = mainViewModel.artifactInteractions::cancelArtifactExport,
                     modifier = Modifier.safeDrawingPadding(),
                 )
             }

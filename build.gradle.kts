@@ -139,6 +139,7 @@ kover {
                         // semantics/accessibility tests, which Kover's JVM report cannot ingest.
                         "com.example.agentrelay.ui.main.SessionActionCardKt",
                         "com.example.agentrelay.ui.main.SessionCreatorDialogKt",
+                        "com.example.agentrelay.ui.main.SessionDetailPaneKt",
                         "*.*BuildConfig",
                         "*.*_Factory",
                     )

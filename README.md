@@ -10,8 +10,10 @@ is another, and future connection types can implement the same boundary.
 > Agent Relay is an early development preview. The provider, connection, secure
 > storage, session coordination, adaptive session hub, and capability-gated text
 > composer are implemented and tested. Provider-neutral session launch and
-> durable, risk-aware approval/question handling are also implemented. Artifacts,
-> offline speech, background delivery, and release hardening are not complete.
+> durable, risk-aware approval/question handling are also implemented. The
+> changed-file shelf can export one checked workspace file at a time through
+> Android's system document picker; previews, diffs, batch export, offline
+> speech, background delivery, and release hardening are not complete.
 > The APK is not yet a supported release.
 
 This is a private, invite-only project. Access to the repository does not grant
@@ -28,6 +30,7 @@ permission to redistribute source code, APKs, or project artifacts.
 | Encrypted session hub and runtime coordinator | Implemented and unit tested |
 | Quality gates | Detekt, strict lint/Kotlin warnings, dependency analysis, 70% aggregate coverage, property tests, and bounded fuzzing |
 | Adaptive Compose UI and app integration | Provider-neutral setup and session launch, typed timeline, durable text composer, capability-gated controls, and risk-aware approvals/questions implemented |
+| Changed files and safe export | Encrypted per-session shelf plus checked single-file export for local and SSH workspaces; previews, diffs, and batch export remain |
 | Signed release build and distribution | Not available |
 
 See the [product roadmap](docs/PRODUCT_ROADMAP.md) for planned behavior and
@@ -71,9 +74,14 @@ resume, send, steering, and interruption appear only when the selected provider
 and session state support them. Ready agent endpoints can start sessions with
 provider-neutral options. Approval and question cards expose only provider-
 offered decisions, retain a redacted audit record, and require an extra
-confirmation for broad or high-risk grants. Read [Installing](docs/INSTALLING.md) for
-artifact and device instructions and [Usage](docs/USAGE.md) for the exact
-implemented behavior.
+confirmation for broad or high-risk grants. Sessions whose providers report
+file changes expose a durable changed-file shelf. A connected Local Device or
+Secure Shell profile can save a checked regular file inside its workspace
+through Android's system document picker, with progress, cancellation, source
+revision and SHA-256 verification, and best-effort partial-copy cleanup. The app
+requests no broad storage permission. Read [Installing](docs/INSTALLING.md) for
+APK and device instructions and [Usage](docs/USAGE.md) for the exact implemented
+behavior.
 
 ## Design
 

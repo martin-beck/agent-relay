@@ -312,6 +312,16 @@ private class FakeProfileRuntime(
 
     override suspend fun interrupt(locator: SessionLocator) = Unit
 
+    override suspend fun refreshArtifacts(
+        locator: SessionLocator,
+    ): List<dev.agentrelay.session.api.SessionArtifact> = emptyList()
+
+    override suspend fun prepareArtifactDownload(
+        locator: SessionLocator,
+        artifactId: String,
+    ): dev.agentrelay.session.runtime.PreparedArtifactDownload =
+        error("Artifact downloads are not configured for profile editor tests")
+
     override suspend fun startSession(
         endpoint: AgentEndpointKey,
         options: StartSessionOptions,

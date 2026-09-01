@@ -7,6 +7,15 @@ import dev.agentrelay.connection.api.ConnectionState
 import dev.agentrelay.provider.api.AgentProviderDescriptor
 import dev.agentrelay.provider.api.AgentProviderId
 import dev.agentrelay.provider.api.ProviderReadiness
+import dev.agentrelay.provider.api.RemoteFileSnapshot
+import dev.agentrelay.session.api.SessionArtifact
+import kotlinx.coroutines.flow.Flow
+
+data class PreparedArtifactDownload(
+    val artifact: SessionArtifact,
+    val sourceSnapshot: RemoteFileSnapshot,
+    val chunks: Flow<ByteArray>,
+)
 
 data class SessionConnectionKey(
     val providerId: ConnectionProviderId,
@@ -31,6 +40,7 @@ data class AgentEndpointStatus(
     val key: AgentEndpointKey,
     val descriptor: AgentProviderDescriptor,
     val phase: AgentEndpointPhase,
+    val fileAccessAvailable: Boolean = false,
     val readiness: ProviderReadiness? = null,
     val sessionCount: Int = 0,
     val updatedAtEpochMillis: Long,
