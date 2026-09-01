@@ -120,6 +120,54 @@ class ConnectionProfileManagerTest {
     }
 
     @Test
+    fun operationModelsRequireSavedProfilesUniqueIdsAndBoundedPrintableText() {
+        val operation = ConnectionProfileOperation(
+            id = ConnectionProfileOperationId("verify-key-login"),
+            label = "Test key-only login",
+            supportingText = "Verify passwordless authentication.",
+        )
+        val editor = ConnectionProfileEditor(
+            providerId = PROVIDER_ID,
+            providerName = "Secure Shell",
+            profileId = ConnectionProfileId("profile"),
+            title = "Edit profile",
+            fields = listOf(field()),
+            canDelete = true,
+            operations = listOf(operation),
+        )
+
+        assertEquals(operation, editor.operations.single())
+        assertFalse(operation.requiresConfirmation)
+        assertFailsWith<IllegalArgumentException> {
+            ConnectionProfileOperationId("Invalid operation")
+        }
+        assertFailsWith<IllegalArgumentException> {
+            operation.copy(label = "x".repeat(129))
+        }
+        assertFailsWith<IllegalArgumentException> {
+            operation.copy(supportingText = "Unsafe\ntext")
+        }
+        assertFailsWith<IllegalArgumentException> {
+            operation.copy(confirmationTitle = "Confirm", confirmationMessage = null)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            editor.copy(profileId = null, canDelete = false)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            editor.copy(operations = listOf(operation, operation))
+        }
+        assertFailsWith<IllegalArgumentException> {
+            ConnectionProfileOperationResult(" ")
+        }
+        assertFailsWith<IllegalArgumentException> {
+            ConnectionProfileOperationException("unsafe\nmessage")
+        }
+        assertFailsWith<IllegalArgumentException> {
+            ConnectionProfileDeleteException("x".repeat(1_025))
+        }
+    }
+
+    @Test
     fun secretInputsCopyTemporaryBuffersAndCloseWithTheirUpdate() {
         val source = charArrayOf('s', 'a', 'f', 'e')
         val secret = ConnectionProfileFieldInput.Secret.copyOf(source)

@@ -3,6 +3,7 @@ package com.example.agentrelay.ui.main
 import dev.agentrelay.connection.api.ConnectionProfileEditor
 import dev.agentrelay.connection.api.ConnectionProfileField
 import dev.agentrelay.connection.api.ConnectionProfileFieldType
+import dev.agentrelay.connection.api.ConnectionProfileOperation
 
 internal sealed interface ConnectionProfileEditorUiState {
     data object Loading : ConnectionProfileEditorUiState
@@ -12,12 +13,16 @@ internal sealed interface ConnectionProfileEditorUiState {
         val profileId: String?,
         val title: String,
         val fields: List<ConnectionProfileFieldUiModel>,
+        val operations: List<ConnectionProfileOperationUiModel> = emptyList(),
         val canDelete: Boolean,
         val isBusy: Boolean = false,
+        val hasUnsavedChanges: Boolean = false,
+        val activeOperationId: String? = null,
         val fieldErrors: Map<String, String> = emptyMap(),
         val error: String? = null,
         val notice: String? = null,
         val confirmDelete: Boolean = false,
+        val confirmOperationId: String? = null,
     ) : ConnectionProfileEditorUiState {
         fun updateField(fieldId: String, value: String): Editing = copy(
             fields = fields.map { field ->
@@ -26,6 +31,7 @@ internal sealed interface ConnectionProfileEditorUiState {
             fieldErrors = fieldErrors - fieldId,
             error = null,
             notice = null,
+            hasUnsavedChanges = true,
         )
 
         fun visibleFields(): List<ConnectionProfileFieldUiModel> = fields.filter { field ->
@@ -33,7 +39,21 @@ internal sealed interface ConnectionProfileEditorUiState {
                 fields.firstOrNull { it.id == condition.fieldId }?.value == condition.expectedValue
             }
         }
+
+        fun confirmedOperation(): ConnectionProfileOperationUiModel? =
+            operations.firstOrNull { it.id == confirmOperationId }
     }
+}
+
+internal data class ConnectionProfileOperationUiModel(
+    val id: String,
+    val label: String,
+    val supportingText: String,
+    val confirmationTitle: String?,
+    val confirmationMessage: String?,
+) {
+    val requiresConfirmation: Boolean
+        get() = confirmationTitle != null
 }
 
 internal data class ConnectionProfileFieldConditionUiModel(
@@ -75,6 +95,7 @@ internal fun ConnectionProfileEditor.toUiState(
     profileId = profileId?.value,
     title = title,
     fields = fields.map(ConnectionProfileField::toUiModel),
+    operations = operations.map(ConnectionProfileOperation::toUiModel),
     canDelete = canDelete,
     notice = notice,
 )
@@ -94,4 +115,12 @@ private fun ConnectionProfileField.toUiModel() = ConnectionProfileFieldUiModel(
         ConnectionProfileFieldConditionUiModel(it.fieldId.value, it.expectedValue)
     },
     hasStoredSecret = hasStoredSecret,
+)
+
+private fun ConnectionProfileOperation.toUiModel() = ConnectionProfileOperationUiModel(
+    id = id.value,
+    label = label,
+    supportingText = supportingText,
+    confirmationTitle = confirmationTitle,
+    confirmationMessage = confirmationMessage,
 )

@@ -4,6 +4,8 @@ import dev.agentrelay.connection.api.ConnectionChallengeId
 import dev.agentrelay.connection.api.ConnectionIdentityDecision
 import dev.agentrelay.connection.api.ConnectionProfileEditor
 import dev.agentrelay.connection.api.ConnectionProfileId
+import dev.agentrelay.connection.api.ConnectionProfileOperationId
+import dev.agentrelay.connection.api.ConnectionProfileOperationResult
 import dev.agentrelay.connection.api.ConnectionProfileSaveResult
 import dev.agentrelay.connection.api.ConnectionProfileUpdate
 import dev.agentrelay.connection.api.ConnectionProviderId
@@ -40,6 +42,14 @@ internal interface SessionHubRuntime {
         providerId: ConnectionProviderId,
         profileId: ConnectionProfileId,
     )
+
+    suspend fun performProfileOperation(
+        providerId: ConnectionProviderId,
+        profileId: ConnectionProfileId,
+        operationId: ConnectionProfileOperationId,
+    ): ConnectionProfileOperationResult {
+        error("Connection profile operations are unavailable")
+    }
 
     suspend fun connect(key: SessionConnectionKey)
 
@@ -114,6 +124,16 @@ internal class CoordinatorSessionHubRuntime(
     ) {
         connections.profileManager(providerId).delete(profileId)
         coordinator.refreshProfiles()
+    }
+
+    override suspend fun performProfileOperation(
+        providerId: ConnectionProviderId,
+        profileId: ConnectionProfileId,
+        operationId: ConnectionProfileOperationId,
+    ): ConnectionProfileOperationResult {
+        val result = connections.profileManager(providerId).performOperation(profileId, operationId)
+        coordinator.refreshProfiles()
+        return result
     }
 
     override suspend fun disconnect(key: SessionConnectionKey) = coordinator.disconnect(key)

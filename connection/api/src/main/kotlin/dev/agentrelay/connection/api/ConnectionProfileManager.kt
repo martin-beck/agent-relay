@@ -13,6 +13,17 @@ value class ConnectionProfileFieldId(val value: String) {
     override fun toString(): String = value
 }
 
+@JvmInline
+value class ConnectionProfileOperationId(val value: String) {
+    init {
+        require(value.matches(Regex("[a-z][a-z0-9._-]{1,63}"))) {
+            "Connection profile operation id must be a stable lowercase identifier"
+        }
+    }
+
+    override fun toString(): String = value
+}
+
 enum class ConnectionProfileFieldType {
     TEXT,
     PORT,
@@ -78,6 +89,35 @@ data class ConnectionProfileField(
     }
 }
 
+data class ConnectionProfileOperation(
+    val id: ConnectionProfileOperationId,
+    val label: String,
+    val supportingText: String,
+    val confirmationTitle: String? = null,
+    val confirmationMessage: String? = null,
+) {
+    val requiresConfirmation: Boolean
+        get() = confirmationTitle != null
+
+    init {
+        requireProfileUiText(label, MAX_OPERATION_LABEL_CHARS, "operation label")
+        requireProfileUiText(
+            supportingText,
+            MAX_OPERATION_SUPPORTING_TEXT_CHARS,
+            "operation supporting text",
+        )
+        require((confirmationTitle == null) == (confirmationMessage == null)) {
+            "Connection profile operation confirmation must define both title and message"
+        }
+        confirmationTitle?.let {
+            requireProfileUiText(it, MAX_OPERATION_LABEL_CHARS, "operation confirmation title")
+        }
+        confirmationMessage?.let {
+            requireProfileUiText(it, MAX_OPERATION_MESSAGE_CHARS, "operation confirmation message")
+        }
+    }
+}
+
 data class ConnectionProfileEditor(
     val providerId: ConnectionProviderId,
     val providerName: String,
@@ -85,6 +125,7 @@ data class ConnectionProfileEditor(
     val title: String,
     val fields: List<ConnectionProfileField>,
     val canDelete: Boolean,
+    val operations: List<ConnectionProfileOperation> = emptyList(),
 ) {
     init {
         require(providerName.isNotBlank()) { "Connection provider name must not be blank" }
@@ -94,6 +135,12 @@ data class ConnectionProfileEditor(
             "Connection profile editor field ids must be unique"
         }
         require(!canDelete || profileId != null) { "Only an existing profile can be deleted" }
+        require(profileId != null || operations.isEmpty()) {
+            "Only a saved connection profile can expose operations"
+        }
+        require(operations.distinctBy(ConnectionProfileOperation::id).size == operations.size) {
+            "Connection profile operation ids must be unique"
+        }
         val fieldIds = fields.map(ConnectionProfileField::id).toSet()
         require(
             fields.flatMap(ConnectionProfileField::visibleWhen).all { it.fieldId in fieldIds },
@@ -158,6 +205,46 @@ data class ConnectionProfileSaveResult(
     val notice: String? = null,
 )
 
+data class ConnectionProfileOperationResult(val notice: String) {
+    init {
+        requireProfileUiText(notice, MAX_OPERATION_SUPPORTING_TEXT_CHARS, "operation notice")
+    }
+}
+
+class ConnectionProfileOperationException(
+    val actionableMessage: String,
+    cause: Throwable? = null,
+) : IllegalStateException(actionableMessage, cause) {
+    init {
+        requireProfileUiText(actionableMessage, MAX_OPERATION_MESSAGE_CHARS, "operation failure")
+    }
+}
+
+class ConnectionProfileDeleteException(
+    val actionableMessage: String,
+    cause: Throwable? = null,
+) : IllegalStateException(actionableMessage, cause) {
+    init {
+        requireProfileUiText(actionableMessage, MAX_OPERATION_MESSAGE_CHARS, "deletion failure")
+    }
+}
+
+private fun requireProfileUiText(
+    value: String,
+    maximumLength: Int,
+    field: String,
+) {
+    require(
+        value.isNotBlank() &&
+            value.length <= maximumLength &&
+            value.none(Char::isISOControl),
+    ) { "Connection profile $field must be bounded printable text" }
+}
+
+private const val MAX_OPERATION_LABEL_CHARS = 128
+private const val MAX_OPERATION_SUPPORTING_TEXT_CHARS = 512
+private const val MAX_OPERATION_MESSAGE_CHARS = 1_024
+
 class ConnectionProfileValidationException(
     val fieldErrors: Map<ConnectionProfileFieldId, String>,
 ) : IllegalArgumentException("Connection profile input is invalid") {
@@ -175,4 +262,11 @@ interface ConnectionProfileManager {
     suspend fun save(update: ConnectionProfileUpdate): ConnectionProfileSaveResult
 
     suspend fun delete(profileId: ConnectionProfileId)
+
+    suspend fun performOperation(
+        profileId: ConnectionProfileId,
+        operationId: ConnectionProfileOperationId,
+    ): ConnectionProfileOperationResult {
+        throw UnsupportedOperationException("This connection provider does not support profile operations")
+    }
 }
