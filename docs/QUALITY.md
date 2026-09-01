@@ -15,6 +15,7 @@ bounded mutation fuzzing is scheduled separately.
 | Dependency analysis | Unused, transitive, and incorrectly scoped dependencies | Any advice fails, except one documented public-API edge |
 | JVM tests | Unit, contract, concurrency, and persistence behavior | Any failure fails |
 | Device UI tests | Semantic flows and API 34+ accessibility checks | API 36 phone fails pull requests; minimum API and tablet run weekly |
+| Visual regression | Deterministic Roborazzi images across state, size, theme, and font variants | Any pixel drift fails; actual/diff evidence is retained |
 | Kover | Aggregate JVM-testable line coverage across modules | Less than 70% fails |
 | Debug assembly | Packaging and resource integration | Any failure fails |
 
@@ -54,6 +55,12 @@ Generate human-readable reports while investigating:
 
 ```bash
 ./gradlew detekt koverHtmlReport lintDebug
+```
+
+Verify the committed UI baselines separately:
+
+```bash
+./gradlew :app:verifyRoborazziDebug --stacktrace
 ```
 
 Reports are written below `build/reports/detekt`,
@@ -130,15 +137,33 @@ width, font scale, and expansion-prone content. This follows Element X Android's
 preview-to-screenshot pattern while retaining Agent Relay's own Material 3
 design language.
 
-The first visual-regression implementation should evaluate Roborazzi, used by
-Google's Now in Android project, against Paparazzi, used by Element X Android.
-Prefer the smallest stable tool that:
+Agent Relay uses Roborazzi with Robolectric native graphics for its first
+visual-regression layer. Roborazzi was selected over Paparazzi because the
+current stable Roborazzi release works with this project's AGP 9 and Compose
+stack, runs on Linux without an emulator, and is already used for Android
+Compose screenshot tests by Now in Android. Paparazzi's current 2.0 release is
+still an alpha, while Element X Android's mature Paparazzi/Showkase pattern
+remains a useful reference for preview coverage.
 
-- runs deterministically on Linux without a hardware emulator for PR feedback;
-- renders the Compose and Material versions used by this project accurately;
-- produces reference, actual, and diff artifacts;
-- supports the required window, theme, font, and locale matrix; and
-- does not require checking generated machine-specific data into source.
+The committed baselines under `app/src/test/screenshots` cover loading, fatal
+error, empty, offline, changed identity, normal content, long German content,
+and approval-required states across compact, medium, and expanded widths,
+light/dark themes, and large font scales. Dynamic color is disabled so host
+wallpaper state cannot change evidence. Pull requests run
+`:app:verifyRoborazziDebug` in a dedicated Linux CI job and retain Roborazzi
+reports, test XML, and generated actual/diff images.
+
+Record changed baselines only after reviewing the rendered UI:
+
+```bash
+./gradlew :app:recordRoborazziDebug --stacktrace
+./gradlew :app:verifyRoborazziDebug --stacktrace
+```
+
+Run record and verify as separate Gradle invocations because both modes share
+the Android unit-test task. A changed baseline is evidence to inspect, never an
+automatic approval or a substitute for semantic, accessibility, or device
+tests.
 
 End-to-end tests should use task-oriented screen robots, as seen in mature
 Firefox and DuckDuckGo Android suites, so navigation details can evolve without
