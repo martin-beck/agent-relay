@@ -1,0 +1,8 @@
+[files]
+extend-exclude = ["*.webp", "gradle/wrapper/gradle-wrapper.jar"]
+
+[default.extend-words]
+flate = "flate"
+Kover = "Kover"
+ND = "ND"
+ratatui = "ratatui"

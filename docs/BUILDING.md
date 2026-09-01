@@ -8,6 +8,7 @@ integration.
 - JDK 17
 - Android SDK Platform 36
 - Git
+- uv, used to install the repository's locked cross-language check runner
 - An account invited to the private repository
 
 Android Studio may supply the JDK and SDK, or they can be installed separately.
@@ -32,25 +33,38 @@ sdk.dir=/path/to/Android/Sdk
 Run the same gate as GitHub Actions:
 
 ```bash
+uv sync --locked --only-group quality
+uv run pre-commit run --all-files --show-diff-on-failure
 ./gradlew spotlessCheck detekt buildHealth test koverXmlReport koverVerify lintDebug assembleDebug --stacktrace
 ```
 
 On Windows PowerShell:
 
 ```powershell
+uv sync --locked --only-group quality
+uv run pre-commit run --all-files --show-diff-on-failure
 .\gradlew.bat spotlessCheck detekt buildHealth test koverXmlReport koverVerify lintDebug assembleDebug --stacktrace
 ```
 
-The tasks cover formatting, Detekt, strict dependency declarations, JVM unit and
-contract tests, aggregate coverage, Android lint, and debug APK assembly. The
-APK is written to:
+The pre-commit gate covers Python, Markdown, YAML, TOML, XML, properties,
+GitHub metadata, spelling, links, secrets, and generic repository hygiene. The
+Gradle tasks cover Kotlin formatting, Detekt, strict dependency declarations,
+JVM unit and contract tests, aggregate coverage, Android lint, and debug APK
+assembly. The APK is written to:
 
 ```text
 app/build/outputs/apk/debug/app-debug.apk
 ```
 
 Run `./gradlew spotlessApply` to repair supported formatting before repeating
-the gate.
+the gate. Pre-commit hooks apply safe formatting repairs locally and return a
+failure so the resulting diff is reviewed before the gate is repeated.
+
+Install the fast checks as a Git hook if desired:
+
+```bash
+uv run pre-commit install
+```
 
 ## Visual regression
 
@@ -87,6 +101,11 @@ credentials, host aliases, or provider state to Git.
 Examples:
 
 ```bash
+uv run pre-commit run ruff-check --all-files
+uv run pre-commit run mypy --all-files
+uv run pre-commit run markdownlint-cli2 --all-files
+uv run pre-commit run actionlint --all-files
+uv run pre-commit run zizmor --all-files
 ./gradlew :connection:local:test
 ./gradlew :ssh:jsch:test
 ./gradlew :session:runtime:test
@@ -126,12 +145,16 @@ successful compile or JVM test does not substitute for device execution.
 `.github/workflows/verify.yml` runs the required quality/build and deterministic
 visual-regression jobs. Actions are
 pinned to immutable commit SHAs, dependency updates are proposed by Dependabot,
-and test, quality, lint, and APK artifacts are retained for a limited time. The
+and repository-format, test, quality, lint, and APK evidence is retained for a
+limited time. The
 separate `.github/workflows/fuzz.yml` job runs on a weekly schedule and by
 manual dispatch so bounded mutation fuzzing does not slow every pull request.
 The `.github/workflows/ui.yml` job runs semantic UI, accessibility, SSH
 Android, and encrypted-storage tests, then parses each module's JUnit XML instead
 of treating emulator log text as the result.
+The scheduled `.github/workflows/links.yml` workflow performs the networked
+external-link check; pull requests use deterministic offline path and fragment
+validation.
 
 If a CI-only failure occurs, download the relevant report artifact from the
 workflow run and reproduce the exact failing Gradle task locally.
