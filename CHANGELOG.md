@@ -19,6 +19,12 @@ supported release.
 - Secure Shell profile setup for passwords, imported private keys and
   passphrases, and non-exportable Android Keystore agent keys with public-key
   display.
+- Secure Shell jump-host selection backed by saved SSH profiles, bounded
+  multi-hop route resolution, strict host-key verification and independent
+  credentials for every hop, and JSch direct-tcpip forwarding.
+- Persistent per-profile Android Keystore SSH identities, explicit idempotent
+  public-key installation, a real key-only login probe, and provider-neutral
+  confirmed profile operations in the Compose editor.
 - Adaptive Compose session hub with connection lifecycle and SSH identity
   decisions, provider-scoped sessions, unread state, and bounded cached
   transcript detail.
@@ -67,7 +73,7 @@ supported release.
 - The current session hub is an early control surface. Queued/offline input and
   artifact workflows are not yet exposed.
 - Voice input and attachments are not yet integrated with the text composer.
-- Offline speech, background recovery/notifications, and secure file transfer
-  are not yet wired into the application.
+- Offline speech and background recovery/notifications are not yet wired into
+  the application; changed-file preview, diff, and batch export remain.
 - Deterministic screenshot evidence, manual TalkBack/keyboard release audits,
   and production release signing remain.

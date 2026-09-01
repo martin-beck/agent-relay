@@ -9,6 +9,10 @@ application graph. It can:
 - create and display the app-private local connection automatically;
 - create, edit, and delete encrypted SSH connection profiles through a
   provider-owned form;
+- route an SSH profile through another configured SSH profile while rejecting
+  missing routes and cycles;
+- install a persistent app-managed public key with explicit confirmation and
+  make a real key-only passwordless-login probe;
 - connect and disconnect any profile through the generic connection boundary;
 - require explicit review of an unknown SSH host key;
 - show both old and new fingerprints before replacing a changed SSH host key;
@@ -132,21 +136,52 @@ digest keys. Reconnect the session before saving if the provider is offline.
 
 1. Select **Add Secure Shell profile** under **Connections**.
 2. Enter a profile name, host, port, and username.
-3. Choose one authentication method:
+3. Under **Jump host**, keep **Direct connection** or choose another configured
+   Secure Shell profile. Configure the jump profile first. Routes can contain
+   multiple saved profiles, but cycles, missing profiles, and routes deeper than
+   eight jump hosts are rejected.
+4. Choose one authentication method:
    - **Password** stores the password in Android Keystore-backed encrypted app
      storage.
    - **Imported private key** stores the private key and optional passphrase as
      separate encrypted credentials.
-   - **Android Keystore key** creates a non-exportable signing key. Save the
-     profile, reopen **Edit profile**, and add the displayed public key to the
-     remote account before connecting.
-4. Save the profile, then use **Connect** from its connection card.
+   - **Android Keystore key** uses the profile's non-exportable signing key.
+5. Save the profile, then use **Connect** from its connection card.
 
 Use **Edit profile** to change an existing connection. A blank secret field
 marked as already stored keeps that credential; entering a value replaces it.
 Imported-key profiles explicitly choose whether to keep, remove, or replace a
-passphrase. Deleting a profile removes its referenced credentials and agent key,
-and removes saved host identity only when no other profile uses the endpoint.
+passphrase. Editing a jump-host profile does not copy its host, username, or
+credential into the destination profile; routing remains inside the SSH
+provider.
+
+Every saved SSH profile gets one persistent app-managed key, even when its
+normal authentication method is password or an imported key. Its public half is
+always displayed under **App-managed public key**; its private half remains in
+Android Keystore.
+
+To enable and verify passwordless login:
+
+1. First save a profile whose current password or imported key can authenticate
+   to the remote account. Connect once and explicitly review every unknown or
+   changed host identity in the route.
+2. Reopen **Edit profile** and select **Install public key**. Review the
+   confirmation explaining that the remote account will be changed.
+3. Confirm the action. Agent Relay uses the saved authentication and jump route,
+   rejects symbolic-link SSH files, creates the SSH directory with restrictive
+   permissions, and adds only the normalized public key when it is not already
+   present. It never sends or exports the private key.
+4. Select **Test key-only login**. This makes a new connection whose destination
+   uses only the app-managed key, while jump hosts continue using their own
+   saved authentication, then executes a real heartbeat.
+5. After a successful probe, optionally select **Android Keystore key** as the
+   profile's normal authentication method and save.
+
+Profile operations are disabled while the editor has unsaved changes. A profile
+cannot be deleted while another profile selects it as a jump host; remove those
+references first. Deleting an unreferenced profile removes its credentials and
+app-managed key, and removes saved host identity only when no other profile uses
+the endpoint.
 
 The app never returns a stored password or private key to the editor. Provider
 validation is shown beside the relevant field, while storage failures use

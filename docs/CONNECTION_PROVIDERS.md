@@ -42,9 +42,9 @@ or conditional branches in agent providers.
 | Module | Responsibility |
 | --- | --- |
 | :storage:android | Transport-neutral, namespaced Android Keystore document encryption with authenticated atomic files below noBackupFilesDir |
-| :ssh:api | Validated SSH profiles, authentication references, host-key records, bounded reconnect policy, independent managed sessions, and the generic connection-provider adapter |
-| :ssh:jsch | JSch transport, strict host-key repository, password/imported-key/agent authentication, POSIX command encoding, keepalive checks, and concurrent exec channels |
-| :ssh:android | Android Keystore encryption, no-backup document storage, profile and host-key persistence, credential persistence, and non-exportable Android agent keys |
+| :ssh:api | Validated SSH profiles and jump routes, authentication references, managed-key operations, host-key records, bounded reconnect policy, independent managed sessions, and the generic adapter |
+| :ssh:jsch | JSch transport, strict per-hop host-key repositories, password/imported-key/agent authentication, direct-tcpip chaining, POSIX command encoding, keepalive checks, and concurrent exec channels |
+| :ssh:android | Android Keystore encryption, no-backup profile/route/host-key and credential persistence, and persistent non-exportable Android agent keys |
 | :connection:local | A single app-local profile, direct local process execution, bounded streams, workspace confinement, process cleanup, and concurrent process channels |
 
 The transport pins the maintained com.github.mwiede:jsch fork at 2.28.6.
@@ -66,7 +66,10 @@ The SSH manager supports:
 - imported private keys with an independently kept, removed, or replaced
   passphrase; and
 - a non-exportable Android Keystore key whose OpenSSH public key is the only key
-  material returned to the editor.
+  material returned to the editor;
+- selection of another configured SSH profile as a jump host; and
+- provider-owned operations for confirmed public-key installation and an actual
+  key-only login probe.
 
 Stored secrets return as empty fields with a `hasStoredSecret` marker. An empty
 replacement keeps the referenced credential; the app never reads a password or
@@ -77,9 +80,40 @@ also removes unshared host trust. Cleanup is deliberately best effort after the
 authoritative profile mutation, so a storage failure cannot resurrect a deleted
 profile; encrypted orphan recovery remains a future hardening option.
 
+## Jump routes and app-managed keys
+
+Jump-host selection stores only another SSH profile identifier. The route
+resolver follows those references before any transport call, rejects missing
+profiles and cycles, caps the route at eight jump hosts, and resolves every
+hop's own credential and trusted host-key set. JSch connects outermost first and
+opens each later session through a direct-tcpip channel on the preceding
+session. No route field enters provider-neutral session or navigation state.
+
+Every saved SSH profile owns a deterministic persistent key identifier. The
+Android implementation creates a NIST P-256 signing key in Android Keystore
+when that key is absent, displays only its OpenSSH public encoding, retains it
+across password/imported-key authentication changes, and deletes it with the
+profile. A failed profile save removes a newly created key rather than leaving
+an unreferenced identity.
+
+**Install public key** is a generic confirmed profile operation. It connects
+with the profile's currently saved authentication and configured jump route,
+then runs a bounded POSIX command that:
+
+- rejects symbolic-link SSH directories and authorized-key files;
+- applies directory mode 0700 and file mode 0600;
+- strips comments and sends only the validated algorithm and Base64 public-key
+  blob; and
+- appends nothing when the exact key is already present.
+
+**Test key-only login** creates a fresh route in which only the destination
+authentication is replaced with the app-managed key. Jump profiles retain their
+own saved credentials. A successful remote heartbeat is required before the UI
+reports passwordless login as working.
+
 ## Trust and credential rules
 
-- Unknown SSH host keys stop the connection before authentication. The
+- Unknown SSH host keys on any hop stop the route before authentication. The
   fingerprint is shown through a server-identity challenge and no key is added
   implicitly.
 - A changed key remains blocked. Replacement uses compare-and-set semantics
@@ -108,9 +142,10 @@ hardware backing when the device does not provide it.
 
 Each saved SSH profile gets an independent managed connection:
 
-1. resolve the profile and selected credential;
-2. open the transport and verify the server identity;
-3. authenticate without interactive fallback;
+1. resolve the destination and its bounded jump route;
+2. resolve each hop's selected credential and trusted host keys;
+3. open every route session outermost first, verifying identity and
+   authenticating without interactive fallback;
 4. expose one shared SSH session as a RemoteAgentRuntime;
 5. open independent exec channels for concurrent agent sessions;
 6. measure a real round-trip heartbeat;
@@ -164,8 +199,12 @@ Coverage includes:
 - coexistence of SSH-shaped and local-shaped providers in one registry;
 - profile validation, secret redaction, exact credential-purpose resolution,
   and host-key compare-and-set behavior;
+- jump selection, missing/cyclic/deep route rejection, outermost-first
+  resolution, per-hop trust, and referenced-jump deletion protection;
 - password replacement, imported-key/passphrase transitions, Android agent-key
   creation and deletion, identifier collision retries, and failed-save cleanup;
+- constrained idempotent public-key installation, destination-only key override,
+  jump credential retention, and heartbeat-backed passwordless probes;
 - exponential backoff, retry exhaustion, non-retried authentication failure,
   independent sessions, and background suspension/resumption;
 - POSIX injection boundaries and strict JSch host-key repository behavior;
@@ -190,6 +229,31 @@ without trusting it, then classified an intentionally invalid password as a
 non-recoverable authentication failure. It deliberately does not modify
 authorized_keys.
 
+The second opt-in check expects two disposable OpenSSH endpoints and one
+disposable imported key. Set only these environment variables outside the
+repository:
+
+- `AGENT_RELAY_LIVE_SSH_JUMP=1`;
+- `AGENT_RELAY_LIVE_SSH_KEY` and `AGENT_RELAY_LIVE_SSH_USER`;
+- `AGENT_RELAY_LIVE_SSH_JUMP_HOST` and
+  `AGENT_RELAY_LIVE_SSH_JUMP_PORT`; and
+- `AGENT_RELAY_LIVE_SSH_DESTINATION_HOST` and
+  `AGENT_RELAY_LIVE_SSH_DESTINATION_PORT`.
+
+Then run:
+
+~~~bash
+./gradlew :ssh:jsch:test \
+  --tests '*loopbackTwoHopRouteAuthenticatesAndExecutesThroughDirectTcpip'
+~~~
+
+On 2026-09-01 this passed against two ephemeral loopback OpenSSH 9.6p1 daemons.
+The test independently stopped at the jump and destination first-use trust
+boundaries, authenticated both sessions, opened the destination through
+direct-tcpip, and completed a real remote heartbeat. Its temporary host keys,
+client key, authorized-key files, daemons, and directory were removed after the
+run; it did not use a personal host or modify a personal authorized_keys file.
+
 The instrumented Android test compiles in regular CI and must run on an emulator
 or device to verify the real AndroidKeyStore provider:
 
@@ -197,8 +261,9 @@ or device to verify the real AndroidKeyStore provider:
 ./gradlew :ssh:android:connectedDebugAndroidTest
 ~~~
 
-Encrypted document behavior is emulator-verified. Non-exportable agent-key
-generation and signing still need final real-device evidence before release.
+Encrypted document behavior, app-managed key generation, and persistent lookup
+through a new key-manager instance are emulator-verified. Hardware-backed
+generation and signing still need final physical-device evidence before release.
 
 ## Local-device provider
 

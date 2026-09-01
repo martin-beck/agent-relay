@@ -31,10 +31,10 @@ schema without importing SSH configuration types.
 | Module | Responsibility |
 | --- | --- |
 | `:app` | Android entry point and Compose presentation |
-| `:connection:api` | Generic connection providers, provider-owned profile forms, lifecycle, identity challenges, and runtime access |
+| `:connection:api` | Generic connection providers, provider-owned profile forms and operations, lifecycle, identity challenges, and runtime access |
 | `:connection:local` | App-local process execution plus canonical workspace-confined file access |
-| `:ssh:api` | SSH profiles, credentials, host keys, retry policy, and generic adapter |
-| `:ssh:jsch` | Maintained JSch transport, bounded POSIX commands, and canonical SFTP file access |
+| `:ssh:api` | SSH profiles, jump routes, credentials, managed-key enrollment and probes, host keys, retry policy, and generic adapter |
+| `:ssh:jsch` | Maintained JSch transport, direct-tcpip jump chaining, bounded POSIX commands, and canonical SFTP file access |
 | `:ssh:android` | Android SSH persistence, credentials, and non-exportable agent keys |
 | `:provider:api` | Agent descriptors, sessions, events, capabilities, actions, and the generic checked-file contract |
 | `:provider:*` | Codex, OpenCode, Continue, Claude, Cline, and Aider adapters |
@@ -87,9 +87,19 @@ additional confirmation for positive high-risk or session-wide grants.
 
 Profile setup follows a separate provider-neutral path: Compose edits generic
 text, port, secret, choice, and read-only fields; the selected provider validates
-them and owns persistence. SSH maps those fields to encrypted credential
-references or non-exportable Android Keystore agent keys. Successful edits
-invalidate an existing managed connection and refresh coordinator profiles.
+them and owns persistence. Saved profiles can also expose generic operations
+with provider-owned labels, supporting text, confirmation requirements, and
+actionable redacted results. SSH maps those fields and operations to encrypted
+credential references, jump-host selection, persistent non-exportable Android
+keys, confirmed public-key installation, and key-only authentication probes.
+Successful edits invalidate an existing managed connection and refresh
+coordinator profiles.
+
+SSH routing stays below that generic boundary. The SSH provider resolves a
+destination's configured profile references into an outermost-to-innermost
+route, then JSch authenticates each hop with that hop's credential and host-key
+set. Each later session opens through direct-tcpip on the preceding session.
+Cycles, missing profiles, and excessive depth fail before transport access.
 
 Changed files follow a separate read-only path. An agent provider reports file
 changes; the coordinator classifies each path against the session workspace and
@@ -108,7 +118,11 @@ session or UI layers.
 
 - Android's application sandbox is the local-process boundary.
 - Local working directories are canonicalized below an app-controlled root.
-- SSH server identity is accepted only through explicit trust decisions.
+- Every SSH hop's server identity is accepted only through an explicit trust
+  decision.
+- App-managed SSH private keys remain non-exportable in Android Keystore; public
+  key installation sends only a normalized public key and requires an informed
+  confirmation.
 - Android Keystore keys encrypt namespaced authenticated documents.
 - Credentials stay outside command arguments, events, and diagnostic snapshots.
 - Stored secrets are never returned by a profile manager; replacement values

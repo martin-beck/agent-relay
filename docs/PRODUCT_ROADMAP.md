@@ -260,7 +260,11 @@ This separation avoids duplicating SSH, pairing, policy, and state logic for eve
 ### Connection providers, in implementation order
 
 1. **Local provider** — existing on-device development and testing path.
-2. **SSH provider** — existing general remote bootstrap and fallback path; add robust host-key policy, keepalive, reconnect, ProxyJump, agent forwarding policy, and multiplexing.
+2. **SSH provider** — existing general remote bootstrap and fallback path. It
+   includes strict per-hop host keys and credentials, bounded ProxyJump-style
+   direct-tcpip routes, reconnect and keepalive, multiplexed runtimes, persistent
+   app-managed keys, confirmed public-key installation, and key-only probes.
+   Agent forwarding remains deferred behind an explicit policy.
 3. **Paired daemon provider** — the primary durable path. It supports direct LAN/VPN access and relay-assisted access without changing endpoint identity.
 4. **Generic ACP provider** — interoperable structured agent sessions through Agent Client Protocol, behind the same event, policy, and workflow abstractions.
 5. **Agentless Windows provider** — PowerShell remoting over SSH or HTTPS only after the provider can meet the same identity, cancellation, quoting, encoding, filesystem, and outcome contracts.
