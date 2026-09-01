@@ -29,6 +29,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isShiftPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.heading
@@ -299,6 +307,7 @@ private fun SessionComposer(
 ) {
     val composer = detail.composer
     val sessionKey = detail.session.stableKey
+    val focusManager = LocalFocusManager.current
     val projectedValue = TextFieldValue(
         text = composer.draftText,
         selection = TextRange(composer.selectionStart, composer.selectionEnd),
@@ -328,7 +337,22 @@ private fun SessionComposer(
                     changed.selection.end,
                 )
             },
-            modifier = Modifier.fillMaxWidth().testTag("session-composer-input"),
+            modifier = Modifier
+                .fillMaxWidth()
+                .onPreviewKeyEvent { event ->
+                    if (event.key != Key.Tab || event.type != KeyEventType.KeyUp) {
+                        return@onPreviewKeyEvent false
+                    }
+                    focusManager.moveFocus(
+                        if (event.isShiftPressed) {
+                            FocusDirection.Previous
+                        } else {
+                            FocusDirection.Next
+                        },
+                    )
+                    true
+                }
+                .testTag("session-composer-input"),
             label = { Text("Message to ${detail.session.agentProviderLabel}") },
             enabled = !composer.isBusy,
             supportingText = {
