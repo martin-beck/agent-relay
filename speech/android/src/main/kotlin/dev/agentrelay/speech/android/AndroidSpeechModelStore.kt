@@ -15,6 +15,7 @@ import java.nio.file.AtomicMoveNotSupportedException
 import java.nio.file.Files
 import java.nio.file.LinkOption
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.nio.file.InvalidPathException
 import java.nio.file.StandardCopyOption
 import java.security.MessageDigest
@@ -611,7 +612,7 @@ class AndroidSpeechModelStore internal constructor(
                 rejectUnsafePackage()
             }
             val path = try {
-                Path.of(relativePath)
+                Paths.get(relativePath)
             } catch (_: InvalidPathException) {
                 rejectUnsafePackage()
             }
