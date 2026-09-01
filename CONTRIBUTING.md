@@ -20,13 +20,18 @@ review. Delete the branch after merge.
 ## Required checks
 
 ```bash
+uv sync --locked --only-group quality
+uv run pre-commit run --all-files --show-diff-on-failure
 ./gradlew spotlessCheck detekt buildHealth test koverXmlReport koverVerify lintDebug assembleDebug --stacktrace
 ```
 
-Run relevant focused tests while developing. Device-dependent changes also need
-the appropriate `connectedDebugAndroidTest` evidence before release. Changes to
-input parsing, remote command construction, path handling, or protocol decoding
-should add a focused property or fuzz regression when practical.
+The repository check applies format-aware parsing, formatting, static analysis,
+schema validation, link validation, spelling, workflow security, and secret
+scanning to every tracked text format. Run relevant focused tests while
+developing. Device-dependent changes also need the appropriate
+`connectedDebugAndroidTest` evidence before release. Changes to input parsing,
+remote command construction, path handling, or protocol decoding should add a
+focused property or fuzz regression when practical.
 
 Run the bounded Jazzer target locally after changing POSIX command encoding:
 
@@ -35,7 +40,6 @@ JAZZER_FUZZ=1 ./gradlew :ssh:jsch:test \
   --tests 'dev.agentrelay.ssh.jsch.PosixCommandEncoderFuzzTest' \
   --rerun-tasks
 ```
-
 
 ## Pull request content
 
