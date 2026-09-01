@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.roborazzi)
 }
 
 android {
@@ -15,6 +16,8 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         versionName = "1.0"
     }
+
+    testOptions.unitTests.isIncludeAndroidResources = true
 
     lint {
         // API upgrades require matching AGP/Gradle plus target-behavior device validation.
@@ -53,6 +56,7 @@ dependencies {
     val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)
     androidTestImplementation(composeBom)
+    testImplementation(composeBom)
 
     // Core Android dependencies
     implementation(libs.androidx.activity.compose)
@@ -91,6 +95,15 @@ dependencies {
 
     // Local tests: jUnit, coroutines, Android runner
     testImplementation(libs.junit)
+    testImplementation(libs.androidx.compose.ui.test.junit4)
+    testRuntimeOnly(libs.androidx.compose.ui.test.manifest)
+    testImplementation(libs.androidx.test.ext.junit)
+    testImplementation(libs.differ)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.robolectric.annotations)
+    testImplementation(libs.robolectric.shadows.framework)
+    testImplementation(libs.roborazzi)
+    testImplementation(libs.roborazzi.core)
     testImplementation(libs.kotlinx.coroutines.test)
 
     // Instrumented tests: jUnit rules and runners
