@@ -18,6 +18,7 @@ import dev.agentrelay.connection.api.ConnectionProviderId
 import dev.agentrelay.connection.api.ConnectionState
 import dev.agentrelay.connection.api.ManagedConnection
 import dev.agentrelay.provider.api.RemoteAgentRuntime
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -32,6 +33,7 @@ import java.util.concurrent.ConcurrentHashMap
 class SshConnectionProvider(
     private val profileStore: SshProfileStore,
     private val manager: SshConnectionManager,
+    stateDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : ConnectionProvider {
     override val descriptor = ConnectionProviderDescriptor(
         id = ID,
@@ -48,7 +50,7 @@ class SshConnectionProvider(
         ),
     )
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val scope = CoroutineScope(SupervisorJob() + stateDispatcher)
     private val connections = ConcurrentHashMap<ConnectionProfileId, SshManagedConnection>()
 
     override suspend fun profiles(): List<ConnectionProfileSummary> = profileStore.profiles().map {

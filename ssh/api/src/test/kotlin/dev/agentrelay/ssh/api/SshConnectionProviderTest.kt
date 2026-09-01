@@ -17,11 +17,9 @@ import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.awaitCancellation
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.withTimeout
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -30,16 +28,21 @@ class SshConnectionProviderTest {
     fun sshImplementsTheGenericConnectionProviderContract() = runTest {
         val hostKeys = InMemorySshHostKeyStore()
         val connector = TrustConnector(HOST_KEY)
+        val dispatcher = StandardTestDispatcher(testScheduler)
         val manager = SshConnectionManager(
             profileStore = ProfileStore,
             credentialStore = CredentialStore,
             hostKeyStore = hostKeys,
             connector = connector,
             heartbeatInterval = 1.hours,
-            dispatcher = StandardTestDispatcher(testScheduler),
+            dispatcher = dispatcher,
             sleeper = SshDelay { awaitCancellation() },
         )
-        val provider = SshConnectionProvider(ProfileStore, manager)
+        val provider = SshConnectionProvider(
+            profileStore = ProfileStore,
+            manager = manager,
+            stateDispatcher = dispatcher,
+        )
 
         assertEquals(SshConnectionProvider.ID, provider.descriptor.id)
         assertTrue(ConnectionCapability.MULTIPLEXED_PROCESSES in provider.descriptor.capabilities)
@@ -50,9 +53,7 @@ class SshConnectionProviderTest {
         val connection = provider.connection(summary.id)
         connection.connect()
         runCurrent()
-        val waiting = withTimeout(2_000) {
-            connection.state.first { it is ConnectionState.AwaitingIdentityTrust }
-        } as ConnectionState.AwaitingIdentityTrust
+        val waiting = assertIs<ConnectionState.AwaitingIdentityTrust>(connection.state.value)
         assertEquals(ConnectionIdentityDisposition.UNKNOWN, waiting.challenge.disposition)
         assertTrue(
             connection.resolveIdentityChallenge(
@@ -61,9 +62,7 @@ class SshConnectionProviderTest {
             ),
         )
         runCurrent()
-        val connected = withTimeout(2_000) {
-            connection.state.first { it is ConnectionState.Connected }
-        }
+        val connected = connection.state.value
         assertIs<ConnectionState.Connected>(connected)
         assertTrue(connection.runtimeOrNull() != null)
         assertEquals(SshConnectionProvider.ID, connection.diagnosticSnapshot().providerId)
