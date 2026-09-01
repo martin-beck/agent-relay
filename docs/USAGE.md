@@ -2,35 +2,51 @@
 
 ## Current application behavior
 
-The application is not yet usable as an agent client. Launching the current
-debug APK displays `Hello Android!`. There is no connection picker, SSH profile
-editor, local provider selector, session list, transcript, composer, or approval
-surface in the UI.
+The debug application now launches an adaptive session hub backed by the real
+application graph. It can:
 
-The implemented connection, agent-provider, encrypted-storage, and session
-runtime modules are library foundations. They are covered by tests but are not
-yet instantiated by `:app`.
+- show Local Device and Secure Shell as separate connection providers;
+- create and display the app-private local connection automatically;
+- load existing encrypted SSH connection profiles;
+- connect and disconnect any profile through the generic connection boundary;
+- require explicit review of an unknown SSH host key;
+- show both old and new fingerprints before replacing a changed SSH host key;
+- reject an SSH identity without silently accepting it;
+- show provider probes, connection state, sanitized errors, unread counts, and
+  actionable activity counts;
+- list sessions discovered through Aider, Claude Code, Cline, Codex, Continue,
+  and OpenCode provider adapters;
+- display cached transcript and activity detail and mark a selected session
+  read; and
+- use focused navigation on compact screens and list-detail navigation on
+  expanded screens.
 
-## Intended workflow
+Session navigation stores only a fixed-length SHA-256 identity derived from the
+complete connection/provider/session locator. It does not place raw host,
+workspace, or session identifiers in navigation state.
 
-The first usable workflow will allow a user to:
+## Current limitations
 
-1. choose a connection provider, such as local device or SSH;
-2. select or create a provider-specific connection profile;
-3. review identity and authentication challenges when required;
-4. discover available coding-agent providers and sessions;
-5. open a session timeline and send supported actions; and
-6. retain drafts, unread activity, and recent transcript state across reconnects.
+The hub is an early development surface, not a release-ready agent client:
 
-This section describes the product direction, not behavior available in the
-current APK. Capability-dependent actions will be shown only when the selected
-agent and connection providers implement them.
+- SSH profiles cannot yet be created or edited in the UI.
+- Local access does not bundle coding-agent command-line tools; a compatible
+  executable must exist inside the application's sandbox before it can be
+  discovered.
+- Starting, attaching, composing, steering, interrupting, approving, and file
+  transfer are not yet exposed by the app UI.
+- Transcript detail is currently read-only. Rendering is bounded to the most
+  recent 32,000 characters and clearly marks truncation.
+- Speech, notifications, foreground/background session operation, and artifact
+  workflows are not implemented.
+- No production release is published.
+
+Capability-dependent actions must remain unavailable, with an explanation, when
+the selected agent or connection provider cannot implement them safely.
 
 ## Security expectations
 
-When the UI is integrated:
-
-- SSH first-use and changed host keys must require explicit review.
+- SSH first-use and changed host keys require explicit review.
 - Credentials must stay in encrypted app-private storage and must never appear
   in diagnostics.
 - Local access must remain inside Android's application sandbox and configured
@@ -38,6 +54,8 @@ When the UI is integrated:
 - Approval decisions must display their connection, workspace, session, and
   requested scope.
 - Unsupported operations must be unavailable rather than emulated.
+- Initialization and connection failures must fail closed and show only
+  sanitized, actionable messages.
 
 The detailed behavior is tracked in the
 [product roadmap](PRODUCT_ROADMAP.md). Build and installation instructions are

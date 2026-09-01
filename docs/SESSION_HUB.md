@@ -1,6 +1,6 @@
 # Session hub and offline state
 
-Status: Persistence and coordinator foundations implemented; UI pending
+Status: Persistence, coordinator, and first adaptive read-oriented UI implemented
 Last verified: 2026-09-01
 
 The session layer is independent of both connection implementations and agent
@@ -129,8 +129,14 @@ older collector to mutate the new state. The coordinator does not downcast a
 runtime to SSH or infer that the local provider has hosts, credentials, or host
 keys.
 
-The application still needs to construct the registries, Android repository, and
-coordinator and bind their state to Compose.
+The application now constructs the encrypted repository, generic connection
+registry, coordinator, and agent registry once at application scope. Its
+navigation-scoped ViewModel combines coordinator and repository flows, routes
+generic connect/disconnect and identity decisions, and preserves selection
+across compact detail navigation. Expanded screens show the same state in a
+list-detail layout. Session navigation arguments contain only a SHA-256 digest
+of the complete locator, while all actions resolve back to the exact lossless
+locator in current durable state.
 
 ## Verification
 
@@ -159,6 +165,7 @@ The Android Keystore implementation shares the instrumented coverage in
 :storage:android. It must still run on an emulator or device through
 connectedDebugAndroidTest before release.
 
-Not yet implemented are application construction, background notification
-dispatch, Compose presentation, or artifact transfer. Their extension
-boundaries are defined here, but completion requires end-to-end device evidence.
+Not yet implemented are the profile editor, composer and control actions,
+approval decisions, background notification dispatch, or artifact transfer.
+Their extension boundaries are defined here, but completion requires
+end-to-end device evidence.

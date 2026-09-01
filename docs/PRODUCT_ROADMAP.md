@@ -110,9 +110,99 @@ The roadmap also draws from established public products and platform guidance:
   emphasize visible status, user control, error prevention, recognition over
   recall, and recovery.
 
+### Similar open-source applications
+
+The following applications are the most useful implementation benchmarks:
+
+- [Whip](https://github.com/KaminariOS/whip) is the closest product comparison.
+  It provides a multi-host attention queue, normalized Codex and OpenCode
+  transcripts, expandable tool calls and diffs, cached terminal output, an
+  offline per-session outbox, SFTP previews, jump hosts, biometric key
+  protection, strict host keys, notifications, and speech. Agent Relay differs
+  by using native Kotlin and a provider-neutral boundary that includes both
+  local and SSH connections rather than a Herdr-specific React Native/Rust
+  stack.
+- [PocketShell](https://github.com/alexeygrigorev/pocketshell) is the strongest
+  native Android reference for SSH/tmux, voice, remote files, and port
+  forwarding. Its [architecture](https://github.com/alexeygrigorev/pocketshell/blob/main/docs/architecture.md)
+  uses one reducer/effect authority, stale-session protection, and warm caches;
+  its [testing strategy](https://github.com/alexeygrigorev/pocketshell/blob/main/docs/testing.md)
+  combines Docker SSH/tmux fixtures, emulator end-to-end tests, screenshots,
+  minimum-API coverage, and network fault injection.
+- [Moke](https://github.com/briqt/moke) demonstrates native Compose SSH and Mosh
+  sessions, a user-visible foreground service, latency display, tmux,
+  mobile-oriented extra keys, text blocks, zoom, localization, and
+  Android-Keystore-backed encryption.
+- [Termux](https://github.com/termux/termux-app) is the reference for local
+  process/session ownership, terminal modules and plugins, user-visible process
+  controls, ABI-specific artifacts, and checksummed Android builds.
+- [ConnectBot](https://github.com/connectbot/connectbot) provides a mature SSH
+  baseline. Its [CI workflow](https://github.com/connectbot/connectbot/blob/main/.github/workflows/ci-build.yml)
+  exercises emulator variants and coverage and pins third-party actions.
+- [ServerBox](https://github.com/lollipopkit/flutter_server_box) shows the value
+  of broad host-health and service-management views, but those are later
+  operational features rather than part of Agent Relay's agent-session core.
+- [ChatterUI](https://github.com/Vali-98/ChatterUI/blob/master/README.md)
+  demonstrates capability-driven local and remote provider configuration,
+  conversation management, and text-to-speech in a mobile client.
+- Google's [Now in Android](https://github.com/android/nowinandroid) is the
+  reference Compose test structure: interface-backed realistic test doubles,
+  instrumented user-flow tests, Roborazzi visual regression on multiple window
+  sizes, and baseline-profile/macrobenchmark coverage.
+- [Element X Android](https://github.com/element-hq/element-x-android) treats a
+  day/night preview as test input, generates Paparazzi screenshots, exercises
+  global flows with Maestro, validates the minimum API, and requires screen
+  reader review. Agent Relay should copy this layered evidence model, not its
+  product layout.
+- [WordPress Android's TalkBack guidance](https://github.com/wordpress-mobile/WordPress-Android/blob/trunk/docs/talkback-guidelines.md)
+  combines semantic labels, grouping, headings, focus order, live-region
+  announcements, minimum touch targets, manual TalkBack audits, Accessibility
+  Scanner, lint, and automated Accessibility Test Framework checks.
+- [DuckDuckGo Android](https://github.com/duckduckgo/Android) and
+  [Firefox Android](https://github.com/mozilla-firefox/firefox/tree/main/mobile/android/fenix)
+  demonstrate maintainable end-to-end tests built around named screen robots
+  and user tasks instead of brittle view implementation details.
+
 Public products are evidence for useful interaction patterns, not specifications
 to copy. Agent Relay should use Android conventions and preserve provider
 semantics.
+
+## Post-initial-app benchmark milestones
+
+These additions are explicitly sequenced after the initial application is
+finished. They close concrete gaps found in the public-app review without
+delaying the provider-neutral first milestone.
+
+- Add Docker-backed OpenSSH and deterministic local-runtime fixtures. Exercise
+  create, select, connect, disconnect, process death, and restore for both
+  providers in emulator tests.
+- Run focused fixture tests on pull requests and the full emulator, fault,
+  minimum-API, screenshot, and accessibility matrix on scheduled and release
+  workflows.
+- Make one reducer/state-machine authority own each connection lifecycle. Tag
+  asynchronous work with connection/session generations so stale events cannot
+  mutate a replacement session.
+- Add bounded transcript caches, a reviewable per-session offline outbox, and
+  fault-injected reconnect tests for latency, loss, duplication, and reordering.
+- Add an agent-native attention queue with explicit blocked, approval-required,
+  working, done, idle, and failed states across providers.
+- Manage known hosts explicitly, add optional biometric app/key unlock, separate
+  local and SSH threat models, and privacy-safe lock-screen tests.
+- Produce bounded support bundles that hash connection identifiers and exclude
+  commands, prompts, credentials, terminal contents, paths, and transcripts by
+  default.
+- Add typed transcript entries, terminal/conversation modes, mobile extra keys,
+  multi-line input, history, snippets, selection, zoom, and backpressure tests.
+  Voice must use the same composer and outbox as typed input.
+- Declare file and artifact capabilities per provider. Support Android share
+  ingestion and safe previews generically, then add SFTP only for SSH.
+- Add provider health, version, and protocol checks during onboarding; evaluate
+  optional QR profile or public-key import only with a tested threat model.
+- Add signing-certificate and checksum publication, permission-diff review,
+  dependency/license reports, and third-party notices to release CI.
+- Later, consider jump hosts, agent forwarding, port forwarding, and Mosh as a
+  separate connection provider. Host-health, Docker, and systemd views remain
+  deferred until the agent-session, artifact, and recovery core is complete.
 
 ## Priority rubric
 
@@ -251,6 +341,24 @@ core.
 - Never encode host, provider, session, unread, or risk state by color alone.
 - Keep long hostnames, paths, commands, and provider errors selectable and
   readable without overlapping controls.
+- Treat discoverability and task completion as release behavior: a first-time
+  user must be able to identify the current connection, understand status,
+  recover from an error, and find the next valid action without documentation.
+- Give every actionable element an accurate localized name, role, state, and
+  action in the Compose semantics tree. Decorative elements must not add focus
+  noise, and dynamic status changes must be announced without stealing focus.
+- Test touch targets, contrast, reading/focus order, keyboard and switch access,
+  long text, empty/loading/error/unsupported states, and destructive-action
+  confirmation.
+- Maintain deterministic semantic interaction tests for critical compact and
+  expanded flows using realistic provider test doubles rather than mocks.
+- Maintain Linux-recorded screenshot baselines for compact, medium, and expanded
+  windows in light/dark themes, large font scales, and at least one
+  expansion-prone locale such as German. Baseline updates require human review
+  of the rendered result and image diff.
+- Run Compose accessibility checks on API 34 or newer and device tests on both
+  the minimum and current supported API. Complete a manual TalkBack and keyboard
+  audit for each release because automated checks cannot validate usability.
 
 ## P1: Faster repeated work
 
@@ -386,8 +494,15 @@ A feature leaves roadmap status only when it has:
 - documented provider and failure semantics;
 - unit tests plus integration tests at its trust boundary;
 - accessibility behavior and content descriptions;
-- compact and expanded screenshot coverage;
+- semantic user-flow tests for success, empty, loading, error, offline, and
+  unsupported states;
+- human-reviewed compact, medium, and expanded screenshots across light/dark,
+  large-font, and long-text configurations;
+- automated accessibility checks plus recorded manual TalkBack and keyboard
+  audits;
 - process-death, reconnect, and cancellation tests where applicable;
+- evidence that the primary user task is discoverable and completable without
+  hidden gestures or external documentation;
 - threat-model review for credentials, approvals, files, or background work;
 - user-facing documentation and troubleshooting guidance;
 - no secret, private path, or transcript leakage in logs, notifications, or
