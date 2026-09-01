@@ -9,8 +9,8 @@ is another, and future connection types can implement the same boundary.
 > [!WARNING]
 > Agent Relay is an early development preview. The provider, connection, secure
 > storage, session coordination, and first adaptive session-hub UI are
-> implemented and tested. SSH profile creation, the composer, approvals,
-> artifacts, background delivery, and release hardening are not complete. The
+> implemented and tested. The composer, approvals, artifacts, background
+> delivery, and release hardening are not complete. The
 > APK is not yet a supported release.
 
 This is a private, invite-only project. Access to the repository does not grant
@@ -22,11 +22,11 @@ permission to redistribute source code, APKs, or project artifacts.
 | --- | --- |
 | Generic connection-provider API | Implemented and unit tested |
 | Local device connection provider | Implemented and unit tested |
-| SSH connection provider | Implemented and unit tested; device Keystore test remains |
+| SSH connection provider and profile setup | Implemented with encrypted password/imported-key storage and Android Keystore agent keys; final real-device agent-key evidence remains |
 | Codex, OpenCode, Continue, Claude, Cline, and Aider adapters | Implemented with contract tests; live checks where available |
 | Encrypted session hub and runtime coordinator | Implemented and unit tested |
 | Quality gates | Detekt, strict lint/Kotlin warnings, dependency analysis, 70% aggregate coverage, property tests, and bounded fuzzing |
-| Adaptive Compose UI and app integration | First provider-neutral connection/session list and transcript/activity detail implemented |
+| Adaptive Compose UI and app integration | Provider-neutral connection/profile setup, session list, and transcript/activity detail implemented |
 | Signed release build and distribution | Not available |
 
 See the [product roadmap](docs/PRODUCT_ROADMAP.md) for planned behavior and
@@ -63,8 +63,9 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
 The installed app opens the adaptive session hub, automatically exposes the
-app-sandboxed local profile, and lists encrypted SSH profiles when present. Read
-[Installing](docs/INSTALLING.md) for artifact and device instructions and
+app-sandboxed local profile, and can create or edit encrypted SSH profiles with
+password, imported-key, or Android Keystore authentication. Read [Installing](docs/INSTALLING.md)
+for artifact and device instructions and
 [Usage](docs/USAGE.md) for the exact implemented user-facing behavior.
 
 ## Design

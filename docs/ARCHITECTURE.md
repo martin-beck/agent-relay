@@ -22,14 +22,16 @@ agent is controlled. Neither the session layer nor an agent adapter assumes SSH.
 
 Dependencies point toward contracts. Agent providers consume
 `RemoteAgentRuntime`; they do not cast it to an SSH or local implementation.
-Connection providers do not know agent protocols.
+Connection providers do not know agent protocols. A provider can optionally
+expose a `ConnectionProfileManager`; the app renders its generic bounded field
+schema without importing SSH configuration types.
 
 ## Modules
 
 | Module | Responsibility |
 | --- | --- |
 | `:app` | Android entry point and Compose presentation |
-| `:connection:api` | Generic connection providers, profiles, lifecycle, identity challenges, and runtime access |
+| `:connection:api` | Generic connection providers, provider-owned profile forms, lifecycle, identity challenges, and runtime access |
 | `:connection:local` | App-local process execution and workspace confinement |
 | `:ssh:api` | SSH profiles, credentials, host keys, retry policy, and generic adapter |
 | `:ssh:jsch` | Maintained JSch transport and bounded POSIX command runtime |
@@ -71,6 +73,12 @@ Local and Secure Shell plus all implemented agent factories. A navigation-scoped
 ViewModel combines coordinator and durable repository snapshots so destinations
 do not create duplicate runtimes or state authorities.
 
+Profile setup follows a separate provider-neutral path: Compose edits generic
+text, port, secret, choice, and read-only fields; the selected provider validates
+them and owns persistence. SSH maps those fields to encrypted credential
+references or non-exportable Android Keystore agent keys. Successful edits
+invalidate an existing managed connection and refresh coordinator profiles.
+
 ## Security boundaries
 
 - Android's application sandbox is the local-process boundary.
@@ -78,6 +86,8 @@ do not create duplicate runtimes or state authorities.
 - SSH server identity is accepted only through explicit trust decisions.
 - Android Keystore keys encrypt namespaced authenticated documents.
 - Credentials stay outside command arguments, events, and diagnostic snapshots.
+- Stored secrets are never returned by a profile manager; replacement values
+  cross one wipeable `CharArray`/byte-array boundary before encrypted storage.
 - Agent-provided file paths are normalized against the known workspace.
 - Output, protocol lines, retention, retries, and process lifetimes are bounded.
 

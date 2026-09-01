@@ -28,7 +28,9 @@ implementing SSH profiles, credentials, host keys, or reconnect behavior.
 - generic server-identity challenges and explicit trust decisions;
 - redacted diagnostic snapshots;
 - lifecycle controls and access to a connected RemoteAgentRuntime; and
-- a registry that can host unrelated connection providers together.
+- an optional provider-owned profile manager with bounded text, port, secret,
+  choice, conditional, and read-only fields; and
+- a registry that can host and manage unrelated connection providers together.
 
 Connection-specific configuration stays in the implementation. The SSH adapter
 maps its internal state into this generic contract. Adding local access should
@@ -49,6 +51,31 @@ The transport pins the maintained com.github.mwiede:jsch fork at 2.28.6.
 The default modern algorithm set is retained, strict key exchange is explicitly
 enabled, prompts are disabled, and authentication is restricted to the selected
 profile method.
+
+## Provider-neutral profile setup
+
+The Compose layer does not know SSH profile classes. It asks the selected
+`ConnectionProfileManager` for an editor schema, sends back a generic update,
+and renders provider validation errors beside stable field identifiers.
+Providers without `PROFILE_MANAGEMENT`, such as the single fixed local-device
+profile, do not expose add or edit actions.
+
+The SSH manager supports:
+
+- password credentials;
+- imported private keys with an independently kept, removed, or replaced
+  passphrase; and
+- a non-exportable Android Keystore key whose OpenSSH public key is the only key
+  material returned to the editor.
+
+Stored secrets return as empty fields with a `hasStoredSecret` marker. An empty
+replacement keeps the referenced credential; the app never reads a password or
+private key back into Compose state. New credential and agent-key identifiers
+are collision checked, failed saves clean up newly created encrypted material,
+and successful replacement cleans up only superseded material. Profile deletion
+also removes unshared host trust. Cleanup is deliberately best effort after the
+authoritative profile mutation, so a storage failure cannot resurrect a deleted
+profile; encrypted orphan recovery remains a future hardening option.
 
 ## Trust and credential rules
 
@@ -137,6 +164,8 @@ Coverage includes:
 - coexistence of SSH-shaped and local-shaped providers in one registry;
 - profile validation, secret redaction, exact credential-purpose resolution,
   and host-key compare-and-set behavior;
+- password replacement, imported-key/passphrase transitions, Android agent-key
+  creation and deletion, identifier collision retries, and failed-save cleanup;
 - exponential backoff, retry exhaustion, non-retried authentication failure,
   independent sessions, and background suspension/resumption;
 - POSIX injection boundaries and strict JSch host-key repository behavior;
@@ -168,8 +197,8 @@ or device to verify the real AndroidKeyStore provider:
 ./gradlew :ssh:android:connectedDebugAndroidTest
 ~~~
 
-Until that connected test runs, Android Keystore device behavior is implemented
-and compile-verified but not recorded as emulator-verified.
+Encrypted document behavior is emulator-verified. Non-exportable agent-key
+generation and signing still need final real-device evidence before release.
 
 ## Local-device provider
 
@@ -207,8 +236,10 @@ Another implementation should:
    identity or authentication steps;
 4. supply a local RemoteAgentRuntime with the same command-secrecy and output
    bounds;
-5. register beside ssh.secure-shell; and
-6. prove coexistence, cancellation, process cleanup, and redacted diagnostics
+5. optionally expose a provider-owned `ConnectionProfileManager` and advertise
+   `PROFILE_MANAGEMENT` only when its add/edit/delete paths are tested;
+6. register beside ssh.secure-shell; and
+7. prove coexistence, cancellation, process cleanup, and redacted diagnostics
    in contract tests.
 
 Agent providers should require only RemoteAgentRuntime. They must never cast
