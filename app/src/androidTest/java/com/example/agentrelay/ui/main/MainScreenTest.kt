@@ -113,6 +113,70 @@ class MainScreenTest {
     }
 
     @Test
+    fun profileEditorExposesJumpHostAndKeyOperations() {
+        val recorder = ActionRecorder()
+        setContent(MainScreenUiState.Ready(testHub(), testEditor()), recorder)
+
+        composeTestRule.onNodeWithText("Staging bastion").performScrollTo().performClick()
+        check(recorder.updatedField == "jump-host" to "jump-profile")
+
+        composeTestRule.onNodeWithText("Install public key").performScrollTo().performClick()
+        composeTestRule.onNodeWithText("Test key-only login").performScrollTo().performClick()
+
+        check(recorder.requestedOperations == listOf("install-public-key", "verify-key-login"))
+        composeTestRule
+            .onNodeWithText("ssh-ed25519 AAAATESTKEY")
+            .performScrollTo()
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun publicKeyInstallationConfirmationExplainsRemoteMutation() {
+        val recorder = ActionRecorder()
+        setContent(
+            MainScreenUiState.Ready(
+                testHub(),
+                testEditor().copy(confirmOperationId = "install-public-key"),
+            ),
+            recorder,
+        )
+
+        composeTestRule
+            .onNodeWithText("Install public key on this remote account?")
+            .assertIsDisplayed()
+        composeTestRule
+            .onNodeWithText(
+                "Agent Relay will add only this app-managed public key to the remote account.",
+            )
+            .assertIsDisplayed()
+        composeTestRule.onNodeWithText("Install public key").performClick()
+
+        check(recorder.operationConfirmed)
+    }
+
+    @Test
+    fun unsavedProfileChangesDisableKeyOperations() {
+        val recorder = ActionRecorder()
+        setContent(
+            MainScreenUiState.Ready(
+                testHub(),
+                testEditor().copy(hasUnsavedChanges = true),
+            ),
+            recorder,
+        )
+
+        composeTestRule
+            .onNodeWithText("Install public key")
+            .performScrollTo()
+            .assertIsNotEnabled()
+        composeTestRule
+            .onNodeWithText("Test key-only login")
+            .performScrollTo()
+            .assertIsNotEnabled()
+        check(recorder.requestedOperations.isEmpty())
+    }
+
+    @Test
     fun expandedHub_keepsSelectedSessionDetailVisible() {
         val recorder = ActionRecorder()
         composeTestRule.setContent {
@@ -389,6 +453,8 @@ private class ActionRecorder {
     var actionResponse: RecordedActionResponse? = null
     var refreshedArtifactsFor: String? = null
     var savedArtifact: Triple<String, String, String>? = null
+    val requestedOperations = mutableListOf<String>()
+    var operationConfirmed = false
 
     fun actions() = SessionHubActions(
         retry = { retryCount++ },
@@ -406,6 +472,8 @@ private class ActionRecorder {
         addProfile = { addedProvider = it },
         editProfile = { editedConnection = it },
         updateProfileField = { id, value -> updatedField = id to value },
+        requestProfileOperation = requestedOperations::add,
+        confirmProfileOperation = { operationConfirmed = true },
         requestProfileDeletion = { deleteRequested = true },
         cancelProfileDeletion = { deleteCancelled = true },
         updateSessionDraft = { key, text, _, _ -> updatedDraft = key to text },
@@ -679,6 +747,25 @@ private fun testEditor() = ConnectionProfileEditorUiState.Editing(
             hasStoredSecret = false,
         ),
         ConnectionProfileFieldUiModel(
+            id = "jump-host",
+            label = "Jump host",
+            type = ConnectionProfileFieldType.SINGLE_CHOICE,
+            value = "direct",
+            supportingText = "Route through another configured SSH profile.",
+            required = true,
+            maxLength = 256,
+            options = listOf(
+                ConnectionProfileFieldOptionUiModel("direct", "Direct connection", null),
+                ConnectionProfileFieldOptionUiModel(
+                    "jump-profile",
+                    "Staging bastion",
+                    "Connect through this SSH profile.",
+                ),
+            ),
+            visibleWhen = emptyList(),
+            hasStoredSecret = false,
+        ),
+        ConnectionProfileFieldUiModel(
             id = "authentication",
             label = "Authentication",
             type = ConnectionProfileFieldType.SINGLE_CHOICE,
@@ -710,6 +797,35 @@ private fun testEditor() = ConnectionProfileEditorUiState.Editing(
                 ConnectionProfileFieldConditionUiModel("authentication", "password"),
             ),
             hasStoredSecret = true,
+        ),
+        ConnectionProfileFieldUiModel(
+            id = "public-key",
+            label = "App-managed public key",
+            type = ConnectionProfileFieldType.READ_ONLY,
+            value = "ssh-ed25519 AAAATESTKEY",
+            supportingText = "The private key stays in Android Keystore.",
+            required = false,
+            maxLength = 8_192,
+            options = emptyList(),
+            visibleWhen = emptyList(),
+            hasStoredSecret = false,
+        ),
+    ),
+    operations = listOf(
+        ConnectionProfileOperationUiModel(
+            id = "install-public-key",
+            label = "Install public key",
+            supportingText = "Install the app-managed public key.",
+            confirmationTitle = "Install public key on this remote account?",
+            confirmationMessage =
+            "Agent Relay will add only this app-managed public key to the remote account.",
+        ),
+        ConnectionProfileOperationUiModel(
+            id = "verify-key-login",
+            label = "Test key-only login",
+            supportingText = "Test passwordless app-managed key login.",
+            confirmationTitle = null,
+            confirmationMessage = null,
         ),
     ),
     canDelete = true,

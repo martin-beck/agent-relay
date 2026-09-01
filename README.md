@@ -12,8 +12,11 @@ is another, and future connection types can implement the same boundary.
 > composer are implemented and tested. Provider-neutral session launch and
 > durable, risk-aware approval/question handling are also implemented. The
 > changed-file shelf can export one checked workspace file at a time through
-> Android's system document picker; previews, diffs, batch export, offline
-> speech, background delivery, and release hardening are not complete.
+> Android's system document picker. SSH profiles can route through configured
+> jump hosts, own a persistent non-exportable Android key, install its public
+> half with explicit confirmation, and verify key-only login. Previews, diffs,
+> batch export, offline speech, background delivery, and release hardening are
+> not complete.
 > The APK is not yet a supported release.
 
 This is a private, invite-only project. Access to the repository does not grant
@@ -25,7 +28,7 @@ permission to redistribute source code, APKs, or project artifacts.
 | --- | --- |
 | Generic connection-provider API | Implemented and unit tested |
 | Local device connection provider | Implemented and unit tested |
-| SSH connection provider and profile setup | Implemented with encrypted password/imported-key storage and Android Keystore agent keys; final real-device agent-key evidence remains |
+| SSH connection provider and profile setup | Encrypted credentials, strict per-hop host keys, configured jump routes, persistent Android keys, confirmed public-key installation, and key-only probes implemented; final real-device evidence remains |
 | Codex, OpenCode, Continue, Claude, Cline, and Aider adapters | Implemented with contract tests; live checks where available |
 | Encrypted session hub and runtime coordinator | Implemented and unit tested |
 | Quality gates | Detekt, strict lint/Kotlin warnings, dependency analysis, 70% aggregate coverage, property tests, and bounded fuzzing |
@@ -68,8 +71,13 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 The installed app opens the adaptive session hub, automatically exposes the
 app-sandboxed local profile, and can create or edit encrypted SSH profiles with
-password, imported-key, or Android Keystore authentication. Session detail
-provides a typed timeline and one encrypted draft per provider-scoped session;
+password, imported-key, or Android Keystore authentication. An SSH profile can
+select another saved SSH profile as a jump host. Every saved SSH profile owns a
+persistent Android Keystore key whose public half remains visible in the editor.
+Provider-owned profile actions can install that public key using the saved
+authentication and can make a real key-only login probe; installation always
+requires an explicit remote-mutation confirmation. Session detail provides a
+typed timeline and one encrypted draft per provider-scoped session;
 resume, send, steering, and interruption appear only when the selected provider
 and session state support them. Ready agent endpoints can start sessions with
 provider-neutral options. Approval and question cards expose only provider-

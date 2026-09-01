@@ -18,6 +18,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -62,10 +63,12 @@ internal fun ConnectionProfileEditorDialog(
         )
 
         is ConnectionProfileEditorUiState.Editing -> {
-            if (state.confirmDelete) {
-                DeleteProfileConfirmation(state, actions)
-            } else {
-                ProfileEditor(state, actions)
+            val confirmedOperation = state.confirmedOperation()
+            when {
+                state.confirmDelete -> DeleteProfileConfirmation(state, actions)
+                confirmedOperation != null ->
+                    ProfileOperationConfirmation(state, confirmedOperation, actions)
+                else -> ProfileEditor(state, actions)
             }
         }
     }
@@ -120,6 +123,11 @@ private fun ProfileEditor(
                         onValueChange = { actions.updateProfileField(field.id, it) },
                     )
                 }
+                if (editor.operations.isNotEmpty()) {
+                    item(key = "profile-operations") {
+                        ProfileOperations(editor, actions)
+                    }
+                }
             }
         },
         confirmButton = {
@@ -127,15 +135,19 @@ private fun ProfileEditor(
                 onClick = actions.saveProfile,
                 enabled = !editor.isBusy,
             ) {
-                if (editor.isBusy) {
+                if (editor.isBusy && editor.activeOperationId == null) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(18.dp),
                         strokeWidth = 2.dp,
                     )
                 }
                 Text(
-                    text = "Save",
-                    modifier = if (editor.isBusy) Modifier.padding(start = 8.dp) else Modifier,
+                    text = if (editor.activeOperationId == null) "Save" else "Working…",
+                    modifier = if (editor.isBusy && editor.activeOperationId == null) {
+                        Modifier.padding(start = 8.dp)
+                    } else {
+                        Modifier
+                    },
                 )
             }
         },
@@ -158,6 +170,57 @@ private fun ProfileEditor(
             }
         },
     )
+}
+
+@Composable
+private fun ProfileOperations(
+    editor: ConnectionProfileEditorUiState.Editing,
+    actions: SessionHubActions,
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text(
+            text = "Key setup and verification",
+            style = MaterialTheme.typography.titleSmall,
+        )
+        editor.operations.forEach { operation ->
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                OutlinedButton(
+                    onClick = { actions.requestProfileOperation(operation.id) },
+                    enabled = !editor.isBusy && !editor.hasUnsavedChanges,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    if (editor.activeOperationId == operation.id) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            strokeWidth = 2.dp,
+                        )
+                    }
+                    Text(
+                        text = operation.label,
+                        modifier = if (editor.activeOperationId == operation.id) {
+                            Modifier.padding(start = 8.dp)
+                        } else {
+                            Modifier
+                        },
+                    )
+                }
+                Text(
+                    text = if (editor.hasUnsavedChanges) {
+                        "Save profile changes before running this action."
+                    } else {
+                        operation.supportingText
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -287,6 +350,35 @@ private fun ChoiceField(
 }
 
 @Composable
+private fun ProfileOperationConfirmation(
+    editor: ConnectionProfileEditorUiState.Editing,
+    operation: ConnectionProfileOperationUiModel,
+    actions: SessionHubActions,
+) {
+    AlertDialog(
+        onDismissRequest = actions.cancelProfileOperation,
+        title = { Text(checkNotNull(operation.confirmationTitle)) },
+        text = { Text(checkNotNull(operation.confirmationMessage)) },
+        confirmButton = {
+            Button(
+                onClick = actions.confirmProfileOperation,
+                enabled = !editor.isBusy,
+            ) {
+                Text(operation.label)
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = actions.cancelProfileOperation,
+                enabled = !editor.isBusy,
+            ) {
+                Text("Cancel")
+            }
+        },
+    )
+}
+
+@Composable
 private fun DeleteProfileConfirmation(
     editor: ConnectionProfileEditorUiState.Editing,
     actions: SessionHubActions,
@@ -396,6 +488,23 @@ private fun previewConnectionProfileEditor() = ConnectionProfileEditorUiState.Ed
             options = emptyList(),
             visibleWhen = emptyList(),
             hasStoredSecret = true,
+        ),
+    ),
+    operations = listOf(
+        ConnectionProfileOperationUiModel(
+            id = "install-public-key",
+            label = "Install public key",
+            supportingText = "Install the app-managed public key on the remote account.",
+            confirmationTitle = "Install public key on this remote account?",
+            confirmationMessage =
+            "Agent Relay will add only the displayed public key to the remote account.",
+        ),
+        ConnectionProfileOperationUiModel(
+            id = "verify-key-login",
+            label = "Test key-only login",
+            supportingText = "Confirm passwordless app-managed key login works.",
+            confirmationTitle = null,
+            confirmationMessage = null,
         ),
     ),
     canDelete = true,

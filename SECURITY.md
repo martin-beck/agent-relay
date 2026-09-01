@@ -34,15 +34,19 @@ Agent Relay treats these as distinct trust boundaries:
 - each agent provider's protocol and advertised capabilities; and
 - user approval decisions.
 
-The project requires explicit SSH host-key trust, encrypted namespaced
-persistence, redacted diagnostics, bounded streams and protocol lines, workspace
-path confinement, and no secret-bearing process arguments.
+The project requires explicit SSH host-key trust for every direct or jump route
+hop, encrypted namespaced persistence, redacted diagnostics, bounded streams
+and protocol lines, workspace path confinement, and no secret-bearing process
+arguments. App-managed SSH private keys remain non-exportable in Android
+Keystore. Installing the public half requires an informed confirmation, sends
+only a normalized public key, rejects symbolic-link SSH files, and never
+disables host-key verification.
 
 ## Known development gaps
 
 Before a supported release, the project still needs:
 
-- integration of the security-reviewed modules into the Android application;
+- completion of the remaining speech, background, and release security reviews;
 - real-device Android Keystore and lifecycle evidence;
 - a stable application ID and final backup/data-extraction policy review;
 - production signing and secret handling outside the repository;

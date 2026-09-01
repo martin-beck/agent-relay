@@ -94,7 +94,7 @@ Confirm that every expected module produced clean JUnit evidence:
 
 ```bash
 python3 scripts/ci/verify_connected_tests.py --root . \
-  --minimum-tests 18 --minimum-executed 18 \
+  --minimum-tests 21 --minimum-executed 21 \
   --require-module app --require-module ssh/android --require-module storage/android
 ```
 

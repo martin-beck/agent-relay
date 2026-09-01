@@ -99,22 +99,28 @@ Compose Accessibility Test Framework checks on an API 36 phone for every pull
 request and push to `main`. The emulator script explicitly verifies completed
 Android boot before starting Gradle. A separate XML parser then requires clean
 JUnit evidence from the app, SSH Android, and storage Android modules, with at
-least 18 discovered and 18 executed tests. This prevents a missing device,
+least 21 discovered and 21 executed tests. This prevents a missing device,
 missing module report, skipped accessibility audit, or accidentally empty suite
 from appearing green.
 
 The weekly/manual matrix runs the same suite on the minimum API phone and an
 API 36 tablet. CI artifacts retain reports from every tested module plus the
 Gradle problems report. The API 28 run filters out the three API 34+
-accessibility-framework audits and requires all 15 remaining device tests.
-Emulator console, graphics, or teardown diagnostics can contain alarming words;
-CI relies on process status and parsed JUnit evidence rather than string grep.
+accessibility-framework audits and requires all 18 remaining device tests. The
+new profile-operation flows cover jump-host choice, install confirmation,
+the key-only action, and unsaved-change disabling. Emulator console, graphics,
+or teardown diagnostics can contain alarming words; CI relies on process status
+and parsed JUnit evidence rather than string grep.
 
 The connected app flow also verifies that a selected session exposes its changed
 files, safe relative path, refresh action, and save callback. JVM contract tests
 cover local real-path and SFTP canonical-path confinement plus source revision
 and checksum checks; they do not require private hosts or credentials in CI.
 
+The 2026-09-01 API 36 jump-host milestone run passed 18 application tests, one
+SSH Android test, and two encrypted-storage Android tests. The evidence verifier
+accepted all 21 discovered and executed tests with zero skips, failures, or
+errors. The emulator was stopped after evidence collection.
 
 Each screen or reusable component must have deterministic previews for the
 states it owns, including empty, loading, content, error, offline, changed

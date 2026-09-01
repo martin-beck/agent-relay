@@ -1,6 +1,7 @@
 package dev.agentrelay.ssh.api
 
 import dev.agentrelay.connection.api.ConnectionProfileEditor
+import dev.agentrelay.connection.api.ConnectionProfileDeleteException
 import dev.agentrelay.connection.api.ConnectionProfileField
 import dev.agentrelay.connection.api.ConnectionProfileFieldCondition
 import dev.agentrelay.connection.api.ConnectionProfileFieldId
@@ -9,6 +10,10 @@ import dev.agentrelay.connection.api.ConnectionProfileFieldOption
 import dev.agentrelay.connection.api.ConnectionProfileFieldType
 import dev.agentrelay.connection.api.ConnectionProfileId
 import dev.agentrelay.connection.api.ConnectionProfileManager
+import dev.agentrelay.connection.api.ConnectionProfileOperation
+import dev.agentrelay.connection.api.ConnectionProfileOperationException
+import dev.agentrelay.connection.api.ConnectionProfileOperationId
+import dev.agentrelay.connection.api.ConnectionProfileOperationResult
 import dev.agentrelay.connection.api.ConnectionProfileSaveResult
 import dev.agentrelay.connection.api.ConnectionProfileUpdate
 import dev.agentrelay.connection.api.ConnectionProfileValidationException
@@ -27,6 +32,7 @@ class SshConnectionProfileManager(
     private val credentials: SshCredentialStore,
     private val hostKeys: SshHostKeyStore,
     private val agentKeys: SshAgentKeyManager,
+    private val managedKeys: SshManagedKeyService? = null,
     private val clock: SshClock = SshClock(System::currentTimeMillis),
     private val idGenerator: () -> String = { UUID.randomUUID().toString() },
 ) : ConnectionProfileManager {
@@ -38,6 +44,7 @@ class SshConnectionProfileManager(
                 profiles.profile(SshProfileId(it.value))
                     ?: throw NoSuchElementException("SSH profile is unavailable")
             }
+            val configuredProfiles = profiles.profiles()
             val authentication = profile?.authentication
             val authenticationValue = when (authentication) {
                 is SshAuthentication.Password, null -> AUTH_PASSWORD
@@ -46,8 +53,9 @@ class SshConnectionProfileManager(
             }
             val storedPassphrase =
                 (authentication as? SshAuthentication.ImportedKey)?.passphraseCredentialId != null
-            val publicKey = (authentication as? SshAuthentication.AgentBacked)
-                ?.let { agentKeys.publicKey(it.keyId) }
+            val managedKeyId = profile?.appManagedKeyId
+                ?: (authentication as? SshAuthentication.AgentBacked)?.keyId
+            val publicKey = managedKeyId?.let(agentKeys::publicKey)
             ConnectionProfileEditor(
                 providerId = SshConnectionProvider.ID,
                 providerName = "Secure Shell",
@@ -72,6 +80,7 @@ class SshConnectionProfileManager(
                         type = ConnectionProfileFieldType.PORT,
                     ),
                     textField(USERNAME, "Username", profile?.username.orEmpty(), 128, true),
+                    jumpHostField(profile, configuredProfiles),
                     authenticationField(authenticationValue),
                     secretField(
                         PASSWORD,
@@ -119,16 +128,16 @@ class SshConnectionProfileManager(
                     ),
                     ConnectionProfileField(
                         id = PUBLIC_KEY,
-                        label = "Public key",
+                        label = "App-managed public key",
                         type = ConnectionProfileFieldType.READ_ONLY,
                         value = publicKey?.openSshPublicKey ?: "Created after saving this profile.",
                         supportingText =
-                        "Add this public key to the remote account before connecting.",
+                        "The private key stays in Android Keystore. Install this public key on the remote account.",
                         maxLength = MAX_PUBLIC_KEY_CHARS,
-                        visibleWhen = listOf(condition(AUTHENTICATION, AUTH_AGENT_BACKED)),
                     ),
                 ),
                 canDelete = profile != null,
+                operations = if (profile == null) emptyList() else profileOperations(),
             )
         }
 
@@ -168,9 +177,17 @@ class SshConnectionProfileManager(
             }
             val input = ValidatedInput(update, previous)
             val profileId = previous?.id ?: allocateProfileId()
+            val existingManagedKeyId = previous?.appManagedKeyId
+                ?: (previous?.authentication as? SshAuthentication.AgentBacked)?.keyId
+            val jumpHostProfileId = validatedJumpHost(input.jumpHostValue, profileId)
             val createdCredentials = mutableListOf<SshCredentialId>()
             val createdAgentKeys = mutableListOf<String>()
             val saved = try {
+                val managedKeyId = ensureManagedKey(
+                    profileId = profileId,
+                    existingManagedKeyId = existingManagedKeyId,
+                    created = createdAgentKeys,
+                )
                 val authentication = when (input.authentication) {
                     AUTH_PASSWORD -> passwordAuthentication(
                         profileId,
@@ -184,11 +201,7 @@ class SshConnectionProfileManager(
                         input,
                         createdCredentials,
                     )
-                    AUTH_AGENT_BACKED -> agentAuthentication(
-                        profileId,
-                        previous?.authentication,
-                        createdAgentKeys,
-                    )
+                    AUTH_AGENT_BACKED -> agentAuthentication(managedKeyId)
                     else -> error("Validated SSH authentication is unsupported")
                 }
                 val now = clock.epochMillis()
@@ -198,6 +211,8 @@ class SshConnectionProfileManager(
                     endpoint = input.endpoint,
                     username = input.username,
                     authentication = authentication,
+                    jumpHostProfileId = jumpHostProfileId,
+                    appManagedKeyId = managedKeyId,
                     createdAtEpochMillis = previous?.createdAtEpochMillis ?: now,
                     updatedAtEpochMillis = maxOf(now, previous?.updatedAtEpochMillis ?: now),
                 ).also { profiles.save(it) }
@@ -214,7 +229,11 @@ class SshConnectionProfileManager(
             }
             previous?.authentication?.let {
                 withContext(NonCancellable) {
-                    cleanupSuperseded(it, saved.authentication)
+                    cleanupSuperseded(
+                        previous = it,
+                        current = saved.authentication,
+                        retainedAgentKeyId = saved.appManagedKeyId,
+                    )
                 }
             }
             ConnectionProfileSaveResult(
@@ -230,14 +249,76 @@ class SshConnectionProfileManager(
     override suspend fun delete(profileId: ConnectionProfileId) = mutex.withLock {
         val sshProfileId = SshProfileId(profileId.value)
         val profile = profiles.profile(sshProfileId) ?: return@withLock
+        if (profiles.profiles().any { it.jumpHostProfileId == sshProfileId }) {
+            throw ConnectionProfileDeleteException(
+                "Remove this profile as a jump host before deleting it.",
+            )
+        }
         profiles.delete(sshProfileId)
         withContext(NonCancellable) {
-            cleanupAuthentication(profile.authentication)
+            cleanupAuthentication(
+                authentication = profile.authentication,
+                additionalAgentKeyId = profile.appManagedKeyId,
+            )
             if (profiles.profiles().none { it.endpoint == profile.endpoint }) {
                 runCleanup { hostKeys.delete(profile.endpoint) }
             }
         }
     }
+
+    override suspend fun performOperation(
+        profileId: ConnectionProfileId,
+        operationId: ConnectionProfileOperationId,
+    ): ConnectionProfileOperationResult = mutex.withLock {
+        val service = managedKeys
+            ?: throw ConnectionProfileOperationException(
+                "SSH key operations are unavailable on this device.",
+            )
+        val sshProfileId = SshProfileId(profileId.value)
+        if (profiles.profile(sshProfileId) == null) {
+            throw ConnectionProfileOperationException("The SSH profile no longer exists.")
+        }
+        try {
+            val result = when (operationId) {
+                INSTALL_PUBLIC_KEY -> service.installPublicKey(sshProfileId)
+                VERIFY_KEY_LOGIN -> service.verifyPasswordlessLogin(sshProfileId)
+                else -> throw IllegalArgumentException("Unknown SSH profile operation")
+            }
+            ConnectionProfileOperationResult(result.notice)
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (approval: SshHostKeyApprovalRequiredException) {
+            val identity = when (approval.challenge.disposition) {
+                SshHostKeyDisposition.UNKNOWN -> "unverified"
+                SshHostKeyDisposition.CHANGED -> "changed"
+            }
+            throw ConnectionProfileOperationException(
+                "The SSH host identity is $identity. Connect from the session hub, review it, and retry.",
+                approval,
+            )
+        } catch (failure: SshConnectionException) {
+            throw ConnectionProfileOperationException(failure.failure.actionableMessage, failure)
+        }
+    }
+
+    private fun profileOperations(): List<ConnectionProfileOperation> = listOf(
+        ConnectionProfileOperation(
+            id = INSTALL_PUBLIC_KEY,
+            label = "Install public key",
+            supportingText =
+            "Use the currently saved authentication to add only the app-managed public key.",
+            confirmationTitle = "Install public key on this remote account?",
+            confirmationMessage =
+            "Agent Relay will connect with the saved credential and add this profile's public key " +
+                "to ~/.ssh/authorized_keys. The private key never leaves Android Keystore.",
+        ),
+        ConnectionProfileOperation(
+            id = VERIFY_KEY_LOGIN,
+            label = "Test key-only login",
+            supportingText =
+            "Connect using only the app-managed key and confirm passwordless login works.",
+        ),
+    )
 
     private suspend fun allocateProfileId(): SshProfileId {
         repeat(MAX_ID_ATTEMPTS) {
@@ -246,6 +327,53 @@ class SshConnectionProfileManager(
         }
         error("A unique SSH profile id could not be allocated")
     }
+
+    private suspend fun validatedJumpHost(
+        value: String,
+        profileId: SshProfileId,
+    ): SshProfileId? {
+        if (value.isBlank() || value == NO_JUMP_HOST) return null
+        val candidate = try {
+            SshProfileId(value)
+        } catch (_: IllegalArgumentException) {
+            invalid(JUMP_HOST, "Choose a configured SSH jump host.")
+        }
+        val configured = profiles.profiles().associateBy(SshProfile::id)
+        if (candidate !in configured) {
+            invalid(JUMP_HOST, "The selected SSH jump host is no longer available.")
+        }
+        val visited = linkedSetOf(profileId)
+        var current = candidate
+        repeat(MAX_JUMP_HOSTS) {
+            if (!visited.add(current)) {
+                invalid(JUMP_HOST, "The selected SSH jump-host route contains a cycle.")
+            }
+            val currentProfile = configured[current]
+                ?: invalid(JUMP_HOST, "The selected SSH jump-host route is incomplete.")
+            val next = currentProfile.jumpHostProfileId ?: return candidate
+            current = next
+        }
+        invalid(JUMP_HOST, "The selected SSH jump-host route is too deep.")
+    }
+
+    private fun jumpHostField(
+        profile: SshProfile?,
+        configured: List<SshProfile>,
+    ) = ConnectionProfileField(
+        id = JUMP_HOST,
+        label = "Jump host",
+        type = ConnectionProfileFieldType.SINGLE_CHOICE,
+        value = profile?.jumpHostProfileId?.value ?: NO_JUMP_HOST,
+        supportingText = "Connect through another configured SSH profile.",
+        required = true,
+        options = buildList {
+            add(option(NO_JUMP_HOST, "Direct connection"))
+            configured
+                .filterNot { it.id == profile?.id }
+                .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.label })
+                .forEach { add(option(it.id.value, it.label, it.endpoint.displayName)) }
+        },
+    )
 
     private suspend fun passwordAuthentication(
         profileId: SshProfileId,
@@ -311,23 +439,21 @@ class SshConnectionProfileManager(
         return SshAuthentication.ImportedKey(keyId, passphraseId)
     }
 
-    private fun agentAuthentication(
+    private fun ensureManagedKey(
         profileId: SshProfileId,
-        previous: SshAuthentication?,
+        existingManagedKeyId: String?,
         created: MutableList<String>,
-    ): SshAuthentication.AgentBacked {
-        val existing = previous as? SshAuthentication.AgentBacked
-        if (existing != null && agentKeys.publicKey(existing.keyId) != null) return existing
-        repeat(MAX_ID_ATTEMPTS) {
-            val keyId = "${profileId.value}.agent-${generatedIdToken()}"
-            if (agentKeys.publicKey(keyId) == null) {
-                agentKeys.create(keyId)
-                created += keyId
-                return SshAuthentication.AgentBacked(keyId)
-            }
+    ): String {
+        val keyId = existingManagedKeyId ?: "${profileId.value}.device-key.v1"
+        if (agentKeys.publicKey(keyId) == null) {
+            agentKeys.create(keyId)
+            created += keyId
         }
-        error("A unique SSH agent key id could not be allocated")
+        return keyId
     }
+
+    private fun agentAuthentication(managedKeyId: String): SshAuthentication.AgentBacked =
+        SshAuthentication.AgentBacked(managedKeyId)
 
     private suspend fun storeCredential(
         profileId: SshProfileId,
@@ -370,18 +496,23 @@ class SshConnectionProfileManager(
     private suspend fun cleanupSuperseded(
         previous: SshAuthentication,
         current: SshAuthentication,
+        retainedAgentKeyId: String?,
     ) {
         val currentCredentials = current.credentialIds()
         previous.credentialIds().filterNot(currentCredentials::contains)
             .forEach { id -> runCleanup { credentials.delete(id) } }
-        val currentAgentKeys = current.agentKeyIds()
+        val currentAgentKeys = current.agentKeyIds() + setOfNotNull(retainedAgentKeyId)
         previous.agentKeyIds().filterNot(currentAgentKeys::contains)
             .forEach { id -> runCleanup { agentKeys.delete(id) } }
     }
 
-    private suspend fun cleanupAuthentication(authentication: SshAuthentication) {
+    private suspend fun cleanupAuthentication(
+        authentication: SshAuthentication,
+        additionalAgentKeyId: String?,
+    ) {
         authentication.credentialIds().forEach { id -> runCleanup { credentials.delete(id) } }
-        authentication.agentKeyIds().forEach { id -> runCleanup { agentKeys.delete(id) } }
+        (authentication.agentKeyIds() + setOfNotNull(additionalAgentKeyId))
+            .forEach { id -> runCleanup { agentKeys.delete(id) } }
     }
 
     private fun SshAuthentication.credentialIds(): Set<SshCredentialId> = when (this) {
@@ -447,6 +578,7 @@ class SshConnectionProfileManager(
                     "Choose how to handle the private-key passphrase."
             }
         }
+        val jumpHostValue = text(JUMP_HOST).ifBlank { NO_JUMP_HOST }
         val endpoint: SshEndpoint
 
         init {
@@ -573,18 +705,24 @@ class SshConnectionProfileManager(
         internal val HOST = ConnectionProfileFieldId("host-name")
         internal val PORT = ConnectionProfileFieldId("host-port")
         internal val USERNAME = ConnectionProfileFieldId("username")
+        internal val JUMP_HOST = ConnectionProfileFieldId("jump-host")
         internal val AUTHENTICATION = ConnectionProfileFieldId("authentication")
         internal val PASSWORD = ConnectionProfileFieldId("password")
         internal val PRIVATE_KEY = ConnectionProfileFieldId("private-key")
         internal val PASSPHRASE_MODE = ConnectionProfileFieldId("passphrase-mode")
         internal val PASSPHRASE = ConnectionProfileFieldId("passphrase")
         internal val PUBLIC_KEY = ConnectionProfileFieldId("public-key")
+        internal val INSTALL_PUBLIC_KEY =
+            ConnectionProfileOperationId("install-public-key")
+        internal val VERIFY_KEY_LOGIN =
+            ConnectionProfileOperationId("verify-key-login")
 
         private val EDITABLE_FIELDS = setOf(
             LABEL,
             HOST,
             PORT,
             USERNAME,
+            JUMP_HOST,
             AUTHENTICATION,
             PASSWORD,
             PRIVATE_KEY,
@@ -594,6 +732,7 @@ class SshConnectionProfileManager(
         private const val AUTH_PASSWORD = "password"
         private const val AUTH_IMPORTED_KEY = "imported-key"
         private const val AUTH_AGENT_BACKED = "agent-backed"
+        private const val NO_JUMP_HOST = "direct"
         private const val PASSPHRASE_KEEP = "keep"
         private const val PASSPHRASE_NONE = "none"
         private const val PASSPHRASE_REPLACE = "replace"
@@ -601,6 +740,8 @@ class SshConnectionProfileManager(
         private const val MAX_PRIVATE_KEY_CHARS = 4 * 1024 * 1024
         private const val MAX_PUBLIC_KEY_CHARS = 16 * 1024
         private const val MAX_ID_ATTEMPTS = 8
+        private const val MAX_JUMP_HOSTS =
+            SshConnectionRouteResolver.MAX_JUMP_HOSTS
         private val ID_TOKEN_PATTERN = Regex("[a-zA-Z0-9][a-zA-Z0-9._-]{0,47}")
     }
 }

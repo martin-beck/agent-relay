@@ -45,6 +45,7 @@ internal class MainScreenViewModel(
         runtime = { runtime },
         reportError = { operationError.value = it },
     )
+    internal val profileOperations = ConnectionProfileOperationActions(profileEditor)
 
     internal val artifactInteractions = ArtifactInteractionController(
         scope = viewModelScope,
@@ -604,3 +605,11 @@ internal data class SessionCreatorUiState(
     val model: String = "",
     val isBusy: Boolean = false,
 )
+
+internal class ConnectionProfileOperationActions(
+    private val controller: ConnectionProfileEditorController,
+) {
+    fun request(operationId: String) = controller.requestOperation(operationId)
+    fun cancel() = controller.cancelOperation()
+    fun confirm() = controller.confirmOperation()
+}

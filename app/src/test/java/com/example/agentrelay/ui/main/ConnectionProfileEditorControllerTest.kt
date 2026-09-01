@@ -4,6 +4,7 @@ import com.example.agentrelay.data.SessionHubRuntime
 import dev.agentrelay.connection.api.ConnectionCapability
 import dev.agentrelay.connection.api.ConnectionChallengeId
 import dev.agentrelay.connection.api.ConnectionIdentityDecision
+import dev.agentrelay.connection.api.ConnectionProfileDeleteException
 import dev.agentrelay.connection.api.ConnectionProfileEditor
 import dev.agentrelay.connection.api.ConnectionProfileFieldCondition
 import dev.agentrelay.connection.api.ConnectionProfileField
@@ -12,6 +13,10 @@ import dev.agentrelay.connection.api.ConnectionProfileFieldInput
 import dev.agentrelay.connection.api.ConnectionProfileFieldOption
 import dev.agentrelay.connection.api.ConnectionProfileFieldType
 import dev.agentrelay.connection.api.ConnectionProfileId
+import dev.agentrelay.connection.api.ConnectionProfileOperation
+import dev.agentrelay.connection.api.ConnectionProfileOperationException
+import dev.agentrelay.connection.api.ConnectionProfileOperationId
+import dev.agentrelay.connection.api.ConnectionProfileOperationResult
 import dev.agentrelay.connection.api.ConnectionProfileSaveResult
 import dev.agentrelay.connection.api.ConnectionProfileSummary
 import dev.agentrelay.connection.api.ConnectionProfileUpdate
@@ -220,6 +225,145 @@ class ConnectionProfileEditorControllerTest {
         controller.add("missing.provider")
         assertEquals("That connection provider is no longer available.", errors.last())
     }
+
+    @Test
+    fun profileOperationsConfirmSensitiveWorkAndRunDirectChecksImmediately() = runTest {
+        val runtime = FakeProfileRuntime(existingProfile = true)
+        val controller = ConnectionProfileEditorController(
+            scope = this,
+            runtime = { runtime },
+            reportError = {},
+        )
+        val key = SessionConnectionKey(PROVIDER_ID, PROFILE_ID).stableUiKey
+        controller.edit(key)
+        advanceUntilIdle()
+
+        controller.requestOperation(INSTALL_OPERATION.value)
+
+        val confirming = assertInstance<ConnectionProfileEditorUiState.Editing>(controller.state.value)
+        assertEquals(INSTALL_OPERATION.value, confirming.confirmOperationId)
+        assertTrue(runtime.performedOperations.isEmpty())
+        controller.cancelOperation()
+        assertNull(
+            assertInstance<ConnectionProfileEditorUiState.Editing>(controller.state.value)
+                .confirmOperationId,
+        )
+
+        controller.requestOperation(INSTALL_OPERATION.value)
+        controller.confirmOperation()
+        val installing = assertInstance<ConnectionProfileEditorUiState.Editing>(controller.state.value)
+        assertTrue(installing.isBusy)
+        assertEquals(INSTALL_OPERATION.value, installing.activeOperationId)
+        assertNull(installing.confirmOperationId)
+        advanceUntilIdle()
+
+        assertEquals(
+            listOf(Triple(PROVIDER_ID, PROFILE_ID, INSTALL_OPERATION)),
+            runtime.performedOperations,
+        )
+        assertEquals(
+            "Profile operation completed.",
+            assertInstance<ConnectionProfileEditorUiState.Editing>(controller.state.value).notice,
+        )
+
+        controller.requestOperation(VERIFY_OPERATION.value)
+        val verifying = assertInstance<ConnectionProfileEditorUiState.Editing>(controller.state.value)
+        assertTrue(verifying.isBusy)
+        assertEquals(VERIFY_OPERATION.value, verifying.activeOperationId)
+        advanceUntilIdle()
+
+        assertEquals(
+            listOf(
+                Triple(PROVIDER_ID, PROFILE_ID, INSTALL_OPERATION),
+                Triple(PROVIDER_ID, PROFILE_ID, VERIFY_OPERATION),
+            ),
+            runtime.performedOperations,
+        )
+    }
+
+    @Test
+    fun unsavedProfileChangesBlockEveryProfileOperation() = runTest {
+        val runtime = FakeProfileRuntime(existingProfile = true)
+        val controller = ConnectionProfileEditorController(
+            scope = this,
+            runtime = { runtime },
+            reportError = {},
+        )
+        val key = SessionConnectionKey(PROVIDER_ID, PROFILE_ID).stableUiKey
+        controller.edit(key)
+        advanceUntilIdle()
+        controller.updateField(LABEL.value, "Changed profile")
+
+        controller.requestOperation(INSTALL_OPERATION.value)
+        controller.requestOperation(VERIFY_OPERATION.value)
+        advanceUntilIdle()
+
+        val editor = assertInstance<ConnectionProfileEditorUiState.Editing>(controller.state.value)
+        assertTrue(editor.hasUnsavedChanges)
+        assertNull(editor.confirmOperationId)
+        assertNull(editor.activeOperationId)
+        assertTrue(runtime.performedOperations.isEmpty())
+    }
+
+    @Test
+    fun profileOperationFailuresExposeOnlyActionableOrGenericMessages() = runTest {
+        val runtime = FakeProfileRuntime(existingProfile = true)
+        val controller = ConnectionProfileEditorController(
+            scope = this,
+            runtime = { runtime },
+            reportError = {},
+        )
+        val key = SessionConnectionKey(PROVIDER_ID, PROFILE_ID).stableUiKey
+        controller.edit(key)
+        advanceUntilIdle()
+        runtime.operationFailure = ConnectionProfileOperationException(
+            "Review the SSH host identity and retry.",
+            IllegalStateException("private-host.example"),
+        )
+
+        controller.requestOperation(VERIFY_OPERATION.value)
+        advanceUntilIdle()
+
+        val actionable = assertInstance<ConnectionProfileEditorUiState.Editing>(controller.state.value)
+        assertEquals("Review the SSH host identity and retry.", actionable.error)
+        assertFalse(actionable.toString().contains("private-host"))
+
+        runtime.operationFailure = IllegalStateException("secret operation detail")
+        controller.requestOperation(VERIFY_OPERATION.value)
+        advanceUntilIdle()
+
+        val generic = assertInstance<ConnectionProfileEditorUiState.Editing>(controller.state.value)
+        assertEquals(
+            "The connection profile operation could not be completed securely.",
+            generic.error,
+        )
+        assertFalse(generic.toString().contains("secret operation detail"))
+    }
+
+    @Test
+    fun actionableDeleteFailureExplainsJumpHostDependency() = runTest {
+        val runtime = FakeProfileRuntime(existingProfile = true)
+        val controller = ConnectionProfileEditorController(
+            scope = this,
+            runtime = { runtime },
+            reportError = {},
+        )
+        runtime.deleteFailure = ConnectionProfileDeleteException(
+            "Remove this profile as a jump host before deleting it.",
+        )
+        val key = SessionConnectionKey(PROVIDER_ID, PROFILE_ID).stableUiKey
+        controller.edit(key)
+        advanceUntilIdle()
+        controller.requestDeletion()
+
+        controller.delete()
+        advanceUntilIdle()
+
+        val failed = assertInstance<ConnectionProfileEditorUiState.Editing>(controller.state.value)
+        assertEquals("Remove this profile as a jump host before deleting it.", failed.error)
+        assertFalse(failed.isBusy)
+        assertTrue(runtime.deleted.isEmpty())
+    }
 }
 
 private inline fun <reified T> assertInstance(value: Any?): T {
@@ -252,6 +396,8 @@ private class FakeProfileRuntime(
     val deleted = mutableListOf<Pair<ConnectionProviderId, ConnectionProfileId>>()
     var editorFailure: Throwable? = null
     var deleteFailure: Throwable? = null
+    var operationFailure: Throwable? = null
+    val performedOperations = mutableListOf<Triple<ConnectionProviderId, ConnectionProfileId, ConnectionProfileOperationId>>()
 
     override suspend fun refreshProfiles() = Unit
 
@@ -288,6 +434,16 @@ private class FakeProfileRuntime(
     ) {
         deleteFailure?.let { throw it }
         deleted += providerId to profileId
+    }
+
+    override suspend fun performProfileOperation(
+        providerId: ConnectionProviderId,
+        profileId: ConnectionProfileId,
+        operationId: ConnectionProfileOperationId,
+    ): ConnectionProfileOperationResult {
+        operationFailure?.let { throw it }
+        performedOperations += Triple(providerId, profileId, operationId)
+        return ConnectionProfileOperationResult("Profile operation completed.")
     }
 
     override suspend fun connect(key: SessionConnectionKey) = Unit
@@ -371,6 +527,24 @@ private fun editor(profileId: ConnectionProfileId?) = ConnectionProfileEditor(
         ),
     ),
     canDelete = profileId != null,
+    operations = if (profileId == null) {
+        emptyList()
+    } else {
+        listOf(
+            ConnectionProfileOperation(
+                id = INSTALL_OPERATION,
+                label = "Install public key",
+                supportingText = "Install the app-managed public key.",
+                confirmationTitle = "Install public key?",
+                confirmationMessage = "Add this public key to the remote account.",
+            ),
+            ConnectionProfileOperation(
+                id = VERIFY_OPERATION,
+                label = "Test key-only login",
+                supportingText = "Test passwordless key authentication.",
+            ),
+        )
+    },
 )
 
 private fun profileSummary() = ConnectionProfileSummary(
@@ -386,3 +560,5 @@ private val PROFILE_ID = ConnectionProfileId("profile")
 private val LABEL = ConnectionProfileFieldId("profile-label")
 private val AUTHENTICATION = ConnectionProfileFieldId("authentication")
 private val PASSWORD = ConnectionProfileFieldId("password")
+private val INSTALL_OPERATION = ConnectionProfileOperationId("install-public-key")
+private val VERIFY_OPERATION = ConnectionProfileOperationId("verify-key-login")

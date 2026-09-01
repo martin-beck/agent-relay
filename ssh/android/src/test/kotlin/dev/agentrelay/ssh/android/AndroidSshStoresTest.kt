@@ -26,7 +26,13 @@ class AndroidSshStoresTest {
         val documents = InMemoryDocuments()
         val store = AndroidSshProfileStore(documents)
         val profiles = listOf(
-            profile("password", SshAuthentication.Password(SshCredentialId("password"))),
+            profile(
+                "password",
+                SshAuthentication.Password(SshCredentialId("password")),
+            ).copy(
+                jumpHostProfileId = SshProfileId("agent"),
+                appManagedKeyId = "password.device-key.v1",
+            ),
             profile(
                 "imported",
                 SshAuthentication.ImportedKey(
@@ -49,6 +55,34 @@ class AndroidSshStoresTest {
 
         store.delete(updated.id)
         assertNull(store.profile(updated.id))
+    }
+
+    @Test
+    fun legacyProfilesWithoutRouteOrManagedKeyFieldsRemainReadable() = runTest {
+        val documents = InMemoryDocuments()
+        documents.write(
+            "ssh-profiles-v1",
+            """
+                [{
+                  "id": "legacy",
+                  "label": "Legacy",
+                  "endpoint": {"host": "legacy.example.test", "port": 22},
+                  "username": "developer",
+                  "authentication": {
+                    "authentication_type": "password",
+                    "credentialId": "legacy-password"
+                  },
+                  "createdAtEpochMillis": 1,
+                  "updatedAtEpochMillis": 1
+                }]
+            """.trimIndent().encodeToByteArray(),
+        )
+
+        val legacy = AndroidSshProfileStore(documents).profiles().single()
+
+        assertEquals(SshProfileId("legacy"), legacy.id)
+        assertNull(legacy.jumpHostProfileId)
+        assertNull(legacy.appManagedKeyId)
     }
 
     @Test

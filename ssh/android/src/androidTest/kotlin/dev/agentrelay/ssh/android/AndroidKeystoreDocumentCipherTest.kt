@@ -26,6 +26,10 @@ class AndroidKeystoreDocumentCipherTest {
             val key = keyManager.create(keyId)
             assertTrue(key.sha256Fingerprint.startsWith("SHA256:"))
             assertTrue(key.openSshPublicKey.startsWith("ecdsa-sha2-nistp256 "))
+            assertContentEquals(
+                key.openSshPublicKey.encodeToByteArray(),
+                AndroidKeystoreAgentKeyManager().publicKey(keyId)?.openSshPublicKey?.encodeToByteArray(),
+            )
             assertTrue(AndroidKeystoreAgentIdentityProvider(keyManager).identitiesFor(keyId) != null)
             val persisted = context.noBackupFilesDir
                 .resolve("ssh-secure-store")
