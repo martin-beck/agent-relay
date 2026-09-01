@@ -16,6 +16,8 @@ agent is controlled. Neither the session layer nor an agent adapter assumes SSH.
                          |
                 :ssh:jsch + :ssh:android
 
+:speech:api is an independent on-device speech contract; Android capture,
+model storage, and inference adapters will depend on it.
 :storage:android is shared by Android persistence implementations.
 :session:api and :session:android persist provider-neutral session state.
 ```
@@ -34,6 +36,7 @@ schema without importing SSH configuration types.
 | `:connection:api` | Generic connection providers, provider-owned profile forms and operations, lifecycle, identity challenges, and runtime access |
 | `:connection:local` | App-local process execution plus canonical workspace-confined file access |
 | `:ssh:api` | SSH profiles, jump routes, credentials, managed-key enrollment and probes, host keys, retry policy, and generic adapter |
+| `:speech:api` | Auditable offline model metadata plus generation-safe download, recognition, and playback contracts |
 | `:ssh:jsch` | Maintained JSch transport, direct-tcpip jump chaining, bounded POSIX commands, and canonical SFTP file access |
 | `:ssh:android` | Android SSH persistence, credentials, and non-exportable agent keys |
 | `:provider:api` | Agent descriptors, sessions, events, capabilities, actions, and the generic checked-file contract |
@@ -93,6 +96,14 @@ actionable redacted results. SSH maps those fields and operations to encrypted
 credential references, jump-host selection, persistent non-exportable Android
 keys, confirmed public-key installation, and key-only authentication probes.
 Successful edits invalidate an existing managed connection and refresh
+Speech remains independent of agent and connection providers. The first
+foundation exposes auditable model package metadata, explicit install/remove
+operations, and separate recognition and playback state. Every active operation
+has an opaque monotonically generated id, so a delayed stop or cancel event
+cannot affect a replacement microphone or playback operation. Android capture,
+download storage, sherpa-onnx integration, and Compose controls are not yet
+implemented.
+
 coordinator profiles.
 
 SSH routing stays below that generic boundary. The SSH provider resolves a

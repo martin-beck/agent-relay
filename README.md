@@ -112,6 +112,7 @@ More detail:
 - [Connection providers](docs/CONNECTION_PROVIDERS.md)
 - [Provider operations](docs/PROVIDER_OPERATIONS.md)
 - [Session hub](docs/SESSION_HUB.md)
+- [Offline speech architecture](docs/SPEECH.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Quality and safety](docs/QUALITY.md)
 
