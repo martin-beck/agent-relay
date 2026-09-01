@@ -13,10 +13,15 @@ supported release.
 - Android verification workflow and Dependabot configuration.
 - Build, install, usage, architecture, contribution, security, and release
   documentation.
+- Strict Kotlin warning, Detekt, Android lint, and dependency-declaration gates.
+- Aggregate Kover coverage verification with a 70% line floor.
+- Kotest property checks and bounded Jazzer fuzzing for POSIX command encoding.
 
 ### Security
 
 - Environment-specific connection, host, path, session, model, proxy, and
+- Android backup is disabled while encrypted connection/session state awaits a
+  final backup and device-transfer threat-model review.
   identity data were removed before private GitHub publication.
 - Published history is scanned for secrets and uses the GitHub no-reply author
   identity.

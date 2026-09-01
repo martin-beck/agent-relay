@@ -24,6 +24,7 @@ permission to redistribute source code, APKs, or project artifacts.
 | SSH connection provider | Implemented and unit tested; device Keystore test remains |
 | Codex, OpenCode, Continue, Claude, Cline, and Aider adapters | Implemented with contract tests; live checks where available |
 | Encrypted session hub and runtime coordinator | Implemented and unit tested |
+| Quality gates | Detekt, strict lint/Kotlin warnings, dependency analysis, 70% aggregate coverage, property tests, and bounded fuzzing |
 | Adaptive Compose UI and app integration | Not yet implemented |
 | Signed release build and distribution | Not available |
 
@@ -43,7 +44,7 @@ On Linux or macOS:
 ```bash
 git clone https://github.com/martin-beck/agent-relay.git
 cd agent-relay
-./gradlew spotlessCheck test lintDebug assembleDebug
+./gradlew spotlessCheck detekt buildHealth test koverXmlReport koverVerify lintDebug assembleDebug
 ```
 
 On Windows, replace `./gradlew` with `.\gradlew.bat`. The debug APK is
@@ -86,6 +87,7 @@ More detail:
 - [Provider operations](docs/PROVIDER_OPERATIONS.md)
 - [Session hub](docs/SESSION_HUB.md)
 - [Architecture](docs/ARCHITECTURE.md)
+- [Quality and safety](docs/QUALITY.md)
 
 ## Project guidance
 
@@ -96,7 +98,8 @@ More detail:
 
 Every functional change must update the user or developer documentation that it
 makes inaccurate. Pull requests run formatting, unit and contract tests, Android
-lint, and debug assembly before merge.
+lint, static analysis, dependency analysis, aggregate coverage verification, and
+debug assembly before merge.
 
 ## License and support
 
