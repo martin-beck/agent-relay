@@ -28,6 +28,7 @@ dependencyResolutionManagement {
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
+include(":session:api")
 include(":storage:android")
 include(":connection:api")
 include(":connection:local")
