@@ -90,6 +90,24 @@ data class SshProfile(
     }
 }
 
+data class SshAgentPublicKey(
+    val keyId: String,
+    val algorithm: String,
+    val sha256Fingerprint: String,
+    val openSshPublicKey: String,
+)
+
+interface SshAgentKeyManager {
+    fun create(
+        keyId: String,
+        requireUserAuthentication: Boolean = false,
+    ): SshAgentPublicKey
+
+    fun publicKey(keyId: String): SshAgentPublicKey?
+
+    fun delete(keyId: String): Boolean
+}
+
 enum class SshCredentialPurpose {
     PASSWORD,
     PRIVATE_KEY,

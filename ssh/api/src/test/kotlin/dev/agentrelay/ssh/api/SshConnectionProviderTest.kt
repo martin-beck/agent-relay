@@ -38,9 +38,16 @@ class SshConnectionProviderTest {
             dispatcher = dispatcher,
             sleeper = SshDelay { awaitCancellation() },
         )
+        val profileManager = SshConnectionProfileManager(
+            profiles = ProfileStore,
+            credentials = CredentialStore,
+            hostKeys = hostKeys,
+            agentKeys = NoAgentKeys,
+        )
         val provider = SshConnectionProvider(
             profileStore = ProfileStore,
             manager = manager,
+            delegateProfileManager = profileManager,
             stateDispatcher = dispatcher,
         )
 
@@ -90,6 +97,14 @@ class SshConnectionProviderTest {
         ) = SensitiveBytes.copyOf("secret".encodeToByteArray())
 
         override suspend fun delete(id: SshCredentialId) = Unit
+    }
+
+    private object NoAgentKeys : SshAgentKeyManager {
+        override fun create(keyId: String, requireUserAuthentication: Boolean): SshAgentPublicKey =
+            error("Not needed")
+
+        override fun publicKey(keyId: String): SshAgentPublicKey? = null
+        override fun delete(keyId: String): Boolean = false
     }
 
     private class TrustConnector(private val candidate: SshHostKey) : SshConnector {

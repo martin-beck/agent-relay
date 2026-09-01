@@ -5,6 +5,9 @@ import java.io.Closeable
 interface ConnectionProvider : Closeable {
     val descriptor: ConnectionProviderDescriptor
 
+    val profileManager: ConnectionProfileManager?
+        get() = null
+
     suspend fun profiles(): List<ConnectionProfileSummary>
 
     fun connection(profileId: ConnectionProfileId): ManagedConnection
@@ -34,6 +37,12 @@ class ConnectionProviderRegistry(providers: Iterable<ConnectionProvider>) : Clos
             compareBy<ConnectionProfileSummary> { it.providerId.value }
                 .thenBy { it.label },
         )
+
+    fun profileManager(providerId: ConnectionProviderId): ConnectionProfileManager =
+        provider(providerId).profileManager
+            ?: throw UnsupportedOperationException(
+                "Connection provider does not support profile management",
+            )
 
     override fun close() {
         registered.values.forEach(ConnectionProvider::close)

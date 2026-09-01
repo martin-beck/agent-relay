@@ -3,6 +3,7 @@ package dev.agentrelay.ssh.android
 import android.content.Context
 import dev.agentrelay.connection.api.ConnectionProvider
 import dev.agentrelay.ssh.api.SshConnectionManager
+import dev.agentrelay.ssh.api.SshConnectionProfileManager
 import dev.agentrelay.ssh.api.SshCredentialStore
 import dev.agentrelay.ssh.api.SshHostKeyStore
 import dev.agentrelay.ssh.api.SshProfileStore
@@ -36,10 +37,17 @@ class AndroidSshConnectionEnvironment private constructor(
                 hostKeyStore = hostKeys,
                 connector = connector,
             )
+            val profileManager = SshConnectionProfileManager(
+                profiles = profiles,
+                credentials = credentials,
+                hostKeys = hostKeys,
+                agentKeys = agentKeys,
+            )
             return AndroidSshConnectionEnvironment(
                 provider = SshConnectionProvider(
                     profileStore = profiles,
                     manager = manager,
+                    delegateProfileManager = profileManager,
                 ),
                 profiles = profiles,
                 credentials = credentials,
