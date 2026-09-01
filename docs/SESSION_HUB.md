@@ -29,6 +29,7 @@ with the same agent session identifier remain distinct.
 - local pin, archive, and notification preferences;
 - one independent draft and cursor selection per session;
 - unread and actionable activity records with exact event anchors;
+- durable approval/question requests and redacted decision audit state;
 - a bounded recent transcript cache; and
 - the transactional repository and retention policy.
 
@@ -52,7 +53,8 @@ publishing it. Every mutation then follows one order:
 
 A failed encrypted write therefore leaves observers on the previous consistent
 snapshot. There is no window in which the UI reports a draft, unread transition,
-or preference that cannot be restored after process death.
+preference, pending action, or decision that cannot be restored after process
+death.
 
 Provider event identifiers are idempotency keys scoped to the complete session
 locator. Replaying an already persisted activity performs no write and does not
@@ -61,6 +63,16 @@ session remains distinct. Mark-read uses an event-time boundary so opening older
 content cannot accidentally mark a newer event read. Approval and question
 records remain visible in the inbox until resolved even if they have already
 been read.
+
+An approval or question event writes its action request and linked activity in
+one snapshot. A response validates the provider-offered decision and every
+question answer, records **Delivering**, and only then calls the provider.
+Successful delivery records **Resolved** and resolves the linked activity. A
+provider failure after **Delivering** is deliberately treated as uncertain: the
+durable state is not reset to pending because an automatic retry could approve
+the same operation twice. Replaying the same provider event ID does not clear
+that uncertainty. Positive high-risk and session-wide approvals cannot enter
+**Delivering** without explicit additional confirmation.
 
 Session observations and local preferences are separate. A fresh provider scan
 can update title, preview, execution state, timestamps, or connection labels
@@ -86,9 +98,9 @@ and writes. Kotlin strings created during JSON decoding cannot be reliably
 zeroed, so session persistence must not be treated as a general secret vault.
 
 Malformed JSON, an unsupported format version, invalid identifiers, invalid
-enum values, duplicate sessions or activities, duplicate draft/transcript
-groups, dangling references, and duplicate transcript entries fail closed as
-SecureStoreCorruptException. Unknown fields are rejected. Corrupt data is not
+enum values, duplicate sessions, activities, or action requests, duplicate
+draft/transcript groups, dangling references, and duplicate transcript entries
+fail closed as SecureStoreCorruptException. Unknown fields are rejected. Corrupt data is not
 silently replaced with an empty hub.
 
 ## Retention
@@ -96,14 +108,15 @@ silently replaced with an empty hub.
 The default bounds are:
 
 - 200 session records;
-- 2,000 activity records across the hub; and
+- 2,000 activity records across the hub;
+- 2,000 approval or question requests across the hub; and
 - 500 cached transcript entries per session.
 
 Retention keeps pinned sessions first, then non-archived and most recently
 active sessions. Actionable approval and question records are retained before
-ordinary output when the activity bound is reached. Drafts, activities, and
-transcripts belonging to an evicted session are removed in the same snapshot,
-and unread counts are recomputed from retained activity.
+ordinary output when either bound is reached. Drafts, activities, action
+requests, and transcripts belonging to an evicted session are removed in the
+same snapshot, and unread counts are recomputed from retained activity.
 
 These are safety bounds, not a search or export policy. A future storage format
 may shard sessions while preserving the same repository contract.
@@ -117,11 +130,12 @@ may shard sessions while preserving the same repository contract.
 3. opens an independent controller per complete connection profile;
 4. obtains `RemoteAgentRuntime` only from connected generic profiles;
 5. probes compatible agent factories and discovers sessions;
-6. projects sessions and live events through the complete locator;
-7. persists event state before exposing the updated hub;
-8. routes capability-checked prompts, interruption, approvals, and questions;
+6. starts sessions with provider-neutral options on ready endpoints;
+7. projects sessions and live events through the complete locator;
+8. persists event and action state before exposing the updated hub;
+9. routes capability-checked prompts, interruption, approvals, and questions;
    and
-9. cancels agent work and clears stale issues when a connection goes offline.
+10. cancels agent work and clears stale issues when a connection goes offline.
 
 Duplicate provider/profile identifiers and invalid descriptors fail explicitly.
 Reconnects replace stale agent connections and collectors without allowing an
@@ -137,6 +151,15 @@ across compact detail navigation. Expanded screens show the same state in a
 list-detail layout. Session navigation arguments contain only a SHA-256 digest
 of the complete locator, while all actions resolve back to the exact lossless
 locator in current durable state.
+
+Ready endpoints expose a provider-neutral session launcher with optional working
+directory and model fields. Pending approval/question cards display execution
+context, exact command and scope, provider questions, risk reasons, and only the
+decisions the provider offered. Raw provider request and question identifiers
+are retained only in encrypted domain state; Compose receives stable digests.
+Question answers translate back to exact provider identifiers only at the
+runtime boundary. Risk and session-wide grants use a second confirmation, while
+**Delivering** cards disable retry and explain the uncertain-delivery boundary.
 
 Selected session detail now maps the endpoint descriptor, observed session state,
 and `can_accept_input` metadata into provider-neutral Resume, Send, Steer, and
@@ -169,24 +192,28 @@ Focused verification:
 Coverage proves:
 
 - full-tuple identity across SSH, local, and multiple profiles;
-- preferences, drafts, inbox state, and transcripts across repository reopen;
-- idempotent activity replay and bounded mark-read behavior;
+- preferences, drafts, inbox state, transcripts, and actions across repository
+  reopen;
+- idempotent activity/action replay and bounded mark-read behavior;
 - write-before-publish failure atomicity;
+- action/activity atomicity, decision transitions, and high-risk confirmation;
 - pinned/actionable retention ordering;
 - encrypted-store DTO round-trip across SSH and local sessions;
 - dedicated Keystore namespace and plaintext byte-array clearing;
 - fail-closed malformed, version-mismatch, and duplicate-record handling;
 - capability/state mapping for supported and read-only providers;
-- debounced draft persistence and exact full-locator action routing; and
+- provider-neutral session launch, exact full-locator action routing, and raw
+  provider identifier isolation;
+- question validation and stable-ID-to-provider-ID translation;
+- debounced draft persistence; and
 - failed immediate-send preservation without provider exception disclosure.
 
 API 36 emulator verification on 2026-09-01 ran the complete instrumented suite
-with 13 of 13 tests passing: 10 application UI and accessibility tests, one SSH
+with 18 of 18 tests passing: 15 application UI and accessibility tests, one SSH
 Android test, and two encrypted-storage Android tests. The evidence verifier
 independently checked all three module reports, the explicit emulator boot
 record, and the exact discovered/run/skipped/failure/error counts.
 
-Not yet implemented are session creation, approval decisions, queued or offline
-sending, voice input, artifact transfer, and background notification dispatch.
-The remaining workflows keep the same provider-neutral capability and
-full-locator boundaries.
+Not yet implemented are queued or offline sending, voice input, artifact
+transfer, and background notification dispatch. The remaining workflows keep
+the same provider-neutral capability and full-locator boundaries.

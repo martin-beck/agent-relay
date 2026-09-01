@@ -62,9 +62,9 @@ local access, profiles, or future connection types.
 1. A `ConnectionProvider` enumerates generic profile summaries.
 2. The coordinator opens a `ManagedConnection`.
 3. A connected profile supplies a `RemoteAgentRuntime`.
-4. compatible agent factories probe and open agent sessions through that runtime;
-5. the coordinator projects agent events into the durable session repository;
-   and
+4. Compatible agent factories probe and open agent sessions through that runtime;
+5. the coordinator starts sessions and projects agent events into the durable
+   session repository; and
 6. the Compose layer observes durable state and sends capability-checked actions.
 
 All six layers are now connected for the first interactive session-hub slice.
@@ -76,6 +76,14 @@ Composer edits use an in-memory projection for immediate feedback while the
 ViewModel debounces writes to the encrypted session repository. Submission
 flushes the exact draft before provider I/O and clears it only after successful
 delivery; a failed action retains the durable draft and a sanitized UI error.
+
+Approval and question events enter the same repository as an atomic action/
+activity pair. Responses move to durable **Delivering** state before provider
+I/O and to **Resolved** only after the provider accepts them. An uncertain
+delivery is never made retryable automatically. The runtime translates hashed
+UI question keys back to exact encrypted provider identifiers at the final
+boundary, validates every offered decision and answer, and requires explicit
+additional confirmation for positive high-risk or session-wide grants.
 
 Profile setup follows a separate provider-neutral path: Compose edits generic
 text, port, secret, choice, and read-only fields; the selected provider validates
@@ -109,6 +117,7 @@ UI keys are derived from the complete provider-scoped locator. Session
 navigation uses a fixed SHA-256 digest so saved navigation state cannot expose a
 host, path, profile identifier, or unbounded agent-session identifier. Domain
 state continues to use the lossless locator rather than the digest.
+Approval and question UI keys follow the same one-way digest rule.
 
 ## Verification
 

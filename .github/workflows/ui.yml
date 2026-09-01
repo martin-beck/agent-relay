@@ -63,11 +63,12 @@ jobs:
 
       - name: Verify connected-test evidence
         run: |
+          set -o pipefail
           python3 scripts/ci/verify_connected_tests.py --root . \
-            --minimum-tests 12 --minimum-executed 10 \
+            --minimum-tests 18 --minimum-executed 18 \
             --require-module app \
             --require-module ssh/android \
-            --require-module storage/android
+            --require-module storage/android | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Upload UI test evidence
         if: ${{ !cancelled() }}
@@ -93,12 +94,18 @@ jobs:
           - name: current-phone
             api-level: 36
             profile: pixel_7_pro
+            minimum-tests: 18
+            minimum-executed: 18
           - name: minimum-phone
             api-level: 28
             profile: pixel_2
+            minimum-tests: 15
+            minimum-executed: 15
           - name: current-tablet
             api-level: 36
             profile: pixel_tablet
+            minimum-tests: 18
+            minimum-executed: 18
 
     steps:
       - name: Check out source
@@ -140,11 +147,13 @@ jobs:
 
       - name: Verify connected-test evidence
         run: |
+          set -o pipefail
           python3 scripts/ci/verify_connected_tests.py --root . \
-            --minimum-tests 12 --minimum-executed 10 \
+            --minimum-tests ${{ matrix.minimum-tests }} \
+            --minimum-executed ${{ matrix.minimum-executed }} \
             --require-module app \
             --require-module ssh/android \
-            --require-module storage/android
+            --require-module storage/android | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Upload UI test evidence
         if: ${{ !cancelled() }}
