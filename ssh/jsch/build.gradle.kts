@@ -6,13 +6,23 @@ kotlin {
     jvmToolchain(17)
 }
 
+tasks.test {
+    useJUnitPlatform()
+}
+
 dependencies {
     api(project(":ssh:api"))
-    implementation(project(":provider:api"))
+    api(project(":provider:api"))
     api(libs.jsch)
-    implementation(libs.kotlinx.coroutines.core)
+    api(libs.kotlinx.coroutines.core)
 
     testImplementation(kotlin("test"))
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.jazzer.api)
+    testImplementation(libs.jazzer.junit)
+    testImplementation(libs.kotest.property)
+
+    testRuntimeOnly(libs.junit.jupiter.engine)
+    testRuntimeOnly(libs.junit.vintage.engine)
 }
