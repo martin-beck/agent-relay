@@ -1,6 +1,6 @@
 # Session hub and offline state
 
-Status: Persistence, coordinator, and first adaptive read-oriented UI implemented
+Status: Persistence, coordinator, and first adaptive interaction UI implemented
 Last verified: 2026-09-01
 
 The session layer is independent of both connection implementations and agent
@@ -138,6 +138,15 @@ list-detail layout. Session navigation arguments contain only a SHA-256 digest
 of the complete locator, while all actions resolve back to the exact lossless
 locator in current durable state.
 
+Selected session detail now maps the endpoint descriptor, observed session state,
+and `can_accept_input` metadata into provider-neutral Resume, Send, Steer, and
+Interrupt controls. Each callback resolves the UI digest back to the exact full
+locator. Composer changes are shown immediately, debounced into the encrypted
+repository, and flushed before provider I/O so failure cannot strand a draft in
+UI memory. Cached transcript rows are typed as user messages, agent commentary,
+final answers, plans, reasoning summaries, tools, or system events rather than
+relying on color or an undifferentiated transcript label.
+
 Connection setup is routed through each provider's optional generic profile
 manager. The session hub exposes add controls only for providers advertising
 `PROFILE_MANAGEMENT`, marks their connection cards editable, and refreshes the
@@ -152,7 +161,9 @@ Focused verification:
   :session:api:test \
   :session:android:testDebugUnitTest \
   :session:runtime:test \
-  spotlessCheck
+  :app:testDebugUnitTest \
+  :app:compileDebugAndroidTestKotlin \
+  spotlessCheck detekt
 ~~~
 
 Coverage proves:
@@ -163,14 +174,19 @@ Coverage proves:
 - write-before-publish failure atomicity;
 - pinned/actionable retention ordering;
 - encrypted-store DTO round-trip across SSH and local sessions;
-- dedicated Keystore namespace and plaintext byte-array clearing; and
-- fail-closed malformed, version-mismatch, and duplicate-record handling.
+- dedicated Keystore namespace and plaintext byte-array clearing;
+- fail-closed malformed, version-mismatch, and duplicate-record handling;
+- capability/state mapping for supported and read-only providers;
+- debounced draft persistence and exact full-locator action routing; and
+- failed immediate-send preservation without provider exception disclosure.
 
-The Android Keystore implementation shares the instrumented coverage in
-:storage:android. It must still run on an emulator or device through
-connectedDebugAndroidTest before release.
+API 36 emulator verification on 2026-09-01 ran the complete instrumented suite
+with 13 of 13 tests passing: 10 application UI and accessibility tests, one SSH
+Android test, and two encrypted-storage Android tests. The evidence verifier
+independently checked all three module reports, the explicit emulator boot
+record, and the exact discovered/run/skipped/failure/error counts.
 
-Not yet implemented are composer and control actions, approval decisions,
-background notification dispatch, or artifact transfer.
-Their extension boundaries are defined here, but completion requires
-end-to-end device evidence.
+Not yet implemented are session creation, approval decisions, queued or offline
+sending, voice input, artifact transfer, and background notification dispatch.
+The remaining workflows keep the same provider-neutral capability and
+full-locator boundaries.

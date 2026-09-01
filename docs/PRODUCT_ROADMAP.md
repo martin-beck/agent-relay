@@ -251,6 +251,10 @@ core.
 
 ### Provider-aware session control
 
+Initial-app progress: the UI now gates resume, send, active-turn steering, and
+interruption from provider capabilities and observed session state. Session
+creation, detach/close, approval, and artifact controls remain future work.
+
 - Probe installation, version, authentication, configuration, and protocol
   compatibility before offering a provider.
 - Display a capability matrix for discovery, history, live output, resume,
@@ -265,6 +269,10 @@ core.
 
 ### Agent timeline
 
+Initial-app progress: cached user messages, commentary, final answers, plans,
+reasoning summaries, tool output, and system messages now have distinct typed
+timeline presentation. Live deltas and richer tool/state entries remain.
+
 - Render user messages, agent commentary, final answers, plans, tool calls,
   approvals, errors, and state changes as distinct timeline entries.
 - Stream deltas without layout jumps and replace them with the authoritative
@@ -278,6 +286,10 @@ core.
 - Cache recent transcripts locally with encryption and bounded retention.
 
 ### Composer and voice
+
+Initial-app progress: encrypted per-session multi-line drafts preserve cursor
+selection and support immediate send or capability-gated steering. Queued/offline
+send, explicit retry/cancel, attachments, and voice remain.
 
 - Preserve an independent draft and cursor position for every session.
 - Support multi-line input, send, queued send, edit-before-send, cancel, and

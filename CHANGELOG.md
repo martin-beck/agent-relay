@@ -22,6 +22,10 @@ supported release.
 - Adaptive Compose session hub with connection lifecycle and SSH identity
   decisions, provider-scoped sessions, unread state, and bounded cached
   transcript detail.
+- Provider-aware session interactions with an encrypted per-session draft,
+  full-tuple resume/send/steer/interrupt routing, failed-send preservation, and
+  typed timeline rendering for user, agent, plan, reasoning, tool, and system
+  entries.
 - Semantic critical-flow UI tests and API 34+ automated accessibility checks,
   with API 36 phone pull-request CI and a scheduled minimum-API/tablet matrix.
 - Android verification workflow and Dependabot configuration.
@@ -54,9 +58,10 @@ supported release.
 
 ### Known limitations
 
-- The current session hub is an early control surface. Full
-  provider session actions, timeline composition, approvals, and artifacts are
-  not yet exposed.
+- The current session hub is an early control surface. Session creation,
+  approval decisions, queued/offline input, and artifact workflows are not yet
+  exposed.
+- Voice input and attachments are not yet integrated with the text composer.
 - Offline speech, background recovery/notifications, and secure file transfer
   are not yet wired into the application.
 - Deterministic screenshot evidence, manual TalkBack/keyboard release audits,

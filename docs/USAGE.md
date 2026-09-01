@@ -17,14 +17,40 @@ application graph. It can:
   actionable activity counts;
 - list sessions discovered through Aider, Claude Code, Cline, Codex, Continue,
   and OpenCode provider adapters;
-- display cached transcript and activity detail and mark a selected session
-  read; and
+- render cached user messages, agent commentary, final answers, plans,
+  reasoning summaries, tools, and system messages as distinct timeline entries;
+- preserve a separate encrypted multi-line draft and cursor selection per session;
+- send input to an idle session or steer a running turn when the provider
+  advertises that capability;
+- resume supported saved sessions;
+- interrupt running or approval-waiting sessions when the provider supports
+  interruption; and
 - use focused navigation on compact screens and list-detail navigation on
   expanded screens.
 
 Session navigation stores only a fixed-length SHA-256 identity derived from the
 complete connection/provider/session locator. It does not place raw host,
 workspace, or session identifiers in navigation state.
+
+## Work with a session
+
+1. Select a session from **Sessions**.
+2. Type or edit the message in the session's **Message** field.
+3. Use the action that matches the provider-reported state:
+
+- **Send** is available for an input-ready idle session.
+- **Steer active turn** replaces Send for a running session only when the
+  provider advertises active-turn steering.
+- **Resume session** is available for supported saved, failed, or unknown
+  sessions that are not currently loaded.
+- **Interrupt turn** is available only for a supported running or approval-waiting
+  state.
+
+Draft text and cursor selection remain attached to the complete local-or-remote
+session identity. Editing is reflected immediately and written securely after a
+short debounce. Submission persists the exact draft before provider I/O; it is
+cleared only after success and only if no newer draft replaced it. A failed send
+keeps the draft and shows a sanitized error.
 
 ## Set up a Secure Shell connection
 
@@ -57,10 +83,12 @@ The hub is an early development surface, not a release-ready agent client:
 - Local access does not bundle coding-agent command-line tools; a compatible
   executable must exist inside the application's sandbox before it can be
   discovered.
-- Starting, attaching, composing, steering, interrupting, approving, and file
-  transfer are not yet exposed by the app UI.
-- Transcript detail is currently read-only. Rendering is bounded to the most
-  recent 32,000 characters and clearly marks truncation.
+- Starting new sessions, approval decisions, and file/artifact transfer are not
+  yet exposed by the app UI.
+- Queued send, explicit retry/cancel, voice input, and attachments are not yet
+  implemented.
+- Timeline entries remain read-only. Rendering is bounded to 32,000 characters
+  per entry and clearly marks truncation.
 - Speech, notifications, foreground/background session operation, and artifact
   workflows are not implemented.
 - No production release is published.
