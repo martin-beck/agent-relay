@@ -66,6 +66,26 @@ Install the fast checks as a Git hook if desired:
 uv run pre-commit install
 ```
 
+## Visual regression
+
+Verify the committed deterministic Compose images on Linux:
+
+```bash
+./gradlew :app:verifyRoborazziDebug --stacktrace
+```
+
+When a deliberate UI change requires new baselines, record and then verify them
+in separate Gradle invocations:
+
+```bash
+./gradlew :app:recordRoborazziDebug --stacktrace
+./gradlew :app:verifyRoborazziDebug --stacktrace
+```
+
+Review every changed PNG under `app/src/test/screenshots` before committing it.
+Do not combine record and verify in one Gradle invocation because both
+Roborazzi modes use the same Android unit-test task.
+
 ## Android Studio
 
 1. Open the repository root as an existing project.
@@ -113,7 +133,7 @@ Confirm that every expected module produced clean JUnit evidence:
 
 ```bash
 python3 scripts/ci/verify_connected_tests.py --root . \
-  --minimum-tests 21 --minimum-executed 21 \
+  --minimum-tests 24 --minimum-executed 24 \
   --require-module app --require-module ssh/android --require-module storage/android
 ```
 
@@ -122,7 +142,8 @@ successful compile or JVM test does not substitute for device execution.
 
 ## CI
 
-`.github/workflows/verify.yml` is the required pull-request build. Actions are
+`.github/workflows/verify.yml` runs the required quality/build and deterministic
+visual-regression jobs. Actions are
 pinned to immutable commit SHAs, dependency updates are proposed by Dependabot,
 and repository-format, test, quality, lint, and APK evidence is retained for a
 limited time. The

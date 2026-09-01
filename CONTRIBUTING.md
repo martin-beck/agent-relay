@@ -11,7 +11,7 @@ from collaborators who have been granted repository access.
    `fix:`, `docs:`, `test:`, or `ci:`.
 4. Run the local verification gate.
 5. Push only the focused branch and open a pull request.
-6. Merge only after the required Android verification check succeeds.
+6. Merge only after all required Android verification checks succeed.
 
 Do not push development changes directly to `main`. The pull-request author
 may merge their own focused PR after successful checks and a final diff/privacy
@@ -25,11 +25,20 @@ uv run pre-commit run --all-files --show-diff-on-failure
 ./gradlew spotlessCheck detekt buildHealth test koverXmlReport koverVerify lintDebug assembleDebug --stacktrace
 ```
 
+Verify deterministic UI baselines separately:
+
+```bash
+./gradlew :app:verifyRoborazziDebug --stacktrace
+```
+
 The repository check applies format-aware parsing, formatting, static analysis,
 schema validation, link validation, spelling, workflow security, and secret
 scanning to every tracked text format. Run relevant focused tests while
 developing. Device-dependent changes also need the appropriate
-`connectedDebugAndroidTest` evidence before release. Changes to input parsing,
+`connectedDebugAndroidTest` evidence before release. UI changes must add or
+update the relevant deterministic preview, semantic test, and reviewed
+Roborazzi baseline. Run `:app:recordRoborazziDebug` and
+`:app:verifyRoborazziDebug` as separate invocations. Changes to input parsing,
 remote command construction, path handling, or protocol decoding should add a
 focused property or fuzz regression when practical.
 
@@ -63,7 +72,9 @@ Before every push, inspect the complete diff and added files. Never commit:
 - machine-specific paths, Android SDK paths, or executable locations;
 - durable agent session IDs, private prompts, transcripts, or raw live output;
 - private model names, endpoints, proxy configuration, or provider state; or
-- generated APKs, reports, captures, `local.properties`, or IDE workspace data.
+- generated APKs, reports, unreviewed captures, `local.properties`, or IDE
+  workspace data. The reviewed deterministic PNG baselines under
+  `app/src/test/screenshots` are the only capture exception.
 
 Use explicit opt-in environment variables for live checks. Test fixtures must
 use synthetic identifiers such as `example-host`, `example-model`, and

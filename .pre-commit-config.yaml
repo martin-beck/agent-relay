@@ -78,12 +78,13 @@ repos:
       - id: lychee
         alias: lychee-local
         name: Check local Markdown links
-        args: ["--offline", "--root-dir", ".", "--include-fragments", "--no-progress"]
+        args: ["LYCHEE_VERSION=0.24.2", "--offline", "--root-dir", ".", "--include-fragments", "--no-progress"]
         types: [markdown]
       - id: lychee
         alias: lychee-online
         name: Check all Markdown links
         args:
+          - LYCHEE_VERSION=0.24.2
           - --root-dir
           - .
           - --include-fragments

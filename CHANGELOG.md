@@ -40,6 +40,9 @@ supported release.
   record.
 - Semantic critical-flow UI tests and API 34+ automated accessibility checks,
   with API 36 phone pull-request CI and a scheduled minimum-API/tablet matrix.
+- Deterministic Compose previews and seven Roborazzi baselines spanning loading,
+  fatal error, empty, offline, changed-identity, content, approval, adaptive
+  widths, dark theme, large text, and long localized content.
 - Android verification workflow and Dependabot configuration.
 - Build, install, usage, architecture, contribution, security, and release
   documentation.
@@ -61,6 +64,8 @@ supported release.
   multi-module JUnit evidence, uploads reports from every connected-test module,
   publishes exact counts in the job summary, and retains Gradle's problems
   report instead of relying on failure-looking log text or an app-only artifact.
+- Pull-request CI now verifies deterministic Roborazzi images on Linux and
+  retains actual/diff evidence for review.
 
 ### Security
 
@@ -74,9 +79,8 @@ supported release.
 ### Known limitations
 
 - The current session hub is an early control surface. Queued/offline input and
-  artifact workflows are not yet exposed.
+  changed-file preview, diff, and batch-export workflows are not yet exposed.
 - Voice input and attachments are not yet integrated with the text composer.
 - Offline speech and background recovery/notifications are not yet wired into
-  the application; changed-file preview, diff, and batch export remain.
-- Deterministic screenshot evidence, manual TalkBack/keyboard release audits,
-  and production release signing remain.
+  the application.
+- Manual TalkBack/keyboard release audits and production release signing remain.

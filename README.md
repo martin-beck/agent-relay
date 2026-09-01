@@ -31,8 +31,8 @@ permission to redistribute source code, APKs, or project artifacts.
 | SSH connection provider and profile setup | Encrypted credentials, strict per-hop host keys, configured jump routes, persistent Android keys, confirmed public-key installation, and key-only probes implemented; final real-device evidence remains |
 | Codex, OpenCode, Continue, Claude, Cline, and Aider adapters | Implemented with contract tests; live checks where available |
 | Encrypted session hub and runtime coordinator | Implemented and unit tested |
-| Quality gates | Detekt, strict lint/Kotlin warnings, dependency analysis, 70% aggregate coverage, property tests, and bounded fuzzing |
-| Adaptive Compose UI and app integration | Provider-neutral setup and session launch, typed timeline, durable text composer, capability-gated controls, and risk-aware approvals/questions implemented |
+| Quality gates | Detekt, strict lint/Kotlin warnings, dependency analysis, 70% aggregate coverage, Roborazzi visual regression, property tests, and bounded fuzzing |
+| Adaptive Compose UI and app integration | Provider-neutral setup and session launch, typed timeline, durable text composer, capability-gated controls, risk-aware approvals/questions, adaptive-boundary tests, and deterministic UI baselines implemented |
 | Changed files and safe export | Encrypted per-session shelf plus checked single-file export for local and SSH workspaces; previews, diffs, and batch export remain |
 | Signed release build and distribution | Not available |
 
@@ -124,8 +124,8 @@ More detail:
 
 Every functional change must update the user or developer documentation that it
 makes inaccurate. Pull requests run formatting, unit and contract tests, Android
-lint, static analysis, dependency analysis, aggregate coverage verification, and
-debug assembly before merge.
+lint, static analysis, dependency analysis, aggregate coverage verification,
+deterministic visual regression, and debug assembly before merge.
 
 ## License and support
 
