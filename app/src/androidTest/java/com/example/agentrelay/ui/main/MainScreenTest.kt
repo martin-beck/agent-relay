@@ -4,12 +4,15 @@ import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasScrollAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.accessibility.enableAccessibilityChecks
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.tryPerformAccessibilityChecks
 import androidx.compose.ui.unit.dp
 import androidx.test.filters.SdkSuppress
@@ -40,9 +43,13 @@ class MainScreenTest {
         setContent(MainScreenUiState.Ready(testHub()), recorder)
 
         composeTestRule.onNodeWithText("Connections").assertExists()
-        composeTestRule.onNodeWithText("Connect").performScrollTo().performClick()
-        composeTestRule.onNodeWithText("Replace identity").performScrollTo().performClick()
-        composeTestRule.onNodeWithText("Investigate flaky build").performScrollTo().performClick()
+        val hubList = composeTestRule.onNode(hasScrollAction())
+        hubList.performScrollToNode(hasText("Connect"))
+        composeTestRule.onNodeWithText("Connect").performClick()
+        hubList.performScrollToNode(hasText("Replace identity"))
+        composeTestRule.onNodeWithText("Replace identity").performClick()
+        hubList.performScrollToNode(hasText("Investigate flaky build"))
+        composeTestRule.onNodeWithText("Investigate flaky build").performClick()
 
         check(recorder.connectedKey == "local-key")
         check(recorder.trustedKey == "ssh-key")
