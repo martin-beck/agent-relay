@@ -2,8 +2,11 @@ plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.android.library) apply false
     alias(libs.plugins.compose.compiler) apply false
+    alias(libs.plugins.dependency.analysis)
+    alias(libs.plugins.detekt)
     alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.kotlin.serialization) apply false
+    alias(libs.plugins.kover)
     alias(libs.plugins.spotless)
 }
 
@@ -40,5 +43,114 @@ spotless {
         target("**/*.md", ".gitignore", ".editorconfig", ".github/**/*.yml", ".github/**/*.yaml")
         trimTrailingWhitespace()
         endWithNewline()
+    }
+}
+
+detekt {
+    buildUponDefaultConfig = true
+    config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
+    parallel = true
+}
+
+tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+    setSource(files(subprojects.map { project -> project.file("src") }))
+    include("**/*.kt")
+    exclude("**/build/**")
+    jvmTarget = "17"
+
+    reports {
+        html.required.set(true)
+        sarif.required.set(true)
+        xml.required.set(true)
+        txt.required.set(false)
+        md.required.set(false)
+    }
+}
+
+val dependencyUpdateLintChecks = setOf(
+    "AndroidGradlePluginVersion",
+    "GradleDependency",
+    "NewerVersionAvailable",
+)
+
+subprojects {
+    pluginManager.apply("com.autonomousapps.dependency-analysis")
+    pluginManager.apply("org.jetbrains.kotlinx.kover")
+
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().configureEach {
+        compilerOptions.allWarningsAsErrors.set(true)
+    }
+
+    pluginManager.withPlugin("com.android.application") {
+        extensions.configure<com.android.build.api.dsl.ApplicationExtension> {
+            lint {
+                abortOnError = true
+                checkDependencies = true
+                htmlReport = true
+                sarifReport = true
+                warningsAsErrors = true
+                xmlReport = true
+                disable += dependencyUpdateLintChecks
+            }
+        }
+    }
+
+    pluginManager.withPlugin("com.android.library") {
+        extensions.configure<com.android.build.api.dsl.LibraryExtension> {
+            lint {
+                abortOnError = true
+                checkDependencies = true
+                htmlReport = true
+                sarifReport = true
+                warningsAsErrors = true
+                xmlReport = true
+                disable += dependencyUpdateLintChecks
+            }
+        }
+    }
+}
+
+dependencies {
+    subprojects.forEach { subproject ->
+        kover(project(subproject.path))
+    }
+}
+
+kover {
+    reports {
+        total {
+            filters {
+                excludes {
+                    annotatedBy(
+                        "androidx.compose.ui.tooling.preview.Preview",
+                        "androidx.compose.ui.tooling.preview.PreviewParameter",
+                    )
+                    classes(
+                        "*.*BuildConfig",
+                        "*.*_Factory",
+                    )
+                }
+            }
+            verify {
+                rule {
+                    minBound(70)
+                }
+            }
+        }
+    }
+}
+
+dependencyAnalysis {
+    issues {
+        all {
+            onAny {
+                severity("fail")
+            }
+        }
+        project(":session:api") {
+            onIncorrectConfiguration {
+                exclude(":connection:api")
+            }
+        }
     }
 }

@@ -23,7 +23,7 @@ android {
 }
 
 dependencies {
-    implementation(libs.kotlinx.coroutines.core)
+    api(libs.kotlinx.coroutines.core)
 
     testImplementation(kotlin("test"))
     testImplementation(libs.junit)
@@ -32,7 +32,7 @@ dependencies {
 
     androidTestImplementation(libs.androidx.test.core)
     androidTestImplementation(libs.androidx.test.ext.junit)
-    androidTestImplementation(libs.androidx.test.runner)
+    androidTestRuntimeOnly(libs.androidx.test.runner)
     androidTestImplementation(libs.junit)
     androidTestImplementation(libs.kotlinx.coroutines.core)
 }

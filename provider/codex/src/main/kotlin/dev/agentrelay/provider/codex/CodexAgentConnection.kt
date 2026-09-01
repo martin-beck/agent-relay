@@ -94,14 +94,16 @@ internal class CodexAgentConnection private constructor(
     }
 
     override suspend fun steerActiveTurn(sessionId: AgentSessionId, text: String) {
-        val turnId = activeTurns[sessionId]
-            ?: throw IllegalStateException("Session has no active turn")
+        val turnId = checkNotNull(activeTurns[sessionId]) {
+            "Session has no active turn"
+        }
         client.steer(sessionId, turnId, text)
     }
 
     override suspend fun interrupt(sessionId: AgentSessionId) {
-        val turnId = activeTurns[sessionId]
-            ?: throw IllegalStateException("Session has no active turn")
+        val turnId = checkNotNull(activeTurns[sessionId]) {
+            "Session has no active turn"
+        }
         client.interrupt(sessionId, turnId)
     }
 

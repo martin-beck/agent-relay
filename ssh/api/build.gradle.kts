@@ -11,9 +11,9 @@ dependencies {
     api(project(":connection:api"))
     api(project(":provider:api"))
     api(libs.kotlinx.coroutines.core)
-    api(libs.kotlinx.serialization.json)
 
     testImplementation(kotlin("test"))
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+    api(libs.kotlinx.serialization.core)
 }

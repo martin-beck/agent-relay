@@ -97,11 +97,11 @@ class JschRemoteAgentRuntime internal constructor(
                 stderr = stderr,
                 dispatcher = dispatcher,
             )
+        } catch (cancelled: CancellationException) {
+            channel.disconnect()
+            throw cancelled
         } catch (failure: Throwable) {
             channel.disconnect()
-            if (failure is CancellationException) {
-                throw failure
-            }
             throw channelFailure(failure)
         }
     }
