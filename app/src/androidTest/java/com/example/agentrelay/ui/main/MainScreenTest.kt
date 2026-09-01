@@ -37,14 +37,50 @@ class MainScreenTest {
     @get:Rule val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
     @Test
+    fun loadingStateExplainsThatInitializationIsInProgress() {
+        val recorder = ActionRecorder()
+        setContent(MainScreenUiState.Loading, recorder)
+
+        composeTestRule.onNodeWithTag(MAIN_LOADING_TEST_TAG).assertIsDisplayed()
+        composeTestRule.onNodeWithText("Loading Agent Relay...").assertIsDisplayed()
+    }
+
+    @Test
     fun fatalError_explainsRecoveryAndRetries() {
         val recorder = ActionRecorder()
         setContent(MainScreenUiState.FatalError("Session storage is unavailable."), recorder)
 
+        composeTestRule.onNodeWithTag(MAIN_FATAL_ERROR_TEST_TAG).assertIsDisplayed()
         composeTestRule.onNodeWithText("Session storage is unavailable.").assertIsDisplayed()
         composeTestRule.onNodeWithText("Retry").performClick()
 
         check(recorder.retryCount == 1)
+    }
+
+    @Test
+    fun adaptiveBreakpointUsesCompactLayoutImmediatelyBelow840Dp() {
+        val recorder = ActionRecorder()
+        setSizedContent(
+            state = MainScreenUiState.Ready(testHub()),
+            recorder = recorder,
+            widthDp = 839,
+        )
+
+        composeTestRule.onNodeWithTag(SESSION_HUB_LIST_TEST_TAG).assertExists()
+        composeTestRule.onNodeWithTag(SESSION_DETAIL_PANE_TEST_TAG).assertDoesNotExist()
+    }
+
+    @Test
+    fun adaptiveBreakpointUsesExpandedLayoutAt840Dp() {
+        val recorder = ActionRecorder()
+        setSizedContent(
+            state = MainScreenUiState.Ready(testHub()),
+            recorder = recorder,
+            widthDp = 840,
+        )
+
+        composeTestRule.onNodeWithTag(SESSION_HUB_LIST_TEST_TAG).assertExists()
+        composeTestRule.onNodeWithTag(SESSION_DETAIL_PANE_TEST_TAG).assertExists()
     }
 
     @Test
@@ -424,6 +460,22 @@ class MainScreenTest {
                 MainScreenContent(
                     state = state,
                     actions = recorder.actions(),
+                )
+            }
+        }
+    }
+
+    private fun setSizedContent(
+        state: MainScreenUiState,
+        recorder: ActionRecorder,
+        widthDp: Int,
+    ) {
+        composeTestRule.setContent {
+            AgentRelayTheme {
+                MainScreenContent(
+                    state = state,
+                    actions = recorder.actions(),
+                    modifier = Modifier.requiredSize(width = widthDp.dp, height = 720.dp),
                 )
             }
         }

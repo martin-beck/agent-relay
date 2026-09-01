@@ -1,7 +1,9 @@
 package com.example.agentrelay.ui.main
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -16,12 +18,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.agentrelay.theme.AgentRelayTheme
 import dev.agentrelay.provider.api.AgentApprovalDecision
-import dev.agentrelay.provider.api.AgentSessionState
+
+internal const val MAIN_LOADING_TEST_TAG = "main-loading"
+internal const val MAIN_FATAL_ERROR_TEST_TAG = "main-fatal-error"
+internal const val SESSION_HUB_LIST_TEST_TAG = "session-hub-list"
+internal const val SESSION_DETAIL_PANE_TEST_TAG = "session-detail-pane"
 
 @Composable
 internal fun MainScreen(
@@ -83,26 +89,39 @@ internal fun MainScreenContent(
 ) {
     when (state) {
         MainScreenUiState.Loading -> Box(
-            modifier = modifier.fillMaxSize(),
+            modifier = modifier.fillMaxSize().testTag(MAIN_LOADING_TEST_TAG),
             contentAlignment = Alignment.Center,
         ) {
-            CircularProgressIndicator()
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                CircularProgressIndicator()
+                Text(
+                    text = "Loading Agent Relay...",
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+            }
         }
 
         is MainScreenUiState.FatalError -> Box(
-            modifier = modifier.fillMaxSize(),
+            modifier = modifier
+                .fillMaxSize()
+                .padding(24.dp)
+                .testTag(MAIN_FATAL_ERROR_TEST_TAG),
             contentAlignment = Alignment.Center,
         ) {
-            androidx.compose.foundation.layout.Column(
+            Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 Text(
                     text = state.message,
                     style = MaterialTheme.typography.bodyLarge,
+                    textAlign = TextAlign.Center,
                 )
                 Button(
                     onClick = actions.retry,
-                    modifier = Modifier.padding(top = 16.dp),
                 ) {
                     Text("Retry")
                 }
@@ -151,12 +170,16 @@ private fun AdaptiveSessionHub(
                     hub = hub,
                     actions = actions,
                     onSelectSession = selectSession,
-                    modifier = Modifier.weight(0.44f),
+                    modifier = Modifier
+                        .weight(0.44f)
+                        .testTag(SESSION_HUB_LIST_TEST_TAG),
                 )
                 VerticalDivider()
                 SessionDetailPane(
                     detail = hub.selectedSession,
-                    modifier = Modifier.weight(0.56f),
+                    modifier = Modifier
+                        .weight(0.56f)
+                        .testTag(SESSION_DETAIL_PANE_TEST_TAG),
                     onDraftChanged = actions.updateSessionDraft,
                     onSubmitDraft = actions.submitSessionDraft,
                     onResumeSession = actions.resumeSession,
@@ -172,7 +195,9 @@ private fun AdaptiveSessionHub(
                 hub = hub,
                 actions = actions,
                 onSelectSession = selectSession,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .testTag(SESSION_HUB_LIST_TEST_TAG),
             )
         }
     }
@@ -220,83 +245,5 @@ internal data class SessionHubActions(
     val saveArtifact: (String, String, String) -> Unit = { _, _, _ -> },
     val cancelArtifactExport: (String) -> Unit = {},
 )
-
-@Preview(showBackground = true)
-@Composable
-private fun MainScreenPreview() {
-    AgentRelayTheme {
-        MainScreenContent(
-            state = MainScreenUiState.Ready(previewSessionHub()),
-            actions = previewActions(),
-        )
-    }
-}
-
-@Preview(showBackground = true, widthDp = 1_000, heightDp = 720)
-@Composable
-private fun MainScreenExpandedPreview() {
-    AgentRelayTheme {
-        MainScreenContent(
-            state = MainScreenUiState.Ready(previewSessionHub()),
-            actions = previewActions(),
-        )
-    }
-}
-
-private fun previewActions() = SessionHubActions(
-    retry = {},
-    refresh = {},
-    connect = {},
-    disconnect = {},
-    trustIdentity = { _, _ -> },
-    rejectIdentity = {},
-    selectSession = {},
-    openSession = {},
-    dismissError = {},
-)
-
-private fun previewSessionHub(): SessionHubUiModel {
-    val session = SessionUiModel(
-        stableKey = "preview-session",
-        title = "Refine the Android session hub",
-        preview = "The provider-neutral runtime is connected and ready for the next instruction.",
-        connectionLabel = "This device",
-        connectionProviderName = "Local",
-        agentProviderLabel = "Codex",
-        projectPath = "/workspace/agent-relay",
-        agentState = AgentSessionState.IDLE,
-        unreadCount = 2,
-        requiresActionCount = 0,
-        lastActivityAtEpochMillis = 1_788_200_000_000,
-        isPinned = true,
-    )
-    return SessionHubUiModel(
-        availableConnectionProviders = listOf("Local", "Secure Shell"),
-        connections = listOf(
-            ConnectionUiModel(
-                stableKey = "preview-connection",
-                providerName = "Local",
-                label = "This device",
-                target = "This device",
-                authenticationLabel = null,
-                status = ConnectionStatus.ONLINE,
-                statusDetail = null,
-                connectedAgentCount = 1,
-                agentCount = 6,
-                unavailableAgentCount = 5,
-                canConnect = false,
-                canDisconnect = true,
-                isBusy = false,
-                identityChallenge = null,
-            ),
-        ),
-        sessions = listOf(session),
-        issues = emptyList(),
-        selectedSession = SessionDetailUiModel(session, emptyList(), emptyList()),
-        selectedSessionKey = session.stableKey,
-        operationError = null,
-        isRefreshingProfiles = false,
-    )
-}
 
 private val EXPANDED_LAYOUT_MIN_WIDTH = 840.dp
