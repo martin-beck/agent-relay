@@ -9,6 +9,12 @@ bounded mutation fuzzing is scheduled separately.
 | Gate | Purpose | Failure policy |
 | --- | --- | --- |
 | Spotless with ktlint | Reproducible Kotlin, Gradle, Markdown, and YAML formatting | Any drift fails |
+| Pre-commit hygiene and EditorConfig | Parseable text files, LF endings, final newlines, indentation, file modes, merge-marker and case-conflict safety | Any finding fails; generated wrappers are not reformatted |
+| Ruff and mypy | Python formatting, imports, defects, modernization, and strict static types | Any finding fails; no type or lint baseline |
+| markdownlint and Lychee | Portable Markdown structure plus valid local paths and anchors | Any finding fails; external network links run weekly with retries |
+| yamllint, Taplo, and schema checks | Deterministic YAML/TOML style and valid GitHub workflow, issue-form, and Dependabot structure | Any finding fails |
+| actionlint and zizmor | GitHub Actions expressions, graph semantics, permissions, injection, and supply-chain safety | Any finding fails; audits run offline on pull requests |
+| Typos and Gitleaks | Source-aware spelling and hard-coded secret detection across tracked text | Any finding fails; suppressions must identify a reviewed false positive narrowly |
 | Kotlin compiler | Type safety and compiler diagnostics | All warnings are errors |
 | Detekt | Kotlin correctness, complexity, and maintainability findings | Any configured finding fails; no baseline |
 | Android lint | Android and dependency lint checks | Errors and warnings fail; HTML, XML, and SARIF reports |
@@ -47,7 +53,83 @@ domain or orchestration logic to meet the percentage.
 Run the full local gate:
 
 ```bash
+uv sync --locked --only-group quality
+uv run pre-commit run --all-files --show-diff-on-failure
 ./gradlew spotlessCheck detekt buildHealth test koverXmlReport koverVerify lintDebug assembleDebug --stacktrace
+```
+
+Install the fast checks as a Git hook after the first sync:
+
+```bash
+uv run pre-commit install
+```
+
+The checked-in `uv.lock` pins the pre-commit runner and every hook revision is
+frozen to an immutable commit. Dependabot proposes uv and pre-commit updates;
+review the upstream release notes and the generated configuration diff before
+accepting them.
+
+## Format-specific policy
+
+The rules follow conventions used by mature Android, Python, and documentation
+projects, while keeping source diffs semantic and reviewable.
+
+- **Kotlin and Kotlin DSL:** Spotless owns formatting through ktlint. The Kotlin
+  compiler treats warnings as errors, Detekt covers maintainability and likely
+  defects, and dependency analysis checks module declarations.
+- **Python:** Ruff owns formatting, import ordering, common defect checks, and
+  safe modernization for Python 3.12. Mypy runs in strict mode with unreachable
+  code diagnostics. Python support scripts retain focused `unittest` coverage;
+  formatting or typing success never substitutes for executing them.
+- **Markdown:** Standalone documents use an ATX H1 followed by ordered heading
+  levels, fenced code blocks with a language, consistent list indentation, and
+  portable tables. Duplicate headings are permitted only under different
+  parents. Line length is not enforced because URLs, tables, and copyable
+  commands must remain intact. The pull-request template is intentionally a
+  fragment and is excluded from the standalone-document heading rule.
+- **YAML:** Two-space indentation and a 120-column ceiling apply. A leading
+  document marker is optional, and GitHub's top-level `on` key is accepted.
+  Generic YAML parsing and yamllint are supplemented with vendored JSON Schemas
+  for workflows, Dependabot, and issue forms. Actionlint and zizmor perform the
+  GitHub-specific semantic and security checks that a YAML parser cannot.
+- **TOML:** Two-space indentation, stable key order, trailing newlines, and
+  deterministic arrays are enforced by Taplo. Generic TOML parsing catches
+  syntax errors, while Gradle consumes and validates the version catalog during
+  every normal build.
+- **XML:** Four-space indentation and well-formed XML are checked generically.
+  Android lint and assembly remain authoritative for manifest/resource schema,
+  references, API use, and packaging semantics.
+- **Properties and generated launchers:** EditorConfig and the consuming build
+  tool check properties files. The checked-in Gradle wrapper scripts and JAR are
+  generated artifacts: Gradle wrapper validation checks their integrity, and
+  formatters must not rewrite them.
+- **Repository-wide text:** Typos checks prose and identifiers with a small
+  project dictionary. Gitleaks scans the complete working tree with redacted
+  output. Generic hooks reject private keys, oversized accidental artifacts,
+  broken symlinks, merge markers, mixed line endings, and paths that collide on
+  case-insensitive systems.
+
+The conventions and tool scopes are based on the
+[Google Python style guide](https://google.github.io/styleguide/pyguide.html),
+[Google Markdown style guide](https://google.github.io/styleguide/docguide/style.html),
+[Ruff formatter and linter guidance](https://docs.astral.sh/ruff/),
+[mypy strict-mode documentation](https://mypy.readthedocs.io/en/stable/command_line.html#cmdoption-mypy-strict),
+[actionlint checks](https://github.com/rhysd/actionlint/blob/main/docs/checks.md),
+[zizmor audits](https://docs.zizmor.sh/audits/),
+[check-jsonschema's vendored GitHub schemas](https://check-jsonschema.readthedocs.io/en/stable/usage.html#builtin-schema-choices),
+[Taplo validation and formatting](https://taplo.tamasfe.dev/cli/introduction),
+and [Lychee link checking](https://lychee.cli.rs/).
+
+Pull requests verify local Markdown paths and fragments without network access.
+The scheduled `External documentation links` workflow checks remote links so a
+temporary third-party outage cannot block an otherwise valid source change.
+It excludes only this private repository's Actions page, workflow badge, and
+security-advisory form because GitHub returns 404 for anonymous requests to
+those authentication-gated endpoints.
+Run that same network check explicitly with:
+
+```bash
+uv run pre-commit run lychee-online --hook-stage manual --all-files
 ```
 
 Generate human-readable reports while investigating:
@@ -60,6 +142,8 @@ Reports are written below `build/reports/detekt`,
 `build/reports/dependency-analysis`, `build/reports/kover`, and
 `build/reports/problems`, plus each Android module's `build/reports` directory.
 CI retains them for 14 days.
+Repository-format findings are emitted directly in the pre-commit and GitHub
+Actions logs with file and line information.
 
 Gradle 9 currently produces a problems report because the pinned Detekt 1.23.8
 plugin calls a reporting API scheduled for removal in Gradle 10.

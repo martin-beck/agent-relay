@@ -2,7 +2,7 @@
 
 - Status: Living document
 - Last updated: 2026-09-01
-- External edit timestamp: 2026-09-01T22:31:53+02:00 (Europe/Berlin)
+- External edit timestamp: 2026-09-01T23:32:39+02:00 (Europe/Berlin)
 - Edit origin: This roadmap revision was made outside the current autonomous development workflow.
 
 ## Product direction
@@ -156,7 +156,7 @@ Module boundaries must prevent UI code from becoming the state authority and pre
 ### State authorities
 
 | State | Authoritative owner | Android responsibility |
-|---|---|---|
+| --- | --- | --- |
 | Workflow definition and run state | Host daemon | Cache and render projections; submit commands through the outbox |
 | Command intent before delivery | Android durable outbox | Persist before sending; retain until terminal acknowledgement |
 | Command acceptance and effects | Host daemon journal | Display acknowledged state and reconcile by command ID |
@@ -753,7 +753,7 @@ Only steps 2, 5, 6, and 8 require attention. Route registration, key confirmatio
 ## Autonomous detection and recovery policy
 
 | Condition | Automatic behavior | Attention threshold |
-|---|---|---|
+| --- | --- | --- |
 | Temporary network loss | Reconnect with bounded exponential backoff and jitter; resume by cursor | Retry/time budget exhausted or identity changes |
 | Android process death | Restore projections and durable outbox; reconcile command IDs | Local durable state is corrupt and cannot be rebuilt |
 | Daemon restart or host reboot | Verify journal, load snapshot, fence old workers, observe targets, resume safe steps | Uncertain non-idempotent effect or failed recovery contract |
