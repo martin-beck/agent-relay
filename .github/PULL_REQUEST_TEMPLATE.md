@@ -8,7 +8,9 @@ List the exact local checks and any device or opt-in live evidence.
 
 - [ ] `./gradlew spotlessCheck test lintDebug assembleDebug --stacktrace`
 - [ ] Relevant focused tests
-- [ ] Device tests when Android platform behavior changed
+- [ ] Semantic UI tests for changed success, empty, loading, error, offline, and
+      unsupported states
+- [ ] Accessibility, compact/expanded, and device evidence when UI behavior changed
 
 ## Privacy and security
 

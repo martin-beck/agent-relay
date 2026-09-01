@@ -65,9 +65,11 @@ local access, profiles, or future connection types.
    and
 6. the Compose layer observes durable state and sends capability-checked actions.
 
-The first five layers are implemented. The application currently does not
-construct the registries, coordinator, encrypted stores, or session UI, so this
-flow is not yet user accessible.
+All six layers are now connected for the first read-oriented session-hub slice.
+An application-scoped graph owns encrypted store construction and registers both
+Local and Secure Shell plus all implemented agent factories. A navigation-scoped
+ViewModel combines coordinator and durable repository snapshots so destinations
+do not create duplicate runtimes or state authorities.
 
 ## Security boundaries
 
@@ -88,6 +90,11 @@ Connection lifecycle belongs to connection providers. Agent discovery and
 protocol state belong to agent providers. Durable drafts, unread activity,
 preferences, and transcript cache belong to the session repository. Compose is
 a projection of these sources and must not become a second authority.
+
+UI keys are derived from the complete provider-scoped locator. Session
+navigation uses a fixed SHA-256 digest so saved navigation state cannot expose a
+host, path, profile identifier, or unbounded agent-session identifier. Domain
+state continues to use the lossless locator rather than the digest.
 
 ## Verification
 

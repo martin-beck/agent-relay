@@ -14,6 +14,7 @@ bounded mutation fuzzing is scheduled separately.
 | Android lint | Android and dependency lint checks | Errors and warnings fail; HTML, XML, and SARIF reports |
 | Dependency analysis | Unused, transitive, and incorrectly scoped dependencies | Any advice fails, except one documented public-API edge |
 | JVM tests | Unit, contract, concurrency, and persistence behavior | Any failure fails |
+| Device UI tests | Semantic flows and API 34+ accessibility checks | API 36 phone fails pull requests; minimum API and tablet run weekly |
 | Kover | Aggregate JVM line coverage across modules | Less than 70% fails |
 | Debug assembly | Packaging and resource integration | Any failure fails |
 
@@ -48,6 +49,78 @@ Generate human-readable reports while investigating:
 Reports are written below `build/reports/detekt`,
 `build/reports/dependency-analysis`, and `build/reports/kover`, plus each
 Android module's `build/reports` directory. CI retains them for 14 days.
+
+## UI usability and accessibility
+
+Ease of use is a correctness requirement. UI work is incomplete until the
+primary task is discoverable, every state has a safe next action, and tests show
+that the task remains usable across Android configurations and assistive input.
+
+Agent Relay follows a layered approach drawn from mature Compose and Android
+projects:
+
+1. Pure mapper and ViewModel tests verify state transitions, capabilities,
+   errors, stale-event rejection, and labels without an emulator.
+2. Compose semantic tests use realistic provider/session test doubles and assert
+   what a user can identify and do. Tests select controls through user-visible
+   text, role, state, or stable semantic purpose, not layout hierarchy or pixel
+   coordinates.
+3. Instrumented tests exercise complete critical flows on the minimum and
+   current supported APIs. API 34 or newer runs Compose Accessibility Test
+   Framework checks before interactions.
+4. Linux-recorded visual-regression tests cover compact, medium, and expanded
+   windows, light and dark themes, large font scales, and long German strings.
+   A changed baseline is evidence to review, never an automatic approval.
+5. Release audits cover TalkBack reading order and announcements, keyboard and
+   switch navigation, focus retention, selection, contrast, minimum touch
+   targets, reduced motion, split screen, rotation, and process restoration.
+
+The `Android UI verification` workflow runs the semantic flow suite and
+Compose Accessibility Test Framework checks on an API 36 phone for every pull
+request and push to `main`. Its weekly/manual matrix also runs the same suite
+on the minimum API phone and an API 36 tablet. Device results are retained as CI
+artifacts. The API 28 run skips only the API 34+ accessibility-framework audit;
+semantic behavior tests still run.
+
+
+Each screen or reusable component must have deterministic previews for the
+states it owns, including empty, loading, content, error, offline, changed
+identity, approval-required, destructive confirmation, and unsupported
+capability where applicable. Preview parameters should cover day/night, window
+width, font scale, and expansion-prone content. This follows Element X Android's
+preview-to-screenshot pattern while retaining Agent Relay's own Material 3
+design language.
+
+The first visual-regression implementation should evaluate Roborazzi, used by
+Google's Now in Android project, against Paparazzi, used by Element X Android.
+Prefer the smallest stable tool that:
+
+- runs deterministically on Linux without a hardware emulator for PR feedback;
+- renders the Compose and Material versions used by this project accurately;
+- produces reference, actual, and diff artifacts;
+- supports the required window, theme, font, and locale matrix; and
+- does not require checking generated machine-specific data into source.
+
+End-to-end tests should use task-oriented screen robots, as seen in mature
+Firefox and DuckDuckGo Android suites, so navigation details can evolve without
+rewriting every assertion. Emulator flows remain deterministic: use app-private
+local fixtures and containerized SSH endpoints, never personal hosts,
+credentials, paths, or transcript data.
+
+Automated checks are necessary but not sufficient. Android's own guidance notes
+that tooling cannot find every runtime accessibility issue, so each release
+requires a documented manual TalkBack and keyboard pass. The WordPress Android
+TalkBack audit questions are a useful checklist for focus order, grouping,
+announcements, gestures, target size, contrast, and localized descriptions.
+
+Reference implementations and guidance:
+
+- [Android Compose semantics](https://developer.android.com/develop/ui/compose/accessibility/semantics)
+- [Android accessibility testing](https://developer.android.com/guide/topics/ui/accessibility/testing)
+- [Android adaptive display testing](https://developer.android.com/develop/adaptive-apps/guides/support-different-display-sizes)
+- [Now in Android testing](https://github.com/android/nowinandroid#testing)
+- [Element X Android contribution and UI-test rules](https://github.com/element-hq/element-x-android/blob/develop/CONTRIBUTING.md)
+- [WordPress Android TalkBack guidelines](https://github.com/wordpress-mobile/WordPress-Android/blob/trunk/docs/talkback-guidelines.md)
 
 ## Property and fuzz testing
 
@@ -88,13 +161,12 @@ merging an update.
 
 The current hosted workflow does not run:
 
-- Android emulator/device instrumentation;
 - live SSH or coding-agent integration checks;
 - release signing or store validation; or
 - end-to-end dynamic application security testing.
 
-Those checks require controlled devices or private credentials and must not leak
-their configuration or output into GitHub logs or artifacts.
+Those remaining checks require controlled devices or private credentials and
+must not leak their configuration or output into GitHub logs or artifacts.
 
 ## Tuning rules
 
