@@ -33,3 +33,4 @@ rootProject.name = "Agent Relay"
 include(":app")
 include(":provider:api")
 include(":provider:codex")
+include(":provider:opencode")
