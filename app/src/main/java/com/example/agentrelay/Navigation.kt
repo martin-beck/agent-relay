@@ -57,6 +57,7 @@ fun MainNavigation() {
                     onSubmitDraft = mainViewModel::submitSessionDraft,
                     onResumeSession = mainViewModel::resumeSession,
                     onInterruptSession = mainViewModel::interruptSession,
+                    onRespondToAction = mainViewModel::respondToAction,
                     modifier = Modifier.safeDrawingPadding(),
                 )
             }

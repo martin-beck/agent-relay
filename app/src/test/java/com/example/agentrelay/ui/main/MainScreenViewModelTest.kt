@@ -17,14 +17,26 @@ import dev.agentrelay.connection.api.ConnectionProfileUpdate
 import dev.agentrelay.connection.api.ConnectionProviderDescriptor
 import dev.agentrelay.connection.api.ConnectionProviderId
 import dev.agentrelay.connection.api.ConnectionState
+import dev.agentrelay.provider.api.AgentApprovalDecision
+import dev.agentrelay.provider.api.AgentApprovalType
+import dev.agentrelay.provider.api.AgentCapability
+import dev.agentrelay.provider.api.AgentProviderDescriptor
 import dev.agentrelay.provider.api.AgentProviderId
 import dev.agentrelay.provider.api.AgentSessionId
 import dev.agentrelay.provider.api.AgentSessionState
+import dev.agentrelay.provider.api.StartSessionOptions
+import dev.agentrelay.session.api.SessionActionRequest
+import dev.agentrelay.session.api.SessionActionRisk
 import dev.agentrelay.session.api.SessionDraft
 import dev.agentrelay.session.api.SessionHubSnapshot
 import dev.agentrelay.session.api.SessionLocator
 import dev.agentrelay.session.api.SessionObservation
+import dev.agentrelay.session.api.SessionQuestion
+import dev.agentrelay.session.api.SessionQuestionOption
 import dev.agentrelay.session.api.SessionRecord
+import dev.agentrelay.session.runtime.AgentEndpointKey
+import dev.agentrelay.session.runtime.AgentEndpointPhase
+import dev.agentrelay.session.runtime.AgentEndpointStatus
 import dev.agentrelay.session.runtime.SessionConnectionKey
 import dev.agentrelay.session.runtime.SessionCoordinatorSnapshot
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -495,6 +507,136 @@ class MainScreenViewModelTest {
     }
 
     @Test
+    fun sessionCreationAndActionResponsesResolveStableUiKeysToFullProviderIdentity() = runTest {
+        val providerId = ConnectionProviderId("ssh.secure-shell")
+        val connectionKey = SessionConnectionKey(
+            providerId,
+            ConnectionProfileId("trusted-profile"),
+        )
+        val agentProviderId = AgentProviderId("agent.codex")
+        val endpointKey = AgentEndpointKey(connectionKey, agentProviderId)
+        val existingLocator = SessionLocator(
+            connectionProviderId = providerId,
+            connectionProfileId = connectionKey.profileId,
+            agentProviderId = agentProviderId,
+            agentSessionId = AgentSessionId("existing-session"),
+        )
+        val request = SessionActionRequest(
+            id = "stable-action-key",
+            providerApprovalId = "provider-private-approval-id",
+            locator = existingLocator,
+            turnId = "turn-1",
+            type = AgentApprovalType.USER_INPUT,
+            title = "Choose validation scope",
+            description = "The provider needs a scope before continuing.",
+            command = null,
+            workingDirectory = "/workspace/project",
+            questions = listOf(
+                SessionQuestion(
+                    id = "stable-question-key",
+                    providerQuestionId = "provider-private-question-id",
+                    header = "Scope",
+                    prompt = "Which tests should run?",
+                    options = listOf(
+                        SessionQuestionOption("Focused tests"),
+                    ),
+                    allowsOther = true,
+                ),
+            ),
+            availableDecisions = setOf(
+                AgentApprovalDecision.SUBMIT,
+                AgentApprovalDecision.CANCEL,
+            ),
+            riskReasons = setOf(SessionActionRisk.CREDENTIAL_ACCESS),
+            receivedAtEpochMillis = 30,
+        )
+        val runtime = FakeSessionHubRuntime(
+            providers = listOf(descriptor(providerId, "Secure Shell")),
+            coordinator = SessionCoordinatorSnapshot(
+                profiles = listOf(profile(connectionKey, "Trusted server")),
+                agentEndpoints = mapOf(
+                    endpointKey to AgentEndpointStatus(
+                        key = endpointKey,
+                        descriptor = AgentProviderDescriptor(
+                            id = agentProviderId,
+                            displayName = "Codex",
+                            providerVersion = "1.0",
+                            capabilities = setOf(
+                                AgentCapability.SESSION_START,
+                                AgentCapability.APPROVALS,
+                            ),
+                        ),
+                        phase = AgentEndpointPhase.READY,
+                        updatedAtEpochMillis = 40,
+                    ),
+                ),
+            ),
+            sessions = SessionHubSnapshot(
+                sessions = listOf(session(existingLocator)),
+                actionRequests = listOf(request),
+            ),
+        )
+        val viewModel = MainScreenViewModel { runtime }
+        val scheduler = mainDispatcherRule.dispatcher.scheduler
+        scheduler.advanceUntilIdle()
+
+        val launcher = (viewModel.uiState.value as MainScreenUiState.Ready)
+            .hub.sessionLaunchers.single()
+        viewModel.openSessionCreator(launcher.stableKey)
+        scheduler.runCurrent()
+        assertEquals(
+            "/workspace/project",
+            (viewModel.uiState.value as MainScreenUiState.Ready)
+                .sessionCreator?.workingDirectory,
+        )
+
+        viewModel.updateSessionCreatorWorkingDirectory(" /workspace/new ")
+        viewModel.updateSessionCreatorModel(" test-model ")
+        viewModel.startSession()
+        scheduler.advanceUntilIdle()
+
+        assertEquals(
+            endpointKey to StartSessionOptions(
+                workingDirectory = "/workspace/new",
+                model = "test-model",
+            ),
+            runtime.startedSessions.single(),
+        )
+        val startedLocator = SessionLocator(
+            connectionProviderId = providerId,
+            connectionProfileId = connectionKey.profileId,
+            agentProviderId = agentProviderId,
+            agentSessionId = AgentSessionId("started-1"),
+        )
+        val afterStart = viewModel.uiState.value as MainScreenUiState.Ready
+        assertEquals(null, afterStart.sessionCreator)
+        assertEquals(startedLocator.stableUiKey, afterStart.hub.selectedSessionKey)
+
+        val answers = mapOf("stable-question-key" to listOf("Focused tests"))
+        viewModel.respondToAction(
+            sessionKey = existingLocator.stableUiKey,
+            actionKey = request.id,
+            decision = AgentApprovalDecision.SUBMIT,
+            answers = answers,
+            additionalConfirmationGiven = true,
+        )
+        scheduler.advanceUntilIdle()
+
+        assertEquals(
+            ActionResponse(
+                locator = existingLocator,
+                requestId = request.id,
+                decision = AgentApprovalDecision.SUBMIT,
+                answers = answers,
+                additionalConfirmationGiven = true,
+            ),
+            runtime.actionResponses.single(),
+        )
+
+        viewModel.viewModelScope.cancel()
+    }
+
+    @Test
     fun interactionEventsBeforeRuntimeInitializationAreSafeNoOps() = runTest {
         val providerId = ConnectionProviderId("local.device")
         val key = SessionConnectionKey(providerId, ConnectionProfileId("this-device"))
@@ -582,6 +724,8 @@ private class FakeSessionHubRuntime(
     val sent = mutableListOf<Pair<SessionLocator, String>>()
     val steered = mutableListOf<Pair<SessionLocator, String>>()
     val interrupted = mutableListOf<SessionLocator>()
+    val startedSessions = mutableListOf<Pair<AgentEndpointKey, StartSessionOptions>>()
+    val actionResponses = mutableListOf<ActionResponse>()
 
     override suspend fun refreshProfiles() {
         refreshCount += 1
@@ -651,7 +795,48 @@ private class FakeSessionHubRuntime(
     override suspend fun interrupt(locator: SessionLocator) {
         interrupted += locator
     }
+
+    override suspend fun startSession(
+        endpoint: AgentEndpointKey,
+        options: StartSessionOptions,
+    ): SessionLocator {
+        startedSessions += endpoint to options
+        val locator = SessionLocator(
+            connectionProviderId = endpoint.connection.providerId,
+            connectionProfileId = endpoint.connection.profileId,
+            agentProviderId = endpoint.agentProviderId,
+            agentSessionId = AgentSessionId("started-" + startedSessions.size),
+        )
+        mutableSessionSnapshot.value = mutableSessionSnapshot.value.copy(
+            sessions = mutableSessionSnapshot.value.sessions + session(locator),
+        )
+        return locator
+    }
+
+    override suspend fun respondToAction(
+        locator: SessionLocator,
+        requestId: String,
+        decision: AgentApprovalDecision,
+        answers: Map<String, List<String>>,
+        additionalConfirmationGiven: Boolean,
+    ) {
+        actionResponses += ActionResponse(
+            locator,
+            requestId,
+            decision,
+            answers,
+            additionalConfirmationGiven,
+        )
+    }
 }
+
+private data class ActionResponse(
+    val locator: SessionLocator,
+    val requestId: String,
+    val decision: AgentApprovalDecision,
+    val answers: Map<String, List<String>>,
+    val additionalConfirmationGiven: Boolean,
+)
 
 private fun descriptor(
     id: ConnectionProviderId,

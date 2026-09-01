@@ -13,6 +13,8 @@ import dev.agentrelay.connection.api.ConnectionProfileSummary
 import dev.agentrelay.connection.api.ConnectionProviderDescriptor
 import dev.agentrelay.connection.api.ConnectionProviderId
 import dev.agentrelay.connection.api.ConnectionState
+import dev.agentrelay.provider.api.AgentApprovalDecision
+import dev.agentrelay.provider.api.AgentApprovalType
 import dev.agentrelay.provider.api.AgentCapability
 import dev.agentrelay.provider.api.AgentMessageChannel
 import dev.agentrelay.provider.api.AgentProviderDescriptor
@@ -21,12 +23,17 @@ import dev.agentrelay.provider.api.AgentSessionId
 import dev.agentrelay.provider.api.AgentSessionState
 import dev.agentrelay.provider.api.AgentTranscriptRole
 import dev.agentrelay.session.api.CachedTranscriptEntry
+import dev.agentrelay.session.api.SessionActionRequest
+import dev.agentrelay.session.api.SessionActionRisk
+import dev.agentrelay.session.api.SessionActionState
 import dev.agentrelay.session.api.SessionActivity
 import dev.agentrelay.session.api.SessionActivityType
 import dev.agentrelay.session.api.SessionDraft
 import dev.agentrelay.session.api.SessionHubSnapshot
 import dev.agentrelay.session.api.SessionLocator
 import dev.agentrelay.session.api.SessionObservation
+import dev.agentrelay.session.api.SessionQuestion
+import dev.agentrelay.session.api.SessionQuestionOption
 import dev.agentrelay.session.api.SessionRecord
 import dev.agentrelay.session.runtime.AgentEndpointKey
 import dev.agentrelay.session.runtime.AgentEndpointPhase
@@ -305,6 +312,123 @@ class SessionHubUiMapperTest {
         )
         assertFalse(readOnly.canSubmit)
         assertTrue(readOnly.statusMessage?.contains("read-only") == true)
+    }
+
+    @Test
+    fun launchersAndApprovalUiPreserveScopeWithoutExposingProviderRequestIds() {
+        val connectionProviderId = ConnectionProviderId("ssh.secure-shell")
+        val profileId = ConnectionProfileId("trusted-server")
+        val sessionLocator = locator(connectionProviderId, profileId)
+        val connectionKey = SessionConnectionKey(connectionProviderId, profileId)
+        val endpointKey = AgentEndpointKey(connectionKey, sessionLocator.agentProviderId)
+        val pending = SessionActionRequest(
+            id = "stable-action-key",
+            providerApprovalId = "raw-private-provider-approval-id",
+            locator = sessionLocator,
+            turnId = "turn-1",
+            type = AgentApprovalType.COMMAND,
+            title = "Review workspace cleanup",
+            description = "The provider wants to remove generated files.",
+            command = "remove generated output",
+            workingDirectory = "/workspace",
+            questions = listOf(
+                SessionQuestion(
+                    id = "stable-question-key",
+                    providerQuestionId = "raw-private-provider-question-id",
+                    header = "Scope",
+                    prompt = "Which output should be removed?",
+                    options = listOf(
+                        SessionQuestionOption(
+                            label = "Generated output",
+                            description = "Keep source files.",
+                        ),
+                    ),
+                    allowsOther = true,
+                ),
+            ),
+            availableDecisions = setOf(
+                AgentApprovalDecision.SUBMIT,
+                AgentApprovalDecision.CANCEL,
+            ),
+            riskReasons = setOf(
+                SessionActionRisk.DESTRUCTIVE_COMMAND,
+                SessionActionRisk.BROAD_FILESYSTEM_ACCESS,
+            ),
+            receivedAtEpochMillis = 30,
+        )
+        val resolved = pending.copy(
+            id = "resolved-action-key",
+            providerApprovalId = "raw-resolved-provider-id",
+            title = "Previous request",
+            questions = emptyList(),
+            availableDecisions = setOf(AgentApprovalDecision.DECLINE),
+            riskReasons = emptySet(),
+            receivedAtEpochMillis = 20,
+            state = SessionActionState.RESOLVED,
+            decision = AgentApprovalDecision.DECLINE,
+            decisionAtEpochMillis = 21,
+        )
+        val mapped = SessionHubUiMapper.map(
+            coordinator = SessionCoordinatorSnapshot(
+                profiles = listOf(profile(connectionProviderId, profileId, "Trusted server")),
+                agentEndpoints = mapOf(
+                    endpointKey to AgentEndpointStatus(
+                        key = endpointKey,
+                        descriptor = AgentProviderDescriptor(
+                            id = sessionLocator.agentProviderId,
+                            displayName = "Codex",
+                            providerVersion = "1.0",
+                            capabilities = setOf(
+                                AgentCapability.SESSION_START,
+                                AgentCapability.APPROVALS,
+                            ),
+                        ),
+                        phase = AgentEndpointPhase.READY,
+                        updatedAtEpochMillis = 40,
+                    ),
+                ),
+            ),
+            sessions = SessionHubSnapshot(
+                sessions = listOf(record(sessionLocator, "Sensitive session", "Trusted server")),
+                actionRequests = listOf(pending, resolved),
+            ),
+            connectionProviders = listOf(descriptor(connectionProviderId, "Secure Shell")),
+            selectedSessionKey = sessionLocator.stableUiKey,
+            operationError = null,
+            busyConnectionKeys = emptySet(),
+            busyActionKeys = setOf(pending.id),
+        )
+
+        val launcher = mapped.sessionLaunchers.single()
+        assertEquals(64, launcher.stableKey.length)
+        assertEquals("Secure Shell", launcher.connectionProviderName)
+        assertEquals("Trusted server", launcher.connectionLabel)
+        assertEquals("Codex", launcher.agentProviderLabel)
+        assertEquals("/workspace", launcher.suggestedWorkingDirectory)
+
+        val attention = mapped.attentionActions.single()
+        assertEquals(pending.id, attention.stableKey)
+        assertEquals("/workspace", attention.scope)
+        assertEquals("remove generated output", attention.command)
+        assertEquals(
+            listOf(AgentApprovalDecision.SUBMIT, AgentApprovalDecision.CANCEL),
+            attention.decisions.map { it.decision },
+        )
+        assertTrue(attention.decisions.first().requiresConfirmation)
+        assertTrue(attention.isBusy)
+        assertEquals(
+            listOf("Destructive command", "Broad filesystem access"),
+            attention.riskLabels,
+        )
+        assertEquals("stable-question-key", attention.questions.single().stableKey)
+        assertEquals(2, mapped.selectedSession?.actions?.size)
+        assertEquals(
+            SessionActionState.RESOLVED,
+            mapped.selectedSession?.actions?.single { it.stableKey == resolved.id }?.state,
+        )
+        assertFalse(mapped.toString().contains("raw-private-provider-approval-id"))
+        assertFalse(mapped.toString().contains("raw-private-provider-question-id"))
+        assertFalse(mapped.toString().contains("raw-resolved-provider-id"))
     }
 
     @Test
