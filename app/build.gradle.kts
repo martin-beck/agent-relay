@@ -110,6 +110,7 @@ dependencies {
     androidTestRuntimeOnly(libs.androidx.test.core)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.monitor)
 
     // Navigation
     implementation(libs.androidx.navigation3.ui)

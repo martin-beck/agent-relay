@@ -40,6 +40,9 @@ supported release.
   record.
 - Semantic critical-flow UI tests and API 34+ automated accessibility checks,
   with API 36 phone pull-request CI and a scheduled minimum-API/tablet matrix.
+- External-keyboard composer traversal that consumes Tab and Shift+Tab to move
+  focus forward or backward without inserting a tab, with Enter activation
+  verified on the focused turn controls.
 - Deterministic Compose previews and seven Roborazzi baselines spanning loading,
   fatal error, empty, offline, changed-identity, content, approval, adaptive
   widths, dark theme, large text, and long localized content.

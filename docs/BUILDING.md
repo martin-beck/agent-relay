@@ -133,7 +133,7 @@ Confirm that every expected module produced clean JUnit evidence:
 
 ```bash
 python3 scripts/ci/verify_connected_tests.py --root . \
-  --minimum-tests 24 --minimum-executed 24 \
+  --minimum-tests 25 --minimum-executed 25 \
   --require-module app --require-module ssh/android --require-module storage/android
 ```
 

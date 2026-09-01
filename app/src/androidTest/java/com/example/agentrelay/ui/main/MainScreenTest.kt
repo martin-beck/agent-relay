@@ -7,7 +7,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
@@ -17,12 +20,16 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextReplacement
+import androidx.compose.ui.test.pressKey
+import androidx.compose.ui.test.requestFocus
 import androidx.compose.ui.test.tryPerformAccessibilityChecks
 import androidx.compose.ui.unit.dp
 import androidx.test.filters.SdkSuppress
+import androidx.test.platform.app.InstrumentationRegistry
 import com.example.agentrelay.theme.AgentRelayTheme
 import dev.agentrelay.connection.api.ConnectionProfileFieldType
 import dev.agentrelay.provider.api.AgentApprovalDecision
@@ -262,6 +269,48 @@ class MainScreenTest {
         check(recorder.interruptedSession == "session-key")
     }
 
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun expandedComposerSupportsExternalKeyboardFocusAndActivation() {
+        withKeyboardFocusMode {
+            val recorder = ActionRecorder()
+            composeTestRule.setContent {
+                AgentRelayTheme {
+                    MainScreenContent(
+                        state = MainScreenUiState.Ready(interactiveHub()),
+                        actions = recorder.actions(),
+                        modifier = Modifier.requiredSize(width = 1_000.dp, height = 820.dp),
+                    )
+                }
+            }
+
+            check(recorder.updatedDraft == null)
+            val composer = composeTestRule.onNodeWithTag("session-composer-input")
+            composer.requestFocus().assertIsFocused()
+            composer.performKeyInput { pressKey(Key.Tab) }
+
+            val interrupt = composeTestRule.onNodeWithText("Interrupt turn")
+            interrupt.assertIsFocused()
+            interrupt.performKeyInput { pressKey(Key.Enter) }
+
+            check(recorder.interruptedSession == "session-key")
+
+            interrupt.performKeyInput { pressKey(Key.Tab) }
+            val submit = composeTestRule.onNodeWithText("Steer active turn")
+            submit.assertIsFocused()
+            submit.performKeyInput { pressKey(Key.Enter) }
+
+            check(recorder.submittedSession == "session-key")
+
+            submit.performKeyInput {
+                keyDown(Key.ShiftLeft)
+                pressKey(Key.Tab)
+                keyUp(Key.ShiftLeft)
+            }
+            interrupt.assertIsFocused()
+        }
+    }
+
     @Test
     fun readyAgentEndpointExposesSessionLauncher() {
         val recorder = ActionRecorder()
@@ -449,6 +498,17 @@ class MainScreenTest {
 
         composeTestRule.enableAccessibilityChecks()
         composeTestRule.onRoot().tryPerformAccessibilityChecks()
+    }
+
+    private inline fun withKeyboardFocusMode(block: () -> Unit) {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val wasInTouchMode = composeTestRule.activity.window.decorView.isInTouchMode
+        instrumentation.setInTouchMode(false)
+        try {
+            block()
+        } finally {
+            instrumentation.setInTouchMode(wasInTouchMode)
+        }
     }
 
     private fun setContent(
