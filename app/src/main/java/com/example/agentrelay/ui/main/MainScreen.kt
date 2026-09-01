@@ -40,6 +40,14 @@ internal fun MainScreen(
             selectSession = viewModel::selectSession,
             openSession = onOpenSession,
             dismissError = viewModel::clearOperationError,
+            addProfile = viewModel::addProfile,
+            editProfile = viewModel::editProfile,
+            updateProfileField = viewModel::updateProfileField,
+            dismissProfileEditor = viewModel::dismissProfileEditor,
+            saveProfile = viewModel::saveProfile,
+            requestProfileDeletion = viewModel::requestProfileDeletion,
+            cancelProfileDeletion = viewModel::cancelProfileDeletion,
+            deleteProfile = viewModel::deleteProfile,
         )
     }
     MainScreenContent(
@@ -83,11 +91,16 @@ internal fun MainScreenContent(
             }
         }
 
-        is MainScreenUiState.Ready -> AdaptiveSessionHub(
-            hub = state.hub,
-            actions = actions,
-            modifier = modifier,
-        )
+        is MainScreenUiState.Ready -> {
+            AdaptiveSessionHub(
+                hub = state.hub,
+                actions = actions,
+                modifier = modifier,
+            )
+            state.profileEditor?.let { editor ->
+                ConnectionProfileEditorDialog(editor, actions)
+            }
+        }
     }
 }
 
@@ -141,6 +154,14 @@ internal data class SessionHubActions(
     val selectSession: (String) -> Unit,
     val openSession: (String) -> Unit,
     val dismissError: () -> Unit,
+    val addProfile: (String) -> Unit = {},
+    val editProfile: (String) -> Unit = {},
+    val updateProfileField: (String, String) -> Unit = { _, _ -> },
+    val dismissProfileEditor: () -> Unit = {},
+    val saveProfile: () -> Unit = {},
+    val requestProfileDeletion: () -> Unit = {},
+    val cancelProfileDeletion: () -> Unit = {},
+    val deleteProfile: () -> Unit = {},
 )
 
 @Preview(showBackground = true)

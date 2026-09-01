@@ -13,6 +13,12 @@ supported release.
 - Android application graph wiring the connection registry, local and SSH
   providers, encrypted session state, coordinator, and agent factories without
   SSH-specific UI dependencies.
+- Provider-neutral connection profile management with discoverable add/edit/
+  delete controls and generic text, port, secret, choice, conditional, and
+  read-only fields.
+- Secure Shell profile setup for passwords, imported private keys and
+  passphrases, and non-exportable Android Keystore agent keys with public-key
+  display.
 - Adaptive Compose session hub with connection lifecycle and SSH identity
   decisions, provider-scoped sessions, unread state, and bounded cached
   transcript detail.
@@ -27,6 +33,9 @@ supported release.
 
 ### Changed
 
+- Editing an SSH profile keeps stored secrets unless an explicit replacement or
+  removal is selected, disconnects only after a valid save, and cleans up
+  superseded credentials or agent keys.
 - Formatter inputs are restricted to source trees and real Gradle scripts so
   parallel Android build output cannot cause transient formatting failures.
 
@@ -41,7 +50,7 @@ supported release.
 
 ### Known limitations
 
-- The current session hub is an early read-only shell. Profile editing, full
+- The current session hub is an early control surface. Full
   provider session actions, timeline composition, approvals, and artifacts are
   not yet exposed.
 - Offline speech, background recovery/notifications, and secure file transfer

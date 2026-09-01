@@ -138,6 +138,11 @@ list-detail layout. Session navigation arguments contain only a SHA-256 digest
 of the complete locator, while all actions resolve back to the exact lossless
 locator in current durable state.
 
+Connection setup is routed through each provider's optional generic profile
+manager. The session hub exposes add controls only for providers advertising
+`PROFILE_MANAGEMENT`, marks their connection cards editable, and refreshes the
+coordinator only after a successful save or delete.
+
 ## Verification
 
 Focused verification:
@@ -165,7 +170,7 @@ The Android Keystore implementation shares the instrumented coverage in
 :storage:android. It must still run on an emulator or device through
 connectedDebugAndroidTest before release.
 
-Not yet implemented are the profile editor, composer and control actions,
-approval decisions, background notification dispatch, or artifact transfer.
+Not yet implemented are composer and control actions, approval decisions,
+background notification dispatch, or artifact transfer.
 Their extension boundaries are defined here, but completion requires
 end-to-end device evidence.

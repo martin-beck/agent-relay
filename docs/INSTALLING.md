@@ -5,8 +5,8 @@ production APK. The only installable artifact is a development debug build.
 
 > [!IMPORTANT]
 > The current APK exposes an early session hub, not a complete client. It can
-> connect existing generic profiles and display discovered sessions, but it
-> cannot yet create SSH profiles, send prompts, answer approvals, or run as a
+> create encrypted SSH profiles, connect generic profiles, and display
+> discovered sessions, but it cannot yet send prompts, answer approvals, or run as a
 > supported background service.
 
 ## Compatibility

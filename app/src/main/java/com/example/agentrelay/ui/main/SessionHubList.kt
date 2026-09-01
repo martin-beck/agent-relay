@@ -60,6 +60,17 @@ internal fun SessionHubList(
                 subtitle = "Local and remote access share one provider-neutral session hub.",
             )
         }
+        items(
+            hub.manageableConnectionProviders,
+            key = { "add-profile:" + it.stableKey },
+        ) { provider ->
+            OutlinedButton(
+                onClick = { actions.addProfile(provider.stableKey) },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("Add ${provider.name} profile")
+            }
+        }
         if (hub.connections.isEmpty()) {
             item(key = "connections-empty") {
                 EmptyCard("No connection profiles are available. Refresh to try again.")
@@ -74,6 +85,7 @@ internal fun SessionHubList(
                         actions.trustIdentity(connection.stableKey, replace)
                     },
                     onRejectIdentity = { actions.rejectIdentity(connection.stableKey) },
+                    onEdit = { actions.editProfile(connection.stableKey) },
                 )
             }
         }
