@@ -194,6 +194,29 @@ controller reports progress, supports cancellation, preserves completion state,
 and requests best-effort partial-document deletion for every failed or cancelled
 copy.
 
+The first notification boundary is a pure projection of durable session
+activity. It emits only SHA-256 notification and navigation keys, a coarse kind,
+and an event time; it never emits the activity summary, connection labels,
+targets, paths, provider identifiers, session identifiers, prompts, or commands.
+Notification presentation therefore cannot accidentally treat sensitive
+timeline text as lock-screen-safe content.
+
+Unresolved approval and question activity remains eligible until resolved even
+when marked read. IMPORTANT_ONLY additionally includes failures;
+FINAL_OUTPUT_ONLY includes turn completion; ALL_ACTIVITY includes other unread
+activity. MUTED emits nothing. Successful reconnects, read non-actionable
+activity, and resolved actions never produce a notification. Projection is
+bounded to 64 newest items after unresolved actions are promoted. Coordinator
+issues are deliberately excluded until they have a durable attention record, so
+no critical recovery state exists only in process memory. Android channels,
+rendering, dispatch, cancellation, and permission remain separate later slices.
+
+A serialized reconciler diffs each durable projection against successfully
+applied sink state. Stable-key show and cancellation operations must be
+idempotent: failures remain pending for the next snapshot, successful operations
+are not repeated, and coroutine cancellation is never converted into a retry.
+Results contain only counts and digest keys, never underlying sink failures.
+
 ## Verification
 
 Focused verification:
@@ -211,6 +234,7 @@ Focused verification:
 Coverage proves:
 
 - full-tuple identity across SSH, local, and multiple profiles;
+- privacy-safe, preference-aware, bounded notification projection;
 - preferences, drafts, inbox state, transcripts, and actions across repository
   reopen;
 - idempotent activity/action replay and bounded mark-read behavior;
