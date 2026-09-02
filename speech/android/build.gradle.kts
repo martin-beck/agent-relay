@@ -25,6 +25,7 @@ android {
 dependencies {
     api(project(":speech:api"))
     api(libs.kotlinx.coroutines.core)
+    implementation(libs.commons.compress)
 
     testImplementation(kotlin("test"))
     testImplementation(libs.junit)
