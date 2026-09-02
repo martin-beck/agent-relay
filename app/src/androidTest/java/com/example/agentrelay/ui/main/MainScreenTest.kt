@@ -441,6 +441,163 @@ class MainScreenTest {
     }
 
     @Test
+    fun offlineVoiceReadyStartsForSelectedSession() {
+        val recorder = ActionRecorder()
+        setExpandedSpeechContent(
+            speechInput = SpeechInputUiState(
+                phase = SpeechInputPhase.READY,
+                models = listOf(SpeechModelOptionUiModel("compact", "English compact", true)),
+                selectedModelId = "compact",
+                selectedModelName = "English compact",
+                statusMessage = "Voice input stays on this device.",
+            ),
+            recorder = recorder,
+        )
+
+        composeTestRule
+            .onNodeWithText("Start voice input")
+            .performScrollTo()
+            .performClick()
+
+        check(recorder.speechStartedFor == "session-key")
+    }
+
+    @Test
+    fun offlineVoiceModelSelectionAndInstallationAreExplicit() {
+        val recorder = ActionRecorder()
+        setExpandedSpeechContent(
+            speechInput = SpeechInputUiState(
+                phase = SpeechInputPhase.MODEL_REQUIRED,
+                models = listOf(
+                    SpeechModelOptionUiModel("compact", "English compact", false),
+                    SpeechModelOptionUiModel("accurate", "English accurate", true),
+                ),
+                selectedModelId = "compact",
+                selectedModelName = "English compact",
+                statusMessage = "Install the verified offline model before using voice input.",
+            ),
+            recorder = recorder,
+        )
+
+        composeTestRule
+            .onNodeWithText("English accurate - installed")
+            .performScrollTo()
+            .performClick()
+        composeTestRule
+            .onNodeWithText("Install offline model")
+            .performScrollTo()
+            .performClick()
+
+        check(recorder.selectedSpeechModel == "accurate")
+        check(recorder.speechInstallCount == 1)
+    }
+
+    @Test
+    fun offlineVoiceModelDownloadReportsProgressAndCancels() {
+        val recorder = ActionRecorder()
+        setExpandedSpeechContent(
+            speechInput = SpeechInputUiState(
+                phase = SpeechInputPhase.INSTALLING,
+                models = listOf(SpeechModelOptionUiModel("compact", "English compact", false)),
+                selectedModelId = "compact",
+                selectedModelName = "English compact",
+                progressPercent = 42,
+                statusMessage = "Downloading the offline speech model...",
+            ),
+            recorder = recorder,
+        )
+
+        composeTestRule.onNodeWithText("42 percent downloaded").performScrollTo().assertIsDisplayed()
+        composeTestRule
+            .onNodeWithText("Cancel model download")
+            .performScrollTo()
+            .performClick()
+
+        check(recorder.speechCancelInstallCount == 1)
+    }
+
+    @Test
+    fun offlineVoiceListeningStopsOrCancelsOnlySelectedSession() {
+        val recorder = ActionRecorder()
+        setExpandedSpeechContent(
+            speechInput = SpeechInputUiState(
+                phase = SpeechInputPhase.LISTENING,
+                selectedModelId = "compact",
+                selectedModelName = "English compact",
+                targetSessionKey = "session-key",
+                operationId = 7,
+                statusMessage = "Listening on device. Stop when you finish speaking.",
+            ),
+            recorder = recorder,
+        )
+
+        composeTestRule.onNodeWithText("Stop recording").performScrollTo().performClick()
+        composeTestRule.onNodeWithText("Cancel voice input").performScrollTo().performClick()
+
+        check(recorder.speechStoppedFor == "session-key")
+        check(recorder.speechCancelledFor == "session-key")
+    }
+
+    @Test
+    fun offlineVoiceResultRequiresExplicitUseOrDiscard() {
+        val recorder = ActionRecorder()
+        setExpandedSpeechContent(
+            speechInput = SpeechInputUiState(
+                phase = SpeechInputPhase.RESULT,
+                selectedModelId = "compact",
+                selectedModelName = "English compact",
+                targetSessionKey = "session-key",
+                operationId = 8,
+                transcript = "Run the focused checks.",
+                statusMessage = "Review the transcript before inserting it into the session draft.",
+            ),
+            recorder = recorder,
+        )
+
+        composeTestRule
+            .onNodeWithText("Run the focused checks.")
+            .performScrollTo()
+            .assertIsDisplayed()
+        composeTestRule.onNodeWithText("Use transcript").performScrollTo().performClick()
+        composeTestRule.onNodeWithText("Discard transcript").performScrollTo().performClick()
+
+        check(recorder.speechTranscriptUsedFor == "session-key")
+        check(recorder.speechDismissedFor == "session-key")
+    }
+
+    @Test
+    fun unavailableOfflineVoiceDoesNotExposePermissionOrRecordingControls() {
+        val recorder = ActionRecorder()
+        setExpandedSpeechContent(
+            speechInput = unavailableSpeechInputState(),
+            recorder = recorder,
+        )
+
+        composeTestRule.onNodeWithText("Voice input").assertDoesNotExist()
+        composeTestRule.onNodeWithText("Start voice input").assertDoesNotExist()
+        check(recorder.speechStartedFor == null)
+    }
+
+    @SdkSuppress(minSdkVersion = 34)
+    @Test
+    fun offlineVoiceReadyPassesAutomatedAccessibilityChecks() {
+        val recorder = ActionRecorder()
+        setExpandedSpeechContent(
+            speechInput = SpeechInputUiState(
+                phase = SpeechInputPhase.READY,
+                models = listOf(SpeechModelOptionUiModel("compact", "English compact", true)),
+                selectedModelId = "compact",
+                selectedModelName = "English compact",
+                statusMessage = "Voice input stays on this device.",
+            ),
+            recorder = recorder,
+        )
+
+        composeTestRule.enableAccessibilityChecks()
+        composeTestRule.onRoot().tryPerformAccessibilityChecks()
+    }
+
+    @Test
     fun emptyHub_explainsHowToProceed() {
         val recorder = ActionRecorder()
         val emptyHub = testHub().copy(
@@ -525,6 +682,24 @@ class MainScreenTest {
         }
     }
 
+    private fun setExpandedSpeechContent(
+        speechInput: SpeechInputUiState,
+        recorder: ActionRecorder,
+    ) {
+        composeTestRule.setContent {
+            AgentRelayTheme {
+                MainScreenContent(
+                    state = MainScreenUiState.Ready(
+                        hub = interactiveHub(),
+                        speechInput = speechInput,
+                    ),
+                    actions = recorder.actions(),
+                    modifier = Modifier.requiredSize(width = 1_000.dp, height = 900.dp),
+                )
+            }
+        }
+    }
+
     private fun setSizedContent(
         state: MainScreenUiState,
         recorder: ActionRecorder,
@@ -567,6 +742,14 @@ private class ActionRecorder {
     var savedArtifact: Triple<String, String, String>? = null
     val requestedOperations = mutableListOf<String>()
     var operationConfirmed = false
+    var selectedSpeechModel: String? = null
+    var speechInstallCount = 0
+    var speechCancelInstallCount = 0
+    var speechStartedFor: String? = null
+    var speechStoppedFor: String? = null
+    var speechCancelledFor: String? = null
+    var speechTranscriptUsedFor: String? = null
+    var speechDismissedFor: String? = null
 
     fun actions() = SessionHubActions(
         retry = { retryCount++ },
@@ -609,6 +792,16 @@ private class ActionRecorder {
         saveArtifact = { sessionKey, artifactKey, fileName ->
             savedArtifact = Triple(sessionKey, artifactKey, fileName)
         },
+        speechInput = SpeechInputUiActions(
+            selectModel = { selectedSpeechModel = it },
+            installModel = { speechInstallCount++ },
+            cancelModelInstall = { speechCancelInstallCount++ },
+            requestStart = { speechStartedFor = it },
+            stop = { speechStoppedFor = it },
+            cancel = { speechCancelledFor = it },
+            useTranscript = { speechTranscriptUsedFor = it },
+            dismiss = { speechDismissedFor = it },
+        ),
     )
 }
 

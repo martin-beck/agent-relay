@@ -34,10 +34,11 @@ internal fun MainScreen(
     viewModel: MainScreenViewModel,
     onOpenSession: (String) -> Unit,
     onSaveArtifact: (String, String, String) -> Unit,
+    speechActions: SpeechInputUiActions,
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val actions = remember(viewModel, onOpenSession, onSaveArtifact) {
+    val actions = remember(viewModel, onOpenSession, onSaveArtifact, speechActions) {
         SessionHubActions(
             retry = viewModel::retryInitialization,
             refresh = viewModel::refreshProfiles,
@@ -72,6 +73,7 @@ internal fun MainScreen(
             refreshArtifacts = viewModel.artifactInteractions::refreshArtifacts,
             saveArtifact = onSaveArtifact,
             cancelArtifactExport = viewModel.artifactInteractions::cancelArtifactExport,
+            speechInput = speechActions,
         )
     }
     MainScreenContent(
@@ -131,6 +133,7 @@ internal fun MainScreenContent(
         is MainScreenUiState.Ready -> {
             AdaptiveSessionHub(
                 hub = state.hub,
+                speechInput = state.speechInput,
                 actions = actions,
                 modifier = modifier,
             )
@@ -153,6 +156,7 @@ internal fun MainScreenContent(
 @Composable
 private fun AdaptiveSessionHub(
     hub: SessionHubUiModel,
+    speechInput: SpeechInputUiState,
     actions: SessionHubActions,
     modifier: Modifier,
 ) {
@@ -177,6 +181,8 @@ private fun AdaptiveSessionHub(
                 VerticalDivider()
                 SessionDetailPane(
                     detail = hub.selectedSession,
+                    speechInput = speechInput,
+                    speechActions = actions.speechInput,
                     modifier = Modifier
                         .weight(0.56f)
                         .testTag(SESSION_DETAIL_PANE_TEST_TAG),
@@ -244,6 +250,7 @@ internal data class SessionHubActions(
     val refreshArtifacts: (String) -> Unit = {},
     val saveArtifact: (String, String, String) -> Unit = { _, _, _ -> },
     val cancelArtifactExport: (String) -> Unit = {},
+    val speechInput: SpeechInputUiActions = SpeechInputUiActions(),
 )
 
 private val EXPANDED_LAYOUT_MIN_WIDTH = 840.dp

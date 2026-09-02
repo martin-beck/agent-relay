@@ -78,6 +78,7 @@ dependencies {
     implementation(project(":session:android"))
     implementation(project(":session:api"))
     implementation(project(":session:runtime"))
+    implementation(project(":speech:api"))
     implementation(project(":ssh:android"))
 
     // Compose
