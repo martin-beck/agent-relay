@@ -1,3 +1,41 @@
 <resources>
     <string name="app_name">Agent Relay</string>
+    <string name="notification_channel_action_name">Action required</string>
+    <string name="notification_channel_action_description">
+        Approvals and questions that need your response
+    </string>
+    <string name="notification_channel_failure_name">Session problems</string>
+    <string name="notification_channel_failure_description">
+        Important session failures
+    </string>
+    <string name="notification_channel_update_name">Session updates</string>
+    <string name="notification_channel_update_description">
+        Completed sessions and other requested activity
+    </string>
+    <string name="notification_action_title">Agent session needs attention</string>
+    <string name="notification_action_text">
+        Open Agent Relay to review an approval or question
+    </string>
+    <string name="notification_failure_title">Agent session needs attention</string>
+    <string name="notification_failure_text">Open Agent Relay to review a session problem</string>
+    <string name="notification_completion_title">Agent session completed</string>
+    <string name="notification_completion_text">Open Agent Relay to view the latest result</string>
+    <string name="notification_activity_title">Agent session updated</string>
+    <string name="notification_activity_text">Open Agent Relay to view the latest activity</string>
+    <string name="notification_public_text">Open the app to view an update</string>
+    <string name="notification_permission_title">Stay informed in the background</string>
+    <string name="notification_permission_request_explanation">
+        Allow notifications to receive privacy-safe alerts for requested session activity.
+    </string>
+    <string name="notification_permission_rationale">
+        Agent Relay shows fixed, privacy-safe text and never includes prompts, commands, hosts, or
+        paths.
+    </string>
+    <string name="notification_permission_settings_explanation">
+        Notification permission is off. You can enable it in Android settings.
+    </string>
+    <string name="notification_permission_open_settings">
+        Open notification settings
+    </string>
+    <string name="notification_permission_allow">Allow notifications</string>
 </resources>

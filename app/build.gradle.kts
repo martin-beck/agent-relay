@@ -60,6 +60,7 @@ dependencies {
 
     // Core Android dependencies
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.core.ktx)
 
     // Arch Components
     implementation(libs.androidx.lifecycle.runtime.compose)
