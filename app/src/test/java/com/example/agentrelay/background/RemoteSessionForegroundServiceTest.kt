@@ -3,8 +3,10 @@ package com.example.agentrelay.background
 import android.Manifest
 import android.app.Notification
 import android.app.NotificationManager
+import android.app.Service
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import androidx.test.core.app.ApplicationProvider
@@ -58,6 +60,22 @@ class RemoteSessionForegroundServiceTest {
         )
         assertTrue(Manifest.permission.FOREGROUND_SERVICE in requestedPermissions)
         assertTrue(Manifest.permission.FOREGROUND_SERVICE_REMOTE_MESSAGING in requestedPermissions)
+    }
+
+    @Test
+    fun explicitStartUsesStickyProcessRecoveryWhileMalformedStartFailsClosed() {
+        val controller = Robolectric.buildService(RemoteSessionForegroundService::class.java)
+        val service = controller.create().get()
+        val explicitStart = Intent(context, RemoteSessionForegroundService::class.java)
+            .setAction(BackgroundTransportAction.START.intentAction(context.packageName))
+
+        assertEquals(Service.START_STICKY, service.onStartCommand(explicitStart, 0, 1))
+        assertEquals(Service.START_STICKY, service.onStartCommand(null, 0, 2))
+        assertEquals(
+            Service.START_NOT_STICKY,
+            service.onStartCommand(Intent(context, RemoteSessionForegroundService::class.java), 0, 3),
+        )
+        controller.destroy()
     }
 
     @Test

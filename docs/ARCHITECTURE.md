@@ -185,8 +185,14 @@ the Android log.
 
 The non-exported foreground service uses Android's remoteMessaging type for the
 user-initiated relay of text between the phone and remote agent host. It is
-non-sticky, never starts at boot, exposes fixed privacy-safe status only, and
-always provides user-visible open and stop actions.
+sticky only after an explicit start, never starts at boot, exposes fixed
+privacy-safe status only, and always provides user-visible open and stop actions.
+An authenticated no-backup document stores at most 64 exact provider/profile
+keys that the user requested to connect. A system recreation accepts only
+Android's null restart intent, reloads configured profiles, and reconnects the
+intersection; malformed explicit intents and missing or corrupt recovery state
+fail closed. Explicit stop deletes the recovery document. Force-stop and Android
+user Stop remain stopped until a new user action.
 
 UI keys are derived from the complete provider-scoped locator. Session
 navigation uses a fixed SHA-256 digest so saved navigation state cannot expose a

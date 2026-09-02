@@ -242,13 +242,21 @@ can retry current state after permission is granted.
 
 The ready screen also offers explicit background connection mode after
 notification permission is available. Starting it promotes a non-exported,
-non-sticky remoteMessaging service immediately, shows fixed private status with
-open and stop actions, and keeps provider connections active when the process UI
-moves to the background. Stopping the service while the UI remains backgrounded
-serially suspends the same provider-neutral runtime. The mode never starts from
-a lifecycle callback, boot receiver, or process restart. A coarse state machine
-coalesces duplicate requests, blocks late activation from overriding stop,
-allows retry after a fixed start failure, and never exposes the provider failure.
+sticky remoteMessaging service immediately, shows fixed private status with open
+and stop actions, and keeps provider connections active when the process UI moves
+to the background. Connection and disconnection intent is tracked by the complete
+provider/profile key and written only while the mode is enabled to a bounded,
+Keystore-encrypted no-backup lease. After ordinary process death, Android's null
+sticky restart reloads configured profiles and reconnects only the intersection
+with that lease. Missing, malformed, duplicate, oversized, or no-longer-configured
+entries cannot expand the recovery set.
+
+Stopping the service while the UI remains backgrounded deletes the lease and
+serially suspends the same provider-neutral runtime. The mode never starts from a
+lifecycle callback or boot receiver. Force-stop and Android 13+ user Stop are not
+process-recovery events and remain stopped until a new explicit user action. A
+coarse state machine coalesces duplicates, fences late activation, permits retry
+after a fixed start failure, and never exposes provider failure details.
 
 ## Verification
 
@@ -312,7 +320,19 @@ explicit service start, continued active controller state after the Activity
 backgrounds, the fixed foreground notification, notification-action stop, and
 notification removal.
 
+The API 36 process-recovery check installs the assembled debug APK, starts
+background mode while the Activity is visible, backgrounds the Activity, and
+sends an ordinary same-UID SIGKILL to the application process. It requires a
+different replacement PID, Android's restartCount=1 and
+startCommandResult=1 (START_STICKY) evidence, and a stable foreground service
+before exercising explicit Stop. The same check separately proves that Android
+13+ user Stop and force-stop remove the complete application and that reopening
+the Activity does not restart background mode without a new explicit action. CI
+runs this check after the connected suite; minimum-API jobs omit only the
+unavailable Android 13+ user-Stop command.
+
 Not yet implemented are queued or offline sending, voice input, changed-file
-preview/diff/batch export, process-death recovery, and live-provider endurance
-evidence on representative physical devices. The remaining workflows keep the
+preview/diff/batch export, full event-cursor replay, and live-provider
+process-death endurance evidence on representative physical devices. The
+remaining workflows keep the
 same provider-neutral capability, safe-path, and full-locator boundaries.

@@ -84,6 +84,25 @@ class BackgroundTransportControllerTest {
     }
 
     @Test
+    fun systemRestartReentersStartingAndFailuresCannotLeaveAFalseActiveState() {
+        val controller = BackgroundTransportController {}
+
+        controller.serviceRestarting()
+        assertEquals(BackgroundTransportState.STARTING, controller.state.value)
+        controller.serviceActivated()
+        assertEquals(BackgroundTransportState.ACTIVE, controller.state.value)
+
+        controller.serviceFailed()
+        assertEquals(BackgroundTransportState.START_FAILED, controller.state.value)
+        controller.serviceRestarting()
+        assertEquals(BackgroundTransportState.STARTING, controller.state.value)
+
+        controller.serviceStopped()
+        controller.serviceFailed()
+        assertEquals(BackgroundTransportState.STOPPED, controller.state.value)
+    }
+
+    @Test
     fun intentActionsArePackageScopedAndStrictlyParsed() {
         val packageName = "dev.agentrelay.test"
         val start = BackgroundTransportAction.START.intentAction(packageName)

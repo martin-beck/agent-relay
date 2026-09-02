@@ -24,6 +24,7 @@ import dev.agentrelay.session.runtime.SessionConnectionKey
 import dev.agentrelay.session.runtime.SessionCoordinator
 import dev.agentrelay.session.runtime.SessionCoordinatorSnapshot
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.CancellationException
 
 internal interface SessionHubRuntime {
     val connectionProviders: List<ConnectionProviderDescriptor>
@@ -101,6 +102,8 @@ internal class CoordinatorSessionHubRuntime(
     private val coordinator: SessionCoordinator,
     override val connectionProviders: List<ConnectionProviderDescriptor>,
     private val connections: ConnectionProviderRegistry,
+    private val onConnectRequested: suspend (SessionConnectionKey) -> Unit = {},
+    private val onDisconnectRequested: suspend (SessionConnectionKey) -> Unit = {},
 ) : SessionHubRuntime, BackgroundAwareSessionHubRuntime {
     override val coordinatorSnapshot: StateFlow<SessionCoordinatorSnapshot>
         get() = coordinator.snapshot
@@ -110,7 +113,10 @@ internal class CoordinatorSessionHubRuntime(
 
     override suspend fun refreshProfiles() = coordinator.refreshProfiles()
 
-    override suspend fun connect(key: SessionConnectionKey) = coordinator.connect(key)
+    override suspend fun connect(key: SessionConnectionKey) {
+        onConnectRequested(key)
+        coordinator.connect(key)
+    }
     override suspend fun profileEditor(
         providerId: ConnectionProviderId,
         profileId: ConnectionProfileId?,
@@ -128,8 +134,10 @@ internal class CoordinatorSessionHubRuntime(
         providerId: ConnectionProviderId,
         profileId: ConnectionProfileId,
     ) {
-        connections.profileManager(providerId).delete(profileId)
-        coordinator.refreshProfiles()
+        runAfterRecordingDisconnect(SessionConnectionKey(providerId, profileId)) {
+            connections.profileManager(providerId).delete(profileId)
+            coordinator.refreshProfiles()
+        }
     }
 
     override suspend fun performProfileOperation(
@@ -142,7 +150,11 @@ internal class CoordinatorSessionHubRuntime(
         return result
     }
 
-    override suspend fun disconnect(key: SessionConnectionKey) = coordinator.disconnect(key)
+    override suspend fun disconnect(key: SessionConnectionKey) {
+        runAfterRecordingDisconnect(key) {
+            coordinator.disconnect(key)
+        }
+    }
 
     override suspend fun suspendForBackground() = coordinator.suspendForBackground()
 
@@ -205,5 +217,36 @@ internal class CoordinatorSessionHubRuntime(
             answers = answers,
             additionalConfirmationGiven = additionalConfirmationGiven,
         )
+    }
+
+    private suspend fun runAfterRecordingDisconnect(
+        key: SessionConnectionKey,
+        operation: suspend () -> Unit,
+    ) {
+        val leaseFailure = try {
+            onDisconnectRequested(key)
+            null
+        } catch (failure: Throwable) {
+            failure.rethrowCancellation()
+            failure
+        }
+        try {
+            operation()
+        } catch (failure: Throwable) {
+            failure.rethrowCancellation()
+            if (leaseFailure != null) {
+                failure.addSuppressed(leaseFailure)
+            }
+            throw failure
+        }
+        if (leaseFailure != null) {
+            throw leaseFailure
+        }
+    }
+}
+
+private fun Throwable.rethrowCancellation() {
+    if (this is CancellationException) {
+        throw this
     }
 }

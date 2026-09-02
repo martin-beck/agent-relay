@@ -87,6 +87,8 @@ jobs:
             :ssh:android:connectedDebugAndroidTest
             :storage:android:connectedDebugAndroidTest
             --stacktrace &&
+            bash scripts/ci/verify_background_process_recovery.sh
+            app/build/outputs/apk/debug/app-debug.apk &&
             mkdir -p build/usage-guide/captured &&
             adb pull /sdcard/Download/agent-relay-usage-guide/.
             build/usage-guide/captured/
@@ -240,7 +242,9 @@ jobs:
             :app:connectedDebugAndroidTest
             :ssh:android:connectedDebugAndroidTest
             :storage:android:connectedDebugAndroidTest
-            --stacktrace
+            --stacktrace &&
+            bash scripts/ci/verify_background_process_recovery.sh
+            app/build/outputs/apk/debug/app-debug.apk
 
       - name: Verify connected-test evidence
         run: |

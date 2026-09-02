@@ -23,7 +23,8 @@ import kotlinx.coroutines.launch
 
 internal class RemoteSessionForegroundService : Service() {
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    private var startFailed = false
+
+    @Volatile private var startFailed = false
     private val relayApplication: AgentRelayApplication
         get() = application as AgentRelayApplication
 
@@ -33,14 +34,17 @@ internal class RemoteSessionForegroundService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        return when (intent?.action.backgroundTransportAction(packageName)) {
+        if (intent == null) {
+            relayApplication.backgroundTransport.serviceRestarting()
+            return startMonitoring(recoverAfterProcessDeath = true)
+        }
+        return when (intent.action.backgroundTransportAction(packageName)) {
             BackgroundTransportAction.STOP -> {
                 stopMonitoring()
                 START_NOT_STICKY
             }
             BackgroundTransportAction.START -> {
-                startMonitoring()
-                START_NOT_STICKY
+                startMonitoring(recoverAfterProcessDeath = false)
             }
             null -> {
                 startFailed = true
@@ -63,7 +67,7 @@ internal class RemoteSessionForegroundService : Service() {
         super.onDestroy()
     }
 
-    private fun startMonitoring() {
+    private fun startMonitoring(recoverAfterProcessDeath: Boolean): Int {
         startFailed = false
         try {
             ServiceCompat.startForeground(
@@ -77,12 +81,12 @@ internal class RemoteSessionForegroundService : Service() {
             Log.e(LOG_TAG, "Background connection service could not enter the foreground")
             relayApplication.backgroundTransport.serviceFailed()
             stopSelf()
-            return
+            return START_NOT_STICKY
         }
 
         serviceScope.launch {
             try {
-                relayApplication.graph.enableBackgroundTransport()
+                relayApplication.graph.enableBackgroundTransport(recoverAfterProcessDeath)
                 relayApplication.backgroundTransport.serviceActivated()
             } catch (cancelled: CancellationException) {
                 throw cancelled
@@ -94,6 +98,7 @@ internal class RemoteSessionForegroundService : Service() {
                 stopSelf()
             }
         }
+        return START_STICKY
     }
 
     private fun stopMonitoring() {

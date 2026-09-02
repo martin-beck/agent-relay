@@ -90,6 +90,15 @@ supported release.
 - Reproducible native speech packaging with exact ELF, ABI, dependency,
   hardening, size, symbol, build-path, TTS-marker, license, notice, provenance,
   and clean-rebuild checks.
+- Explicit sticky foreground connection recovery after ordinary Android process
+  death, constrained by a bounded Keystore-encrypted lease of exact
+  provider-scoped connection keys. Explicit stop clears the lease; malformed
+  starts fail closed; boot, force-stop, and Android user Stop never opt the app
+  back in.
+- API 36 process-death CI evidence that requires a different recreated process,
+  Android's sticky restart result, stable foreground-service ownership, explicit
+  notification Stop, and independent user-Stop and force-stop no-restart
+  behavior.
 
 ### Changed
 
@@ -116,13 +125,15 @@ supported release.
   identity data were removed before private GitHub publication.
 - Published history is scanned for secrets and uses the GitHub no-reply author
   identity.
-- Explicit foreground-service-backed background connections and privacy-safe
-  notification delivery are implemented; live-provider physical-device evidence remains.
+- Explicit foreground-service-backed background connections, encrypted recovery
+  intent, and privacy-safe notification delivery are implemented; live-provider
+  physical-device endurance evidence remains.
 
 ### Known limitations
 
 - The current session hub is an early control surface. Queued/offline input and
   changed-file preview, diff, and batch-export workflows are not yet exposed.
 - Voice input and attachments are not yet integrated with the text composer.
-- Offline speech and process-death recovery are not yet wired into the application.
+- Offline speech is not yet wired into the application; end-to-end process-death
+  and provider endurance evidence remains incomplete.
 - Manual TalkBack/keyboard release audits and production release signing remain.

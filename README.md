@@ -16,10 +16,12 @@ is another, and future connection types can implement the same boundary.
 > Android's system document picker. SSH profiles can route through configured
 > jump hosts, own a persistent non-exportable Android key, install its public
 > half with explicit confirmation, and verify key-only login. Previews, diffs,
-> batch export, offline speech UI and model composition, background
-> process-death recovery, model admission, real-device speech evidence, and
-> release hardening are not complete. Privacy-safe notification delivery and
-> explicit foreground-service-backed connection mode are implemented in the app.
+> batch export, offline speech UI and model composition, model admission,
+> real-device speech evidence, and release hardening are not complete.
+> Privacy-safe notification delivery, explicit foreground-service-backed
+> connection mode, and bounded process-death connection recovery are implemented;
+> API 36 sticky-restart/user-stop/force-stop evidence passes, while final live-
+> provider and representative physical-device endurance evidence remains.
 > A native speech runtime is present but is not yet exposed in the app.
 > The APK is not yet a supported release.
 
@@ -39,7 +41,7 @@ permission to redistribute source code, APKs, or project artifacts.
 | Adaptive Compose UI and app integration | Provider-neutral setup and session launch, typed timeline, durable text composer, capability-gated controls, risk-aware approvals/questions, adaptive-boundary tests, and deterministic UI baselines implemented |
 | Changed files and safe export | Encrypted per-session shelf plus checked single-file export for local and SSH workspaces; previews, diffs, and batch export remain |
 | Offline speech | Verified model delivery/audio boundaries plus a pinned, source-built, TTS-free sherpa-onnx online-recognition adapter for four Android ABIs; the first admitted model, app composition/UI, and device evidence remain |
-| Background operation | Durable privacy-safe alerts plus explicit non-sticky foreground connection mode; final provider/device and process-death evidence remain |
+| Background operation | Durable privacy-safe alerts plus explicit sticky foreground connection mode and encrypted process-death recovery intent; final provider/device endurance evidence remains |
 | Signed release build and distribution | Not available |
 
 Start with the [app workflow catalogue](docs/WORKFLOWS.md) for screenshot-backed
