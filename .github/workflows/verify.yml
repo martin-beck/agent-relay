@@ -18,7 +18,7 @@ jobs:
   verify:
     name: Quality, test, lint, and build
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 60
 
     steps:
       - name: Check out source
@@ -57,46 +57,7 @@ jobs:
           cache-provider: basic
 
       - name: Install pinned Android native toolchain
-        env:
-          CMAKE_ARCHIVE_SHA256: 804d231460ab3c8b556a42d2660af4ac7a0e21c98a7f8ee3318a74b4a9a187a6
-          CMAKE_VERSION: 3.28.3
-          NDK_VERSION: 28.2.13676358
-          NINJA_ARCHIVE_SHA256: b901ba96e486dce377f9a070ed4ef3f79deb45f4ffe2938f8e7ddc69cfb3df77
-          NINJA_VERSION: 1.11.1
-        run: |
-          native_root="$RUNNER_TEMP/agent-relay-native-tools"
-          cmake_asset="cmake-$CMAKE_VERSION-linux-x86_64.tar.gz"
-          cmake_archive="$native_root/$cmake_asset"
-          cmake_url="https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/$cmake_asset"
-          ninja_archive="$native_root/ninja-linux.zip"
-          ninja_url="https://github.com/ninja-build/ninja/releases/download/v$NINJA_VERSION/ninja-linux.zip"
-          mkdir -p "$native_root/cmake" "$native_root/ninja"
-          curl --fail --location --retry 3 --proto '=https' \
-            --output "$cmake_archive" "$cmake_url"
-          curl --fail --location --retry 3 --proto '=https' \
-            --output "$ninja_archive" "$ninja_url"
-          printf '%s  %s\n' "$CMAKE_ARCHIVE_SHA256" "$cmake_archive" \
-            | sha256sum --check --strict
-          printf '%s  %s\n' "$NINJA_ARCHIVE_SHA256" "$ninja_archive" \
-            | sha256sum --check --strict
-          tar -xzf "$cmake_archive" --strip-components=1 -C "$native_root/cmake"
-          unzip -q "$ninja_archive" -d "$native_root/ninja"
-          chmod 0755 "$native_root/ninja/ninja"
-          printf '%s\n' "$native_root/cmake/bin" "$native_root/ninja" >> "$GITHUB_PATH"
-          cmake_actual="$("$native_root/cmake/bin/cmake" --version | sed -n '1s/^cmake version //p')"
-          test "$cmake_actual" = "$CMAKE_VERSION"
-          test "$("$native_root/ninja/ninja" --version)" = "$NINJA_VERSION"
-          android_sdk_root="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
-          test -n "$android_sdk_root"
-          sdkmanager_path="$android_sdk_root/cmdline-tools/latest/bin/sdkmanager"
-          test -x "$sdkmanager_path"
-          ndk_properties="$android_sdk_root/ndk/$NDK_VERSION/source.properties"
-          if [ ! -f "$ndk_properties" ]; then
-            "$sdkmanager_path" --install "ndk;$NDK_VERSION"
-          fi
-          test -f "$ndk_properties"
-          ndk_actual="$(sed -n 's/^Pkg.Revision = //p' "$ndk_properties")"
-          test "$ndk_actual" = "$NDK_VERSION"
+        run: bash scripts/ci/install_android_native_toolchain.sh
 
       - name: Verify pinned offline speech runtime
         run: ./gradlew :speech:sherpa:buildSherpaAndroidRuntime --stacktrace
