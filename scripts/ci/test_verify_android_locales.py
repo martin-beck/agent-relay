@@ -47,6 +47,7 @@ class AndroidLocaleVerifierTest(unittest.TestCase):
             (
                 '<string name="plain">Ready</string>'
                 '<string name="formatted">Open %1$s on %2$s</string>'
+                '<string name="progress">%1$d%% downloaded</string>'
                 '<string name="brand" translatable="false">Agent Relay</string>'
             ),
         )
@@ -55,6 +56,7 @@ class AndroidLocaleVerifierTest(unittest.TestCase):
             (
                 '<string name="plain">Bereit</string>'
                 '<string name="formatted">%1$s auf %2$s öffnen</string>'
+                '<string name="progress">%1$d %% heruntergeladen</string>'
             ),
         )
 
@@ -63,7 +65,7 @@ class AndroidLocaleVerifierTest(unittest.TestCase):
             VERIFY.read_locale_map(self.root / "config/android-locales.txt"),
         )
 
-        self.assertEqual({"en-US": 2, "de": 2}, counts)
+        self.assertEqual({"en-US": 3, "de": 3}, counts)
 
     def test_accepts_language_specific_extra_plural_quantity(self) -> None:
         self.write_catalog(

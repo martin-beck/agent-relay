@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 FORMAT_ARGUMENT = re.compile(
-    r"%(?!%)(?:(?P<position>[1-9][0-9]*)\$)?[-#+ 0,(]*[0-9]*(?:\.[0-9]+)?(?P<kind>[a-zA-Z])"
+    r"(?<!%)%(?!%)(?:(?P<position>[1-9][0-9]*)\$)?[-#+ 0,(]*[0-9]*(?:\.[0-9]+)?(?P<kind>[a-zA-Z])"
 )
 
 
