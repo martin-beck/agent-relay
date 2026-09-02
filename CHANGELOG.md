@@ -66,6 +66,11 @@ supported release.
 - Bounded PCM, foreground capture, on-device inference, synthesis, cancellation,
   and audio-playback adapter boundaries for the future Android/sherpa runtime.
 
+- Generation-safe offline-speech coordination for model operations,
+  transcription capture and review, synthesis and playback, stale stop/cancel
+  rejection, active-model removal, redacted failures, and non-cooperative late
+  callbacks.
+
 ### Changed
 
 - Editing an SSH profile keeps stored secrets unless an explicit replacement or

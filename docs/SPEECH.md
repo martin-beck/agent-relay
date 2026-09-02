@@ -4,9 +4,9 @@
 
 Agent Relay has a pure Kotlin `:speech:api` contract and a tested
 `:speech:android` model store plus hardened network and archive delivery
-adapters. It does not yet ship a production model catalog, `AudioRecord`
-implementation, sherpa-onnx adapter, playback implementation, service
-coordinator, or Compose controls. No voice control should be presented as
+adapters and a generation-safe operation coordinator. It does not yet ship a
+production model catalog, `AudioRecord` implementation, sherpa-onnx adapter,
+playback implementation, or Compose controls. No voice control should be
 usable until those pieces and device evidence are complete.
 
 The contract keeps speech independent from connection and agent providers.
@@ -57,9 +57,15 @@ than stopping a newer capture or playback generation.
 - atomic directory moves where supported, safe fallback moves, obsolete-version
   cleanup, crash-stale staging cleanup, cancellation, and removal;
 - restart and resolution checks that reject a marker without a safe non-empty
-  payload; and
+  payload;
 - bounded signed-16-bit PCM plus generation-scoped capture, inference,
-  synthesis, cancellation, and playback interfaces.
+  synthesis, cancellation, and playback interfaces; and
+- a service coordinator that resolves only ready capability-compatible models,
+  exposes explicit listening/transcribing/result and synthesis/playing states,
+  detaches canceled operation ids before dependency cleanup, rejects stale
+  stop/cancel requests, prevents late callbacks from replacing a newer
+  generation, stops active pipelines before model removal, and maps adapter
+  failures to stable redacted guidance.
 
 The store still receives no model until a caller supplies a catalog descriptor
 that passed the admission gate below. The built-in downloader and decoder are
@@ -152,8 +158,11 @@ because an upstream demo uses it.
   downgrade/loop/private-host rejection, redacted I/O failures, cancellation
   after a blocking read, path traversal, link/sparse/special entries, malformed
   archives, successful decoding, and store-level failure propagation.
-- Reducer/service tests inject late callbacks to prove operation generations
-  cannot affect replacements.
+- Current service-coordinator tests cover reviewed transcription results,
+  unavailable models and invalid playback text, stale stop ids,
+  non-cooperative late recognition callbacks, synthesis/playback transitions,
+  operation-scoped cancellation, active-model removal ordering, and redacted
+  inference failures.
 - Inference adapter tests use small licensed fixtures and never require network
   access.
 - Compose tests cover permission rationale/denial, no-model, download progress,
