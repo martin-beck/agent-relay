@@ -17,7 +17,10 @@ concurrency:
 jobs:
   verify:
     name: Quality, test, lint, and build
-    runs-on: ubuntu-latest
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, linux, x64, agent-relay-ci]
     timeout-minutes: 60
 
     steps:
@@ -197,7 +200,10 @@ jobs:
 
   visual-regression:
     name: Visual regression
-    runs-on: ubuntu-latest
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, linux, x64, agent-relay-ci]
     timeout-minutes: 20
 
     steps:
