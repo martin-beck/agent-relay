@@ -63,9 +63,10 @@ supported release.
   same-host or allowlisted redirects, public-DNS source policy, exact response
   metadata checks, cancellation-safe streaming, and a tar.bz2 decoder that
   rejects malformed paths, links, sparse files, devices, pipes, and bad headers.
-- Bounded PCM, foreground capture, on-device inference, synthesis, cancellation,
-  and audio-playback adapter boundaries for the future Android/sherpa runtime.
-
+- Production Android 16 kHz mono microphone capture and streaming PCM playback
+  with permission checks, transient speech audio focus, pause-on-duck
+  interruption, private output-capture policy, generation fencing, and
+  idempotent platform-resource cleanup.
 - Generation-safe offline-speech coordination for model operations,
   transcription capture and review, synthesis and playback, stale stop/cancel
   rejection, active-model removal, redacted failures, and non-cooperative late

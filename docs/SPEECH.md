@@ -4,10 +4,11 @@
 
 Agent Relay has a pure Kotlin `:speech:api` contract and a tested
 `:speech:android` model store plus hardened network and archive delivery
-adapters and a generation-safe operation coordinator. It does not yet ship a
-production model catalog, `AudioRecord` implementation, sherpa-onnx adapter,
-playback implementation, or Compose controls. No voice control should be
-usable until those pieces and device evidence are complete.
+adapters, a generation-safe operation coordinator, and production Android PCM
+microphone capture and playback boundaries. It does not yet ship a production
+model catalog, sherpa-onnx adapter, application permission/lifecycle wiring, or
+Compose controls. No voice control should be usable until those pieces and
+representative device evidence are complete.
 
 The contract keeps speech independent from connection and agent providers.
 Android model storage and future sherpa-onnx and Compose layers depend on this
@@ -59,7 +60,12 @@ than stopping a newer capture or playback generation.
 - restart and resolution checks that reject a marker without a safe non-empty
   payload;
 - bounded signed-16-bit PCM plus generation-scoped capture, inference,
-  synthesis, cancellation, and playback interfaces; and
+  synthesis, cancellation, and playback interfaces;
+- permission-gated 16 kHz mono `AudioRecord` capture that requests no broad
+  storage access and retains no raw microphone audio;
+- streaming PCM `AudioTrack` playback with transient speech audio focus,
+  pause-on-duck interruption handling, private output-capture policy where
+  supported, and operation-scoped cleanup; and
 - a service coordinator that resolves only ready capability-compatible models,
   exposes explicit listening/transcribing/result and synthesis/playing states,
   detaches canceled operation ids before dependency cleanup, rejects stale
@@ -76,14 +82,15 @@ entry.
 
 ## Remaining implementation boundaries
 
-`:speech:android` must still add:
+The production speech path must still add:
 
 - composition for the first licensed model and its exact reviewed hosts;
-- foreground-only microphone permission and `AudioRecord` capture;
 - resumable network progress and durable download restoration;
-- audio focus, playback routing, and interruption handling;
-- temporary-audio cleanup; and
-- Android lifecycle and permission-denial diagnostics.
+- the pinned native sherpa-onnx inference adapter and audited ABI artifacts;
+- application-layer permission request, rationale, denial, and continuous
+  capture indication;
+- foreground/lifecycle composition and interruption diagnostics; and
+- representative physical-device capture, routing, privacy, and latency evidence.
 
 `:speech:sherpa` will own the pinned native/Kotlin sherpa-onnx adapter and map
 only verified installed model directories into recognizer or synthesizer
@@ -163,6 +170,11 @@ because an upstream demo uses it.
   non-cooperative late recognition callbacks, synthesis/playback transitions,
   operation-scoped cancellation, active-model removal ordering, and redacted
   inference failures.
+- Current Android audio tests cover permission denial before microphone access,
+  owned PCM frames, stale and uncollected capture generations, partial output
+  writes, empty streams, denied focus, format changes, interruption, late focus
+  callbacks, replacement generations, and idempotent resource cleanup without
+  requiring real audio hardware.
 - Inference adapter tests use small licensed fixtures and never require network
   access.
 - Compose tests cover permission rationale/denial, no-model, download progress,
@@ -180,6 +192,9 @@ because an upstream demo uses it.
 - [sherpa-onnx Android guide](https://k2-fsa.github.io/sherpa/onnx/android/index.html)
 - [sherpa-onnx Android build and packaging](https://k2-fsa.github.io/sherpa/onnx/android/build-sherpa-onnx.html)
 - [Android AudioRecord](https://developer.android.com/reference/android/media/AudioRecord)
+- [Android AudioTrack](https://developer.android.com/reference/android/media/AudioTrack)
+- [Android AudioAttributes](https://developer.android.com/reference/android/media/AudioAttributes)
+- [Android audio focus](https://developer.android.com/media/optimize/audio-focus)
 - [Android permission guidance](https://developer.android.com/guide/topics/permissions/overview)
 - [Android sensitive-permission guidance](https://developer.android.com/training/permissions/explaining-access)
 - [Android app-specific storage](https://developer.android.com/training/data-storage/app-specific)
