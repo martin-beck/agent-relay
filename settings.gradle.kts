@@ -30,6 +30,7 @@ plugins {
 }
 include(":speech:api")
 include(":speech:android")
+include(":speech:sherpa")
 include(":session:android")
 include(":session:api")
 include(":storage:android")

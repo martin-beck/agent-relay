@@ -5,16 +5,17 @@
 Agent Relay has a pure Kotlin `:speech:api` contract and a tested
 `:speech:android` model store plus hardened network and archive delivery
 adapters, a generation-safe operation coordinator, and production Android PCM
-microphone capture and playback boundaries. It does not yet ship a production
-model catalog, sherpa-onnx adapter, application permission/lifecycle wiring, or
-Compose controls. No voice control should be usable until those pieces and
-representative device evidence are complete.
+microphone capture and playback boundaries. `:speech:sherpa` adds a pinned,
+source-built, TTS-free sherpa-onnx online-recognition adapter. The app does not
+yet ship a production model catalog, compose that adapter into its lifecycle,
+or expose speech controls. No voice control should be usable until those pieces
+and representative device evidence are complete.
 
 The contract keeps speech independent from connection and agent providers.
-Android model storage and future sherpa-onnx and Compose layers depend on this
-boundary rather than adding microphone or native-inference concerns to session
-state. Package, audio, and inference adapters remain injected so deterministic
-tests do not require a microphone, network, or native model.
+Android model storage, sherpa inference, and future Compose layers depend on
+this boundary rather than adding microphone or native-inference concerns to
+session state. Package, audio, and inference adapters remain injected so
+deterministic tests do not require a microphone, network, or native model.
 
 ## Contract
 
@@ -86,17 +87,31 @@ The production speech path must still add:
 
 - composition for the first licensed model and its exact reviewed hosts;
 - resumable network progress and durable download restoration;
-- the pinned native sherpa-onnx inference adapter and audited ABI artifacts;
+- application composition of the sherpa adapter for an admitted model;
 - application-layer permission request, rationale, denial, and continuous
   capture indication;
 - foreground/lifecycle composition and interruption diagnostics; and
 - representative physical-device capture, routing, privacy, and latency evidence.
 
-`:speech:sherpa` will own the pinned native/Kotlin sherpa-onnx adapter and map
-only verified installed model directories into recognizer or synthesizer
-configuration. It must expose no network client. Native artifacts, build source,
-ABI coverage, notices, and licenses require the same dependency audit as other
-release inputs.
+`:speech:sherpa` now owns the native/Kotlin sherpa-onnx adapter. It:
+
+- accepts only a bounded streaming-transducer model layout under one canonical
+  installed-model directory;
+- maps the model to the upstream online recognizer without a runtime network
+  client or broad filesystem access;
+- normalizes signed 16-bit PCM, bounds decode work and transcript length, and
+  fences stale cancellation, close, and callback generations;
+- verifies pinned sherpa-onnx source and ONNX Runtime downloads before use;
+- relies on the hash declarations inside that verified source for every
+  transitive CMake archive;
+- builds and validates `arm64-v8a`, `armeabi-v7a`, `x86`, and `x86_64` with
+  pinned NDK, CMake, and Ninja versions; and
+- packages exact dependency licenses, ONNX Runtime notices, build provenance,
+  and a license hash manifest inside the AAR's `classes.jar`.
+
+The build disables TTS, speaker diarization, executables, C API, WebSocket,
+Python, PortAudio, vendor accelerators, GPU, and DirectML. See
+[Third-party runtime notices](THIRD_PARTY.md) for the audit boundary.
 
 The application layer will own:
 
@@ -175,8 +190,14 @@ because an upstream demo uses it.
   writes, empty streams, denied focus, format changes, interruption, late focus
   callbacks, replacement generations, and idempotent resource cleanup without
   requiring real audio hardware.
-- Inference adapter tests use small licensed fixtures and never require network
-  access.
+- Sherpa adapter tests use a fake JNI bridge and temporary bounded model layouts;
+  they cover PCM normalization, endpoint/final transcripts, cleanup, path
+  confinement, capability/catalog rejection, stale/current cancellation, close
+  fencing, and decode bounds without network or a real model.
+- The native build verifies exact inputs and packaged files, license hashes,
+  expected ABIs and ELF dependencies, RELRO/NOW, non-executable stacks, no text
+  relocations, 16 KiB LOAD alignment, required online JNI symbols, size bounds,
+  deterministic build IDs, and absence of private build paths or TTS markers.
 - Compose tests cover permission rationale/denial, no-model, download progress,
   ready, listening, transcribing, result-review, playback, interruption, and
   failure states.
@@ -188,6 +209,8 @@ because an upstream demo uses it.
 ## Primary references
 
 - [Apache Commons Compress](https://commons.apache.org/proper/commons-compress/)
+- [ONNX Runtime Android](https://onnxruntime.ai/docs/build/android.html)
+- [Agent Relay third-party runtime notices](THIRD_PARTY.md)
 - [Java HttpURLConnection](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/net/HttpURLConnection.html)
 - [sherpa-onnx Android guide](https://k2-fsa.github.io/sherpa/onnx/android/index.html)
 - [sherpa-onnx Android build and packaging](https://k2-fsa.github.io/sherpa/onnx/android/build-sherpa-onnx.html)

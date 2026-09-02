@@ -19,6 +19,7 @@ bounded mutation fuzzing is scheduled separately.
 | Detekt | Kotlin correctness, complexity, and maintainability findings | Any configured finding fails; no baseline |
 | Android lint | Android and dependency lint checks | Errors and warnings fail; HTML, XML, and SARIF reports |
 | Dependency analysis | Unused, transitive, and incorrectly scoped dependencies | Any advice fails, except one documented public-API edge |
+| Native speech runtime | Pinned source/toolchain, four-ABI ELF hardening, contents, licenses, provenance, and deterministic rebuilds | Any input, build, validation, or packaging drift fails |
 | JVM tests | Unit, contract, concurrency, and persistence behavior | Any failure fails |
 | Device UI tests | Semantic flows and API 34+ accessibility checks | API 36 phone fails pull requests; minimum API and tablet run weekly |
 | Visual regression | Deterministic Roborazzi images across state, size, theme, and font variants | Any pixel drift fails; actual/diff evidence is retained |
@@ -29,6 +30,15 @@ The dependency-analysis exception for `:session:api` is intentionally narrow:
 its public ABI exposes identifiers from `:connection:api`, so that project
 dependency must remain `api` even though bytecode-only analysis recommends
 `implementation`.
+
+The native speech task verifies sherpa-onnx source and ONNX Runtime downloads
+before use, then relies on the hash declarations inside that verified source for
+each transitive CMake archive. It builds with exact NDK, CMake, and Ninja
+versions and rejects unexpected ABIs, libraries, dependencies, files, symbols,
+hardening state, build paths, TTS markers, sizes, or license hashes. Generated
+native outputs and provenance are cacheable only after the task succeeds. A
+changed runtime must also pass a clean byte-for-byte rebuild comparison before
+review.
 
 `OldTargetApi` is the only intentionally disabled app lint issue. Lint derives
 it from the newest SDK installed on a machine, while raising `targetSdk` changes
@@ -193,6 +203,11 @@ JUnit evidence from the app, SSH Android, and storage Android modules, with at
 least 25 discovered and 25 executed tests. This prevents a missing device,
 missing module report, skipped accessibility audit, or accidentally empty suite
 from appearing green.
+
+The workflow invokes those three device-test tasks explicitly. Native-only and
+no-test Android modules remain covered by the quality and build workflow without
+spending the bounded emulator job compiling unrelated native runtimes before
+the required UI evidence can run.
 
 The weekly/manual matrix runs the same suite on the minimum API phone and an
 API 36 tablet. CI artifacts retain reports from every tested module plus the

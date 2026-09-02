@@ -71,6 +71,13 @@ supported release.
   transcription capture and review, synthesis and playback, stale stop/cancel
   rejection, active-model removal, redacted failures, and non-cooperative late
   callbacks.
+- Pinned, source-built, TTS-free sherpa-onnx online-recognition runtime for four
+  Android ABIs with verified source and ONNX Runtime inputs, generated upstream
+  Kotlin JNI bindings, strict installed-model confinement, bounded streaming,
+  and generation-safe cancellation and cleanup.
+- Reproducible native speech packaging with exact ELF, ABI, dependency,
+  hardening, size, symbol, build-path, TTS-marker, license, notice, provenance,
+  and clean-rebuild checks.
 
 ### Changed
 
@@ -85,6 +92,9 @@ supported release.
   report instead of relying on failure-looking log text or an app-only artifact.
 - Pull-request CI now verifies deterministic Roborazzi images on Linux and
   retains actual/diff evidence for review.
+- Pull-request CI now installs the pinned NDK, CMake, and Ninja toolchain and
+   verifies the cacheable four-ABI offline-speech runtime before the remaining
+   quality, test, lint, and assembly gates.
 
 ### Security
 

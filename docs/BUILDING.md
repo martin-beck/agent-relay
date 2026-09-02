@@ -7,6 +7,10 @@ integration.
 
 - JDK 17
 - Android SDK Platform 36
+- Android NDK 28.2.13676358
+- CMake 3.28.3
+- Ninja 1.11.1
+- Bash and standard POSIX build tools
 - Git
 - uv, used to install the repository's locked cross-language check runner
 - An account invited to the private repository
@@ -55,6 +59,35 @@ assembly. The APK is written to:
 ```text
 app/build/outputs/apk/debug/app-debug.apk
 ```
+
+## Offline speech native build
+
+The debug build includes a source-built sherpa-onnx online-recognition runtime.
+Confirm the exact native tools before building:
+
+```bash
+cmake --version
+ninja --version
+grep 'Pkg.Revision = 28.2.13676358' \
+  "$ANDROID_SDK_ROOT/ndk/28.2.13676358/source.properties"
+```
+
+Build and validate the four-ABI runtime directly with:
+
+```bash
+./gradlew :speech:sherpa:buildSherpaAndroidRuntime --stacktrace
+```
+
+The first uncached build normally takes several minutes. Gradle verifies the
+pinned sherpa-onnx source, ONNX Runtime archive, license, and notices before
+extraction. The verified sherpa source in turn pins each transitive CMake
+download by SHA-256. The build rejects unpinned tool versions, unexpected files
+or ELF dependencies, missing hardening, TTS markers, private build paths, and
+license drift. Its cacheable output contains eight native libraries plus exact
+license, notice, and provenance resources; later verification tasks reuse it.
+
+On Windows, `bash`, CMake, and Ninja must be available on `PATH` when Gradle
+invokes the native task. See [Third-party runtime notices](THIRD_PARTY.md).
 
 Run `./gradlew spotlessApply` to repair supported formatting before repeating
 the gate. Pre-commit hooks apply safe formatting repairs locally and return a

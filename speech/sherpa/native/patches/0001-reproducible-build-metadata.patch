@@ -1,0 +1,31 @@
+--- a/cmake/show-info.cmake
++++ b/cmake/show-info.cmake
+@@ -11,20 +11,8 @@
+-find_package(Git QUIET)
+-if(Git_FOUND)
+-  execute_process(COMMAND
+-    "${GIT_EXECUTABLE}" describe --always --abbrev=40
+-    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+-    OUTPUT_VARIABLE SHERPA_ONNX_GIT_SHA1
+-    ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE
+-  )
+-
+-  execute_process(COMMAND
+-    "${GIT_EXECUTABLE}" log -1 --format=%ad --date=local
+-    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+-    OUTPUT_VARIABLE SHERPA_ONNX_GIT_DATE
+-    ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE
+-  )
+-  message(STATUS "sherpa-onnx git sha1: ${SHERPA_ONNX_GIT_SHA1}")
+-  message(STATUS "sherpa-onnx git date: ${SHERPA_ONNX_GIT_DATE}")
+-else()
+-  message(WARNING "git is not found")
++if(NOT DEFINED SHERPA_ONNX_GIT_SHA1)
++  set(SHERPA_ONNX_GIT_SHA1 "unknown")
++endif()
++if(NOT DEFINED SHERPA_ONNX_GIT_DATE)
++  set(SHERPA_ONNX_GIT_DATE "unknown")
+-endif()
++endif()
++message(STATUS "sherpa-onnx git sha1: ${SHERPA_ONNX_GIT_SHA1}")
++message(STATUS "sherpa-onnx git date: ${SHERPA_ONNX_GIT_DATE}")
