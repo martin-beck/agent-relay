@@ -8,7 +8,7 @@ supported release.
 ### Added
 
 - Generic connection-provider contract with SSH and local implementations.
-- Agent adapters for Codex, OpenCode, Continue, Claude, Cline, and Aider.
+- Agent adapters for Codex, OpenCode, OpenDesk, Continue, Claude, Cline, and Aider.
 - Encrypted session hub and provider-neutral runtime coordinator.
 - Android application graph wiring the connection registry, local and SSH
   providers, encrypted session state, coordinator, and agent factories without

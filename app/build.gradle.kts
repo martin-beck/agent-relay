@@ -77,6 +77,7 @@ dependencies {
     implementation(project(":provider:codex"))
     implementation(project(":provider:continue"))
     implementation(project(":provider:opencode"))
+    implementation(project(":provider:opendesk"))
     implementation(project(":session:android"))
     implementation(project(":session:api"))
     implementation(project(":session:runtime"))

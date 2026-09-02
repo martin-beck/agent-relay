@@ -31,13 +31,28 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
+private enum class PendingApprovalKind {
+    PERMISSION,
+    QUESTION,
+}
+
+private data class PendingApproval(
+    val sessionId: AgentSessionId,
+    val kind: PendingApprovalKind,
+    val questionIds: List<String> = emptyList(),
+)
+
 internal class OpenCodeAgentConnection private constructor(
     override val descriptor: AgentProviderDescriptor,
     private val client: OpenCodeClient,
+    private val dialect: OpenCodeProtocolDialect,
+    private val providerName: String,
+    private val metadataNamespace: String,
     dispatcher: CoroutineDispatcher,
 ) : AgentProviderConnection {
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
@@ -45,7 +60,7 @@ internal class OpenCodeAgentConnection private constructor(
     private val mutableEvents = MutableSharedFlow<AgentEvent>(extraBufferCapacity = 256)
     private val sessionDirectories = ConcurrentHashMap<AgentSessionId, String>()
     private val sessionModels = ConcurrentHashMap<AgentSessionId, String>()
-    private val pendingApprovals = ConcurrentHashMap<AgentApprovalId, AgentSessionId>()
+    private val pendingApprovals = ConcurrentHashMap<AgentApprovalId, PendingApproval>()
     private val changedFileCache =
         ConcurrentHashMap<AgentSessionId, LinkedHashMap<String, AgentChangedFile>>()
     private val eventJobs = ConcurrentHashMap<String, Job>()
@@ -54,19 +69,26 @@ internal class OpenCodeAgentConnection private constructor(
     override val events: SharedFlow<AgentEvent> = mutableEvents.asSharedFlow()
 
     override suspend fun refreshSessions(): List<AgentSession> {
-        val directories = discoverDirectories()
         val refreshed = linkedMapOf<AgentSessionId, AgentSession>()
-        directories.forEach { directory ->
-            val statuses = client.get("/session/status", directory).objectOrNull().orEmpty()
-            client.get("/session", directory).arrayOrNull().orEmpty().forEach { element ->
-                val raw = element.objectOrNull() ?: return@forEach
-                val id = raw.string("id") ?: return@forEach
-                val status = statuses[id]?.objectOrNull()?.string("type")
-                val session = OpenCodeSessionMapper.fromJson(raw.withDirectory(directory), status)
-                rememberSession(session, directory)
-                refreshed[session.id] = session
+        if (dialect == OpenCodeProtocolDialect.OPENDESK) {
+            refreshOpenDeskSessions(refreshed)
+        } else {
+            discoverDirectories().forEach { directory ->
+                val statuses = client.get("/session/status", directory).objectOrNull().orEmpty()
+                client.get("/session", directory).arrayOrNull().orEmpty().forEach { element ->
+                    val raw = element.objectOrNull() ?: return@forEach
+                    val id = raw.string("id") ?: return@forEach
+                    val status = statuses[id]?.objectOrNull()?.string("type")
+                    val session = OpenCodeSessionMapper.fromJson(
+                        raw.withDirectory(directory),
+                        status,
+                        descriptor.id,
+                    )
+                    rememberSession(session, directory)
+                    refreshed[session.id] = session
+                }
+                ensureEvents(directory)
             }
-            ensureEvents(directory)
         }
         val result = refreshed.values.sortedByDescending {
             it.updatedAtEpochSeconds ?: it.createdAtEpochSeconds ?: 0
@@ -75,17 +97,39 @@ internal class OpenCodeAgentConnection private constructor(
         return result
     }
 
+    private suspend fun refreshOpenDeskSessions(
+        refreshed: MutableMap<AgentSessionId, AgentSession>,
+    ) {
+        val rawSessions = client.get("/experimental/session?scope=project").arrayOrNull().orEmpty()
+            .mapNotNull { it.objectOrNull() }
+        val statusesByDirectory = mutableMapOf<String?, JsonObject>()
+        rawSessions.map { it.string("directory") }.distinct().forEach { directory ->
+            statusesByDirectory[directory] =
+                client.get("/session/status", directory).objectOrNull() ?: JsonObject(emptyMap())
+            ensureEvents(directory)
+        }
+        rawSessions.forEach { raw ->
+            val id = raw.string("id") ?: return@forEach
+            val directory = raw.string("directory")
+            val status = statusesByDirectory[directory]?.get(id)?.objectOrNull()?.string("type")
+            val session = OpenCodeSessionMapper.fromJson(raw, status, descriptor.id)
+            rememberSession(session, directory)
+            refreshed[session.id] = session
+        }
+    }
+
     override suspend fun attach(sessionId: AgentSessionId): AgentSession {
         val known = mutableSessions.value.firstOrNull { it.id == sessionId }
             ?: refreshSessions().firstOrNull { it.id == sessionId }
-            ?: throw NoSuchElementException("No OpenCode session " + sessionId.value)
+            ?: throw NoSuchElementException("No " + providerName + " session " + sessionId.value)
         val directory = directoryFor(sessionId) ?: known.workingDirectory
         val raw = client.get("/session/" + sessionId.value, directory).objectOrNull()
-            ?: error("OpenCode session detail returned a non-object result")
+            ?: error(providerName + " session detail returned a non-object result")
         val current = mutableSessions.value.firstOrNull { it.id == sessionId }
         val session = OpenCodeSessionMapper.fromJson(
             raw.withDirectory(directory),
             current?.state.toWireStatus(),
+            descriptor.id,
         )
         rememberSession(session, directory)
         ensureEvents(directory)
@@ -98,18 +142,20 @@ internal class OpenCodeAgentConnection private constructor(
         val messages = client.get("/session/" + sessionId.value + "/message", directory)
             .arrayOrNull()
             ?: JsonArray(emptyList())
-        return OpenCodeTranscriptMapper.fromJson(sessionId, messages)
+        return OpenCodeTranscriptMapper.fromJson(sessionId, messages, metadataNamespace)
     }
 
     override suspend fun startSession(options: StartSessionOptions): AgentSession {
         val body = buildJsonObject {
             options.providerOptions["title"]?.let { put("title", it) }
+            options.model?.toModelJson()?.let { put("model", it) }
         }
         val raw = client.post("/session", body, options.workingDirectory).objectOrNull()
-            ?: error("OpenCode session creation returned a non-object result")
+            ?: error(providerName + " session creation returned a non-object result")
         val session = OpenCodeSessionMapper.fromJson(
             raw.withDirectory(options.workingDirectory),
             "idle",
+            descriptor.id,
         )
         rememberSession(session, options.workingDirectory)
         options.model?.let { sessionModels[session.id] = it }
@@ -146,7 +192,7 @@ internal class OpenCodeAgentConnection private constructor(
     }
 
     override suspend fun steerActiveTurn(sessionId: AgentSessionId, text: String) {
-        throw UnsupportedOperationException("OpenCode does not expose active-turn steering")
+        throw UnsupportedOperationException(providerName + " does not expose active-turn steering")
     }
 
     override suspend fun interrupt(sessionId: AgentSessionId) {
@@ -160,26 +206,83 @@ internal class OpenCodeAgentConnection private constructor(
         decision: AgentApprovalDecision,
         answers: Map<String, List<String>>,
     ) {
-        require(answers.isEmpty()) { "OpenCode permission requests do not accept question answers" }
-        val sessionId = pendingApprovals[approvalId]
-            ?: throw NoSuchElementException("No pending OpenCode approval " + approvalId.value)
-        val response = when (decision) {
-            AgentApprovalDecision.APPROVE_ONCE -> "once"
-            AgentApprovalDecision.APPROVE_FOR_SESSION -> "always"
-            AgentApprovalDecision.DECLINE, AgentApprovalDecision.CANCEL -> "reject"
-            AgentApprovalDecision.SUBMIT ->
-                throw IllegalArgumentException("OpenCode permission requests do not support submit")
+        val pending = pendingApprovals[approvalId]
+            ?: throw NoSuchElementException("No pending " + providerName + " approval " + approvalId.value)
+        if (dialect == OpenCodeProtocolDialect.OPENDESK) {
+            respondToOpenDeskApproval(approvalId, pending, decision, answers)
+        } else {
+            require(answers.isEmpty()) { "OpenCode permission requests do not accept question answers" }
+            val response = decision.toPermissionResponse()
+            client.post(
+                "/session/" + pending.sessionId.value + "/permissions/" + approvalId.value,
+                buildJsonObject { put("response", response) },
+                requireDirectoryContext(pending.sessionId),
+            )
         }
-        client.post(
-            "/session/" + sessionId.value + "/permissions/" + approvalId.value,
-            buildJsonObject { put("response", response) },
-            requireDirectoryContext(sessionId),
-        )
-        pendingApprovals.remove(approvalId, sessionId)
-        updateSessionState(sessionId, AgentSessionState.RUNNING)
+        pendingApprovals.remove(approvalId, pending)
+        updateSessionState(pending.sessionId, AgentSessionState.RUNNING)
+    }
+
+    private suspend fun respondToOpenDeskApproval(
+        approvalId: AgentApprovalId,
+        pending: PendingApproval,
+        decision: AgentApprovalDecision,
+        answers: Map<String, List<String>>,
+    ) {
+        val directory = requireDirectoryContext(pending.sessionId)
+        when (pending.kind) {
+            PendingApprovalKind.PERMISSION -> {
+                require(answers.isEmpty()) { "OpenDesk permission requests do not accept question answers" }
+                client.post(
+                    "/permission/" + approvalId.value + "/reply",
+                    buildJsonObject { put("reply", decision.toPermissionResponse()) },
+                    directory,
+                )
+            }
+            PendingApprovalKind.QUESTION -> when (decision) {
+                AgentApprovalDecision.SUBMIT -> {
+                    val orderedAnswers = pending.questionIds.map { questionId ->
+                        requireNotNull(answers[questionId]) { "Missing answer for " + questionId }
+                    }
+                    client.post(
+                        "/question/" + approvalId.value + "/reply",
+                        buildJsonObject {
+                            put(
+                                "answers",
+                                buildJsonArray {
+                                    orderedAnswers.forEach { values ->
+                                        add(
+                                            buildJsonArray { values.forEach { add(JsonPrimitive(it)) } },
+                                        )
+                                    }
+                                },
+                            )
+                        },
+                        directory,
+                    )
+                }
+                AgentApprovalDecision.DECLINE, AgentApprovalDecision.CANCEL ->
+                    client.post(
+                        "/question/" + approvalId.value + "/reject",
+                        directory = directory,
+                    )
+                else -> throw IllegalArgumentException("OpenDesk questions require submit or decline")
+            }
+        }
+    }
+
+    private fun AgentApprovalDecision.toPermissionResponse(): String = when (this) {
+        AgentApprovalDecision.APPROVE_ONCE -> "once"
+        AgentApprovalDecision.APPROVE_FOR_SESSION -> "always"
+        AgentApprovalDecision.DECLINE, AgentApprovalDecision.CANCEL -> "reject"
+        AgentApprovalDecision.SUBMIT ->
+            throw IllegalArgumentException(providerName + " permission requests do not support submit")
     }
 
     override suspend fun changedFiles(sessionId: AgentSessionId): List<AgentChangedFile> {
+        check(dialect == OpenCodeProtocolDialect.OPENCODE) {
+            "OpenDesk does not expose provider-reported file changes"
+        }
         val directory = requireDirectoryContext(sessionId)
         val files = OpenCodeDiffMapper.fromJson(
             client.get("/session/" + sessionId.value + "/diff", directory)
@@ -220,7 +323,7 @@ internal class OpenCodeAgentConnection private constructor(
                             mutableEvents.emit(
                                 AgentEvent.Error(
                                     sessionId = it.id,
-                                    message = "OpenCode event stream stopped: " + error.message,
+                                    message = providerName + " event stream stopped: " + error.message,
                                     recoverable = true,
                                 ),
                             )
@@ -248,6 +351,7 @@ internal class OpenCodeAgentConnection private constructor(
                     val session = OpenCodeSessionMapper.fromJson(
                         info.withDirectory(id?.let(::directoryFor)),
                         current?.state.toWireStatus(),
+                        descriptor.id,
                     )
                     rememberSession(session, session.workingDirectory)
                     upsertSession(session)
@@ -262,10 +366,18 @@ internal class OpenCodeAgentConnection private constructor(
             }
         }
 
-        OpenCodeEventMapper.map(raw).forEach { event ->
+        OpenCodeEventMapper.map(raw, dialect, providerName).forEach { event ->
             when (event) {
                 is AgentEvent.ApprovalRequested -> {
-                    pendingApprovals[event.approval.id] = event.sessionId
+                    pendingApprovals[event.approval.id] = PendingApproval(
+                        sessionId = event.sessionId,
+                        kind = if (event.approval.questions.isEmpty()) {
+                            PendingApprovalKind.PERMISSION
+                        } else {
+                            PendingApprovalKind.QUESTION
+                        },
+                        questionIds = event.approval.questions.map { it.id },
+                    )
                     updateSessionState(event.sessionId, AgentSessionState.WAITING_FOR_APPROVAL)
                 }
                 is AgentEvent.FileChanged -> rememberFile(event.sessionId, event.file)
@@ -290,7 +402,7 @@ internal class OpenCodeAgentConnection private constructor(
 
     private fun requireDirectoryContext(sessionId: AgentSessionId): String? {
         if (!sessionDirectories.containsKey(sessionId)) {
-            throw NoSuchElementException("No OpenCode session context for " + sessionId.value)
+            throw NoSuchElementException("No " + providerName + " session context for " + sessionId.value)
         }
         return directoryFor(sessionId)
     }
@@ -322,7 +434,7 @@ internal class OpenCodeAgentConnection private constructor(
         sessionDirectories.remove(sessionId)
         sessionModels.remove(sessionId)
         changedFileCache.remove(sessionId)
-        pendingApprovals.entries.removeIf { it.value == sessionId }
+        pendingApprovals.entries.removeIf { it.value.sessionId == sessionId }
     }
 
     private fun JsonObject.withDirectory(directory: String?): JsonObject {
@@ -360,8 +472,18 @@ internal class OpenCodeAgentConnection private constructor(
         suspend fun create(
             descriptor: AgentProviderDescriptor,
             client: OpenCodeClient,
+            dialect: OpenCodeProtocolDialect = OpenCodeProtocolDialect.OPENCODE,
+            providerName: String = "OpenCode",
+            metadataNamespace: String = "opencode",
             dispatcher: CoroutineDispatcher = Dispatchers.IO,
-        ): OpenCodeAgentConnection = OpenCodeAgentConnection(descriptor, client, dispatcher).also {
+        ): OpenCodeAgentConnection = OpenCodeAgentConnection(
+            descriptor,
+            client,
+            dialect,
+            providerName,
+            metadataNamespace,
+            dispatcher,
+        ).also {
             it.refreshSessions()
         }
     }

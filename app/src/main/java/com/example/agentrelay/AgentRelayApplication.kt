@@ -18,6 +18,7 @@ import dev.agentrelay.provider.clinecli.ClineAgentProviderFactory
 import dev.agentrelay.provider.codex.CodexAgentProviderFactory
 import dev.agentrelay.provider.continuecli.ContinueAgentProviderFactory
 import dev.agentrelay.provider.opencode.OpenCodeAgentProviderFactory
+import dev.agentrelay.provider.opendesk.OpenDeskAgentProviderFactory
 import dev.agentrelay.session.android.AndroidEncryptedSessionHubStore
 import dev.agentrelay.session.api.PersistentSessionHubRepository
 import dev.agentrelay.session.runtime.SessionCoordinator
@@ -151,6 +152,7 @@ internal class AgentRelayGraph(
                     CodexAgentProviderFactory(),
                     ContinueAgentProviderFactory(),
                     OpenCodeAgentProviderFactory(),
+                    OpenDeskAgentProviderFactory(),
                 ),
             )
             val repository = PersistentSessionHubRepository.open(

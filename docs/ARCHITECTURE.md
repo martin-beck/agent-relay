@@ -44,7 +44,7 @@ schema without importing SSH configuration types.
 | `:ssh:jsch` | Maintained JSch transport, direct-tcpip jump chaining, bounded POSIX commands, and canonical SFTP file access |
 | `:ssh:android` | Android SSH persistence, credentials, and non-exportable agent keys |
 | `:provider:api` | Agent descriptors, sessions, events, capabilities, actions, and the generic checked-file contract |
-| `:provider:*` | Codex, OpenCode, Continue, Claude, Cline, and Aider adapters |
+| `:provider:*` | Codex, OpenCode, OpenDesk, Continue, Claude, Cline, and Aider adapters |
 | `:session:api` | Durable provider-neutral session identity and repository |
 | `:session:android` | Encrypted Android session-hub document store |
 | `:session:runtime` | Profile discovery, connection lifecycle, agent discovery, event projection, and actions |
