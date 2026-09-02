@@ -65,6 +65,50 @@ class AndroidLocaleVerifierTest(unittest.TestCase):
 
         self.assertEqual({"en-US": 2, "de": 2}, counts)
 
+    def test_accepts_language_specific_extra_plural_quantity(self) -> None:
+        self.write_catalog(
+            "values",
+            (
+                '<plurals name="files">'
+                '<item quantity="one">%1$d file</item>'
+                '<item quantity="other">%1$d files</item>'
+                "</plurals>"
+            ),
+        )
+        self.write_catalog(
+            "values-de",
+            (
+                '<plurals name="files">'
+                '<item quantity="zero">%1$d Dateien</item>'
+                '<item quantity="one">%1$d Datei</item>'
+                '<item quantity="other">%1$d Dateien</item>'
+                "</plurals>"
+            ),
+        )
+
+        counts = VERIFY.verify_catalogs(
+            self.resources,
+            VERIFY.read_locale_map(self.root / "config/android-locales.txt"),
+        )
+
+        self.assertEqual({"en-US": 1, "de": 1}, counts)
+
+    def test_rejects_missing_required_plural_quantity(self) -> None:
+        self.write_catalog(
+            "values",
+            '<plurals name="files"><item quantity="one">One</item><item quantity="other">Many</item></plurals>',
+        )
+        self.write_catalog(
+            "values-de",
+            '<plurals name="files"><item quantity="other">Viele</item></plurals>',
+        )
+
+        with self.assertRaisesRegex(VERIFY.LocaleError, "missing quantities one"):
+            VERIFY.verify_catalogs(
+                self.resources,
+                VERIFY.read_locale_map(self.root / "config/android-locales.txt"),
+            )
+
     def test_rejects_missing_resource(self) -> None:
         self.write_catalog(
             "values",
@@ -99,6 +143,48 @@ class AndroidLocaleVerifierTest(unittest.TestCase):
         self.write_catalog(
             "values-de",
             '<string name="formatted">%1$s öffnen</string>',
+        )
+
+        with self.assertRaisesRegex(VERIFY.LocaleError, "format arguments differ"):
+            VERIFY.verify_catalogs(
+                self.resources,
+                VERIFY.read_locale_map(self.root / "config/android-locales.txt"),
+            )
+
+    def test_rejects_plural_without_other_quantity(self) -> None:
+        self.write_catalog(
+            "values",
+            '<plurals name="files"><item quantity="one">One</item></plurals>',
+        )
+        self.write_catalog(
+            "values-de",
+            '<plurals name="files"><item quantity="one">Eine</item></plurals>',
+        )
+
+        with self.assertRaisesRegex(VERIFY.LocaleError, "must declare quantity other"):
+            VERIFY.verify_catalogs(
+                self.resources,
+                VERIFY.read_locale_map(self.root / "config/android-locales.txt"),
+            )
+
+    def test_rejects_plural_variant_with_incompatible_arguments(self) -> None:
+        self.write_catalog(
+            "values",
+            (
+                '<plurals name="files">'
+                '<item quantity="one">%1$d file</item>'
+                '<item quantity="other">%1$d files</item>'
+                "</plurals>"
+            ),
+        )
+        self.write_catalog(
+            "values-de",
+            (
+                '<plurals name="files">'
+                '<item quantity="one">%1$d Datei</item>'
+                '<item quantity="other">Dateien</item>'
+                "</plurals>"
+            ),
         )
 
         with self.assertRaisesRegex(VERIFY.LocaleError, "format arguments differ"):

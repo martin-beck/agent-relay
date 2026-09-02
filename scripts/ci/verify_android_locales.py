@@ -24,20 +24,22 @@ class LocaleError(RuntimeError):
 class Resource:
     kind: str
     name: str
-    values: tuple[str, ...]
+    variants: tuple[tuple[str, str], ...]
 
     @property
-    def format_arguments(self) -> collections.Counter[tuple[str, str]]:
-        arguments: collections.Counter[tuple[str, str]] = collections.Counter()
-        implicit_position = 1
-        for value in self.values:
+    def format_arguments(self) -> dict[str, collections.Counter[tuple[str, str]]]:
+        arguments_by_variant: dict[str, collections.Counter[tuple[str, str]]] = {}
+        for variant, value in self.variants:
+            arguments: collections.Counter[tuple[str, str]] = collections.Counter()
+            implicit_position = 1
             for match in FORMAT_ARGUMENT.finditer(value):
                 position = match.group("position")
                 if position is None:
                     position = str(implicit_position)
                     implicit_position += 1
                 arguments[(position, match.group("kind").lower())] += 1
-        return arguments
+            arguments_by_variant[variant] = arguments
+        return arguments_by_variant
 
 
 def read_locale_map(path: Path) -> dict[str, str]:
@@ -70,6 +72,28 @@ def element_text(element: ElementTree.Element) -> str:
     return "".join(element.itertext()).strip()
 
 
+def read_resource_variants(
+    path: Path,
+    element: ElementTree.Element,
+    name: str,
+) -> tuple[tuple[str, str], ...]:
+    if element.tag == "string":
+        return (("", element_text(element)),)
+    variants: list[tuple[str, str]] = []
+    seen_quantities: set[str] = set()
+    for item in element.findall("item"):
+        quantity = item.attrib.get("quantity", "").strip()
+        if quantity not in {"zero", "one", "two", "few", "many", "other"}:
+            raise LocaleError(f"{path}: plurals/{name} has invalid quantity {quantity!r}")
+        if quantity in seen_quantities:
+            raise LocaleError(f"{path}: plurals/{name} repeats quantity {quantity}")
+        seen_quantities.add(quantity)
+        variants.append((quantity, element_text(item)))
+    if "other" not in seen_quantities:
+        raise LocaleError(f"{path}: plurals/{name} must declare quantity other")
+    return tuple(variants)
+
+
 def read_catalog(path: Path) -> dict[tuple[str, str], Resource]:
     try:
         root = ElementTree.parse(path).getroot()
@@ -86,18 +110,38 @@ def read_catalog(path: Path) -> dict[tuple[str, str], Resource]:
             raise LocaleError(f"{path}: unnamed {element.tag} resource")
         if element.attrib.get("translatable") == "false":
             continue
-        values = (
-            (element_text(element),)
-            if element.tag == "string"
-            else tuple(element_text(item) for item in element.findall("item"))
-        )
-        if not values or any(not value for value in values):
+        variants = read_resource_variants(path, element, name)
+        if not variants or any(not value for _, value in variants):
             raise LocaleError(f"{path}: {element.tag}/{name} is empty")
         key = (element.tag, name)
         if key in catalog:
             raise LocaleError(f"{path}: duplicate {element.tag}/{name}")
-        catalog[key] = Resource(element.tag, name, values)
+        catalog[key] = Resource(element.tag, name, variants)
     return catalog
+
+
+def verify_resource_arguments(
+    path: Path,
+    key: tuple[str, str],
+    default_resource: Resource,
+    localized_resource: Resource,
+) -> None:
+    localized_arguments = localized_resource.format_arguments
+    default_arguments = default_resource.format_arguments
+    if default_resource.kind == "plurals":
+        missing_variants = sorted(set(default_arguments) - set(localized_arguments))
+        if missing_variants:
+            kind, name = key
+            raise LocaleError(
+                f"{path}: {kind}/{name} is missing quantities {', '.join(missing_variants)}"
+            )
+    for variant, arguments in localized_arguments.items():
+        expected_arguments = default_arguments.get(variant, default_arguments.get("other"))
+        if arguments == expected_arguments:
+            continue
+        kind, name = key
+        suffix = f"/{variant}" if variant else ""
+        raise LocaleError(f"{path}: format arguments differ for {kind}/{name}{suffix}")
 
 
 def verify_catalogs(
@@ -126,9 +170,7 @@ def verify_catalogs(
                 details.append("extra " + ", ".join(f"{kind}/{name}" for kind, name in extra))
             raise LocaleError(f"{path}: " + "; ".join(details))
         for key, default_resource in default_catalog.items():
-            if catalog[key].format_arguments != default_resource.format_arguments:
-                kind, name = key
-                raise LocaleError(f"{path}: format arguments differ for {kind}/{name}")
+            verify_resource_arguments(path, key, default_resource, catalog[key])
         counts[tag] = len(catalog)
     return counts
 
