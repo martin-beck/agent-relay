@@ -71,7 +71,7 @@ jobs:
         run: |
           set -o pipefail
           python3 scripts/ci/verify_connected_tests.py --root . \
-            --minimum-tests 25 --minimum-executed 25 \
+            --minimum-tests 32 --minimum-executed 32 \
             --require-module app \
             --require-module ssh/android \
             --require-module storage/android | tee -a "$GITHUB_STEP_SUMMARY"
@@ -100,18 +100,18 @@ jobs:
           - name: current-phone
             api-level: 36
             profile: pixel_7_pro
-            minimum-tests: 25
-            minimum-executed: 25
+            minimum-tests: 32
+            minimum-executed: 32
           - name: minimum-phone
             api-level: 28
             profile: pixel_2
-            minimum-tests: 22
-            minimum-executed: 22
+            minimum-tests: 28
+            minimum-executed: 28
           - name: current-tablet
             api-level: 36
             profile: pixel_tablet
-            minimum-tests: 25
-            minimum-executed: 25
+            minimum-tests: 32
+            minimum-executed: 32
 
     steps:
       - name: Check out source
