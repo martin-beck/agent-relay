@@ -109,6 +109,33 @@ repos:
 
   - repo: local
     hooks:
+      - id: vale
+        name: Check terminology and report prose readability with Vale
+        entry: vale
+        language: system
+        files: \.md$
+        exclude: ^\.github/PULL_REQUEST_TEMPLATE\.md$
+        verbose: true
+      - id: radon-complexity
+        name: Report Python cyclomatic complexity with Radon
+        entry: radon cc scripts/ci --show-complexity --average --total-average
+        language: system
+        pass_filenames: false
+        verbose: true
+        files: ^scripts/ci/.*\.py$
+      - id: radon-maintainability
+        name: Report Python maintainability index with Radon
+        entry: radon mi scripts/ci --show
+        language: system
+        pass_filenames: false
+        verbose: true
+        files: ^scripts/ci/.*\.py$
+      - id: lizard-complexity
+        name: Enforce cross-language cyclomatic complexity with Lizard
+        entry: lizard --CCN 20 --warnings_only .
+        language: system
+        pass_filenames: false
+        files: \.(java|kt|kts|py)$
       - id: taplo-format
         name: Check TOML formatting with Taplo
         entry: taplo format

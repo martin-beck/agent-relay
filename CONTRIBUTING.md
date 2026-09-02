@@ -33,7 +33,11 @@ Verify deterministic UI baselines separately:
 
 The repository check applies format-aware parsing, formatting, static analysis,
 schema validation, link validation, spelling, workflow security, and secret
-scanning to every tracked text format. Run relevant focused tests while
+scanning to every tracked text format. It also enforces stable complexity
+ceilings and reports advisory maintainability and prose-readability metrics.
+Do not waive an objective complexity error merely to preserve a large function,
+and do not distort accurate technical language to optimize an advisory score.
+Run relevant focused tests while
 developing. Device-dependent changes also need the appropriate
 `connectedDebugAndroidTest` evidence before release. UI changes must add or
 update the relevant deterministic preview, semantic test, and reviewed

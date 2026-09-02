@@ -53,6 +53,13 @@ supported release.
 - Reproducible Python, Markdown, YAML, TOML, XML, GitHub configuration,
   spelling, link, workflow-security, repository-hygiene, and secret checks that
   run through the same pinned pre-commit gate locally and in CI.
+- Strict Python McCabe, cross-language cyclomatic, and Kotlin cognitive-
+  complexity ceilings, with advisory Radon maintainability reports.
+- Deterministic Vale terminology checks plus advisory active-voice, concise-
+  wording, and seven-formula readability feedback for Markdown.
+- An opt-in, SHA-pinned SonarQube-compatible analysis path that imports Detekt
+  and Kover reports without transmitting private source until trusted
+  repository settings are explicitly configured.
 - Aggregate Kover coverage verification with a 70% line floor.
 - Kotest property checks and bounded Jazzer fuzzing for POSIX command encoding.
 - Auditable offline-speech contracts plus an Android app-private model store

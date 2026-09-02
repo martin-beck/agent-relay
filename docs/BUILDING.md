@@ -12,6 +12,7 @@ integration.
 - Ninja 1.11.1
 - Bash and standard POSIX build tools
 - Git
+- Vale 3.19.0, installed from the official checksum-verified release archive
 - uv, used to install the repository's locked cross-language check runner
 - An account invited to the private repository
 
@@ -59,6 +60,9 @@ assembly. The APK is written to:
 ```text
 app/build/outputs/apk/debug/app-debug.apk
 ```
+
+The repository gate invokes pinned Radon and Lizard versions through uv and
+Vale 3.19.0 through pre-commit. CI verifies Vale's official archive checksum.
 
 ## Offline speech native build
 
@@ -136,6 +140,10 @@ Examples:
 ```bash
 uv run pre-commit run ruff-check --all-files
 uv run pre-commit run mypy --all-files
+uv run pre-commit run vale --all-files
+uv run pre-commit run radon-complexity --all-files
+uv run pre-commit run radon-maintainability --all-files
+uv run pre-commit run lizard-complexity --all-files
 uv run pre-commit run markdownlint-cli2 --all-files
 uv run pre-commit run actionlint --all-files
 uv run pre-commit run zizmor --all-files
@@ -185,6 +193,10 @@ manual dispatch so bounded mutation fuzzing does not slow every pull request.
 The `.github/workflows/ui.yml` job runs semantic UI, accessibility, SSH
 Android, and encrypted-storage tests, then parses each module's JUnit XML instead
 of treating emulator log text as the result.
+Sonar analysis is present but opt-in because a hosted service receives private
+source. See [Quality and safety](QUALITY.md#optional-centralized-analysis) for
+the required trusted variables, secret, and fail-safe behavior.
+
 The scheduled `.github/workflows/links.yml` workflow performs the networked
 external-link check; pull requests use deterministic offline path and fragment
 validation.

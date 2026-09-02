@@ -32,7 +32,7 @@ permission to redistribute source code, APKs, or project artifacts.
 | SSH connection provider and profile setup | Encrypted credentials, strict per-hop host keys, configured jump routes, persistent Android keys, confirmed public-key installation, and key-only probes implemented; final real-device evidence remains |
 | Codex, OpenCode, Continue, Claude, Cline, and Aider adapters | Implemented with contract tests; live checks where available |
 | Encrypted session hub and runtime coordinator | Implemented and unit tested |
-| Quality gates | Detekt, strict lint/Kotlin warnings, dependency analysis, 70% aggregate coverage, Roborazzi visual regression, property tests, and bounded fuzzing |
+| Quality gates | Detekt, Ruff, Radon, Lizard, Vale, strict compiler/lint checks, dependency analysis, 70% coverage, visual regression, property tests, and bounded fuzzing |
 | Adaptive Compose UI and app integration | Provider-neutral setup and session launch, typed timeline, durable text composer, capability-gated controls, risk-aware approvals/questions, adaptive-boundary tests, and deterministic UI baselines implemented |
 | Changed files and safe export | Encrypted per-session shelf plus checked single-file export for local and SSH workspaces; previews, diffs, and batch export remain |
 | Offline speech | Verified model delivery/audio boundaries plus a pinned, source-built, TTS-free sherpa-onnx online-recognition adapter for four Android ABIs; the first admitted model, app composition/UI, and device evidence remain |
@@ -49,7 +49,9 @@ Required tools:
 - Android SDK Platform 36;
 - Android NDK 28.2.13676358;
 - CMake 3.28.3 and Ninja 1.11.1;
-- Bash plus standard POSIX build tools; and
+- Bash plus standard POSIX build tools;
+- Vale 3.19.0 for Markdown terminology and readability checks;
+- uv for the locked cross-language repository checks; and
 - Git with access to this private repository.
 
 On Linux or macOS:
@@ -57,6 +59,8 @@ On Linux or macOS:
 ```bash
 git clone https://github.com/martin-beck/agent-relay.git
 cd agent-relay
+uv sync --locked --only-group quality
+uv run pre-commit run --all-files --show-diff-on-failure
 ./gradlew spotlessCheck detekt buildHealth test koverXmlReport koverVerify lintDebug assembleDebug
 ```
 

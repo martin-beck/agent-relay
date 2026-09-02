@@ -5,6 +5,9 @@ config:
 complexity:
   ComplexCondition:
     threshold: 5
+  CognitiveComplexMethod:
+    active: true
+    threshold: 34
   CyclomaticComplexMethod:
     threshold: 21
   LongMethod:

@@ -10,13 +10,15 @@ bounded mutation fuzzing is scheduled separately.
 | --- | --- | --- |
 | Spotless with ktlint | Reproducible Kotlin, Gradle, Markdown, and YAML formatting | Any drift fails |
 | Pre-commit hygiene and EditorConfig | Parseable text files, LF endings, final newlines, indentation, file modes, merge-marker and case-conflict safety | Any finding fails; generated wrappers are not reformatted |
-| Ruff and mypy | Python formatting, imports, defects, modernization, and strict static types | Any finding fails; no type or lint baseline |
+| Ruff, mypy, and Radon | Python formatting, imports, defects, strict static types, McCabe complexity, and maintainability measurements | Ruff and mypy findings fail; complexity above 10 fails; Radon grades and maintainability index remain diagnostic |
+| Lizard | Language-independent cyclomatic complexity for Kotlin, Java, and Python | A function above 20 fails; no warning baseline |
 | markdownlint and Lychee | Portable Markdown structure plus valid local paths and anchors | Any finding fails; external network links run weekly with retries |
+| Vale | Project terminology, active and concise technical prose, and seven readability formulas | Terminology errors fail; voice, wording, and readability scores are advisory |
 | yamllint, Taplo, and schema checks | Deterministic YAML/TOML style and valid GitHub workflow, issue-form, and Dependabot structure | Any finding fails |
 | actionlint and zizmor | GitHub Actions expressions, graph semantics, permissions, injection, and supply-chain safety | Any finding fails; audits run offline on pull requests |
 | Typos and Gitleaks | Source-aware spelling and hard-coded secret detection across tracked text | Any finding fails; suppressions must identify a reviewed false positive narrowly |
 | Kotlin compiler | Type safety and compiler diagnostics | All warnings are errors |
-| Detekt | Kotlin correctness, complexity, and maintainability findings | Any configured finding fails; no baseline |
+| Detekt | Kotlin correctness plus cyclomatic, cognitive, nesting, length, parameter, and size limits | Any configured finding fails; cognitive complexity is ratcheted below 34 and no baseline is used |
 | Android lint | Android and dependency lint checks | Errors and warnings fail; HTML, XML, and SARIF reports |
 | Dependency analysis | Unused, transitive, and incorrectly scoped dependencies | Any advice fails, except one documented public-API edge |
 | Native speech runtime | Pinned source/toolchain, four-ABI ELF hardening, contents, licenses, provenance, and deterministic rebuilds | Any input, build, validation, or packaging drift fails |
@@ -76,9 +78,32 @@ uv run pre-commit install
 ```
 
 The checked-in `uv.lock` pins the pre-commit runner and every hook revision is
-frozen to an immutable commit. Dependabot proposes uv and pre-commit updates;
+frozen to an immutable commit. It also pins Radon and Lizard. CI installs Vale
+3.19.0 from its official release archive only after verifying the pinned
+SHA-256 checksum; developers install that same version locally. Dependabot proposes uv
+and pre-commit updates;
 review the upstream release notes and the generated configuration diff before
 accepting them.
+
+## Complexity and readability policy
+
+Thresholds block changes only when the measurement has a stable interpretation
+and a practical remediation. Ruff rejects Python functions above McCabe
+complexity 10. Lizard independently rejects Kotlin, Java, or Python functions
+above cyclomatic complexity 20. Detekt remains authoritative for Kotlin and
+adds a cognitive-complexity ceiling of 34 to its existing cyclomatic and
+structural limits. The initial ceiling is one point above the measured maximum
+of 33, so any regression fails without adding a baseline that could mask later
+changes to an existing method.
+
+Radon reports each Python block's rank and every Python file's maintainability
+index. Vale reports Automated Readability, Coleman-Liau, Flesch-Kincaid,
+Flesch Reading Ease, Gunning Fog, LIX, and SMOG measurements. Those aggregate
+scores are diagnostic, not pass/fail gates: identifiers, commands, protocol
+names, and necessary security language can legitimately make technical text or
+small support scripts score poorly. Review a regression in context instead of
+rewriting accurate material to satisfy a universal grade target. Vale's narrow
+terminology rules remain errors because their corrections are deterministic.
 
 ## Format-specific policy
 
@@ -87,17 +112,24 @@ projects, while keeping source diffs semantic and reviewable.
 
 - **Kotlin and Kotlin DSL:** Spotless owns formatting through ktlint. The Kotlin
   compiler treats warnings as errors, Detekt covers maintainability and likely
-  defects, and dependency analysis checks module declarations.
+  defects, Lizard supplies a second language-independent complexity view, and
+  dependency analysis checks module declarations.
 - **Python:** Ruff owns formatting, import ordering, common defect checks, and
-  safe modernization for Python 3.12. Mypy runs in strict mode with unreachable
-  code diagnostics. Python support scripts retain focused `unittest` coverage;
-  formatting or typing success never substitutes for executing them.
+  safe modernization for Python 3.12, including a McCabe ceiling. Mypy runs in
+  strict mode with unreachable code diagnostics. Radon records cyclomatic rank
+  and maintainability index, while Lizard independently checks complexity.
+  Python support scripts retain focused `unittest` coverage; formatting,
+  typing, or metric success never substitutes for executing them.
 - **Markdown:** Standalone documents use an ATX H1 followed by ordered heading
   levels, fenced code blocks with a language, consistent list indentation, and
   portable tables. Duplicate headings are permitted only under different
   parents. Line length is not enforced because URLs, tables, and copyable
   commands must remain intact. The pull-request template is intentionally a
   fragment and is excluded from the standalone-document heading rule.
+  Vale rejects known project-term casing errors and advises on passive voice,
+  wordiness, and readability. Fenced and inline code are excluded from prose
+  scoring. Vendored style definitions make the check deterministic and their
+  upstream licenses are retained beside them.
 - **YAML:** Two-space indentation and a 120-column ceiling apply. A leading
   document marker is optional, and GitHub's top-level `on` key is accepted.
   Generic YAML parsing and yamllint are supplemented with vendored JSON Schemas
@@ -146,6 +178,10 @@ uv run pre-commit run lychee-online --hook-stage manual --all-files
 Generate human-readable reports while investigating:
 
 ```bash
+uv run radon cc scripts/ci --show-complexity --average --total-average
+uv run radon mi scripts/ci --show
+uv run lizard --CCN 20 --warnings_only .
+uv run pre-commit run vale --all-files
 ./gradlew detekt koverHtmlReport lintDebug
 ```
 
@@ -157,10 +193,33 @@ Verify the committed UI baselines separately:
 
 Reports are written below `build/reports/detekt`,
 `build/reports/dependency-analysis`, `build/reports/kover`, and
-`build/reports/problems`, plus each Android module's `build/reports` directory.
-CI retains them for 14 days.
+`build/reports/problems`, plus `build/reports/quality` and each Android
+module's `build/reports` directory. CI retains them for 14 days.
 Repository-format findings are emitted directly in the pre-commit and GitHub
 Actions logs with file and line information.
+
+## Optional centralized analysis
+
+The repository contains a SonarQube-compatible project definition and a
+SHA-pinned scanner step. Analysis is disabled by default. This is deliberate:
+enabling a hosted analyzer for a private repository sends source and metrics to
+another service and therefore requires an explicit repository-owner decision.
+
+To enable either SonarQube Server or SonarQube Cloud, configure these trusted
+repository settings:
+
+- variable `SONAR_PROJECT_KEY`;
+- variable `SONAR_HOST_URL`;
+- optional variable `SONAR_ORGANIZATION`; and
+- secret `SONAR_TOKEN`.
+
+The workflow validates that the token exists before scanning. It skips Sonar on
+Dependabot and untrusted-fork pull requests, where repository secrets are not
+available. Do not put any of those values in
+`sonar-project.properties`, source files, workflow arguments, or logs. The
+scanner imports the Kover XML coverage and Detekt XML findings produced earlier
+in the same job. The local deterministic gates remain authoritative even when a
+Sonar server is unavailable.
 
 Gradle 9 currently produces a problems report because the pinned Detekt 1.23.8
 plugin calls a reporting API scheduled for removal in Gradle 10.
