@@ -1,0 +1,110 @@
+package com.example.agentrelay
+
+import android.app.Application
+import android.content.Context
+import android.content.res.Configuration
+import android.view.View
+import java.util.Locale
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
+import org.robolectric.annotation.Config
+import org.xmlpull.v1.XmlPullParser
+
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [35])
+class LocalizedResourcesTest {
+
+    private val application: Application
+        get() = RuntimeEnvironment.getApplication()
+
+    @Test
+    fun bundledLocalesResolveTheirNotificationPermissionCopy() {
+        val english = application.getString(R.string.notification_permission_allow)
+
+        EXPECTED_ALLOW_LABELS.forEach { (languageTag, expected) ->
+            val localized = localizedContext(languageTag)
+                .getString(R.string.notification_permission_allow)
+
+            assertEquals(languageTag, expected, localized)
+            assertNotEquals(languageTag, english, localized)
+        }
+    }
+
+    @Test
+    fun generatedLocaleConfigDeclaresRealAndPseudoLocales() {
+        val resourceId = application.resources.getIdentifier(
+            "_generated_res_locale_config",
+            "xml",
+            application.packageName,
+        )
+        assertNotEquals(0, resourceId)
+
+        val declared = buildSet {
+            application.resources.getXml(resourceId).use { parser ->
+                while (parser.next() != XmlPullParser.END_DOCUMENT) {
+                    if (parser.eventType == XmlPullParser.START_TAG && parser.name == "locale") {
+                        add(parser.getAttributeValue(ANDROID_NAMESPACE, "name"))
+                    }
+                }
+            }
+        }
+
+        assertEquals(EXPECTED_GENERATED_LOCALES, declared)
+    }
+
+    @Test
+    fun arabicResourcesUseRightToLeftLayoutDirection() {
+        val configuration = localizedContext("ar").resources.configuration
+
+        assertEquals(View.LAYOUT_DIRECTION_RTL, configuration.layoutDirection)
+    }
+
+    private fun localizedContext(languageTag: String): Context {
+        val configuration = Configuration(application.resources.configuration)
+        configuration.setLocale(Locale.forLanguageTag(languageTag))
+        return application.createConfigurationContext(configuration)
+    }
+
+    private companion object {
+        const val ANDROID_NAMESPACE = "http://schemas.android.com/apk/res/android"
+
+        val EXPECTED_GENERATED_LOCALES = setOf(
+            "en-US",
+            "ar",
+            "bn",
+            "de",
+            "es",
+            "fr",
+            "hi",
+            "in",
+            "it",
+            "ja",
+            "pt-BR",
+            "ru",
+            "zh-CN",
+            "zh-TW",
+            "en-XA",
+            "ar-XB",
+        )
+
+        val EXPECTED_ALLOW_LABELS = mapOf(
+            "de" to "Benachrichtigungen erlauben",
+            "zh-CN" to "允许通知",
+            "zh-TW" to "允許通知",
+            "ru" to "Разрешить уведомления",
+            "es" to "Permitir notificaciones",
+            "it" to "Consenti notifiche",
+            "fr" to "Autoriser les notifications",
+            "pt-BR" to "Permitir notificações",
+            "hi" to "सूचनाओं की अनुमति दें",
+            "ar" to "السماح بالإشعارات",
+            "bn" to "বিজ্ঞপ্তির অনুমতি দিন",
+            "id" to "Izinkan notifikasi",
+            "ja" to "通知を許可",
+        )
+    }
+}

@@ -25,6 +25,9 @@ android {
     }
 
     buildTypes {
+        getByName("debug") {
+            isPseudoLocalesEnabled = true
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
@@ -39,6 +42,9 @@ android {
         aidl = false
         buildConfig = false
         shaders = false
+    }
+    androidResources {
+        generateLocaleConfig = true
     }
 
     packaging {

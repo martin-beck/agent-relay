@@ -1,0 +1,14 @@
+en-US=values
+de=values-de
+zh-Hans=values-zh-rCN
+zh-Hant=values-zh-rTW
+ru=values-ru
+es=values-es
+it=values-it
+fr=values-fr
+pt-BR=values-pt-rBR
+hi=values-hi
+ar=values-ar
+bn=values-bn
+id=values-in
+ja=values-ja
