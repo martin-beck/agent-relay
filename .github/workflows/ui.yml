@@ -58,15 +58,14 @@ jobs:
           arch: x86_64
           profile: pixel_7_pro
           disable-animations: true
-          script: |
-            set -eu
-            adb wait-for-device
-            test "$(adb shell getprop sys.boot_completed)" = "1"
-            ./gradlew \
-              :app:connectedDebugAndroidTest \
-              :ssh:android:connectedDebugAndroidTest \
-              :storage:android:connectedDebugAndroidTest \
-              --stacktrace
+          script: >-
+            adb wait-for-device &&
+            test "$(adb shell getprop sys.boot_completed)" = "1" &&
+            ./gradlew
+            :app:connectedDebugAndroidTest
+            :ssh:android:connectedDebugAndroidTest
+            :storage:android:connectedDebugAndroidTest
+            --stacktrace
 
       - name: Verify connected-test evidence
         run: |
@@ -149,15 +148,14 @@ jobs:
           arch: x86_64
           profile: ${{ matrix.profile }}
           disable-animations: true
-          script: |
-            set -eu
-            adb wait-for-device
-            test "$(adb shell getprop sys.boot_completed)" = "1"
-            ./gradlew \
-              :app:connectedDebugAndroidTest \
-              :ssh:android:connectedDebugAndroidTest \
-              :storage:android:connectedDebugAndroidTest \
-              --stacktrace
+          script: >-
+            adb wait-for-device &&
+            test "$(adb shell getprop sys.boot_completed)" = "1" &&
+            ./gradlew
+            :app:connectedDebugAndroidTest
+            :ssh:android:connectedDebugAndroidTest
+            :storage:android:connectedDebugAndroidTest
+            --stacktrace
 
       - name: Verify connected-test evidence
         run: |
