@@ -24,6 +24,7 @@ bounded mutation fuzzing is scheduled separately.
 | Native speech runtime | Pinned source/toolchain, four-ABI ELF hardening, contents, licenses, provenance, and deterministic rebuilds | Any input, build, validation, or packaging drift fails |
 | JVM tests | Unit, contract, concurrency, and persistence behavior | Any failure fails |
 | Device UI tests | Semantic flows and API 34+ accessibility checks | API 36 phone fails pull requests; minimum API and tablet run weekly |
+| Executable workflow guide | Scenario contracts, generated pages, reviewed emulator captures, and strict site build | Missing, orphaned, stale, oversized, malformed, or materially changed evidence fails |
 | Visual regression | Deterministic Roborazzi images across state, size, theme, and font variants | Any pixel drift fails; actual/diff evidence is retained |
 | Kover | Aggregate JVM-testable line coverage across modules | Less than 70% fails |
 | Debug assembly | Packaging and resource integration | Any failure fails |
@@ -66,7 +67,7 @@ domain or orchestration logic to meet the percentage.
 Run the full local gate:
 
 ```bash
-uv sync --locked --only-group quality
+uv sync --locked --only-group quality --only-group docs
 uv run pre-commit run --all-files --show-diff-on-failure
 ./gradlew spotlessCheck detekt buildHealth test koverXmlReport koverVerify lintDebug assembleDebug --stacktrace
 ```
@@ -104,6 +105,35 @@ names, and necessary security language can legitimately make technical text or
 small support scripts score poorly. Review a regression in context instead of
 rewriting accurate material to satisfy a universal grade target. Vale's narrow
 terminology rules remain errors because their corrections are deterministic.
+
+## Workflow evidence policy
+
+Ten ordered YAML manifests define the user goal, preconditions, automatic work,
+human-attention boundary, recovery behavior, and visible steps for every
+catalogue scenario. The renderer rejects duplicate or unsafe identifiers,
+missing required fields, screenshots on planned behavior, and verified steps
+without screenshots or alt text. Generated Markdown must be committed exactly as
+rendered.
+
+Six currently implemented journeys produce 14 screenshots from semantic API 36
+instrumentation. Fixtures use synthetic hosts, identities, commands, paths, and
+sessions and exist only in `androidTest`. The workflow requires exactly the
+manifest-declared PNG set; missing and orphaned files both fail. Each PNG must be
+at least 320 by 480 pixels, valid PNG data, and no larger than 1 MiB.
+
+The comparison tolerates only minor rasterization noise. Per-channel differences
+of 16 or less are ignored. The check fails when more than 1% of pixels exceed
+that tolerance or the four-channel root-mean-square difference exceeds 4.0.
+These thresholds are strict because the canonical emulator, 1080 by 2400
+display, 420 dpi, light theme, US locale, UTC time zone, and font scale are fixed.
+A failing comparison retains the pixel diff for review.
+
+The normal repository gate validates manifests, generated pages, baseline
+integrity, Python tests, and a strict MkDocs build without an emulator. The
+required API 36 UI job additionally captures and compares the running app,
+retains the current images, metrics, and diffs, and publishes a downloadable
+static-site artifact. A planned workflow remains text-only until its semantic
+journey passes and its screenshots receive explicit review.
 
 ## Format-specific policy
 
@@ -178,8 +208,8 @@ uv run pre-commit run lychee-online --hook-stage manual --all-files
 Generate human-readable reports while investigating:
 
 ```bash
-uv run radon cc scripts/ci --show-complexity --average --total-average
-uv run radon mi scripts/ci --show
+uv run radon cc scripts/ci scripts/docs --show-complexity --average --total-average
+uv run radon mi scripts/ci scripts/docs --show
 uv run lizard --CCN 20 --warnings_only .
 uv run pre-commit run vale --all-files
 ./gradlew detekt koverHtmlReport lintDebug
@@ -259,9 +289,14 @@ Compose Accessibility Test Framework checks on an API 36 phone for every pull
 request and push to `main`. The emulator script explicitly verifies completed
 Android boot before starting Gradle. A separate XML parser then requires clean
 JUnit evidence from the app, SSH Android, and storage Android modules, with at
-least 32 discovered and 32 executed tests. This prevents a missing device,
+least 33 discovered and 33 executed tests. This prevents a missing device,
 missing module report, skipped accessibility audit, or accidentally empty suite
 from appearing green.
+
+That API 36 job also captures the six verified usage journeys, requires all 14
+reviewed screenshots to remain within the documented thresholds, and performs a
+strict static-site build. It retains captures, metrics, diffs, reports, and the
+downloadable browsable guide for 14 days.
 
 The workflow invokes those three device-test tasks explicitly. Native-only and
 no-test Android modules remain covered by the quality and build workflow without
@@ -271,7 +306,7 @@ the required UI evidence can run.
 The weekly/manual matrix runs the same suite on the minimum API phone and an
 API 36 tablet. CI artifacts retain reports from every tested module plus the
 Gradle problems report. The API 28 run filters out the four API 34+
-accessibility-framework audits and requires all 28 remaining device tests. The
+accessibility-framework audits and requires all 29 remaining device tests. The
 external-keyboard composer flow enters non-touch focus mode, verifies forward
 Tab and reverse Shift+Tab traversal without draft mutation, activates both
 focused turn controls with Enter, and restores the original touch mode. The new

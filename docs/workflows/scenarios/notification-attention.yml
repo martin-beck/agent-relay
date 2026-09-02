@@ -1,0 +1,34 @@
+id: notification-attention
+title: Follow a notification to the required action
+summary: Open the exact session and request that needs attention without searching through background work.
+status: planned
+order: 6
+goal: Turn a background attention event into one clear, context-rich human decision.
+preconditions:
+  - Background session observation is enabled with user consent.
+  - A durable provider request has a stable identity and requires a response.
+automatic:
+  - Agent Relay deduplicates the event and applies the configured notification policy.
+  - The notification contains no credential, raw command, host, or private path.
+  - Opening it deep-links to the current durable request rather than stale display data.
+attention:
+  - Review the full request context inside the app.
+  - Choose only a provider-supported response.
+  - Return to other work after the app confirms the outcome.
+recovery:
+  - A withdrawn or completed request opens its resolved audit state.
+  - A disconnected provider shows the last safe state and reconnect guidance.
+  - Duplicate notifications never create duplicate responses.
+steps:
+  - id: receive-notification
+    title: Receive a minimal attention signal
+    action: Let a background session reach an approval, question, failure, or completion policy.
+    expected: Android shows one privacy-preserving notification for the durable event.
+  - id: open-exact-request
+    title: Open the exact request
+    action: Select the notification.
+    expected: Agent Relay opens the matching connection, session, and still-current request.
+  - id: resolve-and-return
+    title: Resolve and return to quiet operation
+    action: Review the full context and make the available decision.
+    expected: The notification clears after durable resolution and background work resumes.

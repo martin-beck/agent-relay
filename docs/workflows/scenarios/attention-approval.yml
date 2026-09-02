@@ -1,0 +1,41 @@
+id: attention-approval
+title: Resolve an agent approval or question
+summary: Move from an attention signal to a scoped, auditable provider response.
+status: verified
+order: 3
+goal: Answer a provider request once, with enough context to understand its scope and risk.
+preconditions:
+  - A session is waiting for an approval or provider question.
+  - The provider supplied the available decisions and question options.
+automatic:
+  - Agent Relay groups the request under Approvals and questions.
+  - It preserves provider values while showing safe human-readable labels.
+  - It persists the selected response before delivery and prevents unsafe replay.
+attention:
+  - Review the connection, workspace, command, scope, and risk labels.
+  - Answer every required question.
+  - Confirm a positive sensitive decision a second time.
+recovery:
+  - Cancel or decline when the request is unclear.
+  - Do not retry a response whose delivery is awaiting provider confirmation.
+  - Reconnect or inspect the provider before acting on an uncertain result.
+verified_test: com.example.agentrelay.ui.main.UsageJourneyTest#capturesVerifiedJourneys
+steps:
+  - id: attention-required
+    title: Open the attention request
+    action: Select the session with a pending command approval.
+    expected: The request shows its provider, connection, workspace, command, choices, and risk.
+    screenshot: attention-required.png
+    alt: Agent Relay approval card showing synthetic command scope, risk, and required question.
+  - id: approval-confirmation
+    title: Confirm a sensitive positive response
+    action: Choose the focused test scope, submit the answer, and review the second confirmation.
+    expected: A confirmation dialog repeats the sensitive decision before delivery.
+    screenshot: approval-confirmation.png
+    alt: Agent Relay confirmation dialog for a sensitive synthetic provider response.
+  - id: delivery-pending
+    title: Avoid duplicate delivery
+    action: Observe the request while provider confirmation is pending.
+    expected: Response controls are unavailable and the app tells the user not to retry.
+    screenshot: delivery-pending.png
+    alt: Agent Relay approval card locked while a synthetic response awaits provider confirmation.

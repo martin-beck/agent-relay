@@ -35,17 +35,22 @@ repos:
     hooks:
       - id: ruff-check
         args: ["--fix"]
-        files: ^scripts/ci/.*\.py$
+        files: ^scripts/(ci|docs)/.*\.py$
       - id: ruff-format
         types_or: [python, pyi]
-        files: ^scripts/ci/.*\.py$
+        files: ^scripts/(ci|docs)/.*\.py$
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: 7ff8d35ae36a7d2b968f2f90b4c723e292e594ee  # frozen: v2.3.1
     hooks:
       - id: mypy
         args: ["--config-file=pyproject.toml"]
-        files: ^scripts/ci/.*\.py$
+        additional_dependencies:
+          - Pillow==12.3.0
+          - PyYAML==6.0.3
+          - types-Pillow==10.2.0.20240822
+          - types-PyYAML==6.0.12.20260815
+        files: ^scripts/(ci|docs)/.*\.py$
 
   - repo: https://github.com/adrienverge/yamllint
     rev: cba56bcde1fdd01c1deb3f945e69764c291a6530  # frozen: v1.38.0
@@ -118,24 +123,43 @@ repos:
         verbose: true
       - id: radon-complexity
         name: Report Python cyclomatic complexity with Radon
-        entry: radon cc scripts/ci --show-complexity --average --total-average
+        entry: radon cc scripts/ci scripts/docs --show-complexity --average --total-average
         language: system
         pass_filenames: false
         verbose: true
-        files: ^scripts/ci/.*\.py$
+        files: ^scripts/(ci|docs)/.*\.py$
       - id: radon-maintainability
         name: Report Python maintainability index with Radon
-        entry: radon mi scripts/ci --show
+        entry: radon mi scripts/ci scripts/docs --show
         language: system
         pass_filenames: false
         verbose: true
-        files: ^scripts/ci/.*\.py$
+        files: ^scripts/(ci|docs)/.*\.py$
       - id: lizard-complexity
         name: Enforce cross-language cyclomatic complexity with Lizard
         entry: lizard --CCN 20 --warnings_only .
         language: system
         pass_filenames: false
         files: \.(java|kt|kts|py)$
+      - id: render-usage-workflows
+        name: Render executable usage workflow pages
+        entry: python scripts/docs/render_workflows.py --check
+        language: system
+        pass_filenames: false
+        files: >-
+          ^(docs/workflows/scenarios/.*\.ya?ml|
+          scripts/docs/render_workflows\.py|
+          docs/WORKFLOWS\.md|
+          docs/workflows/.*\.md)$
+      - id: verify-usage-workflow-images
+        name: Verify usage workflow image evidence
+        entry: python scripts/docs/verify_workflows.py
+        language: system
+        pass_filenames: false
+        files: >-
+          ^(docs/workflows/scenarios/.*\.ya?ml|
+          scripts/docs/(render|verify)_workflows\.py|
+          docs/assets/workflows/.*\.png)$
       - id: taplo-format
         name: Check TOML formatting with Taplo
         entry: taplo format

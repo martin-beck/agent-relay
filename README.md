@@ -1,6 +1,7 @@
 # Agent Relay
 
 [![Android verification](https://github.com/martin-beck/agent-relay/actions/workflows/verify.yml/badge.svg)](https://github.com/martin-beck/agent-relay/actions/workflows/verify.yml)
+[![Android UI verification](https://github.com/martin-beck/agent-relay/actions/workflows/ui.yml/badge.svg)](https://github.com/martin-beck/agent-relay/actions/workflows/ui.yml)
 
 Agent Relay is an Android control surface for coding-agent sessions reached
 through pluggable connection providers. SSH is one provider, local device access
@@ -38,7 +39,9 @@ permission to redistribute source code, APKs, or project artifacts.
 | Offline speech | Verified model delivery/audio boundaries plus a pinned, source-built, TTS-free sherpa-onnx online-recognition adapter for four Android ABIs; the first admitted model, app composition/UI, and device evidence remain |
 | Signed release build and distribution | Not available |
 
-See the [product roadmap](docs/PRODUCT_ROADMAP.md) for planned behavior and
+Start with the [app workflow catalogue](docs/WORKFLOWS.md) for screenshot-backed
+current journeys and clearly labeled planned behavior. See the
+[product roadmap](docs/PRODUCT_ROADMAP.md) for delivery order and the
 [architecture guide](docs/ARCHITECTURE.md) for module boundaries.
 
 ## Build
@@ -59,7 +62,7 @@ On Linux or macOS:
 ```bash
 git clone https://github.com/martin-beck/agent-relay.git
 cd agent-relay
-uv sync --locked --only-group quality
+uv sync --locked --only-group quality --only-group docs
 uv run pre-commit run --all-files --show-diff-on-failure
 ./gradlew spotlessCheck detekt buildHealth test koverXmlReport koverVerify lintDebug assembleDebug
 ```
@@ -98,7 +101,8 @@ through Android's system document picker, with progress, cancellation, source
 revision and SHA-256 verification, and best-effort partial-copy cleanup. The app
 requests no broad storage permission. Read [Installing](docs/INSTALLING.md) for
 APK and device instructions and [Usage](docs/USAGE.md) for the exact implemented
-behavior.
+behavior. The [app workflow catalogue](docs/WORKFLOWS.md) shows the critical
+journeys with emulator-captured screens.
 
 ## Design
 

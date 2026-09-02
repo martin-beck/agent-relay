@@ -49,6 +49,11 @@ supported release.
 - Android verification workflow and Dependabot configuration.
 - Build, install, usage, architecture, contribution, security, and release
   documentation.
+- Executable goal-oriented workflow catalogue with ten scenario contracts, six
+  semantic emulator journeys, and 14 reviewed synthetic screenshots.
+- A searchable static usage guide, deterministic capture and comparison tooling,
+  pull-request evidence artifacts, and an explicitly gated public Pages
+  deployment path.
 - Strict Kotlin warning, Detekt, Android lint, and dependency-declaration gates.
 - Reproducible Python, Markdown, YAML, TOML, XML, GitHub configuration,
   spelling, link, workflow-security, repository-hygiene, and secret checks that

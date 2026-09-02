@@ -5,7 +5,8 @@ requires-python = ">=3.12"
 dependencies = []
 
 [dependency-groups]
-quality = ["lizard==1.24.0", "pre-commit==4.6.2", "radon==6.0.1"]
+quality = ["lizard==1.24.0", "mypy==2.3.1", "pre-commit==4.6.2", "radon==6.0.1"]
+docs = ["mkdocs-material>=9.6,<10", "pillow>=11,<13", "pyyaml>=6,<7", "types-pyyaml>=6,<7", "types-pillow>=10,<13"]
 
 [tool.uv]
 package = false

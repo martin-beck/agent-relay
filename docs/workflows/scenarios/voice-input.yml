@@ -1,0 +1,34 @@
+id: voice-input
+title: Capture and review offline voice input
+summary: Turn speech into a draft locally, then let the user review it before any agent receives it.
+status: planned
+order: 9
+goal: Create session input hands-free without sending microphone data to a cloud service.
+preconditions:
+  - A compatible offline speech model is installed and verified.
+  - Microphone permission was granted for an explicit recording action.
+automatic:
+  - Agent Relay records only during a visible foreground capture.
+  - Offline transcription produces a session-local draft and preserves the existing cursor.
+  - Model acquisition verifies size, digest, provenance, and available storage.
+attention:
+  - Start and stop recording explicitly.
+  - Review and edit the transcript before sending or steering.
+  - Approve a model download when no verified local model is available.
+recovery:
+  - Interrupted capture leaves the previous draft intact.
+  - A failed model verification removes the unusable partial artifact.
+  - Denied microphone permission keeps keyboard input fully usable.
+steps:
+  - id: acquire-model
+    title: Prepare an offline model
+    action: Select voice input when no compatible verified model is installed.
+    expected: The app explains the model size and asks before acquiring it.
+  - id: record-locally
+    title: Record with visible control
+    action: Start recording, speak the instruction, and stop recording.
+    expected: A foreground indicator remains visible and audio stays on the device.
+  - id: review-transcript
+    title: Review before delivery
+    action: Edit the generated draft and select Send or Steer active turn.
+    expected: Only the reviewed text reaches the selected agent session.
