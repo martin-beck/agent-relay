@@ -4,6 +4,12 @@ Agent Relay uses complementary checks rather than treating one analyzer as a
 complete security signal. The pull-request workflow runs deterministic checks;
 bounded mutation fuzzing is scheduled separately.
 
+Process-lifecycle tests deterministically verify serialized suspension and
+resume, stale and duplicate request coalescing, retry after failure, and
+detail-free observable failure states. They do not claim Android background
+execution or notification behavior; those require foreground-service and
+device-level evidence in their implementation slices.
+
 ## Pull-request gates
 
 | Gate | Purpose | Failure policy |
@@ -22,7 +28,7 @@ bounded mutation fuzzing is scheduled separately.
 | Android lint | Android and dependency lint checks | Errors and warnings fail; HTML, XML, and SARIF reports |
 | Dependency analysis | Unused, transitive, and incorrectly scoped dependencies | Any advice fails, except one documented public-API edge |
 | Native speech runtime | Pinned source/toolchain, four-ABI ELF hardening, contents, licenses, provenance, and deterministic rebuilds | Any input, build, validation, or packaging drift fails |
-| JVM tests | Unit, contract, concurrency, and persistence behavior | Any failure fails |
+| JVM tests | Unit, contract, concurrency, process-lifecycle, and persistence behavior | Any failure fails |
 | Device UI tests | Semantic flows and API 34+ accessibility checks | API 36 phone fails pull requests; minimum API and tablet run weekly |
 | Executable workflow guide | Scenario contracts, generated pages, reviewed emulator captures, and strict site build | Missing, orphaned, stale, oversized, malformed, or materially changed evidence fails |
 | Visual regression | Deterministic Roborazzi images across state, size, theme, and font variants | Any pixel drift fails; actual/diff evidence is retained |
