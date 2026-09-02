@@ -128,7 +128,7 @@ class UsageJourneyTest {
 
     private fun captureIdentityJourney() {
         showHub(changedIdentityHub())
-        scrollToText("Replace identity")
+        scrollToText("Workshop host")
         capture("host-identity-review", "changed-host-identity.png")
 
         composeTestRule.onNodeWithText("Replace identity").performClick()
@@ -162,7 +162,7 @@ class UsageJourneyTest {
 
     private fun captureSessionJourney() {
         showHub(twoSessionHub())
-        scrollToText("Prepare release notes")
+        scrollToText("Recent sessions")
         capture("session-switching-steering", "session-list.png")
 
         showDetail(interactiveHub())
@@ -182,7 +182,7 @@ class UsageJourneyTest {
 
     private fun captureAttentionOverview() {
         showHub(actionHub())
-        scrollToText("Review in Investigate flaky build")
+        scrollToText("Needs attention")
         capture("attention-overview", "attention-overview.png")
     }
 

@@ -238,10 +238,17 @@ next background transition.
 The application-scope notification runtime serializes lifecycle and snapshot
 changes. It suppresses the initial foreground snapshot, reconciles newly durable
 activity while backgrounded, suppresses again before provider reconnection, and
-can retry current state after permission is granted. Provider connections are
-still suspended when the application enters the background, so this slice does
-not provide continuous remote monitoring while Android keeps the app in the
-background; a foreground-service transport lifecycle remains future work.
+can retry current state after permission is granted.
+
+The ready screen also offers explicit background connection mode after
+notification permission is available. Starting it promotes a non-exported,
+non-sticky remoteMessaging service immediately, shows fixed private status with
+open and stop actions, and keeps provider connections active when the process UI
+moves to the background. Stopping the service while the UI remains backgrounded
+serially suspends the same provider-neutral runtime. The mode never starts from
+a lifecycle callback, boot receiver, or process restart. A coarse state machine
+coalesces duplicate requests, blocks late activation from overriding stop,
+allows retry after a fixed start failure, and never exposes the provider failure.
 
 ## Verification
 
@@ -265,8 +272,12 @@ Coverage proves:
   retry, digest-only PendingIntent routing, and cancellation idempotence;
 - foreground baselining, background-only dispatch, lifecycle serialization,
   permission retry, and cancellation preservation;
+- package-scoped start/stop parsing, duplicate-safe service control, fixed
+  foreground-service channel/content, private manifest declaration, and
+  remoteMessaging type/permission checks;
 - explicit request/rationale/settings permission UI with automated Compose
-  accessibility checks;
+  accessibility checks, plus explicit background start/stop UI and deterministic
+  stopped/active visual baselines;
 - preferences, drafts, inbox state, transcripts, and actions across repository
   reopen;
 - idempotent activity/action replay and bounded mark-read behavior;
@@ -295,7 +306,13 @@ Android test, and two encrypted-storage Android tests. The evidence verifier
 independently checked all three module reports and their exact
 discovered/run/skipped/failure/error counts.
 
+The foreground-service slice separately reran the complete app connected suite
+on the API 36 phone emulator with 25 of 25 tests passing. Its device test proves
+explicit service start, continued active controller state after the Activity
+backgrounds, the fixed foreground notification, notification-action stop, and
+notification removal.
+
 Not yet implemented are queued or offline sending, voice input, changed-file
-preview/diff/batch export, and continuous foreground-service-backed remote
-monitoring. The remaining workflows keep the same provider-neutral capability,
-safe-path, and full-locator boundaries.
+preview/diff/batch export, process-death recovery, and live-provider endurance
+evidence on representative physical devices. The remaining workflows keep the
+same provider-neutral capability, safe-path, and full-locator boundaries.

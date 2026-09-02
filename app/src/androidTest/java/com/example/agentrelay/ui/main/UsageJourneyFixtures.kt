@@ -97,19 +97,28 @@ internal fun deliveringActionHub(): SessionHubUiModel {
 
 internal fun twoSessionHub(): SessionHubUiModel {
     val hub = testHub()
+    val connection = hub.connections.first().copy(
+        status = ConnectionStatus.ONLINE,
+        connectedAgentCount = 2,
+        agentCount = 2,
+        canConnect = false,
+        canDisconnect = true,
+    )
     val first = hub.sessions.single()
     val second = first.copy(
         stableKey = "release-session-key",
         title = "Prepare release notes",
         preview = "Release notes are ready for a final check.",
-        connectionLabel = "Workshop host",
         agentProviderLabel = "Claude Code",
         agentState = AgentSessionState.IDLE,
         unreadCount = 0,
         requiresActionCount = 0,
         isPinned = false,
     )
-    return hub.copy(sessions = listOf(first, second))
+    return hub.copy(
+        connections = listOf(connection),
+        sessions = listOf(first, second),
+    )
 }
 
 internal fun exportCompleteHub(): SessionHubUiModel {

@@ -60,6 +60,7 @@ dependencies {
 
     // Core Android dependencies
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.core.base)
     implementation(libs.androidx.core.ktx)
 
     // Arch Components
@@ -99,6 +100,7 @@ dependencies {
 
     // Local tests: jUnit, coroutines, Android runner
     testImplementation(libs.junit)
+    testImplementation(libs.androidx.test.core)
     testImplementation(libs.androidx.compose.ui.test.junit4)
     testRuntimeOnly(libs.androidx.compose.ui.test.manifest)
     testImplementation(libs.androidx.test.ext.junit)
@@ -111,7 +113,7 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
 
     // Instrumented tests: jUnit rules and runners
-    androidTestRuntimeOnly(libs.androidx.test.core)
+    androidTestImplementation(libs.androidx.test.core)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.test.monitor)

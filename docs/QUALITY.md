@@ -6,9 +6,13 @@ bounded mutation fuzzing is scheduled separately.
 
 Process-lifecycle tests deterministically verify serialized suspension and
 resume, stale and duplicate request coalescing, retry after failure, and
-detail-free observable failure states. They do not claim Android background
-execution or notification behavior; those require foreground-service and
-device-level evidence in their implementation slices.
+detail-free observable failure states. Foreground-service tests separately
+verify strict package-scoped actions, duplicate-safe controller transitions,
+manifest type and permissions, fixed private notification content, and explicit
+start/stop UI. API 36 emulator evidence proves real service start, continued
+active state after the Activity backgrounds, notification stop, and notification
+removal. Live-provider endurance and power/network behavior still require
+representative physical-device release evidence.
 
 ## Pull-request gates
 

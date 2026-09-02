@@ -33,6 +33,8 @@ internal fun MainNavigation(
     onOpenNotificationSettings: () -> Unit = {},
 ) {
     val application = LocalContext.current.applicationContext as AgentRelayApplication
+    val backgroundTransportState by
+        application.backgroundTransport.state.collectAsStateWithLifecycle()
     val mainViewModel = viewModel {
         MainScreenViewModel {
             application.graph.sessionHubRuntime()
@@ -95,6 +97,9 @@ internal fun MainNavigation(
                     notificationPermissionState = notificationPermissionState,
                     onRequestNotificationPermission = onRequestNotificationPermission,
                     onOpenNotificationSettings = onOpenNotificationSettings,
+                    backgroundTransportState = backgroundTransportState,
+                    onStartBackgroundTransport = application.backgroundTransport::start,
+                    onStopBackgroundTransport = application.backgroundTransport::stop,
                     onSaveArtifact = saveArtifact,
                     modifier = Modifier.safeDrawingPadding().padding(16.dp),
                 )

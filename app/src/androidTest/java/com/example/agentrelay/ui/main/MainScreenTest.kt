@@ -233,12 +233,16 @@ class MainScreenTest {
         }
 
         composeTestRule.onNodeWithText("Connections").assertExists()
-        composeTestRule.onNodeWithText("Timeline").assertExists()
-        composeTestRule.onNodeWithText("Cached agent output").assertExists()
-        composeTestRule.onNodeWithText("Changed files").assertExists()
+        val detailPane = composeTestRule.onNodeWithTag(SESSION_DETAIL_PANE_TEST_TAG)
+        detailPane.performScrollToNode(hasText("Changed files"))
+        composeTestRule.onNodeWithText("Changed files").assertIsDisplayed()
         composeTestRule.onNodeWithText("reports/result.txt").performScrollTo().assertIsDisplayed()
         composeTestRule.onNodeWithText("Refresh changed files").performScrollTo().performClick()
         composeTestRule.onNodeWithText("Save copy").performScrollTo().performClick()
+        detailPane.performScrollToNode(hasText("Timeline"))
+        composeTestRule.onNodeWithText("Timeline").assertIsDisplayed()
+        detailPane.performScrollToNode(hasText("Cached agent output"))
+        composeTestRule.onNodeWithText("Cached agent output").assertIsDisplayed()
 
         check(recorder.refreshedArtifactsFor == "session-key")
         check(recorder.savedArtifact == Triple("session-key", "artifact-key", "result.txt"))

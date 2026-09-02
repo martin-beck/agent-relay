@@ -38,4 +38,33 @@
         Open notification settings
     </string>
     <string name="notification_permission_allow">Allow notifications</string>
+    <string name="background_transport_channel_name">Background connection</string>
+    <string name="background_transport_channel_description">
+        Keeps explicitly enabled remote agent connections active
+    </string>
+    <string name="background_transport_notification_title">Agent Relay is connected</string>
+    <string name="background_transport_notification_text">
+        Remote agent connections can remain active in the background
+    </string>
+    <string name="background_transport_public_text">Background connection is active</string>
+    <string name="background_transport_stop">Stop</string>
+    <string name="background_transport_title">Background connection</string>
+    <string name="background_transport_stopped">
+        Connections pause when Agent Relay is not visible.
+    </string>
+    <string name="background_transport_starting">Starting background connection…</string>
+    <string name="background_transport_active">
+        Connections can stay active while you use other apps. A persistent notification lets you
+        stop this at any time.
+    </string>
+    <string name="background_transport_stopping">Stopping background connection…</string>
+    <string name="background_transport_failed">
+        Background connection could not start. Check notification settings and try again.
+    </string>
+    <string name="background_transport_requires_notifications">
+        Allow notifications before starting a background connection.
+    </string>
+    <string name="background_transport_start">Keep connections active</string>
+    <string name="background_transport_retry">Try again</string>
+    <string name="background_transport_stop_button">Stop background connection</string>
 </resources>
