@@ -10,7 +10,6 @@ import dev.agentrelay.speech.api.SpeechModelState
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
-import java.io.OutputStream
 import java.nio.file.AtomicMoveNotSupportedException
 import java.nio.file.Files
 import java.nio.file.LinkOption
@@ -36,13 +35,14 @@ import kotlinx.coroutines.withContext
 class AndroidSpeechModelStore internal constructor(
     private val root: File,
     catalog: List<SpeechModelDescriptor>,
-    private val downloader: SpeechPackageDownloader,
+    downloader: SpeechPackageDownloader,
     private val extractor: SpeechPackageExtractor,
     private val storageCapacity: SpeechStorageCapacity,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : SpeechModelStore {
     private val modelOrder = catalog.map(SpeechModelDescriptor::id)
     private val descriptors = catalog.associateBy(SpeechModelDescriptor::id)
+    private val packageDownloads = DurableSpeechPackageDownload(root, downloader)
     private val stateMonitor = Any()
     private val activeInstallMonitor = Any()
     private val activeInstalls = mutableMapOf<SpeechModelId, Job>()
@@ -147,6 +147,9 @@ class AndroidSpeechModelStore internal constructor(
             activeInstalls[modelId]
         } ?: return
         install.cancelAndJoin()
+        withContext(NonCancellable + dispatcher) {
+            packageDownloads.remove(descriptor)
+        }
         val state = withContext(NonCancellable + dispatcher) {
             if (isReadyDirectory(descriptor)) {
                 SpeechModelAvailability.Ready
@@ -172,6 +175,7 @@ class AndroidSpeechModelStore internal constructor(
             prepareRoot()
             modelDirectories(modelId).forEach(::deleteTree)
             stagingDirectories(modelId).forEach(::deleteTree)
+            packageDownloads.remove(modelId)
         }
         updateAvailability(modelId, SpeechModelAvailability.NotInstalled)
     }
@@ -217,8 +221,10 @@ class AndroidSpeechModelStore internal constructor(
         }
         stagingDirectories(descriptor.id).forEach(::deleteTree)
         val modelPackage = descriptor.modelPackage
+        packageDownloads.removeObsolete(descriptor)
+        val existingBytes = packageDownloads.persistedBytes(descriptor)
         val requiredBytes = try {
-            Math.addExact(modelPackage.downloadSizeBytes, modelPackage.installedSizeBytes)
+            Math.addExact(modelPackage.downloadSizeBytes - existingBytes, modelPackage.installedSizeBytes)
         } catch (_: ArithmeticException) {
             throw SpeechModelInstallException(
                 code = "MODEL_SIZE_INVALID",
@@ -239,9 +245,13 @@ class AndroidSpeechModelStore internal constructor(
         restrictToOwner(staging)
         var activated = false
         try {
-            val packageFile = File(staging, PACKAGE_FILE)
-            downloadPackage(descriptor, packageFile)
-            verifyChecksum(packageFile, modelPackage.sha256)
+            val packageFile = packageDownloads.download(descriptor) { downloadedBytes ->
+                updateAvailability(
+                    descriptor.id,
+                    SpeechModelAvailability.Downloading(downloadedBytes, modelPackage.downloadSizeBytes),
+                )
+            }
+            verifyDownloadedPackage(descriptor, packageFile)
 
             val unpacked = File(staging, UNPACKED_DIRECTORY)
             if (!unpacked.mkdir()) {
@@ -262,42 +272,31 @@ class AndroidSpeechModelStore internal constructor(
             activate(descriptor, unpacked)
             activated = true
         } finally {
-            val cleanupFailure = runCatching { deleteTree(staging) }.exceptionOrNull()
-            if (activated && cleanupFailure != null) {
+            val stagingCleanupFailure = runCatching { deleteTree(staging) }.exceptionOrNull()
+            val partialCleanupFailure = if (activated) {
+                runCatching { packageDownloads.remove(descriptor) }.exceptionOrNull()
+            } else {
+                null
+            }
+            if (activated &&
+                (stagingCleanupFailure != null || partialCleanupFailure != null)
+            ) {
                 rejectCleanupFailure()
             }
         }
     }
 
-    private suspend fun downloadPackage(
+    private fun verifyDownloadedPackage(
         descriptor: SpeechModelDescriptor,
-        target: File,
+        packageFile: File,
     ) {
-        val expectedBytes = descriptor.modelPackage.downloadSizeBytes
-        val installJob = checkNotNull(currentCoroutineContext()[Job]) {
-            "Speech model installation requires a coroutine job"
+        try {
+            verifyChecksum(packageFile, descriptor.modelPackage.sha256)
+        } catch (failure: Throwable) {
+            packageDownloads.remove(descriptor)
+            throw failure
         }
-        FileOutputStream(target).use { fileOutput ->
-            val output = ProgressOutputStream(
-                expectedBytes = expectedBytes,
-                delegate = fileOutput,
-                installJob = installJob,
-                onProgress = { downloadedBytes ->
-                    updateAvailability(
-                        descriptor.id,
-                        SpeechModelAvailability.Downloading(downloadedBytes, expectedBytes),
-                    )
-                },
-            )
-            downloader.download(descriptor, output)
-            installJob.ensureActive()
-            output.flush()
-            fileOutput.fd.sync()
-            output.requireComplete()
-        }
-        restrictToOwner(target)
     }
-
     private fun verifyChecksum(
         packageFile: File,
         expectedSha256: String,
@@ -664,71 +663,8 @@ class AndroidSpeechModelStore internal constructor(
         }
     }
 
-    private class ProgressOutputStream(
-        private val expectedBytes: Long,
-        private val delegate: OutputStream,
-        private val installJob: Job,
-        private val onProgress: (Long) -> Unit,
-    ) : OutputStream() {
-        private var writtenBytes = 0L
-
-        override fun write(value: Int) {
-            ensureCapacity(1)
-            delegate.write(value)
-            progress(1)
-        }
-
-        override fun write(
-            buffer: ByteArray,
-            offset: Int,
-            length: Int,
-        ) {
-            ensureCapacity(length)
-            delegate.write(buffer, offset, length)
-            progress(length)
-        }
-
-        override fun flush() {
-            delegate.flush()
-        }
-
-        override fun close() {
-            flush()
-        }
-
-        fun requireComplete() {
-            if (writtenBytes != expectedBytes) {
-                throw SpeechModelInstallException(
-                    code = "MODEL_DOWNLOAD_INCOMPLETE",
-                    guidance = "The speech model download was incomplete. Retry it.",
-                )
-            }
-        }
-
-        private fun ensureCapacity(length: Int) {
-            installJob.ensureActive()
-            if (length < 0 || writtenBytes > expectedBytes - length) {
-                throw SpeechModelInstallException(
-                    code = "MODEL_DOWNLOAD_INVALID",
-                    guidance = "The speech model download exceeded its declared size.",
-                )
-            }
-        }
-
-        private fun progress(length: Int) {
-            writtenBytes += length
-            onProgress(writtenBytes)
-        }
-    }
-
-    private class SpeechModelInstallException(
-        val code: String,
-        val guidance: String,
-    ) : Exception(guidance)
-
     private companion object {
         const val MODEL_DIRECTORY = "agent-relay-speech-models"
-        const val PACKAGE_FILE = "model.package"
         const val UNPACKED_DIRECTORY = "unpacked"
         const val READY_MARKER = ".agent-relay-ready"
         const val SHA256_CHARACTERS = 64

@@ -47,6 +47,13 @@ than stopping a newer capture or playback generation.
 - exact response-length checks when metadata is present, manual redirect
   handling, finite connect/read timeouts, cancellation checks around blocking
   reads, and redacted delivery failures;
+- app-private durable package prefixes bound to exact catalog model id, checksum,
+  and declared size, with invalid and obsolete partials removed before transfer;
+- resumable HTTPS requests that require exact HTTP 206, remaining-length, and
+  `Content-Range` metadata before appending, restart safely when a host ignores
+  or invalidates Range, and still verify the complete SHA-256 before extraction;
+- capacity accounting that includes only remaining network bytes plus the
+  declared installed size, with explicit cancel/remove clearing partial data;
 - a tar.bz2 decoder that accepts only checksum-valid, stream-contiguous regular
   files and zero-size directories, and rejects malformed paths, links, sparse
   files, devices, pipes, bad headers, and unknown entry kinds;
@@ -86,7 +93,6 @@ entry.
 The production speech path must still add:
 
 - composition for the first licensed model and its exact reviewed hosts;
-- resumable network progress and durable download restoration;
 - application composition of the sherpa adapter for an admitted model;
 - application-layer permission request, rationale, denial, and continuous
   capture indication;
@@ -171,12 +177,15 @@ because an upstream demo uses it.
   unsafe sources, bad checksums, invalid sizes/progress, oversized text, and
   unredacted failure codes.
 - Current model-store tests cover exact activation/restoration/removal, crash
-  staging cleanup, missing ready payload, truncated/oversized downloads, digest
-  mismatch, archive traversal, installed-size limits, no-space failures,
-  cancellation, and checksum-version replacement. PCM/model/synthesis bounds
-  are also tested.
+  staging cleanup, process-restart prefix restoration, strict persisted-byte
+  capacity accounting, safe full restart when Range is unsupported, invalid and
+  obsolete partial cleanup, explicit cancellation cleanup, missing ready
+  payload, truncated/oversized downloads, digest mismatch, archive traversal,
+  installed-size limits, no-space failures, and checksum-version replacement.
+  PCM/model/synthesis bounds are also tested.
 - Current delivery tests use injected HTTP connections and real tar.bz2
-  fixtures to cover timeouts, response metadata, same/cross-host redirects,
+  fixtures to cover timeouts, response metadata, exact validated Range append,
+  ignored or malformed Range restart, same/cross-host redirects,
   downgrade/loop/private-host rejection, redacted I/O failures, cancellation
   after a blocking read, path traversal, link/sparse/special entries, malformed
   archives, successful decoding, and store-level failure propagation.

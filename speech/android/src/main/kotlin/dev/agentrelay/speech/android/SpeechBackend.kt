@@ -59,6 +59,29 @@ fun interface SpeechPackageDownloader {
 }
 
 /**
+ * Outcome of a bounded attempt to append a persisted model-package prefix.
+ */
+enum class SpeechPackageResumeResult {
+    APPENDED,
+    RESTART_REQUIRED,
+}
+
+/**
+ * Extends [SpeechPackageDownloader] for a previously persisted package prefix.
+ *
+ * [offsetBytes] is bound to the exact catalog checksum and size by the model store. Implementations
+ * return [SpeechPackageResumeResult.APPENDED] only after appending bytes from that exact offset.
+ * [SpeechPackageResumeResult.RESTART_REQUIRED] must be returned without writing to [destination].
+ */
+interface ResumableSpeechPackageDownloader : SpeechPackageDownloader {
+    suspend fun resumeDownload(
+        descriptor: SpeechModelDescriptor,
+        offsetBytes: Long,
+        destination: OutputStream,
+    ): SpeechPackageResumeResult
+}
+
+/**
  * Decodes a verified archive through a path-confined sink.
  *
  * Implementations must reject archive link and special-file entries. They receive no destination

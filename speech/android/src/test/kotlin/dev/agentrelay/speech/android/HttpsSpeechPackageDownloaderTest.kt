@@ -46,9 +46,71 @@ class HttpsSpeechPackageDownloaderTest {
         assertTrue(connection.input.opened)
         assertTrue(connection.input.closed)
         assertEquals(
-            listOf(Request(URI(descriptor.modelPackage.downloadUrl), 2_000, 3_000)),
+            listOf(Request(URI(descriptor.modelPackage.downloadUrl), 2_000, 3_000, null)),
             factory.requests,
         )
+    }
+
+    @Test
+    fun validatedRangeResponseAppendsOnlyTheDeclaredRemainder() = runTest {
+        val payload = "model-package".encodeToByteArray()
+        val offsetBytes = 5L
+        val connection = FakeConnection(
+            responseCode = 206,
+            contentLengthBytes = payload.size - offsetBytes,
+            contentRange = "bytes $offsetBytes-${payload.lastIndex}/${payload.size}",
+            input = TrackingInputStream(payload.copyOfRange(offsetBytes.toInt(), payload.size)),
+        )
+        val factory = RecordingConnectionFactory(connection)
+        val destination = ByteArrayOutputStream().apply {
+            write(payload, 0, offsetBytes.toInt())
+        }
+        val descriptor = descriptor(payload)
+
+        assertEquals(
+            SpeechPackageResumeResult.APPENDED,
+            downloader(factory).resumeDownload(descriptor, offsetBytes, destination),
+        )
+
+        assertContentEquals(payload, destination.toByteArray())
+        assertEquals(
+            listOf(Request(URI(descriptor.modelPackage.downloadUrl), 2_000, 3_000, offsetBytes)),
+            factory.requests,
+        )
+        assertTrue(connection.closed)
+        assertTrue(connection.input.closed)
+    }
+
+    @Test
+    fun resumeRejectsIgnoredOrMalformedRangesBeforeWriting() = runTest {
+        val payload = "range-check".encodeToByteArray()
+        val offsetBytes = 3L
+        val responses = listOf(
+            FakeConnection(
+                responseCode = 200,
+                contentLengthBytes = payload.size.toLong(),
+                input = TrackingInputStream(payload),
+            ),
+            FakeConnection(responseCode = 416),
+            FakeConnection(
+                responseCode = 206,
+                contentLengthBytes = payload.size - offsetBytes,
+                contentRange = "bytes 0-${payload.lastIndex}/${payload.size}",
+                input = TrackingInputStream(payload),
+            ),
+        )
+
+        responses.forEach { connection ->
+            val destination = ByteArrayOutputStream()
+            assertEquals(
+                SpeechPackageResumeResult.RESTART_REQUIRED,
+                downloader(RecordingConnectionFactory(connection))
+                    .resumeDownload(descriptor(payload), offsetBytes, destination),
+            )
+            assertEquals(0, destination.size())
+            assertFalse(connection.input.opened)
+            assertTrue(connection.closed)
+        }
     }
 
     @Test
@@ -250,6 +312,7 @@ private data class Request(
     val uri: URI,
     val connectTimeoutMillis: Int,
     val readTimeoutMillis: Int,
+    val offsetBytes: Long?,
 )
 
 private class RecordingConnectionFactory(
@@ -262,8 +325,9 @@ private class RecordingConnectionFactory(
         uri: URI,
         connectTimeoutMillis: Int,
         readTimeoutMillis: Int,
+        offsetBytes: Long?,
     ): SpeechHttpConnection {
-        requests += Request(uri, connectTimeoutMillis, readTimeoutMillis)
+        requests += Request(uri, connectTimeoutMillis, readTimeoutMillis, offsetBytes)
         return remaining.removeAt(0)
     }
 }
@@ -272,6 +336,7 @@ private class FakeConnection(
     override val responseCode: Int,
     override val contentLengthBytes: Long? = null,
     override val redirectLocation: String? = null,
+    override val contentRange: String? = null,
     val input: TrackingInputStream = TrackingInputStream(byteArrayOf()),
 ) : SpeechHttpConnection {
     var closed = false

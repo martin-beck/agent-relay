@@ -182,6 +182,164 @@ class AndroidSpeechModelStoreTest {
     }
 
     @Test
+    fun retryAfterStoreRestartResumesAnExactPersistedPrefix() = runTest {
+        val root = temporaryFolder.newFolder("resume")
+        val payload = "durable-model-package".encodeToByteArray()
+        val prefixSize = 7
+        val descriptor = descriptor(payload)
+        val resumedOffsets = mutableListOf<Long>()
+        var fullDownloads = 0
+        val resumable = object : ResumableSpeechPackageDownloader {
+            override suspend fun download(
+                descriptor: SpeechModelDescriptor,
+                destination: java.io.OutputStream,
+            ) {
+                fullDownloads += 1
+                destination.write(payload, 0, prefixSize)
+                throw SpeechPackageDeliveryException(
+                    code = "MODEL_DOWNLOAD_FAILED",
+                    guidance = "Retry the download.",
+                )
+            }
+
+            override suspend fun resumeDownload(
+                descriptor: SpeechModelDescriptor,
+                offsetBytes: Long,
+                destination: java.io.OutputStream,
+            ): SpeechPackageResumeResult {
+                resumedOffsets += offsetBytes
+                destination.write(payload, offsetBytes.toInt(), payload.size - offsetBytes.toInt())
+                return SpeechPackageResumeResult.APPENDED
+            }
+        }
+        val interrupted = store(
+            root,
+            descriptor,
+            downloader = resumable,
+            extractor = unexpectedExtractor(),
+        )
+
+        interrupted.install(descriptor.id)
+        interrupted.close()
+
+        assertEquals(
+            "MODEL_DOWNLOAD_FAILED",
+            assertIs<SpeechModelAvailability.Failed>(availability(interrupted)).failure.code,
+        )
+        val partial = root.listFiles()
+            .orEmpty()
+            .single { it.name.startsWith(".download-") }
+            .resolve("model.package.partial")
+        assertContentEquals(payload.copyOf(prefixSize), partial.readBytes())
+
+        val restored = store(
+            root,
+            descriptor,
+            downloader = resumable,
+            extractor = modelExtractor(byteArrayOf(1)),
+        )
+        restored.install(descriptor.id)
+
+        assertIs<SpeechModelAvailability.Ready>(availability(restored))
+        assertEquals(1, fullDownloads)
+        assertEquals(listOf(prefixSize.toLong()), resumedOffsets)
+        assertTrue(root.listFiles().orEmpty().none { it.name.startsWith(".download-") })
+    }
+
+    @Test
+    fun unsupportedRangeRestartsSafelyAndAccountsForPersistedBytes() = runTest {
+        val root = temporaryFolder.newFolder("range-restart")
+        val payload = "complete-package".encodeToByteArray()
+        val prefix = payload.copyOf(5)
+        val descriptor = descriptor(payload)
+        val partialDirectory = File(
+            root,
+            ".download-${descriptor.id.value}.${descriptor.modelPackage.sha256}",
+        )
+        assertTrue(partialDirectory.mkdir())
+        File(partialDirectory, "model.package.partial").writeBytes(prefix)
+        var resumes = 0
+        var fullDownloads = 0
+        val resumable = object : ResumableSpeechPackageDownloader {
+            override suspend fun download(
+                descriptor: SpeechModelDescriptor,
+                destination: java.io.OutputStream,
+            ) {
+                fullDownloads += 1
+                destination.write(payload)
+            }
+
+            override suspend fun resumeDownload(
+                descriptor: SpeechModelDescriptor,
+                offsetBytes: Long,
+                destination: java.io.OutputStream,
+            ): SpeechPackageResumeResult {
+                resumes += 1
+                return SpeechPackageResumeResult.RESTART_REQUIRED
+            }
+        }
+        val store = store(
+            root,
+            descriptor,
+            downloader = resumable,
+            extractor = modelExtractor(byteArrayOf(1)),
+            capacity = payload.size - prefix.size + descriptor.modelPackage.installedSizeBytes,
+        )
+
+        store.install(descriptor.id)
+
+        assertIs<SpeechModelAvailability.Ready>(availability(store))
+        assertEquals(1, resumes)
+        assertEquals(1, fullDownloads)
+    }
+
+    @Test
+    fun invalidAndObsoletePersistedPrefixesAreDiscardedBeforeTransfer() = runTest {
+        val root = temporaryFolder.newFolder("invalid-resume")
+        val payload = "validated-package".encodeToByteArray()
+        val descriptor = descriptor(payload)
+        val obsolete = File(root, ".download-${descriptor.id.value}.${"0".repeat(64)}")
+        assertTrue(obsolete.mkdir())
+        File(obsolete, "model.package.partial").writeBytes(byteArrayOf(1))
+        val invalid = File(
+            root,
+            ".download-${descriptor.id.value}.${descriptor.modelPackage.sha256}",
+        )
+        assertTrue(invalid.mkdir())
+        File(invalid, "model.package.partial").writeBytes(payload + 1)
+        var resumed = false
+        val resumable = object : ResumableSpeechPackageDownloader {
+            override suspend fun download(
+                descriptor: SpeechModelDescriptor,
+                destination: java.io.OutputStream,
+            ) {
+                destination.write(payload)
+            }
+
+            override suspend fun resumeDownload(
+                descriptor: SpeechModelDescriptor,
+                offsetBytes: Long,
+                destination: java.io.OutputStream,
+            ): SpeechPackageResumeResult {
+                resumed = true
+                return SpeechPackageResumeResult.APPENDED
+            }
+        }
+        val store = store(
+            root,
+            descriptor,
+            downloader = resumable,
+            extractor = modelExtractor(byteArrayOf(1)),
+        )
+
+        store.install(descriptor.id)
+
+        assertIs<SpeechModelAvailability.Ready>(availability(store))
+        assertFalse(resumed)
+        assertTrue(root.listFiles().orEmpty().none { it.name.startsWith(".download-") })
+    }
+
+    @Test
     fun storageCapacityIsCheckedBeforeDownload() = runTest {
         val root = temporaryFolder.newFolder("capacity")
         val payload = "model".encodeToByteArray()
@@ -252,14 +410,28 @@ class AndroidSpeechModelStoreTest {
         val payload = "cancel-me".encodeToByteArray()
         val descriptor = descriptor(payload)
         val enteredDownload = CompletableDeferred<Unit>()
-        val store = store(
-            root,
-            descriptor,
-            downloader = SpeechPackageDownloader { _, destination ->
+        val resumable = object : ResumableSpeechPackageDownloader {
+            override suspend fun download(
+                descriptor: SpeechModelDescriptor,
+                destination: java.io.OutputStream,
+            ) {
                 destination.write(payload, 0, 1)
                 enteredDownload.complete(Unit)
                 awaitCancellation()
-            },
+            }
+
+            override suspend fun resumeDownload(
+                descriptor: SpeechModelDescriptor,
+                offsetBytes: Long,
+                destination: java.io.OutputStream,
+            ): SpeechPackageResumeResult {
+                error("Cancelled download must not resume")
+            }
+        }
+        val store = store(
+            root,
+            descriptor,
+            downloader = resumable,
             extractor = unexpectedExtractor(),
         )
         val install = launch {
