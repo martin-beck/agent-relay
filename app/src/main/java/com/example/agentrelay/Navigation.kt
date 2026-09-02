@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -13,10 +14,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
+import com.example.agentrelay.ui.main.MainScreenUiState
 import com.example.agentrelay.ui.main.MainScreen
 import com.example.agentrelay.ui.main.MainScreenViewModel
 import com.example.agentrelay.ui.main.SessionDetailRoute
+import com.example.agentrelay.ui.main.SpeechInputUiActions
 import com.example.agentrelay.ui.main.rememberArtifactSaveRequest
+import com.example.agentrelay.ui.main.rememberSpeechStartRequest
 
 @Composable
 fun MainNavigation() {
@@ -28,6 +32,23 @@ fun MainNavigation() {
     }
     val uiState by mainViewModel.uiState.collectAsStateWithLifecycle()
     val saveArtifact = rememberArtifactSaveRequest(mainViewModel)
+    val requestSpeechStart = rememberSpeechStartRequest(
+        onPermissionGranted = mainViewModel.speechActions::start,
+        selectedSessionKey = (uiState as? MainScreenUiState.Ready)?.hub?.selectedSessionKey,
+        onPermissionDenied = mainViewModel.speechActions::permissionDenied,
+    )
+    val speechActions = remember(mainViewModel, requestSpeechStart) {
+        SpeechInputUiActions(
+            selectModel = mainViewModel.speechActions::selectModel,
+            installModel = mainViewModel.speechActions::installModel,
+            cancelModelInstall = mainViewModel.speechActions::cancelModelInstall,
+            requestStart = requestSpeechStart,
+            stop = mainViewModel.speechActions::stop,
+            cancel = mainViewModel.speechActions::cancel,
+            useTranscript = mainViewModel.speechActions::useTranscript,
+            dismiss = mainViewModel.speechActions::dismiss,
+        )
+    }
     val backStack = rememberNavBackStack(Main)
     val onBack: () -> Unit = {
         backStack.removeLastOrNull()
@@ -45,6 +66,7 @@ fun MainNavigation() {
                     onOpenSession = { key ->
                         backStack.add(SessionDetails(key))
                     },
+                    speechActions = speechActions,
                     onSaveArtifact = saveArtifact,
                     modifier = Modifier.safeDrawingPadding().padding(16.dp),
                 )
@@ -64,6 +86,7 @@ fun MainNavigation() {
                     onRefreshArtifacts = mainViewModel.artifactInteractions::refreshArtifacts,
                     onSaveArtifact = saveArtifact,
                     onCancelArtifact = mainViewModel.artifactInteractions::cancelArtifactExport,
+                    speechActions = speechActions,
                     modifier = Modifier.safeDrawingPadding(),
                 )
             }
