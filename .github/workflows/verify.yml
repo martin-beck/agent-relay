@@ -66,6 +66,12 @@ jobs:
           echo "${vale_dir}/bin" >> "${GITHUB_PATH}"
 
       - name: Check every tracked source and document format
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GIT_CONFIG_COUNT: 1
+          GIT_CONFIG_KEY_0: credential.https://github.com.helper
+          GIT_CONFIG_VALUE_0: >-
+            !f() { echo username=x-access-token; echo password="$GITHUB_TOKEN"; }; f
         run: uv run pre-commit run --all-files --show-diff-on-failure
 
       - name: Record complexity reports
