@@ -3,11 +3,11 @@
 ## Status
 
 Agent Relay has a pure Kotlin `:speech:api` contract and a tested
-`:speech:android` backend foundation. It does not yet ship a production model
-catalog, HTTPS downloader, archive decoder, `AudioRecord` implementation,
-sherpa-onnx adapter, playback implementation, service coordinator, or Compose
-controls. No voice control should be presented as usable until those pieces and
-device evidence are complete.
+`:speech:android` model store plus hardened network and archive delivery
+adapters. It does not yet ship a production model catalog, `AudioRecord`
+implementation, sherpa-onnx adapter, playback implementation, service
+coordinator, or Compose controls. No voice control should be presented as
+usable until those pieces and device evidence are complete.
 
 The contract keeps speech independent from connection and agent providers.
 Android model storage and future sherpa-onnx and Compose layers depend on this
@@ -39,6 +39,15 @@ than stopping a newer capture or playback generation.
 
 - app-private no-backup model storage with catalog-order state;
 - injected package download and archive-decoder boundaries;
+- a bounded HTTPS downloader that rejects credentials, fragments, non-public
+  host syntax, non-default ports, downgrade redirects, redirect loops, and
+  cross-host redirects outside an exact reviewed allowlist;
+- exact response-length checks when metadata is present, manual redirect
+  handling, finite connect/read timeouts, cancellation checks around blocking
+  reads, and redacted delivery failures;
+- a tar.bz2 decoder that accepts only checksum-valid, stream-contiguous regular
+  files and zero-size directories, and rejects malformed paths, links, sparse
+  files, devices, pipes, bad headers, and unknown entry kinds;
 - a path-confined extraction sink that exposes no destination directory, accepts
   only bounded relative regular-file/directory entries, and rejects traversal,
   ambiguous paths, duplicates, and oversized payloads;
@@ -52,16 +61,18 @@ than stopping a newer capture or playback generation.
 - bounded signed-16-bit PCM plus generation-scoped capture, inference,
   synthesis, cancellation, and playback interfaces.
 
-The store never receives a model until a caller supplies a catalog descriptor
-that already passed the admission gate below. Download and archive
-implementations must be separately reviewed; the extraction interface cannot
-create a link or special-file entry.
+The store still receives no model until a caller supplies a catalog descriptor
+that passed the admission gate below. The built-in downloader and decoder are
+concrete production boundaries, but no production source or redirect host is
+admitted by default. Alternative implementations remain injected and require
+the same review; the extraction interface cannot create a link or special-file
+entry.
 
 ## Remaining implementation boundaries
 
 `:speech:android` must still add:
 
-- a production HTTPS downloader and reviewed archive decoder;
+- composition for the first licensed model and its exact reviewed hosts;
 - foreground-only microphone permission and `AudioRecord` capture;
 - resumable network progress and durable download restoration;
 - audio focus, playback routing, and interruption handling;
@@ -94,6 +105,12 @@ The application layer will own:
   download.
 - Do not persist raw microphone audio by default. Temporary audio must live in
   app-specific cache and be removed after success, cancellation, or failure.
+- Admit only public HTTPS model hosts. Follow redirects manually and only to the
+  original host or an exact catalog-reviewed host; never forward credentials or
+  downgrade transport.
+- Decode archives only through the confined sink. Reject absolute, ambiguous,
+  traversal, control-character, link, sparse, device, pipe, malformed, and
+  unknown entries before materializing them.
 - Never log audio, recognized text, synthesized text, model paths, or exception
   payloads that can reveal private session content.
 - Verify the declared SHA-256 digest before activating a downloaded package.
@@ -130,6 +147,11 @@ because an upstream demo uses it.
   mismatch, archive traversal, installed-size limits, no-space failures,
   cancellation, and checksum-version replacement. PCM/model/synthesis bounds
   are also tested.
+- Current delivery tests use injected HTTP connections and real tar.bz2
+  fixtures to cover timeouts, response metadata, same/cross-host redirects,
+  downgrade/loop/private-host rejection, redacted I/O failures, cancellation
+  after a blocking read, path traversal, link/sparse/special entries, malformed
+  archives, successful decoding, and store-level failure propagation.
 - Reducer/service tests inject late callbacks to prove operation generations
   cannot affect replacements.
 - Inference adapter tests use small licensed fixtures and never require network
@@ -144,6 +166,8 @@ because an upstream demo uses it.
 
 ## Primary references
 
+- [Apache Commons Compress](https://commons.apache.org/proper/commons-compress/)
+- [Java HttpURLConnection](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/net/HttpURLConnection.html)
 - [sherpa-onnx Android guide](https://k2-fsa.github.io/sherpa/onnx/android/index.html)
 - [sherpa-onnx Android build and packaging](https://k2-fsa.github.io/sherpa/onnx/android/build-sherpa-onnx.html)
 - [Android AudioRecord](https://developer.android.com/reference/android/media/AudioRecord)

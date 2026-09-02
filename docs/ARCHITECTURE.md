@@ -98,15 +98,16 @@ actionable redacted results. SSH maps those fields and operations to encrypted
 credential references, jump-host selection, persistent non-exportable Android
 keys, confirmed public-key installation, and key-only authentication probes.
 Successful edits invalidate an existing managed connection and refresh
+coordinator profiles.
+
 Speech remains independent of agent and connection providers. The first
 foundation exposes auditable model package metadata, explicit install/remove
 operations, and separate recognition and playback state. Every active operation
 has an opaque monotonically generated id, so a delayed stop or cancel event
-cannot affect a replacement microphone or playback operation. Android capture,
-download storage, sherpa-onnx integration, and Compose controls are not yet
-implemented.
-
-coordinator profiles.
+cannot affect a replacement microphone or playback operation. Android now owns
+verified private model storage plus hardened HTTPS and tar.bz2 delivery
+adapters. Capture, a production catalog, sherpa-onnx integration, and Compose
+controls are not yet implemented.
 
 SSH routing stays below that generic boundary. The SSH provider resolves a
 destination's configured profile references into an outermost-to-innermost

@@ -59,6 +59,10 @@ supported release.
   with injected package download/extraction, exact byte and checksum checks,
   path-confined extraction, storage-capacity checks, cancellation cleanup,
   version-safe activation, and restart validation.
+- Hardened offline-model delivery with bounded HTTPS timeouts, explicit
+  same-host or allowlisted redirects, public-DNS source policy, exact response
+  metadata checks, cancellation-safe streaming, and a tar.bz2 decoder that
+  rejects malformed paths, links, sparse files, devices, pipes, and bad headers.
 - Bounded PCM, foreground capture, on-device inference, synthesis, cancellation,
   and audio-playback adapter boundaries for the future Android/sherpa runtime.
 
