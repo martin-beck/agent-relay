@@ -42,8 +42,37 @@ jobs:
       - name: Install repository-check runner
         run: uv sync --locked --only-group quality
 
+      - name: Install pinned Vale
+        shell: bash
+        env:
+          VALE_ARCHIVE_SHA256: c8f9d6c8055442bc7e9c121b2498e6f0e3fb670f4665e6ee577f1897f7665cf6
+          VALE_VERSION: 3.19.0
+        run: |
+          vale_archive="${RUNNER_TEMP}/vale.tar.gz"
+          vale_dir="${RUNNER_TEMP}/vale-${VALE_VERSION}"
+          vale_base="https://github.com/errata-ai/vale/releases/download"
+          vale_name="vale_${VALE_VERSION}_Linux_64-bit.tar.gz"
+          vale_url="${vale_base}/v${VALE_VERSION}/${vale_name}"
+          curl --fail --location --retry 3 --show-error \
+            --output "${vale_archive}" "${vale_url}"
+          printf '%s  %s\n' "${VALE_ARCHIVE_SHA256}" "${vale_archive}" \
+            | sha256sum --check --strict
+          mkdir -p "${vale_dir}/bin"
+          tar --extract --gzip --file "${vale_archive}" \
+            --directory "${vale_dir}/bin" vale
+          echo "${vale_dir}/bin" >> "${GITHUB_PATH}"
+
       - name: Check every tracked source and document format
         run: uv run pre-commit run --all-files --show-diff-on-failure
+
+      - name: Record complexity reports
+        run: |
+          mkdir -p build/reports/quality
+          uv run radon cc scripts/ci --show-complexity --average --total-average \
+            --json --output-file build/reports/quality/radon-complexity.json
+          uv run radon mi scripts/ci --show \
+            --json --output-file build/reports/quality/radon-maintainability.json
+          uv run lizard --CCN 20 --xml --output_file build/reports/quality/lizard.xml .
 
       - name: Set up JDK 17
         uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
@@ -63,7 +92,7 @@ jobs:
         run: ./gradlew :speech:sherpa:buildSherpaAndroidRuntime --stacktrace
 
       - name: Test CI support scripts
-        run: python3 -m unittest discover -s scripts/ci -p 'test_*.py'
+        run: uv run python -m unittest discover -s scripts/ci -p 'test_*.py'
 
       - name: Run static quality checks
         run: ./gradlew spotlessCheck detekt buildHealth --stacktrace
@@ -76,6 +105,43 @@ jobs:
 
       - name: Assemble debug application
         run: ./gradlew assembleDebug --stacktrace
+
+      - name: Prepare explicitly enabled Sonar analysis
+        if: >-
+          ${{ vars.SONAR_PROJECT_KEY != '' &&
+              vars.SONAR_HOST_URL != '' &&
+              github.actor != 'dependabot[bot]' &&
+              (github.event_name != 'pull_request' ||
+              github.event.pull_request.head.repo.full_name == github.repository) }}
+        shell: bash
+        env:
+          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+          SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
+          SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          if [[ -z "${SONAR_TOKEN}" ]]; then
+            echo "::error::SONAR_TOKEN must be configured when Sonar analysis is enabled."
+            exit 1
+          fi
+          {
+            printf 'sonar.host.url=%s\n' "${SONAR_HOST_URL}"
+            printf 'sonar.projectKey=%s\n' "${SONAR_PROJECT_KEY}"
+            if [[ -n "${SONAR_ORGANIZATION}" ]]; then
+              printf 'sonar.organization=%s\n' "${SONAR_ORGANIZATION}"
+            fi
+          } >> sonar-project.properties
+
+      - name: Run explicitly enabled Sonar analysis
+        if: >-
+          ${{ vars.SONAR_PROJECT_KEY != '' &&
+              vars.SONAR_HOST_URL != '' &&
+              github.actor != 'dependabot[bot]' &&
+              (github.event_name != 'pull_request' ||
+              github.event.pull_request.head.repo.full_name == github.repository) }}
+        uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f # v8.2.1
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Upload test results
         if: ${{ !cancelled() }}
@@ -96,6 +162,7 @@ jobs:
             build/reports/detekt/**
             build/reports/kover/**
             build/reports/problems/**
+            build/reports/quality/**
           if-no-files-found: ignore
           retention-days: 14
 

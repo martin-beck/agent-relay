@@ -1,0 +1,10 @@
+extends: substitution
+message: "Use '%s' instead of '%s'."
+level: error
+ignorecase: false
+swap:
+  Github: GitHub
+  Java Script: JavaScript
+  Sonarqube: SonarQube
+  Readme: README
+  Yaml: YAML

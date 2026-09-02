@@ -1,0 +1,11 @@
+extends: substitution
+message: "Consider '%s' instead of '%s'."
+level: suggestion
+ignorecase: true
+swap:
+  at this point in time: now
+  due to the fact that: because
+  has the ability to: can
+  in order to: to
+  is able to: can
+  with the exception of: except
