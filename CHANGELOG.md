@@ -55,6 +55,12 @@ supported release.
   run through the same pinned pre-commit gate locally and in CI.
 - Aggregate Kover coverage verification with a 70% line floor.
 - Kotest property checks and bounded Jazzer fuzzing for POSIX command encoding.
+- Auditable offline-speech contracts plus an Android app-private model store
+  with injected package download/extraction, exact byte and checksum checks,
+  path-confined extraction, storage-capacity checks, cancellation cleanup,
+  version-safe activation, and restart validation.
+- Bounded PCM, foreground capture, on-device inference, synthesis, cancellation,
+  and audio-playback adapter boundaries for the future Android/sherpa runtime.
 
 ### Changed
 
