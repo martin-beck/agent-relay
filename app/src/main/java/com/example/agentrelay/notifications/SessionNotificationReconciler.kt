@@ -65,6 +65,36 @@ internal class SessionNotificationReconciler(
             )
         }
 
+    suspend fun suppress(snapshot: SessionHubSnapshot): SessionNotificationReconciliation =
+        mutex.withLock {
+            val desired = SessionNotificationProjection.project(snapshot)
+                .associateBy(ProjectedSessionNotification::notificationKey)
+            val failures = linkedSetOf<String>()
+            val nextApplied = desired.toMutableMap()
+            var cancelled = 0
+
+            (applied.keys + desired.keys).sorted().forEach { notificationKey ->
+                if (runSinkOperation { sink.cancel(notificationKey) }) {
+                    cancelled += 1
+                } else {
+                    failures += notificationKey
+                    if (notificationKey !in desired) {
+                        applied[notificationKey]?.let { notification ->
+                            nextApplied[notificationKey] = notification
+                        }
+                    }
+                }
+            }
+
+            applied.clear()
+            applied.putAll(nextApplied)
+            SessionNotificationReconciliation(
+                shown = 0,
+                cancelled = cancelled,
+                failedNotificationKeys = failures,
+            )
+        }
+
     private suspend fun runSinkOperation(operation: suspend () -> Unit): Boolean =
         try {
             operation()

@@ -6,10 +6,13 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
@@ -19,15 +22,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.agentrelay.R
+import com.example.agentrelay.notifications.SessionNotificationPermissionState
 import dev.agentrelay.provider.api.AgentApprovalDecision
 
 internal const val MAIN_LOADING_TEST_TAG = "main-loading"
 internal const val MAIN_FATAL_ERROR_TEST_TAG = "main-fatal-error"
 internal const val SESSION_HUB_LIST_TEST_TAG = "session-hub-list"
 internal const val SESSION_DETAIL_PANE_TEST_TAG = "session-detail-pane"
+internal const val NOTIFICATION_PERMISSION_TEST_TAG = "notification-permission"
 
 @Composable
 internal fun MainScreen(
@@ -36,6 +43,10 @@ internal fun MainScreen(
     onSaveArtifact: (String, String, String) -> Unit,
     speechActions: SpeechInputUiActions,
     modifier: Modifier = Modifier,
+    notificationPermissionState: SessionNotificationPermissionState =
+        SessionNotificationPermissionState.HIDDEN,
+    onRequestNotificationPermission: () -> Unit = {},
+    onOpenNotificationSettings: () -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val actions = remember(viewModel, onOpenSession, onSaveArtifact, speechActions) {
@@ -79,6 +90,9 @@ internal fun MainScreen(
     MainScreenContent(
         state = state,
         actions = actions,
+        notificationPermissionState = notificationPermissionState,
+        onRequestNotificationPermission = onRequestNotificationPermission,
+        onOpenNotificationSettings = onOpenNotificationSettings,
         modifier = modifier,
     )
 }
@@ -88,6 +102,10 @@ internal fun MainScreenContent(
     state: MainScreenUiState,
     actions: SessionHubActions,
     modifier: Modifier = Modifier,
+    notificationPermissionState: SessionNotificationPermissionState =
+        SessionNotificationPermissionState.HIDDEN,
+    onRequestNotificationPermission: () -> Unit = {},
+    onOpenNotificationSettings: () -> Unit = {},
 ) {
     when (state) {
         MainScreenUiState.Loading -> Box(
@@ -131,12 +149,29 @@ internal fun MainScreenContent(
         }
 
         is MainScreenUiState.Ready -> {
-            AdaptiveSessionHub(
-                hub = state.hub,
-                speechInput = state.speechInput,
-                actions = actions,
-                modifier = modifier,
-            )
+            if (notificationPermissionState == SessionNotificationPermissionState.HIDDEN) {
+                AdaptiveSessionHub(
+                    hub = state.hub,
+                    speechInput = state.speechInput,
+                    actions = actions,
+                    modifier = modifier,
+                )
+            } else {
+                Column(modifier.fillMaxSize()) {
+                    SessionNotificationPermissionCard(
+                        state = notificationPermissionState,
+                        onRequestPermission = onRequestNotificationPermission,
+                        onOpenSettings = onOpenNotificationSettings,
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+                    )
+                    AdaptiveSessionHub(
+                        hub = state.hub,
+                        speechInput = state.speechInput,
+                        actions = actions,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            }
             state.profileEditor?.let { editor ->
                 ConnectionProfileEditorDialog(editor, actions)
             }
@@ -148,6 +183,56 @@ internal fun MainScreenContent(
                     onDismiss = actions.dismissSessionCreator,
                     onStart = actions.startSession,
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SessionNotificationPermissionCard(
+    state: SessionNotificationPermissionState,
+    onRequestPermission: () -> Unit,
+    onOpenSettings: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val explanation = when (state) {
+        SessionNotificationPermissionState.REQUESTABLE ->
+            stringResource(R.string.notification_permission_request_explanation)
+        SessionNotificationPermissionState.RATIONALE ->
+            stringResource(R.string.notification_permission_rationale)
+        SessionNotificationPermissionState.SETTINGS_REQUIRED ->
+            stringResource(R.string.notification_permission_settings_explanation)
+        SessionNotificationPermissionState.HIDDEN -> return
+    }
+    val buttonLabel = if (state == SessionNotificationPermissionState.SETTINGS_REQUIRED) {
+        stringResource(R.string.notification_permission_open_settings)
+    } else {
+        stringResource(R.string.notification_permission_allow)
+    }
+    val onClick = if (state == SessionNotificationPermissionState.SETTINGS_REQUIRED) {
+        onOpenSettings
+    } else {
+        onRequestPermission
+    }
+
+    Card(modifier.testTag(NOTIFICATION_PERMISSION_TEST_TAG)) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.notification_permission_title),
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Text(
+                text = explanation,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            OutlinedButton(
+                onClick = onClick,
+                modifier = Modifier.align(Alignment.End),
+            ) {
+                Text(buttonLabel)
             }
         }
     }

@@ -71,6 +71,57 @@ class SessionNotificationReconcilerTest {
     }
 
     @Test
+    fun suppressionCancelsVisibleNotificationAndKeepsCurrentSnapshotAsBaseline() = runTest {
+        val sink = RecordingSink()
+        val reconciler = SessionNotificationReconciler(sink)
+        val active = snapshot(activity("approval", SessionActivityType.APPROVAL_REQUIRED))
+        reconciler.reconcile(active)
+        val notificationKey = sink.shown.single().notificationKey
+
+        val suppressed = reconciler.suppress(active)
+
+        assertEquals(
+            SessionNotificationReconciliation(
+                shown = 0,
+                cancelled = 1,
+                failedNotificationKeys = emptySet(),
+            ),
+            suppressed,
+        )
+        assertEquals(listOf(notificationKey), sink.cancelled)
+        assertEquals(0, reconciler.reconcile(active).shown)
+    }
+
+    @Test
+    fun suppressionBaselineAllowsOnlyNewActivityAfterBackgrounding() = runTest {
+        val sink = RecordingSink()
+        val reconciler = SessionNotificationReconciler(sink)
+        val original = activity("approval", SessionActivityType.APPROVAL_REQUIRED)
+        reconciler.suppress(snapshot(original))
+
+        val result = reconciler.reconcile(
+            snapshot(
+                original,
+                activity("failure", SessionActivityType.FAILURE),
+            ),
+        )
+
+        assertEquals(1, result.shown)
+        assertEquals(1, sink.shown.size)
+        assertEquals(SessionNotificationKind.FAILURE, sink.shown.single().kind)
+    }
+
+    @Test
+    fun failedSuppressionCancellationIsRetried() = runTest {
+        val sink = RecordingSink(failCancelAttempts = 1)
+        val reconciler = SessionNotificationReconciler(sink)
+        val active = snapshot(activity("approval", SessionActivityType.APPROVAL_REQUIRED))
+
+        assertEquals(1, reconciler.suppress(active).failedNotificationKeys.size)
+        assertEquals(1, reconciler.suppress(active).cancelled)
+    }
+
+    @Test
     fun structuredCancellationIsNotConvertedIntoARecoverableFailure() = runTest {
         val reconciler = SessionNotificationReconciler(
             object : SessionNotificationSink {

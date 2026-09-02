@@ -717,7 +717,7 @@ class MainScreenTest {
     }
 }
 
-private class ActionRecorder {
+internal class ActionRecorder {
     var retryCount = 0
     var connectedKey: String? = null
     var trustedKey: String? = null
@@ -805,7 +805,7 @@ private class ActionRecorder {
     )
 }
 
-private data class RecordedActionResponse(
+internal data class RecordedActionResponse(
     val sessionKey: String,
     val actionKey: String,
     val decision: AgentApprovalDecision,

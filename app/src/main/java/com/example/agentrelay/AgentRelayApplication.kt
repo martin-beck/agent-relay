@@ -7,6 +7,8 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import com.example.agentrelay.data.CoordinatorSessionHubRuntime
 import com.example.agentrelay.data.BackgroundAwareSessionHubRuntime
 import com.example.agentrelay.data.SessionHubRuntime
+import com.example.agentrelay.notifications.AndroidSessionNotificationSink
+import com.example.agentrelay.notifications.SessionNotificationRuntime
 import dev.agentrelay.connection.api.ConnectionProviderRegistry
 import dev.agentrelay.connection.local.LocalConnectionProvider
 import dev.agentrelay.provider.aider.AiderAgentProviderFactory
@@ -28,11 +30,12 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 class AgentRelayApplication : Application() {
+    private val lifecycleScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
     internal val graph by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
-        AgentRelayGraph(applicationContext)
+        AgentRelayGraph(applicationContext, lifecycleScope)
     }
 
-    private val lifecycleScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val backgroundLifecycle = AppBackgroundLifecycleObserver(
         scope = lifecycleScope,
         enterForeground = { graph.resumeFromBackgroundIfInitialized() },
@@ -52,38 +55,71 @@ class AgentRelayApplication : Application() {
     }
 }
 
-internal class AgentRelayGraph(private val context: Context) {
+internal class AgentRelayGraph(
+    private val context: Context,
+    notificationScope: CoroutineScope,
+) {
     private val initializationMutex = Mutex()
+    private val notificationRuntime = SessionNotificationRuntime(
+        scope = notificationScope,
+        sink = AndroidSessionNotificationSink(context),
+        onFailure = { Log.e(LOG_TAG, "Notification state transition failed") },
+    )
 
     @Volatile
     private var sessionRuntime: SessionHubRuntime? = null
+    private var notificationAttached = false
     private var backgroundRequested = false
 
     suspend fun sessionHubRuntime(): SessionHubRuntime {
         return initializationMutex.withLock {
-            sessionRuntime ?: createSessionRuntime().also { created ->
+            val runtime = sessionRuntime ?: createSessionRuntime().also { created ->
                 sessionRuntime = created
+            }
+            if (!notificationAttached) {
                 if (backgroundRequested) {
-                    (created as? BackgroundAwareSessionHubRuntime)
+                    (runtime as? BackgroundAwareSessionHubRuntime)
                         ?.suspendForBackground()
                 }
+                notificationRuntime.attach(
+                    snapshots = runtime.sessionSnapshot,
+                    initiallyForeground = !backgroundRequested,
+                )
+                notificationAttached = true
             }
+            runtime
         }
     }
 
     suspend fun suspendForBackgroundIfInitialized() {
         initializationMutex.withLock {
             backgroundRequested = true
-            (sessionRuntime as? BackgroundAwareSessionHubRuntime)
-                ?.suspendForBackground()
+            val active = sessionRuntime
+            if (active != null) {
+                (active as? BackgroundAwareSessionHubRuntime)
+                    ?.suspendForBackground()
+                notificationRuntime.enterBackground()
+            }
         }
     }
 
     suspend fun resumeFromBackgroundIfInitialized() {
         initializationMutex.withLock {
             backgroundRequested = false
-            (sessionRuntime as? BackgroundAwareSessionHubRuntime)
-                ?.resumeFromBackground()
+            val active = sessionRuntime
+            if (active != null) {
+                notificationRuntime.enterForeground()
+                (active as? BackgroundAwareSessionHubRuntime)
+                    ?.resumeFromBackground()
+            }
+        }
+    }
+
+    suspend fun retryNotificationsIfInitialized() {
+        initializationMutex.withLock {
+            if (sessionRuntime != null) {
+                notificationRuntime.retryCurrent()
+            }
         }
     }
 
@@ -138,5 +174,6 @@ internal class AgentRelayGraph(private val context: Context) {
 
     private companion object {
         const val LOCAL_WORKSPACE_DIRECTORY = "agent-workspaces"
+        const val LOG_TAG = "AgentRelay"
     }
 }

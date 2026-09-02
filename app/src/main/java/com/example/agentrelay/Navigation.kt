@@ -14,8 +14,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
-import com.example.agentrelay.ui.main.MainScreenUiState
+import com.example.agentrelay.notifications.SessionNotificationPermissionState
 import com.example.agentrelay.ui.main.MainScreen
+import com.example.agentrelay.ui.main.MainScreenUiState
 import com.example.agentrelay.ui.main.MainScreenViewModel
 import com.example.agentrelay.ui.main.SessionDetailRoute
 import com.example.agentrelay.ui.main.SpeechInputUiActions
@@ -23,7 +24,14 @@ import com.example.agentrelay.ui.main.rememberArtifactSaveRequest
 import com.example.agentrelay.ui.main.rememberSpeechStartRequest
 
 @Composable
-fun MainNavigation() {
+internal fun MainNavigation(
+    notificationNavigationKey: String? = null,
+    onNotificationNavigationConsumed: (String) -> Unit = {},
+    notificationPermissionState: SessionNotificationPermissionState =
+        SessionNotificationPermissionState.HIDDEN,
+    onRequestNotificationPermission: () -> Unit = {},
+    onOpenNotificationSettings: () -> Unit = {},
+) {
     val application = LocalContext.current.applicationContext as AgentRelayApplication
     val mainViewModel = viewModel {
         MainScreenViewModel {
@@ -55,6 +63,23 @@ fun MainNavigation() {
         mainViewModel.clearSelection()
     }
 
+    LaunchedEffect(notificationNavigationKey, uiState) {
+        val sessionKey = notificationNavigationKey ?: return@LaunchedEffect
+        val ready = uiState as? MainScreenUiState.Ready ?: return@LaunchedEffect
+        val route = SessionDetails(sessionKey)
+        if (ready.hub.sessions.any { session -> session.stableKey == sessionKey }) {
+            if (backStack.lastOrNull() != route) {
+                if (backStack.lastOrNull() is SessionDetails) {
+                    backStack.removeLastOrNull()
+                }
+                backStack.add(route)
+            }
+        } else {
+            mainViewModel.selectSession(sessionKey)
+        }
+        onNotificationNavigationConsumed(sessionKey)
+    }
+
     NavDisplay(
         backStack = backStack,
         onBack = onBack,
@@ -67,6 +92,9 @@ fun MainNavigation() {
                         backStack.add(SessionDetails(key))
                     },
                     speechActions = speechActions,
+                    notificationPermissionState = notificationPermissionState,
+                    onRequestNotificationPermission = onRequestNotificationPermission,
+                    onOpenNotificationSettings = onOpenNotificationSettings,
                     onSaveArtifact = saveArtifact,
                     modifier = Modifier.safeDrawingPadding().padding(16.dp),
                 )

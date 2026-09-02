@@ -1,7 +1,7 @@
 # Session hub and offline state
 
 Status: Persistence, coordinator, and first adaptive interaction UI implemented
-Last verified: 2026-09-01
+Last verified: 2026-09-02
 
 The session layer is independent of both connection implementations and agent
 protocol implementations. It gives the app one durable identity and state model
@@ -208,14 +208,40 @@ activity. MUTED emits nothing. Successful reconnects, read non-actionable
 activity, and resolved actions never produce a notification. Projection is
 bounded to 64 newest items after unresolved actions are promoted. Coordinator
 issues are deliberately excluded until they have a durable attention record, so
-no critical recovery state exists only in process memory. Android channels,
-rendering, dispatch, cancellation, and permission remain separate later slices.
+no critical recovery state exists only in process memory.
+
+Android delivery uses separate action-required, failure, and general-update
+channels with high, default, and low importance respectively. Notifications use
+fixed application text, private visibility, a generic public version, and
+local-only delivery. Neither title, body, intent extras, nor notification tags
+contain the source summary, connection label, host, path, provider ID, session
+ID, prompt, or command. Tap routing accepts only a package-scoped action whose
+URI path and sole digest extra contain the same lowercase SHA-256 key, then
+resolves that digest against the current durable session snapshot.
+
+Android 13 notification permission is never requested automatically. The ready
+screen explains the privacy boundary and provides the explicit request action;
+after terminal denial it links to the application's notification settings. Only
+a non-sensitive requested-before boolean is stored. Missing runtime permission,
+globally disabled notifications, or a disabled channel cause a fixed redacted
+delivery failure so the event stays eligible for retry.
 
 A serialized reconciler diffs each durable projection against successfully
 applied sink state. Stable-key show and cancellation operations must be
 idempotent: failures remain pending for the next snapshot, successful operations
 are not repeated, and coroutine cancellation is never converted into a retry.
-Results contain only counts and digest keys, never underlying sink failures.
+Results contain only counts and digest keys, never underlying sink failures. On
+foreground entry it cancels applied notifications and establishes the current
+durable projection as a baseline, so old unread activity is not replayed on the
+next background transition.
+
+The application-scope notification runtime serializes lifecycle and snapshot
+changes. It suppresses the initial foreground snapshot, reconciles newly durable
+activity while backgrounded, suppresses again before provider reconnection, and
+can retry current state after permission is granted. Provider connections are
+still suspended when the application enters the background, so this slice does
+not provide continuous remote monitoring while Android keeps the app in the
+background; a foreground-service transport lifecycle remains future work.
 
 ## Verification
 
@@ -235,6 +261,12 @@ Coverage proves:
 
 - full-tuple identity across SSH, local, and multiple profiles;
 - privacy-safe, preference-aware, bounded notification projection;
+- channel isolation, fixed private notification content, disabled-delivery
+  retry, digest-only PendingIntent routing, and cancellation idempotence;
+- foreground baselining, background-only dispatch, lifecycle serialization,
+  permission retry, and cancellation preservation;
+- explicit request/rationale/settings permission UI with automated Compose
+  accessibility checks;
 - preferences, drafts, inbox state, transcripts, and actions across repository
   reopen;
 - idempotent activity/action replay and bounded mark-read behavior;
@@ -257,13 +289,13 @@ Coverage proves:
 - debounced draft persistence; and
 - failed immediate-send preservation without provider exception disclosure.
 
-API 36 emulator verification on 2026-09-01 ran the complete instrumented suite
-with 18 of 18 tests passing: 15 application UI and accessibility tests, one SSH
+API 36 emulator verification on 2026-09-02 ran the complete connected suite with
+26 of 26 tests passing: 23 application UI and accessibility tests, one SSH
 Android test, and two encrypted-storage Android tests. The evidence verifier
-independently checked all three module reports, the explicit emulator boot
-record, and the exact discovered/run/skipped/failure/error counts.
+independently checked all three module reports and their exact
+discovered/run/skipped/failure/error counts.
 
 Not yet implemented are queued or offline sending, voice input, changed-file
-preview/diff/batch export, and background notification dispatch. The remaining
-workflows keep the same provider-neutral capability, safe-path, and full-locator
-boundaries.
+preview/diff/batch export, and continuous foreground-service-backed remote
+monitoring. The remaining workflows keep the same provider-neutral capability,
+safe-path, and full-locator boundaries.
