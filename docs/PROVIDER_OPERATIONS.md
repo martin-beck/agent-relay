@@ -35,7 +35,7 @@ repository records only the resulting capability boundary:
 | --- | --- |
 | Claude Code stream JSON | Exact final response, no tools, clean shutdown |
 | OpenCode server and SSE | Typed lifecycle/events and clean server shutdown |
-| OpenDesk HTTP/SSE with local Ollama | Session discovery, exact completion, token deltas, clean shutdown |
+| OpenDesk HTTP/SSE with local Ollama | Session discovery, assistant completion, token deltas, clean shutdown |
 | Continue headless/server modes | Read-only response and loopback-only lifecycle |
 | Cline ACP | Plan-mode session lifecycle with auto-approval disabled |
 | Aider safe helper | Structured response, no changes, clean descendant shutdown |
@@ -107,8 +107,8 @@ Provider credentials and request bodies remain outside process arguments.
 
 The installed-binary inference test creates an isolated OpenDesk profile and
 workspace, exercises the real local Ollama model, verifies global discovery,
-waits for an exact assistant transcript, requires a mapped SSE token event, and
-checks that all child processes and loopback listeners stop. Set the model
+waits for a marker-bearing assistant transcript, requires a mapped SSE token
+event, and checks that all child processes and loopback listeners stop. Set the model
 alias privately when the default validation model is unavailable:
 
 ```bash

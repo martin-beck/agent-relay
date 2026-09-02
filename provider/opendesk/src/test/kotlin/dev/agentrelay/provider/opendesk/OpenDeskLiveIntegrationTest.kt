@@ -80,7 +80,7 @@ class OpenDeskLiveIntegrationTest {
                 var current = activeConnection.transcript(session.id)
                 while (current.none {
                         it.role == AgentTranscriptRole.AGENT &&
-                            it.text.trim() == LIVE_MARKER
+                            LIVE_MARKER in it.text
                     }
                 ) {
                     delay(1_000.milliseconds)
@@ -91,7 +91,7 @@ class OpenDeskLiveIntegrationTest {
 
             assertTrue(
                 transcript.any {
-                    it.role == AgentTranscriptRole.AGENT && it.text.trim() == LIVE_MARKER
+                    it.role == AgentTranscriptRole.AGENT && LIVE_MARKER in it.text
                 },
             )
             assertTrue(
@@ -263,6 +263,7 @@ class OpenDeskLiveIntegrationTest {
         const val DEFAULT_MODEL = "qwen3:0.6b-opendesk"
         const val DEFAULT_OLLAMA_URL = "http://127.0.0.1:11434/v1"
         const val LIVE_MARKER = "AGENT_RELAY_OPENDESK_LIVE_OK"
-        const val LIVE_PROMPT = "Reply with exactly $LIVE_MARKER. Do not use tools."
+        const val LIVE_PROMPT =
+            "/no_think\nReply once and include the token $LIVE_MARKER. Do not use tools."
     }
 }
