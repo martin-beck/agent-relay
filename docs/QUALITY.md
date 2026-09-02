@@ -204,6 +204,11 @@ least 25 discovered and 25 executed tests. This prevents a missing device,
 missing module report, skipped accessibility audit, or accidentally empty suite
 from appearing green.
 
+The workflow invokes those three device-test tasks explicitly. Native-only and
+no-test Android modules remain covered by the quality and build workflow without
+spending the bounded emulator job compiling unrelated native runtimes before
+the required UI evidence can run.
+
 The weekly/manual matrix runs the same suite on the minimum API phone and an
 API 36 tablet. CI artifacts retain reports from every tested module plus the
 Gradle problems report. The API 28 run filters out the three API 34+

@@ -62,7 +62,11 @@ jobs:
             set -eu
             adb wait-for-device
             test "$(adb shell getprop sys.boot_completed)" = "1"
-            ./gradlew connectedDebugAndroidTest --stacktrace
+            ./gradlew \
+              :app:connectedDebugAndroidTest \
+              :ssh:android:connectedDebugAndroidTest \
+              :storage:android:connectedDebugAndroidTest \
+              --stacktrace
 
       - name: Verify connected-test evidence
         run: |
@@ -149,7 +153,11 @@ jobs:
             set -eu
             adb wait-for-device
             test "$(adb shell getprop sys.boot_completed)" = "1"
-            ./gradlew connectedDebugAndroidTest --stacktrace
+            ./gradlew \
+              :app:connectedDebugAndroidTest \
+              :ssh:android:connectedDebugAndroidTest \
+              :storage:android:connectedDebugAndroidTest \
+              --stacktrace
 
       - name: Verify connected-test evidence
         run: |
