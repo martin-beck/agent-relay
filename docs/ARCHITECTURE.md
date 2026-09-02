@@ -171,6 +171,17 @@ preferences, transcript cache, and changed-file records belong to the session
 repository. Transfer progress belongs to the short-lived UI controller. Compose
 is a projection of these sources and must not become a second authority.
 
+The process lifecycle is a provider-neutral composition boundary. Moving the
+app to the background serially suspends an already-created session runtime;
+returning to the foreground resumes it only after any earlier suspension has
+finished. Lifecycle events never initialize the runtime on their own. If the
+runtime is first requested while the process is already backgrounded, it is
+suspended before being returned. Duplicate and obsolete transitions are
+coalesced, cancellation remains structured, and failures become a detail-free
+observable lifecycle state suitable for later status and notification
+projection. Provider error text and connection details are never placed in that
+state or the Android log.
+
 UI keys are derived from the complete provider-scoped locator. Session
 navigation uses a fixed SHA-256 digest so saved navigation state cannot expose a
 host, path, profile identifier, or unbounded agent-session identifier. Domain

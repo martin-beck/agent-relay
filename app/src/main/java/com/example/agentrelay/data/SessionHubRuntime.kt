@@ -91,11 +91,17 @@ internal interface SessionHubRuntime {
     )
 }
 
+internal interface BackgroundAwareSessionHubRuntime {
+    suspend fun suspendForBackground()
+
+    suspend fun resumeFromBackground()
+}
+
 internal class CoordinatorSessionHubRuntime(
     private val coordinator: SessionCoordinator,
     override val connectionProviders: List<ConnectionProviderDescriptor>,
     private val connections: ConnectionProviderRegistry,
-) : SessionHubRuntime {
+) : SessionHubRuntime, BackgroundAwareSessionHubRuntime {
     override val coordinatorSnapshot: StateFlow<SessionCoordinatorSnapshot>
         get() = coordinator.snapshot
 
@@ -137,6 +143,10 @@ internal class CoordinatorSessionHubRuntime(
     }
 
     override suspend fun disconnect(key: SessionConnectionKey) = coordinator.disconnect(key)
+
+    override suspend fun suspendForBackground() = coordinator.suspendForBackground()
+
+    override suspend fun resumeFromBackground() = coordinator.resumeFromBackground()
 
     override suspend fun resolveIdentityChallenge(
         key: SessionConnectionKey,

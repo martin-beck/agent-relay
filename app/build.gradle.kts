@@ -64,6 +64,7 @@ dependencies {
     // Arch Components
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.process)
 
     // Provider-neutral connection and session runtime
     implementation(project(":connection:api"))
