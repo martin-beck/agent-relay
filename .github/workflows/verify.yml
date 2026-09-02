@@ -86,8 +86,15 @@ jobs:
           cmake_actual="$("$native_root/cmake/bin/cmake" --version | sed -n '1s/^cmake version //p')"
           test "$cmake_actual" = "$CMAKE_VERSION"
           test "$("$native_root/ninja/ninja" --version)" = "$NINJA_VERSION"
-          sdkmanager --install "ndk;$NDK_VERSION"
-          ndk_properties="$ANDROID_SDK_ROOT/ndk/$NDK_VERSION/source.properties"
+          android_sdk_root="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+          test -n "$android_sdk_root"
+          sdkmanager_path="$android_sdk_root/cmdline-tools/latest/bin/sdkmanager"
+          test -x "$sdkmanager_path"
+          ndk_properties="$android_sdk_root/ndk/$NDK_VERSION/source.properties"
+          if [ ! -f "$ndk_properties" ]; then
+            "$sdkmanager_path" --install "ndk;$NDK_VERSION"
+          fi
+          test -f "$ndk_properties"
           ndk_actual="$(sed -n 's/^Pkg.Revision = //p' "$ndk_properties")"
           test "$ndk_actual" = "$NDK_VERSION"
 
