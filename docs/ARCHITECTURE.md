@@ -38,7 +38,7 @@ schema without importing SSH configuration types.
 | `:connection:local` | App-local process execution plus canonical workspace-confined file access |
 | `:ssh:api` | SSH profiles, jump routes, credentials, managed-key enrollment and probes, host keys, retry policy, and generic adapter |
 | `:speech:api` | Auditable offline model metadata plus generation-safe download, recognition, and playback contracts |
-| `:speech:android` | App-private verified model activation, path-confined package delivery, audio/inference boundaries, and generation-safe operation coordination |
+| `:speech:android` | Verified private model delivery, generation-safe coordination, and production Android PCM capture/playback with injected native inference |
 | `:ssh:jsch` | Maintained JSch transport, direct-tcpip jump chaining, bounded POSIX commands, and canonical SFTP file access |
 | `:ssh:android` | Android SSH persistence, credentials, and non-exportable agent keys |
 | `:provider:api` | Agent descriptors, sessions, events, capabilities, actions, and the generic checked-file contract |
@@ -106,10 +106,12 @@ operations, and separate recognition and playback state. Every active operation
 has an opaque monotonically generated id, so a delayed stop or cancel event
 cannot affect a replacement microphone or playback operation. Android now owns
 verified private model storage, hardened HTTPS and tar.bz2 delivery adapters,
-and a coordinator that composes injected capture, inference, and playback
-implementations while detaching canceled generations before potentially late
-callbacks. Production Android capture/playback, a model catalog, sherpa-onnx
-integration, and Compose controls are not yet implemented.
+a coordinator that detaches canceled generations before potentially late
+callbacks, permission-gated 16 kHz mono microphone capture, and speech-focused
+streaming PCM playback. Audio focus, interruption, stale callbacks, and platform
+resource cleanup remain operation-scoped. A production model catalog, audited
+sherpa-onnx adapter, application permission/lifecycle wiring, Compose controls,
+and physical-device evidence are not yet implemented.
 
 SSH routing stays below that generic boundary. The SSH provider resolves a
 destination's configured profile references into an outermost-to-innermost

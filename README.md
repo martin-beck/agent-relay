@@ -15,8 +15,9 @@ is another, and future connection types can implement the same boundary.
 > Android's system document picker. SSH profiles can route through configured
 > jump hosts, own a persistent non-exportable Android key, install its public
 > half with explicit confirmation, and verify key-only login. Previews, diffs,
-> batch export, offline speech, background delivery, and release hardening are
-> not complete.
+> batch export, offline speech UI and native inference, background delivery,
+> model admission, real-device speech evidence, and release hardening are not
+> complete.
 > The APK is not yet a supported release.
 
 This is a private, invite-only project. Access to the repository does not grant
@@ -34,7 +35,7 @@ permission to redistribute source code, APKs, or project artifacts.
 | Quality gates | Detekt, strict lint/Kotlin warnings, dependency analysis, 70% aggregate coverage, Roborazzi visual regression, property tests, and bounded fuzzing |
 | Adaptive Compose UI and app integration | Provider-neutral setup and session launch, typed timeline, durable text composer, capability-gated controls, risk-aware approvals/questions, adaptive-boundary tests, and deterministic UI baselines implemented |
 | Changed files and safe export | Encrypted per-session shelf plus checked single-file export for local and SSH workspaces; previews, diffs, and batch export remain |
-| Offline speech | Provider-neutral contracts, a verified model store, hardened package delivery, and generation-safe operation coordination; the first admitted model, native inference, Android audio, and UI remain |
+| Offline speech | Verified model storage/delivery, generation-safe coordination, and production Android microphone/playback boundaries; the first admitted model, native inference, UI, and device evidence remain |
 | Signed release build and distribution | Not available |
 
 See the [product roadmap](docs/PRODUCT_ROADMAP.md) for planned behavior and
