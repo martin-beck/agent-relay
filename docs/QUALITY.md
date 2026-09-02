@@ -289,7 +289,7 @@ Compose Accessibility Test Framework checks on an API 36 phone for every pull
 request and push to `main`. The emulator script explicitly verifies completed
 Android boot before starting Gradle. A separate XML parser then requires clean
 JUnit evidence from the app, SSH Android, and storage Android modules, with at
-least 26 discovered and 26 executed tests. This prevents a missing device,
+least 33 discovered and 33 executed tests. This prevents a missing device,
 missing module report, skipped accessibility audit, or accidentally empty suite
 from appearing green.
 
@@ -305,8 +305,8 @@ the required UI evidence can run.
 
 The weekly/manual matrix runs the same suite on the minimum API phone and an
 API 36 tablet. CI artifacts retain reports from every tested module plus the
-Gradle problems report. The API 28 run filters out the three API 34+
-accessibility-framework audits and requires all 23 remaining device tests. The
+Gradle problems report. The API 28 run filters out the four API 34+
+accessibility-framework audits and requires all 29 remaining device tests. The
 external-keyboard composer flow enters non-touch focus mode, verifies forward
 Tab and reverse Shift+Tab traversal without draft mutation, activates both
 focused turn controls with Enter, and restores the original touch mode. The new

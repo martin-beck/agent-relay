@@ -13,6 +13,7 @@ import dev.agentrelay.session.api.SessionLocator
 import dev.agentrelay.session.runtime.SessionActionAuditFailureException
 import dev.agentrelay.session.runtime.SessionActionDeliveryUncertainException
 import dev.agentrelay.session.runtime.SessionConnectionKey
+import dev.agentrelay.speech.api.OfflineSpeechService
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -29,6 +30,7 @@ internal fun interface SessionHubRuntimeFactory {
 
 internal class MainScreenViewModel(
     private val clock: () -> Long = System::currentTimeMillis,
+    speechService: OfflineSpeechService? = null,
     private val runtimeFactory: SessionHubRuntimeFactory,
 ) : ViewModel() {
     private val mutableUiState = MutableStateFlow<MainScreenUiState>(MainScreenUiState.Loading)
@@ -50,6 +52,25 @@ internal class MainScreenViewModel(
     internal val artifactInteractions = ArtifactInteractionController(
         scope = viewModelScope,
         runtime = { runtime },
+        reportError = { operationError.value = it },
+    )
+    internal val speechInput = SpeechInputController(
+        scope = viewModelScope,
+        service = speechService,
+        reportError = { operationError.value = it },
+    ).also(::addCloseable)
+    internal val speechActions = SpeechInputActions(
+        controller = speechInput,
+        resolveDraft = { sessionKey ->
+            runtime?.let { opened ->
+                opened.findSessionLocator(sessionKey)?.let { locator ->
+                    sessionInteractions.value.draftOverrides[sessionKey]
+                        ?: opened.sessionSnapshot.value.drafts[locator]
+                        ?: SpeechInputActions.emptyDraft(clock)
+                }
+            }
+        },
+        updateDraft = ::updateSessionDraft,
         reportError = { operationError.value = it },
     )
     val uiState: StateFlow<MainScreenUiState> = mutableUiState.asStateFlow()
@@ -160,6 +181,7 @@ internal class MainScreenViewModel(
         }
         selectedSessionKey.value = sessionKey
         viewModelScope.launch {
+            speechInput.cancelForSessionChange(sessionKey)
             try {
                 active.markSessionRead(locator)
             } catch (cancelled: CancellationException) {
@@ -171,6 +193,7 @@ internal class MainScreenViewModel(
     }
 
     fun clearSelection() {
+        speechInput.cancelForSessionChange(null)
         selectedSessionKey.value = null
     }
 
@@ -461,6 +484,8 @@ internal class MainScreenViewModel(
                             profileEditor = editor,
                             sessionCreator = creator,
                         )
+                    }.combine(speechInput.state) { ready, speech ->
+                        ready.copy(speechInput = speech)
                     }.collect { mutableUiState.value = it }
                 }
                 try {
@@ -593,6 +618,7 @@ internal sealed interface MainScreenUiState {
         val hub: SessionHubUiModel,
         val profileEditor: ConnectionProfileEditorUiState? = null,
         val sessionCreator: SessionCreatorUiState? = null,
+        val speechInput: SpeechInputUiState = unavailableSpeechInputState(),
     ) : MainScreenUiState
 }
 

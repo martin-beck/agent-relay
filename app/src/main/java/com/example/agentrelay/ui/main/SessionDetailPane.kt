@@ -64,6 +64,7 @@ internal fun SessionDetailRoute(
     onSaveArtifact: (String, String, String) -> Unit,
     onCancelArtifact: (String) -> Unit,
     modifier: Modifier = Modifier,
+    speechActions: SpeechInputUiActions = SpeechInputUiActions(),
 ) {
     Column(modifier.fillMaxSize()) {
         TextButton(
@@ -77,6 +78,8 @@ internal fun SessionDetailRoute(
             is MainScreenUiState.FatalError -> DetailPlaceholder(state.message)
             is MainScreenUiState.Ready -> SessionDetailPane(
                 detail = state.hub.selectedSession,
+                speechInput = state.speechInput,
+                speechActions = speechActions,
                 modifier = Modifier.weight(1f),
                 onDraftChanged = onDraftChanged,
                 onSubmitDraft = onSubmitDraft,
@@ -95,6 +98,8 @@ internal fun SessionDetailRoute(
 internal fun SessionDetailPane(
     detail: SessionDetailUiModel?,
     modifier: Modifier = Modifier,
+    speechInput: SpeechInputUiState = unavailableSpeechInputState(),
+    speechActions: SpeechInputUiActions = SpeechInputUiActions(),
     onDraftChanged: (String, String, Int, Int) -> Unit = { _, _, _, _ -> },
     onSubmitDraft: (String) -> Unit = {},
     onResumeSession: (String) -> Unit = {},
@@ -142,6 +147,8 @@ internal fun SessionDetailPane(
         item(key = "session-composer") {
             SessionComposer(
                 detail = detail,
+                speechInput = speechInput,
+                speechActions = speechActions,
                 onDraftChanged = onDraftChanged,
                 onSubmitDraft = onSubmitDraft,
                 onResumeSession = onResumeSession,
@@ -300,6 +307,8 @@ private fun ArtifactCard(
 @Composable
 private fun SessionComposer(
     detail: SessionDetailUiModel,
+    speechInput: SpeechInputUiState,
+    speechActions: SpeechInputUiActions,
     onDraftChanged: (String, String, Int, Int) -> Unit,
     onSubmitDraft: (String) -> Unit,
     onResumeSession: (String) -> Unit,
@@ -364,6 +373,11 @@ private fun SessionComposer(
             },
             minLines = 3,
             maxLines = 8,
+        )
+        SpeechInputControls(
+            state = speechInput,
+            sessionKey = sessionKey,
+            actions = speechActions,
         )
         FlowRow(
             modifier = Modifier.fillMaxWidth(),
