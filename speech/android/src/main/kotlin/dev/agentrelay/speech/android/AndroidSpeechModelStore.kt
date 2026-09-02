@@ -106,6 +106,7 @@ class AndroidSpeechModelStore internal constructor(
         if (!shouldInstall) {
             return
         }
+        var wasCancelled = false
 
         try {
             withContext(dispatcher) {
@@ -113,14 +114,7 @@ class AndroidSpeechModelStore internal constructor(
             }
             updateAvailability(modelId, SpeechModelAvailability.Ready)
         } catch (cancelled: CancellationException) {
-            val state = withContext(NonCancellable + dispatcher) {
-                if (isReadyDirectory(descriptor)) {
-                    SpeechModelAvailability.Ready
-                } else {
-                    SpeechModelAvailability.NotInstalled
-                }
-            }
-            updateAvailability(modelId, state)
+            wasCancelled = true
             throw cancelled
         } catch (failure: Throwable) {
             updateAvailability(
@@ -128,6 +122,16 @@ class AndroidSpeechModelStore internal constructor(
                 SpeechModelAvailability.Failed(failure.toSpeechFailure()),
             )
         } finally {
+            if (wasCancelled || job.isCancelled) {
+                val state = withContext(NonCancellable + dispatcher) {
+                    if (isReadyDirectory(descriptor)) {
+                        SpeechModelAvailability.Ready
+                    } else {
+                        SpeechModelAvailability.NotInstalled
+                    }
+                }
+                updateAvailability(modelId, state)
+            }
             synchronized(activeInstallMonitor) {
                 if (activeInstalls[modelId] === job) {
                     activeInstalls.remove(modelId)
@@ -137,12 +141,27 @@ class AndroidSpeechModelStore internal constructor(
     }
 
     override suspend fun cancelInstall(modelId: SpeechModelId) {
-        descriptor(modelId)
+        val descriptor = descriptor(modelId)
         val install = synchronized(activeInstallMonitor) {
             checkOpen()
             activeInstalls[modelId]
+        } ?: return
+        install.cancelAndJoin()
+        val state = withContext(NonCancellable + dispatcher) {
+            if (isReadyDirectory(descriptor)) {
+                SpeechModelAvailability.Ready
+            } else {
+                SpeechModelAvailability.NotInstalled
+            }
         }
-        install?.cancelAndJoin()
+        synchronized(activeInstallMonitor) {
+            val active = activeInstalls[modelId]
+            if ((active == null || active === install) &&
+                availability(modelId) is SpeechModelAvailability.Downloading
+            ) {
+                updateAvailability(modelId, state)
+            }
+        }
     }
 
     override suspend fun remove(modelId: SpeechModelId) {
@@ -573,11 +592,12 @@ class AndroidSpeechModelStore internal constructor(
             try {
                 Files.newOutputStream(path, java.nio.file.StandardOpenOption.CREATE_NEW).use { output ->
                     while (true) {
+                        installJob.ensureActive()
                         val read = source.read(buffer)
                         if (read < 0) {
                             break
-                            installJob.ensureActive()
                         }
+                        installJob.ensureActive()
                         if (installedBytes > maximumBytes - read) {
                             rejectOversizedPackage()
                         }

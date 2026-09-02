@@ -10,13 +10,17 @@ import dev.agentrelay.speech.api.SpeechModelPackage
 import dev.agentrelay.speech.api.SpeechOperationId
 import java.io.ByteArrayInputStream
 import java.io.File
+import java.io.InputStream
 import java.security.MessageDigest
+import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
@@ -310,6 +314,63 @@ class AndroidSpeechModelStoreTest {
     }
 
     @Test
+    fun cancellationStopsAReadThatReturnsAfterTheExtractorIgnoresCancellation() = runTest {
+        val root = temporaryFolder.newFolder("late-extraction")
+        val payload = "verified-package".encodeToByteArray()
+        val descriptor = descriptor(payload)
+        val enteredRead = CompletableDeferred<Unit>()
+        val releaseRead = CompletableDeferred<Unit>()
+        val readCalls = AtomicInteger()
+        val delayedSource = object : InputStream() {
+            override fun read(): Int = error("Bulk reads are required")
+
+            override fun read(
+                buffer: ByteArray,
+                offset: Int,
+                length: Int,
+            ): Int {
+                check(length > 0)
+                val call = readCalls.incrementAndGet()
+                if (call > 1) {
+                    return -1
+                }
+                enteredRead.complete(Unit)
+                runBlocking(NonCancellable) {
+                    releaseRead.await()
+                }
+                buffer[offset] = 1
+                return 1
+            }
+        }
+        val store = store(
+            root,
+            descriptor,
+            downloader = downloader(payload),
+            extractor = SpeechPackageExtractor { _, destination ->
+                destination.writeFile("model.onnx", delayedSource)
+            },
+            dispatcher = Dispatchers.IO,
+        )
+        val install = launch {
+            store.install(descriptor.id)
+        }
+        enteredRead.await()
+        val cancellation = launch(start = CoroutineStart.UNDISPATCHED) {
+            store.cancelInstall(descriptor.id)
+        }
+
+        releaseRead.complete(Unit)
+        cancellation.join()
+        install.join()
+
+        assertTrue(install.isCancelled)
+        assertTrue(cancellation.isCompleted && !cancellation.isCancelled)
+        assertEquals(1, readCalls.get())
+        assertIs<SpeechModelAvailability.NotInstalled>(availability(store))
+        assertNoInstallArtifacts(root, descriptor.id)
+    }
+
+    @Test
     fun replacementActivatesNewChecksumBeforeRemovingOldDirectory() = runTest {
         val root = temporaryFolder.newFolder("replace")
         val firstPayload = "first-package".encodeToByteArray()
@@ -406,13 +467,14 @@ class AndroidSpeechModelStoreTest {
         downloader: SpeechPackageDownloader,
         extractor: SpeechPackageExtractor,
         capacity: Long = Long.MAX_VALUE,
+        dispatcher: CoroutineDispatcher = Dispatchers.Unconfined,
     ) = AndroidSpeechModelStore(
         root = root,
         catalog = listOf(descriptor),
         downloader = downloader,
         extractor = extractor,
         storageCapacity = SpeechStorageCapacity { capacity },
-        dispatcher = Dispatchers.Unconfined,
+        dispatcher = dispatcher,
     )
 
     private fun availability(store: AndroidSpeechModelStore): SpeechModelAvailability =
