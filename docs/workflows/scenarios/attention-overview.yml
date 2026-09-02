@@ -1,0 +1,29 @@
+id: attention-overview
+title: Review what needs attention across hosts
+summary: See exceptional work first while healthy sessions and connections continue quietly.
+status: verified
+order: 10
+goal: Decide where human attention has the highest value without inspecting every session.
+preconditions:
+  - Several synthetic connections and sessions have different health and activity states.
+  - At least one durable event requires a decision.
+automatic:
+  - Agent Relay aggregates unread activity, pending actions, connection failures, and recovery state.
+  - Quiet healthy work remains available without competing with actionable exceptions.
+  - Stable identities keep signals attached to the correct host, provider, workspace, and session.
+attention:
+  - Open the highest-priority unresolved item.
+  - Distinguish required action from informational unread activity.
+  - Dismiss only errors whose underlying condition is understood.
+recovery:
+  - Stale resolved requests disappear after durable reconciliation.
+  - Disconnected hosts retain safe cached context and clear recovery guidance.
+  - Counts are rebuilt from durable records after process restart.
+verified_test: com.example.agentrelay.ui.main.UsageJourneyTest#capturesVerifiedJourneys
+steps:
+  - id: attention-overview
+    title: Start with the exceptions
+    action: Open the session hub after background activity occurs on several synthetic hosts.
+    expected: Connections, unread counts, and action counts identify the items that need attention.
+    screenshot: attention-overview.png
+    alt: Agent Relay hub summarizing synthetic connection health, unread work, and required actions.

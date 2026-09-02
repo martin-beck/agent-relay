@@ -620,7 +620,7 @@ private data class RecordedActionResponse(
     val additionalConfirmationGiven: Boolean,
 )
 
-private fun testHub(): SessionHubUiModel {
+internal fun testHub(): SessionHubUiModel {
     val session = SessionUiModel(
         stableKey = "session-key",
         title = "Investigate flaky build",
@@ -742,7 +742,7 @@ private fun testHub(): SessionHubUiModel {
     )
 }
 
-private fun actionHub(): SessionHubUiModel {
+internal fun actionHub(): SessionHubUiModel {
     val hub = testHub()
     val action = SessionActionUiModel(
         stableKey = "action-key",
@@ -807,7 +807,7 @@ private fun actionHub(): SessionHubUiModel {
     )
 }
 
-private fun testSessionCreator() = SessionCreatorUiState(
+internal fun testSessionCreator() = SessionCreatorUiState(
     launcherKey = "launcher-key",
     connectionLabel = "Trusted server",
     connectionProviderName = "Secure Shell",
@@ -815,7 +815,7 @@ private fun testSessionCreator() = SessionCreatorUiState(
     workingDirectory = "/workspace/project",
 )
 
-private fun interactiveHub(): SessionHubUiModel {
+internal fun interactiveHub(): SessionHubUiModel {
     val hub = testHub()
     val detail = checkNotNull(hub.selectedSession)
     val runningSession = detail.session.copy(

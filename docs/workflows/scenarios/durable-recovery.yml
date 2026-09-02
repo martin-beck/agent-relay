@@ -1,0 +1,34 @@
+id: durable-recovery
+title: Recover after network, process, or device interruption
+summary: Restore useful state automatically and surface only recovery decisions that need a person.
+status: planned
+order: 7
+goal: Continue durable work after interruption without duplicate commands, lost drafts, or silent uncertainty.
+preconditions:
+  - The app previously stored provider-scoped sessions and connection state.
+  - Both devices can eventually reach the same shared network or VPN.
+automatic:
+  - Agent Relay restores encrypted profiles, drafts, event cursors, and acknowledged actions.
+  - Connections retry with bounded backoff, jitter, and an explicit retry budget.
+  - Reconciliation deduplicates replayed events and marks uncertain operations.
+attention:
+  - Review changed host identity before reconnecting.
+  - Decide what to do when a non-idempotent operation has an uncertain outcome.
+  - Reauthenticate when the stored credential is no longer usable.
+recovery:
+  - Exhausted retries move the item to an actionable failed state instead of looping forever.
+  - Restarting either side resumes from durable cursors and operation identifiers.
+  - Manual retry is available only when the operation is safe to repeat.
+steps:
+  - id: observe-interruption
+    title: Observe a bounded degraded state
+    action: Lose the shared network or stop one endpoint during active work.
+    expected: The app preserves the session and reports reconnecting without inventing progress.
+  - id: reconcile-durable-state
+    title: Reconcile after reachability returns
+    action: Restore the shared network or restart the stopped endpoint.
+    expected: The app resumes from durable state and suppresses duplicate events and actions.
+  - id: handle-uncertainty
+    title: Handle the remaining exception
+    action: Open an item that cannot be reconciled safely in the background.
+    expected: The app explains the uncertainty and offers only safe next actions.

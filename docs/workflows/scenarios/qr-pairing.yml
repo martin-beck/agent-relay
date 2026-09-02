@@ -1,0 +1,34 @@
+id: qr-pairing
+title: Pair the phone with a durable host
+summary: Scan one host-generated QR code and establish an authenticated route when both devices share a network.
+status: planned
+order: 8
+goal: Pair two devices that are not directly reachable from the internet with minimal manual setup.
+preconditions:
+  - The phone and host can both reach the same LAN, public rendezvous service, or VPN.
+  - The host daemon displays a short-lived, single-use pairing QR code.
+automatic:
+  - The QR payload carries rendezvous information, protocol versions, and a pinned host identity.
+  - Both endpoints establish an encrypted channel and prove possession of their pairing keys.
+  - Successful pairing rotates bootstrap material into durable device credentials.
+attention:
+  - Scan the QR code displayed by the intended host.
+  - Compare the short authentication phrase on both devices when required.
+  - Name the paired host and approve its requested capabilities.
+recovery:
+  - Expired or consumed QR payloads cannot be replayed.
+  - Failed relay paths fall back to other advertised transports without weakening identity checks.
+  - Removing a device revokes its durable credential without changing unrelated pairings.
+steps:
+  - id: display-host-code
+    title: Display a short-lived host code
+    action: Open pairing on the host daemon.
+    expected: The host shows a QR code, expiry, and a human-readable authentication phrase.
+  - id: scan-and-verify
+    title: Scan and verify
+    action: Scan the code in Agent Relay and compare the authentication phrase.
+    expected: Both devices prove the pinned identities before exchanging durable credentials.
+  - id: confirm-first-contact
+    title: Confirm the paired host
+    action: Name the host and approve the narrow capability set.
+    expected: The host becomes available through the best shared-network route.

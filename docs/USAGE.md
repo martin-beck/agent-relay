@@ -1,5 +1,9 @@
 # Using Agent Relay
 
+For goal-oriented walkthroughs with reviewed emulator screenshots, start with
+the [app workflow catalogue](WORKFLOWS.md). It labels implemented journeys as
+verified and future interaction contracts as planned.
+
 ## Current application behavior
 
 The debug application now launches an adaptive session hub backed by the real

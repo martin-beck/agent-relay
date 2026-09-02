@@ -40,7 +40,7 @@ jobs:
           key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
 
       - name: Install repository-check runner
-        run: uv sync --locked --only-group quality
+        run: uv sync --locked --only-group quality --only-group docs
 
       - name: Install pinned Vale
         shell: bash
@@ -68,9 +68,9 @@ jobs:
       - name: Record complexity reports
         run: |
           mkdir -p build/reports/quality
-          uv run radon cc scripts/ci --show-complexity --average --total-average \
+          uv run radon cc scripts/ci scripts/docs --show-complexity --average --total-average \
             --json --output-file build/reports/quality/radon-complexity.json
-          uv run radon mi scripts/ci --show \
+          uv run radon mi scripts/ci scripts/docs --show \
             --json --output-file build/reports/quality/radon-maintainability.json
           uv run lizard --CCN 20 --xml --output_file build/reports/quality/lizard.xml .
 
@@ -91,8 +91,16 @@ jobs:
       - name: Verify pinned offline speech runtime
         run: ./gradlew :speech:sherpa:buildSherpaAndroidRuntime --stacktrace
 
-      - name: Test CI support scripts
-        run: uv run python -m unittest discover -s scripts/ci -p 'test_*.py'
+      - name: Test repository support scripts
+        run: |
+          uv run python -m unittest discover -s scripts/ci -p 'test_*.py'
+          uv run python -m unittest discover -s scripts/docs -p 'test_*.py'
+
+      - name: Verify and build app workflow guide
+        run: |
+          uv run python scripts/docs/render_workflows.py --check
+          uv run python scripts/docs/verify_workflows.py
+          uv run mkdocs build --strict
 
       - name: Run static quality checks
         run: ./gradlew spotlessCheck detekt buildHealth --stacktrace

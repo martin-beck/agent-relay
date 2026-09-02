@@ -29,6 +29,16 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          version: "0.12.8"
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Install usage-guide dependencies
+        run: uv sync --locked --only-group docs
+
       - name: Set up JDK 17
         uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
         with:
@@ -61,20 +71,47 @@ jobs:
           script: >-
             adb wait-for-device &&
             test "$(adb shell getprop sys.boot_completed)" = "1" &&
+            adb shell wm size 1080x2400 &&
+            adb shell wm density 420 &&
+            adb shell settings put system font_scale 1.0 &&
+            adb shell cmd alarm set-timezone UTC &&
+            adb shell cmd uimode night no &&
+            adb shell settings put global window_animation_scale 0 &&
+            adb shell settings put global transition_animation_scale 0 &&
+            adb shell settings put global animator_duration_scale 0 &&
+            adb shell rm -rf /sdcard/Download/agent-relay-usage-guide &&
             ./gradlew
             :app:connectedDebugAndroidTest
             :ssh:android:connectedDebugAndroidTest
             :storage:android:connectedDebugAndroidTest
-            --stacktrace
+            --stacktrace &&
+            mkdir -p build/usage-guide/captured &&
+            adb pull /sdcard/Download/agent-relay-usage-guide/.
+            build/usage-guide/captured/
 
       - name: Verify connected-test evidence
         run: |
           set -o pipefail
           python3 scripts/ci/verify_connected_tests.py --root . \
-            --minimum-tests 25 --minimum-executed 25 \
+            --minimum-tests 26 --minimum-executed 26 \
             --require-module app \
             --require-module ssh/android \
             --require-module storage/android | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Verify and build app workflow guide
+        run: |
+          set -o pipefail
+          uv run --only-group docs python scripts/docs/render_workflows.py --check
+          uv run --only-group docs python scripts/docs/verify_workflows.py \
+            --captured build/usage-guide/captured | tee -a "$GITHUB_STEP_SUMMARY"
+          uv run --only-group docs mkdocs build --strict
+          catalogue_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/blob/${GITHUB_SHA}/docs/WORKFLOWS.md"
+          {
+            echo "### App workflow guide"
+            echo
+            echo "- [Browse the workflow catalogue](${catalogue_url})"
+            echo "- Download this run's UI evidence artifact for the complete static site."
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload UI test evidence
         if: ${{ !cancelled() }}
@@ -85,8 +122,55 @@ jobs:
             **/build/outputs/androidTest-results/connected/**
             **/build/reports/androidTests/connected/**
             build/reports/problems/**
+            build/usage-guide/**
           if-no-files-found: error
           retention-days: 14
+
+      - name: Upload browsable usage guide
+        if: ${{ success() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: usage-guide-site-${{ github.run_attempt }}
+          path: build/site
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Configure explicitly enabled public Pages
+        if: >-
+          github.event_name == 'push' &&
+          github.ref == 'refs/heads/main' &&
+          vars.ENABLE_PUBLIC_PAGES == 'true'
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - name: Upload explicitly enabled public Pages artifact
+        if: >-
+          github.event_name == 'push' &&
+          github.ref == 'refs/heads/main' &&
+          vars.ENABLE_PUBLIC_PAGES == 'true'
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: build/site
+
+  deploy-pages:
+    name: Publish explicitly enabled public usage guide
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      vars.ENABLE_PUBLIC_PAGES == 'true'
+    needs: current-phone
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy usage guide
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
 
   extended-matrix:
     name: UI matrix (${{ matrix.name }})
@@ -100,18 +184,18 @@ jobs:
           - name: current-phone
             api-level: 36
             profile: pixel_7_pro
-            minimum-tests: 25
-            minimum-executed: 25
+            minimum-tests: 26
+            minimum-executed: 26
           - name: minimum-phone
             api-level: 28
             profile: pixel_2
-            minimum-tests: 22
-            minimum-executed: 22
+            minimum-tests: 23
+            minimum-executed: 23
           - name: current-tablet
             api-level: 36
             profile: pixel_tablet
-            minimum-tests: 25
-            minimum-executed: 25
+            minimum-tests: 26
+            minimum-executed: 26
 
     steps:
       - name: Check out source

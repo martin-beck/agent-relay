@@ -38,7 +38,7 @@ sdk.dir=/path/to/Android/Sdk
 Run the same gate as GitHub Actions:
 
 ```bash
-uv sync --locked --only-group quality
+uv sync --locked --only-group quality --only-group docs
 uv run pre-commit run --all-files --show-diff-on-failure
 ./gradlew spotlessCheck detekt buildHealth test koverXmlReport koverVerify lintDebug assembleDebug --stacktrace
 ```
@@ -46,7 +46,7 @@ uv run pre-commit run --all-files --show-diff-on-failure
 On Windows PowerShell:
 
 ```powershell
-uv sync --locked --only-group quality
+uv sync --locked --only-group quality --only-group docs
 uv run pre-commit run --all-files --show-diff-on-failure
 .\gradlew.bat spotlessCheck detekt buildHealth test koverXmlReport koverVerify lintDebug assembleDebug --stacktrace
 ```
@@ -123,6 +123,73 @@ Review every changed PNG under `app/src/test/screenshots` before committing it.
 Do not combine record and verify in one Gradle invocation because both
 Roborazzi modes use the same Android unit-test task.
 
+## App workflow guide
+
+The [app workflow catalogue](WORKFLOWS.md) is the shortest route from a user goal
+to current or planned behavior. GitHub renders it directly, including every
+reviewed screenshot. The generated Material for MkDocs site adds navigation and
+search.
+
+The repository keeps authored intent, generated pages, executable evidence, and
+reviewed output separate:
+
+- `docs/workflows/scenarios/*.yml` contains the ordered scenario contracts;
+- `docs/WORKFLOWS.md` and `docs/workflows/*.md` are generated and committed;
+- `docs/assets/workflows/<scenario>/*.png` contains reviewed emulator evidence;
+- `UsageJourneyTest.kt` and `UsageJourneyFixtures.kt` exercise only synthetic
+  `androidTest` data that is absent from release builds;
+- `scripts/docs` renders, checks, captures, and compares the guide; and
+- `mkdocs.yml` defines the searchable static site.
+
+Validate the authored catalogue, reviewed images, and site without an emulator:
+
+```bash
+uv run --only-group docs python scripts/docs/render_workflows.py --check
+uv run --only-group docs python scripts/docs/verify_workflows.py
+uv run --only-group docs mkdocs build --strict
+uv run --only-group docs mkdocs serve --strict
+```
+
+The preview is available at `http://127.0.0.1:8000/` while the final command is
+running.
+
+To compare a fresh Android API 36 emulator run with the reviewed evidence, set
+`ANDROID_SDK_ROOT`, boot exactly one emulator, and run:
+
+```bash
+scripts/docs/capture_usage_workflows.sh
+```
+
+The script rejects physical devices and ambiguous device selection, applies the
+canonical size, density, light theme, font scale, locale-independent UTC
+formatting, executes the semantic journey, pulls all 14 images, performs the
+pixel-tolerant comparison, and builds the site. It writes transient evidence
+under `build/usage-guide` and the browsable site under `build/site`.
+
+After an intentional UI change, inspect every new image first, then explicitly
+replace the reviewed set and rerun comparison:
+
+```bash
+scripts/docs/capture_usage_workflows.sh --record
+git diff --stat docs/assets/workflows
+```
+
+Never record a baseline merely to silence unexplained drift. Update its scenario
+contract and alt text when the user-visible meaning changes.
+
+Every pull request and push to `main` makes the catalogue available in three
+places:
+
+1. the committed Markdown entry point at `docs/WORKFLOWS.md`;
+2. the `usage-guide-site` workflow artifact, which can be downloaded, extracted,
+   and opened at `index.html`; and
+3. the GitHub Pages URL only when the repository owner has approved public
+   publication, configured Pages, and set `ENABLE_PUBLIC_PAGES=true`.
+
+The Pages path is deliberately opt-in because this private personal repository
+cannot use access-controlled Pages. All screenshots and fixtures remain
+synthetic even when public publication is approved.
+
 ## Android Studio
 
 1. Open the repository root as an existing project.
@@ -174,12 +241,14 @@ Confirm that every expected module produced clean JUnit evidence:
 
 ```bash
 python3 scripts/ci/verify_connected_tests.py --root . \
-  --minimum-tests 25 --minimum-executed 25 \
+  --minimum-tests 26 --minimum-executed 26 \
   --require-module app --require-module ssh/android --require-module storage/android
 ```
 
-The pull-request UI workflow runs the same suite on an API 36 emulator. A
-successful compile or JVM test does not substitute for device execution.
+The pull-request UI workflow runs the same suite on an API 36 emulator, compares
+the workflow captures with reviewed evidence, and builds the static guide. A
+successful compile, JVM test, or site build does not substitute for device
+execution.
 
 ## CI
 
