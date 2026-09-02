@@ -31,7 +31,7 @@ permission to redistribute source code, APKs, or project artifacts.
 | Generic connection-provider API | Implemented and unit tested |
 | Local device connection provider | Implemented and unit tested |
 | SSH connection provider and profile setup | Encrypted credentials, strict per-hop host keys, configured jump routes, persistent Android keys, confirmed public-key installation, and key-only probes implemented; final real-device evidence remains |
-| Codex, OpenCode, Continue, Claude, Cline, and Aider adapters | Implemented with contract tests; live checks where available |
+| Codex, OpenCode, OpenDesk, Continue, Claude, Cline, and Aider adapters | Implemented with contract tests; live checks where available |
 | Encrypted session hub and runtime coordinator | Implemented and unit tested |
 | Quality gates | Detekt, Ruff, Radon, Lizard, Vale, strict compiler/lint checks, dependency analysis, 70% coverage, visual regression, property tests, and bounded fuzzing |
 | Adaptive Compose UI and app integration | Provider-neutral setup and session launch, typed timeline, durable text composer, capability-gated controls, risk-aware approvals/questions, adaptive-boundary tests, and deterministic UI baselines implemented |

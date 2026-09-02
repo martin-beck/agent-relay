@@ -24,7 +24,7 @@ application graph. It can:
 - show provider probes, connection state, sanitized errors, unread counts, and
   actionable activity counts;
 - list sessions discovered through Aider, Claude Code, Cline, Codex, Continue,
-  and OpenCode provider adapters;
+  OpenCode, and OpenDesk provider adapters;
 - start a session from a ready agent endpoint with provider-neutral launch
   options;
 - render cached user messages, agent commentary, final answers, plans,

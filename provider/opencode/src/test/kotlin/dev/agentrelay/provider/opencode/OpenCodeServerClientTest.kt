@@ -31,7 +31,8 @@ class OpenCodeServerClientTest {
         val runtime = FakeRuntime(server, eventStream, replacementEventStream)
         val client = OpenCodeServerClient.start(
             runtime = runtime,
-            executable = "/home/test/.local/bin/opencode",
+            executable = ResolvedOpenCodeExecutable("/home/test/.local/bin/opencode"),
+            configuration = testConfiguration(),
             dispatcher = UnconfinedTestDispatcher(testScheduler),
         )
 
@@ -86,7 +87,8 @@ class OpenCodeServerClientTest {
         }
         val client = OpenCodeServerClient.start(
             runtime = recoveringRuntime,
-            executable = "/usr/bin/opencode",
+            executable = ResolvedOpenCodeExecutable("/usr/bin/opencode"),
+            configuration = testConfiguration(),
             dispatcher = UnconfinedTestDispatcher(testScheduler),
         )
         assertEquals(3, recoveringRuntime.healthCalls)
@@ -100,13 +102,23 @@ class OpenCodeServerClientTest {
         assertFailsWith<IllegalStateException> {
             OpenCodeServerClient.start(
                 runtime = failedRuntime,
-                executable = "/usr/bin/opencode",
+                executable = ResolvedOpenCodeExecutable("/usr/bin/opencode"),
+                configuration = testConfiguration(),
                 dispatcher = UnconfinedTestDispatcher(testScheduler),
             )
         }
         assertEquals(40, failedRuntime.healthCalls)
         assertTrue(failedServer.closed)
     }
+
+    private fun testConfiguration() = OpenCodeCompatibleProviderConfiguration(
+        descriptor = OpenCodeAgentProviderFactory().descriptor,
+        executableName = "OpenCode",
+        installHint = "test",
+        executableLookupScript = "test",
+        serveArguments = listOf("serve"),
+        readinessDetails = "test",
+    )
 
     private data class Executed(
         val command: RemoteCommand,

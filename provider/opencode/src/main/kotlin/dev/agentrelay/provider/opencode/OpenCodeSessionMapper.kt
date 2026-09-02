@@ -10,7 +10,11 @@ import kotlinx.serialization.json.JsonPrimitive
 internal val OPENCODE_PROVIDER_ID = AgentProviderId("anomaly.opencode")
 
 internal object OpenCodeSessionMapper {
-    fun fromJson(session: JsonObject, status: String?): AgentSession {
+    fun fromJson(
+        session: JsonObject,
+        status: String?,
+        agentProviderId: AgentProviderId = OPENCODE_PROVIDER_ID,
+    ): AgentSession {
         val id = requireNotNull(session.string("id")) { "OpenCode session is missing its id" }
         val title = session.string("title")?.takeIf(String::isNotBlank)
         val modelObject = session.objectValue("model")
@@ -20,7 +24,7 @@ internal object OpenCodeSessionMapper {
 
         return AgentSession(
             id = AgentSessionId(id),
-            providerId = OPENCODE_PROVIDER_ID,
+            providerId = agentProviderId,
             title = title,
             preview = title.orEmpty(),
             workingDirectory = session.string("directory"),
