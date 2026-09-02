@@ -37,4 +37,27 @@
     <string name="background_transport_start">接続を維持する</string>
     <string name="background_transport_retry">もう一度試す</string>
     <string name="background_transport_stop_button">バックグラウンド接続を停止</string>
+    <string name="session_creator_title">新しいセッションを開始</string>
+    <string name="session_creator_context">%1$s  -  %2$s  -  %3$s</string>
+    <string name="session_creator_guidance">プロバイダーに依存しない起動設定のみを選択してください。空欄にすると、エージェントプロバイダーの既定値を使用します。</string>
+    <string name="session_creator_working_directory">作業ディレクトリ（任意）</string>
+    <string name="session_creator_working_directory_support">パスは選択した接続プロバイダー上で解釈されます。</string>
+    <string name="session_creator_model">モデル（任意）</string>
+    <string name="session_creator_model_support">このエージェントプロバイダーが対応する正確なモデル識別子を入力してください。</string>
+    <string name="session_creator_start">セッションを開始</string>
+    <string name="action_cancel">キャンセル</string>
+    <string name="speech_input_title">音声入力</string>
+    <string name="speech_selected_model">オフラインモデル：%1$s</string>
+    <string name="speech_install_model">オフラインモデルをインストール</string>
+    <string name="speech_download_progress">%1$d%% ダウンロード済み</string>
+    <string name="speech_cancel_model_download">モデルのダウンロードをキャンセル</string>
+    <string name="speech_start_input">音声入力を開始</string>
+    <string name="speech_cancel_input">音声入力をキャンセル</string>
+    <string name="speech_stop_recording">録音を停止</string>
+    <string name="speech_use_transcript">文字起こしを使用</string>
+    <string name="speech_discard_transcript">文字起こしを破棄</string>
+    <string name="speech_retry_model_installation">モデルのインストールを再試行</string>
+    <string name="speech_dismiss_error">音声エラーを閉じる</string>
+    <string name="speech_model_label">オフラインモデル</string>
+    <string name="speech_model_installed">%1$s - インストール済み</string>
 </resources>

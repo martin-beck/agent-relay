@@ -37,4 +37,27 @@
     <string name="background_transport_start">Verbindungen aktiv halten</string>
     <string name="background_transport_retry">Erneut versuchen</string>
     <string name="background_transport_stop_button">Hintergrundverbindung beenden</string>
+    <string name="session_creator_title">Neue Sitzung starten</string>
+    <string name="session_creator_context">%1$s  -  %2$s  -  %3$s</string>
+    <string name="session_creator_guidance">Wählen Sie nur anbieterneutrale Starteinstellungen. Lassen Sie ein Feld leer, um den Standard des Agent-Anbieters zu verwenden.</string>
+    <string name="session_creator_working_directory">Arbeitsverzeichnis (optional)</string>
+    <string name="session_creator_working_directory_support">Der Pfad wird auf dem ausgewählten Verbindungsanbieter interpretiert.</string>
+    <string name="session_creator_model">Modell (optional)</string>
+    <string name="session_creator_model_support">Verwenden Sie eine exakte Modellkennung, die dieser Agent-Anbieter unterstützt.</string>
+    <string name="session_creator_start">Sitzung starten</string>
+    <string name="action_cancel">Abbrechen</string>
+    <string name="speech_input_title">Spracheingabe</string>
+    <string name="speech_selected_model">Offline-Modell: %1$s</string>
+    <string name="speech_install_model">Offline-Modell installieren</string>
+    <string name="speech_download_progress">%1$d %% heruntergeladen</string>
+    <string name="speech_cancel_model_download">Modelldownload abbrechen</string>
+    <string name="speech_start_input">Spracheingabe starten</string>
+    <string name="speech_cancel_input">Spracheingabe abbrechen</string>
+    <string name="speech_stop_recording">Aufnahme beenden</string>
+    <string name="speech_use_transcript">Transkript verwenden</string>
+    <string name="speech_discard_transcript">Transkript verwerfen</string>
+    <string name="speech_retry_model_installation">Modellinstallation erneut versuchen</string>
+    <string name="speech_dismiss_error">Sprachfehler schließen</string>
+    <string name="speech_model_label">Offline-Modell</string>
+    <string name="speech_model_installed">%1$s - installiert</string>
 </resources>

@@ -4,9 +4,12 @@ import android.app.Application
 import android.content.Context
 import android.content.res.Configuration
 import android.view.View
+import java.text.NumberFormat
 import java.util.Locale
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -31,6 +34,36 @@ class LocalizedResourcesTest {
 
             assertEquals(languageTag, expected, localized)
             assertNotEquals(languageTag, english, localized)
+        }
+    }
+
+    @Test
+    fun bundledLocalesFormatOpaqueSessionAndSpeechValues() {
+        val opaqueValues = listOf("Secure Shell", "Host 42", "Codex")
+
+        (setOf("en-US") + EXPECTED_ALLOW_LABELS.keys).forEach { languageTag ->
+            val context = localizedContext(languageTag)
+            val sessionContext = context.getString(
+                R.string.session_creator_context,
+                *opaqueValues.toTypedArray(),
+            )
+            val selectedModel = context.getString(
+                R.string.speech_selected_model,
+                "model.test",
+            )
+            val downloadProgress = context.getString(R.string.speech_download_progress, 42)
+
+            opaqueValues.forEach { value ->
+                assertTrue(languageTag, sessionContext.contains(value))
+            }
+            assertTrue(languageTag, selectedModel.contains("model.test"))
+            val localizedNumber = NumberFormat
+                .getIntegerInstance(Locale.forLanguageTag(languageTag))
+                .format(42)
+            assertTrue(languageTag, downloadProgress.contains(localizedNumber))
+            assertTrue(languageTag, downloadProgress.contains("%"))
+            assertFalse(languageTag, sessionContext.contains("%1\$"))
+            assertFalse(languageTag, selectedModel.contains("%1\$"))
         }
     }
 

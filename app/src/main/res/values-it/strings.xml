@@ -37,4 +37,27 @@
     <string name="background_transport_start">Mantieni attive le connessioni</string>
     <string name="background_transport_retry">Riprova</string>
     <string name="background_transport_stop_button">Interrompi connessione in background</string>
+    <string name="session_creator_title">Avvia una nuova sessione</string>
+    <string name="session_creator_context">%1$s  -  %2$s  -  %3$s</string>
+    <string name="session_creator_guidance">Scegli solo impostazioni di avvio indipendenti dal provider. Lascia vuoto un campo per usare il valore predefinito del provider dell’agente.</string>
+    <string name="session_creator_working_directory">Directory di lavoro (facoltativa)</string>
+    <string name="session_creator_working_directory_support">Il percorso viene interpretato nel provider di connessione selezionato.</string>
+    <string name="session_creator_model">Modello (facoltativo)</string>
+    <string name="session_creator_model_support">Usa un identificatore di modello esatto supportato da questo provider dell’agente.</string>
+    <string name="session_creator_start">Avvia sessione</string>
+    <string name="action_cancel">Annulla</string>
+    <string name="speech_input_title">Input vocale</string>
+    <string name="speech_selected_model">Modello offline: %1$s</string>
+    <string name="speech_install_model">Installa modello offline</string>
+    <string name="speech_download_progress">Scaricato al %1$d%%</string>
+    <string name="speech_cancel_model_download">Annulla download modello</string>
+    <string name="speech_start_input">Avvia input vocale</string>
+    <string name="speech_cancel_input">Annulla input vocale</string>
+    <string name="speech_stop_recording">Interrompi registrazione</string>
+    <string name="speech_use_transcript">Usa trascrizione</string>
+    <string name="speech_discard_transcript">Scarta trascrizione</string>
+    <string name="speech_retry_model_installation">Riprova installazione modello</string>
+    <string name="speech_dismiss_error">Chiudi errore vocale</string>
+    <string name="speech_model_label">Modello offline</string>
+    <string name="speech_model_installed">%1$s - installato</string>
 </resources>

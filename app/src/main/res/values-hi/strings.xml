@@ -37,4 +37,27 @@
     <string name="background_transport_start">कनेक्शन सक्रिय रखें</string>
     <string name="background_transport_retry">फिर कोशिश करें</string>
     <string name="background_transport_stop_button">बैकग्राउंड कनेक्शन रोकें</string>
+    <string name="session_creator_title">नया सत्र शुरू करें</string>
+    <string name="session_creator_context">%1$s  -  %2$s  -  %3$s</string>
+    <string name="session_creator_guidance">केवल प्रदाता-स्वतंत्र लॉन्च सेटिंग चुनें। एजेंट प्रदाता का डिफ़ॉल्ट उपयोग करने के लिए फ़ील्ड खाली छोड़ें।</string>
+    <string name="session_creator_working_directory">कार्यशील डायरेक्टरी (वैकल्पिक)</string>
+    <string name="session_creator_working_directory_support">पथ की व्याख्या चुने गए कनेक्शन प्रदाता पर की जाती है।</string>
+    <string name="session_creator_model">मॉडल (वैकल्पिक)</string>
+    <string name="session_creator_model_support">इस एजेंट प्रदाता द्वारा समर्थित सटीक मॉडल पहचानकर्ता का उपयोग करें।</string>
+    <string name="session_creator_start">सत्र शुरू करें</string>
+    <string name="action_cancel">रद्द करें</string>
+    <string name="speech_input_title">वॉइस इनपुट</string>
+    <string name="speech_selected_model">ऑफ़लाइन मॉडल: %1$s</string>
+    <string name="speech_install_model">ऑफ़लाइन मॉडल इंस्टॉल करें</string>
+    <string name="speech_download_progress">%1$d%% डाउनलोड हुआ</string>
+    <string name="speech_cancel_model_download">मॉडल डाउनलोड रद्द करें</string>
+    <string name="speech_start_input">वॉइस इनपुट शुरू करें</string>
+    <string name="speech_cancel_input">वॉइस इनपुट रद्द करें</string>
+    <string name="speech_stop_recording">रिकॉर्डिंग रोकें</string>
+    <string name="speech_use_transcript">ट्रांसक्रिप्ट इस्तेमाल करें</string>
+    <string name="speech_discard_transcript">ट्रांसक्रिप्ट हटाएँ</string>
+    <string name="speech_retry_model_installation">मॉडल इंस्टॉल फिर से आज़माएँ</string>
+    <string name="speech_dismiss_error">वॉइस त्रुटि बंद करें</string>
+    <string name="speech_model_label">ऑफ़लाइन मॉडल</string>
+    <string name="speech_model_installed">%1$s - इंस्टॉल किया गया</string>
 </resources>

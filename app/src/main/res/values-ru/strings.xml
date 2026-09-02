@@ -37,4 +37,27 @@
     <string name="background_transport_start">Сохранять подключения активными</string>
     <string name="background_transport_retry">Повторить</string>
     <string name="background_transport_stop_button">Остановить фоновое подключение</string>
+    <string name="session_creator_title">Начать новый сеанс</string>
+    <string name="session_creator_context">%1$s  -  %2$s  -  %3$s</string>
+    <string name="session_creator_guidance">Выберите только независимые от поставщика параметры запуска. Оставьте поле пустым, чтобы использовать значение по умолчанию поставщика агента.</string>
+    <string name="session_creator_working_directory">Рабочий каталог (необязательно)</string>
+    <string name="session_creator_working_directory_support">Путь интерпретируется выбранным поставщиком подключения.</string>
+    <string name="session_creator_model">Модель (необязательно)</string>
+    <string name="session_creator_model_support">Укажите точный идентификатор модели, поддерживаемый этим поставщиком агента.</string>
+    <string name="session_creator_start">Начать сеанс</string>
+    <string name="action_cancel">Отмена</string>
+    <string name="speech_input_title">Голосовой ввод</string>
+    <string name="speech_selected_model">Автономная модель: %1$s</string>
+    <string name="speech_install_model">Установить автономную модель</string>
+    <string name="speech_download_progress">Загружено %1$d%%</string>
+    <string name="speech_cancel_model_download">Отменить загрузку модели</string>
+    <string name="speech_start_input">Начать голосовой ввод</string>
+    <string name="speech_cancel_input">Отменить голосовой ввод</string>
+    <string name="speech_stop_recording">Остановить запись</string>
+    <string name="speech_use_transcript">Использовать расшифровку</string>
+    <string name="speech_discard_transcript">Удалить расшифровку</string>
+    <string name="speech_retry_model_installation">Повторить установку модели</string>
+    <string name="speech_dismiss_error">Закрыть ошибку голосового ввода</string>
+    <string name="speech_model_label">Автономная модель</string>
+    <string name="speech_model_installed">%1$s — установлена</string>
 </resources>

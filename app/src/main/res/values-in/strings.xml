@@ -37,4 +37,27 @@
     <string name="background_transport_start">Pertahankan koneksi tetap aktif</string>
     <string name="background_transport_retry">Coba lagi</string>
     <string name="background_transport_stop_button">Hentikan koneksi latar belakang</string>
+    <string name="session_creator_title">Mulai sesi baru</string>
+    <string name="session_creator_context">%1$s  -  %2$s  -  %3$s</string>
+    <string name="session_creator_guidance">Pilih hanya setelan peluncuran yang netral terhadap penyedia. Kosongkan bidang untuk menggunakan nilai bawaan penyedia agen.</string>
+    <string name="session_creator_working_directory">Direktori kerja (opsional)</string>
+    <string name="session_creator_working_directory_support">Jalur ditafsirkan pada penyedia koneksi yang dipilih.</string>
+    <string name="session_creator_model">Model (opsional)</string>
+    <string name="session_creator_model_support">Gunakan pengenal model yang tepat dan didukung oleh penyedia agen ini.</string>
+    <string name="session_creator_start">Mulai sesi</string>
+    <string name="action_cancel">Batal</string>
+    <string name="speech_input_title">Input suara</string>
+    <string name="speech_selected_model">Model offline: %1$s</string>
+    <string name="speech_install_model">Instal model offline</string>
+    <string name="speech_download_progress">%1$d%% diunduh</string>
+    <string name="speech_cancel_model_download">Batalkan unduhan model</string>
+    <string name="speech_start_input">Mulai input suara</string>
+    <string name="speech_cancel_input">Batalkan input suara</string>
+    <string name="speech_stop_recording">Hentikan perekaman</string>
+    <string name="speech_use_transcript">Gunakan transkrip</string>
+    <string name="speech_discard_transcript">Buang transkrip</string>
+    <string name="speech_retry_model_installation">Coba lagi pemasangan model</string>
+    <string name="speech_dismiss_error">Tutup kesalahan suara</string>
+    <string name="speech_model_label">Model offline</string>
+    <string name="speech_model_installed">%1$s - terpasang</string>
 </resources>

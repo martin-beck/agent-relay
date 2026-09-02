@@ -37,4 +37,27 @@
     <string name="background_transport_start">إبقاء الاتصالات نشطة</string>
     <string name="background_transport_retry">المحاولة مرة أخرى</string>
     <string name="background_transport_stop_button">إيقاف الاتصال في الخلفية</string>
+    <string name="session_creator_title">بدء جلسة جديدة</string>
+    <string name="session_creator_context">%1$s  -  %2$s  -  %3$s</string>
+    <string name="session_creator_guidance">اختر فقط إعدادات تشغيل مستقلة عن المزوّد. اترك الحقل فارغًا لاستخدام الإعداد الافتراضي لمزوّد الوكيل.</string>
+    <string name="session_creator_working_directory">دليل العمل (اختياري)</string>
+    <string name="session_creator_working_directory_support">يُفسَّر المسار لدى مزوّد الاتصال المحدد.</string>
+    <string name="session_creator_model">النموذج (اختياري)</string>
+    <string name="session_creator_model_support">استخدم معرّف نموذج دقيقًا يدعمه مزوّد الوكيل هذا.</string>
+    <string name="session_creator_start">بدء الجلسة</string>
+    <string name="action_cancel">إلغاء</string>
+    <string name="speech_input_title">إدخال صوتي</string>
+    <string name="speech_selected_model">النموذج بلا اتصال: %1$s</string>
+    <string name="speech_install_model">تثبيت نموذج بلا اتصال</string>
+    <string name="speech_download_progress">تم تنزيل %1$d%%</string>
+    <string name="speech_cancel_model_download">إلغاء تنزيل النموذج</string>
+    <string name="speech_start_input">بدء الإدخال الصوتي</string>
+    <string name="speech_cancel_input">إلغاء الإدخال الصوتي</string>
+    <string name="speech_stop_recording">إيقاف التسجيل</string>
+    <string name="speech_use_transcript">استخدام النص المنسوخ</string>
+    <string name="speech_discard_transcript">تجاهل النص المنسوخ</string>
+    <string name="speech_retry_model_installation">إعادة محاولة تثبيت النموذج</string>
+    <string name="speech_dismiss_error">إغلاق خطأ الإدخال الصوتي</string>
+    <string name="speech_model_label">نموذج بلا اتصال</string>
+    <string name="speech_model_installed">%1$s - مثبّت</string>
 </resources>

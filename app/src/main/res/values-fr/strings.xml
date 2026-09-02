@@ -37,4 +37,27 @@
     <string name="background_transport_start">Maintenir les connexions actives</string>
     <string name="background_transport_retry">Réessayer</string>
     <string name="background_transport_stop_button">Arrêter la connexion en arrière-plan</string>
+    <string name="session_creator_title">Démarrer une nouvelle session</string>
+    <string name="session_creator_context">%1$s  -  %2$s  -  %3$s</string>
+    <string name="session_creator_guidance">Choisissez uniquement des paramètres de lancement indépendants du fournisseur. Laissez un champ vide pour utiliser la valeur par défaut du fournisseur d’agent.</string>
+    <string name="session_creator_working_directory">Répertoire de travail (facultatif)</string>
+    <string name="session_creator_working_directory_support">Le chemin est interprété sur le fournisseur de connexion sélectionné.</string>
+    <string name="session_creator_model">Modèle (facultatif)</string>
+    <string name="session_creator_model_support">Utilisez un identifiant de modèle exact pris en charge par ce fournisseur d’agent.</string>
+    <string name="session_creator_start">Démarrer la session</string>
+    <string name="action_cancel">Annuler</string>
+    <string name="speech_input_title">Saisie vocale</string>
+    <string name="speech_selected_model">Modèle hors ligne : %1$s</string>
+    <string name="speech_install_model">Installer le modèle hors ligne</string>
+    <string name="speech_download_progress">%1$d %% téléchargé</string>
+    <string name="speech_cancel_model_download">Annuler le téléchargement du modèle</string>
+    <string name="speech_start_input">Démarrer la saisie vocale</string>
+    <string name="speech_cancel_input">Annuler la saisie vocale</string>
+    <string name="speech_stop_recording">Arrêter l’enregistrement</string>
+    <string name="speech_use_transcript">Utiliser la transcription</string>
+    <string name="speech_discard_transcript">Ignorer la transcription</string>
+    <string name="speech_retry_model_installation">Réessayer l’installation du modèle</string>
+    <string name="speech_dismiss_error">Fermer l’erreur vocale</string>
+    <string name="speech_model_label">Modèle hors ligne</string>
+    <string name="speech_model_installed">%1$s - installé</string>
 </resources>

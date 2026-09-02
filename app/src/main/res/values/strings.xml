@@ -67,4 +67,27 @@
     <string name="background_transport_start">Keep connections active</string>
     <string name="background_transport_retry">Try again</string>
     <string name="background_transport_stop_button">Stop background connection</string>
+    <string name="session_creator_title">Start a new session</string>
+    <string name="session_creator_context">%1$s  -  %2$s  -  %3$s</string>
+    <string name="session_creator_guidance">Choose only provider-neutral launch settings. Leave a field empty to use the agent provider\'s default.</string>
+    <string name="session_creator_working_directory">Working directory (optional)</string>
+    <string name="session_creator_working_directory_support">The path is interpreted on the selected connection provider.</string>
+    <string name="session_creator_model">Model (optional)</string>
+    <string name="session_creator_model_support">Use an exact model identifier supported by this agent provider.</string>
+    <string name="session_creator_start">Start session</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="speech_input_title">Voice input</string>
+    <string name="speech_selected_model">Offline model: %1$s</string>
+    <string name="speech_install_model">Install offline model</string>
+    <string name="speech_download_progress">%1$d%% downloaded</string>
+    <string name="speech_cancel_model_download">Cancel model download</string>
+    <string name="speech_start_input">Start voice input</string>
+    <string name="speech_cancel_input">Cancel voice input</string>
+    <string name="speech_stop_recording">Stop recording</string>
+    <string name="speech_use_transcript">Use transcript</string>
+    <string name="speech_discard_transcript">Discard transcript</string>
+    <string name="speech_retry_model_installation">Retry model installation</string>
+    <string name="speech_dismiss_error">Dismiss voice error</string>
+    <string name="speech_model_label">Offline model</string>
+    <string name="speech_model_installed">%1$s - installed</string>
 </resources>

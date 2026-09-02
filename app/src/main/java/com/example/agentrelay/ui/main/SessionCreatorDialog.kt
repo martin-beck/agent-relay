@@ -13,7 +13,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.agentrelay.R
 
 @Composable
 internal fun SessionCreatorDialog(
@@ -30,18 +32,21 @@ internal fun SessionCreatorDialog(
                 onDismiss()
             }
         },
-        title = { Text("Start a new session") },
+        title = { Text(stringResource(R.string.session_creator_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
-                    text = state.connectionProviderName + "  -  " +
-                        state.connectionLabel + "  -  " + state.agentProviderLabel,
+                    text = stringResource(
+                        R.string.session_creator_context,
+                        state.connectionProviderName,
+                        state.connectionLabel,
+                        state.agentProviderLabel,
+                    ),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.primary,
                 )
                 Text(
-                    text = "Choose only provider-neutral launch settings. Leave a field empty to use " +
-                        "the agent provider's default.",
+                    text = stringResource(R.string.session_creator_guidance),
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 OutlinedTextField(
@@ -49,9 +54,9 @@ internal fun SessionCreatorDialog(
                     onValueChange = onWorkingDirectoryChanged,
                     modifier = Modifier.fillMaxWidth().testTag("session-working-directory"),
                     enabled = !state.isBusy,
-                    label = { Text("Working directory (optional)") },
+                    label = { Text(stringResource(R.string.session_creator_working_directory)) },
                     supportingText = {
-                        Text("The path is interpreted on the selected connection provider.")
+                        Text(stringResource(R.string.session_creator_working_directory_support))
                     },
                     singleLine = true,
                 )
@@ -60,9 +65,9 @@ internal fun SessionCreatorDialog(
                     onValueChange = onModelChanged,
                     modifier = Modifier.fillMaxWidth().testTag("session-model"),
                     enabled = !state.isBusy,
-                    label = { Text("Model (optional)") },
+                    label = { Text(stringResource(R.string.session_creator_model)) },
                     supportingText = {
-                        Text("Use an exact model identifier supported by this agent provider.")
+                        Text(stringResource(R.string.session_creator_model_support))
                     },
                     singleLine = true,
                 )
@@ -77,7 +82,7 @@ internal fun SessionCreatorDialog(
                 if (state.isBusy) {
                     CircularProgressIndicator()
                 } else {
-                    Text("Start session")
+                    Text(stringResource(R.string.session_creator_start))
                 }
             }
         },
@@ -86,7 +91,7 @@ internal fun SessionCreatorDialog(
                 onClick = onDismiss,
                 enabled = !state.isBusy,
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
     )

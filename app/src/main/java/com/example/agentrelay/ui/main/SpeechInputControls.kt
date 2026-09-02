@@ -24,7 +24,9 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.agentrelay.R
 
 @Composable
 internal fun SpeechInputControls(
@@ -44,7 +46,7 @@ internal fun SpeechInputControls(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
-            text = "Voice input",
+            text = stringResource(R.string.speech_input_title),
             modifier = Modifier.semantics { heading() },
             style = MaterialTheme.typography.titleMedium,
         )
@@ -53,7 +55,7 @@ internal fun SpeechInputControls(
         } else {
             state.selectedModelName?.let { modelName ->
                 Text(
-                    text = "Offline model: $modelName",
+                    text = stringResource(R.string.speech_selected_model, modelName),
                     style = MaterialTheme.typography.labelLarge,
                 )
             }
@@ -79,7 +81,7 @@ private fun SpeechInputPhaseControls(
             onClick = actions.installModel,
             enabled = state.canInstall,
         ) {
-            Text("Install offline model")
+            Text(stringResource(R.string.speech_install_model))
         }
 
         SpeechInputPhase.INSTALLING -> {
@@ -92,7 +94,7 @@ private fun SpeechInputPhaseControls(
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Text(
-                    text = "$progress percent downloaded",
+                    text = stringResource(R.string.speech_download_progress, progress),
                     style = MaterialTheme.typography.labelMedium,
                 )
             }
@@ -100,7 +102,7 @@ private fun SpeechInputPhaseControls(
                 onClick = actions.cancelModelInstall,
                 enabled = state.canCancelInstall,
             ) {
-                Text("Cancel model download")
+                Text(stringResource(R.string.speech_cancel_model_download))
             }
         }
 
@@ -108,7 +110,7 @@ private fun SpeechInputPhaseControls(
             onClick = { actions.requestStart(sessionKey) },
             enabled = state.canStart,
         ) {
-            Text("Start voice input")
+            Text(stringResource(R.string.speech_start_input))
         }
 
         SpeechInputPhase.STARTING,
@@ -119,7 +121,7 @@ private fun SpeechInputPhaseControls(
                 onClick = { actions.cancel(sessionKey) },
                 enabled = state.canCancel,
             ) {
-                Text("Cancel voice input")
+                Text(stringResource(R.string.speech_cancel_input))
             }
         }
 
@@ -132,13 +134,13 @@ private fun SpeechInputPhaseControls(
                 onClick = { actions.stop(sessionKey) },
                 enabled = state.canStop,
             ) {
-                Text("Stop recording")
+                Text(stringResource(R.string.speech_stop_recording))
             }
             OutlinedButton(
                 onClick = { actions.cancel(sessionKey) },
                 enabled = state.canCancel,
             ) {
-                Text("Cancel voice input")
+                Text(stringResource(R.string.speech_cancel_input))
             }
         }
 
@@ -158,13 +160,13 @@ private fun SpeechInputPhaseControls(
                     onClick = { actions.useTranscript(sessionKey) },
                     enabled = state.canUseResult,
                 ) {
-                    Text("Use transcript")
+                    Text(stringResource(R.string.speech_use_transcript))
                 }
                 OutlinedButton(
                     onClick = { actions.dismiss(sessionKey) },
                     enabled = state.canDismiss,
                 ) {
-                    Text("Discard transcript")
+                    Text(stringResource(R.string.speech_discard_transcript))
                 }
             }
         }
@@ -172,12 +174,12 @@ private fun SpeechInputPhaseControls(
         SpeechInputPhase.FAILED -> {
             if (state.canInstall) {
                 Button(onClick = actions.installModel) {
-                    Text("Retry model installation")
+                    Text(stringResource(R.string.speech_retry_model_installation))
                 }
             }
             if (state.canDismiss) {
                 OutlinedButton(onClick = { actions.dismiss(sessionKey) }) {
-                    Text("Dismiss voice error")
+                    Text(stringResource(R.string.speech_dismiss_error))
                 }
             }
         }
@@ -196,7 +198,7 @@ private fun SpeechModelSelector(
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Text(
-            text = "Offline model",
+            text = stringResource(R.string.speech_model_label),
             style = MaterialTheme.typography.labelLarge,
         )
         state.models.forEach { model ->
@@ -214,7 +216,11 @@ private fun SpeechModelSelector(
             ) {
                 RadioButton(selected = selected, onClick = null)
                 Text(
-                    text = model.name + if (model.isReady) " - installed" else "",
+                    text = if (model.isReady) {
+                        stringResource(R.string.speech_model_installed, model.name)
+                    } else {
+                        model.name
+                    },
                     modifier = Modifier.padding(start = 8.dp),
                 )
             }

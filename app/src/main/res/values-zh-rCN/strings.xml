@@ -37,4 +37,27 @@
     <string name="background_transport_start">保持连接活动</string>
     <string name="background_transport_retry">重试</string>
     <string name="background_transport_stop_button">停止后台连接</string>
+    <string name="session_creator_title">启动新会话</string>
+    <string name="session_creator_context">%1$s  -  %2$s  -  %3$s</string>
+    <string name="session_creator_guidance">只选择与提供程序无关的启动设置。字段留空即可使用代理提供程序的默认值。</string>
+    <string name="session_creator_working_directory">工作目录（可选）</string>
+    <string name="session_creator_working_directory_support">该路径由所选连接提供程序解释。</string>
+    <string name="session_creator_model">模型（可选）</string>
+    <string name="session_creator_model_support">请输入此代理提供程序支持的准确模型标识符。</string>
+    <string name="session_creator_start">启动会话</string>
+    <string name="action_cancel">取消</string>
+    <string name="speech_input_title">语音输入</string>
+    <string name="speech_selected_model">离线模型：%1$s</string>
+    <string name="speech_install_model">安装离线模型</string>
+    <string name="speech_download_progress">已下载 %1$d%%</string>
+    <string name="speech_cancel_model_download">取消模型下载</string>
+    <string name="speech_start_input">开始语音输入</string>
+    <string name="speech_cancel_input">取消语音输入</string>
+    <string name="speech_stop_recording">停止录音</string>
+    <string name="speech_use_transcript">使用转写文本</string>
+    <string name="speech_discard_transcript">丢弃转写文本</string>
+    <string name="speech_retry_model_installation">重试模型安装</string>
+    <string name="speech_dismiss_error">关闭语音错误</string>
+    <string name="speech_model_label">离线模型</string>
+    <string name="speech_model_installed">%1$s - 已安装</string>
 </resources>

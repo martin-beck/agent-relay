@@ -37,4 +37,27 @@
     <string name="background_transport_start">Mantener conexiones activas</string>
     <string name="background_transport_retry">Intentar de nuevo</string>
     <string name="background_transport_stop_button">Detener conexión en segundo plano</string>
+    <string name="session_creator_title">Iniciar una sesión nueva</string>
+    <string name="session_creator_context">%1$s  -  %2$s  -  %3$s</string>
+    <string name="session_creator_guidance">Elija solo ajustes de inicio independientes del proveedor. Deje un campo vacío para usar el valor predeterminado del proveedor del agente.</string>
+    <string name="session_creator_working_directory">Directorio de trabajo (opcional)</string>
+    <string name="session_creator_working_directory_support">La ruta se interpreta en el proveedor de conexión seleccionado.</string>
+    <string name="session_creator_model">Modelo (opcional)</string>
+    <string name="session_creator_model_support">Use un identificador de modelo exacto compatible con este proveedor de agente.</string>
+    <string name="session_creator_start">Iniciar sesión</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="speech_input_title">Entrada de voz</string>
+    <string name="speech_selected_model">Modelo sin conexión: %1$s</string>
+    <string name="speech_install_model">Instalar modelo sin conexión</string>
+    <string name="speech_download_progress">%1$d%% descargado</string>
+    <string name="speech_cancel_model_download">Cancelar descarga del modelo</string>
+    <string name="speech_start_input">Iniciar entrada de voz</string>
+    <string name="speech_cancel_input">Cancelar entrada de voz</string>
+    <string name="speech_stop_recording">Detener grabación</string>
+    <string name="speech_use_transcript">Usar transcripción</string>
+    <string name="speech_discard_transcript">Descartar transcripción</string>
+    <string name="speech_retry_model_installation">Reintentar instalación del modelo</string>
+    <string name="speech_dismiss_error">Descartar error de voz</string>
+    <string name="speech_model_label">Modelo sin conexión</string>
+    <string name="speech_model_installed">%1$s - instalado</string>
 </resources>
