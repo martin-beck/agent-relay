@@ -542,10 +542,10 @@ class AndroidSpeechModelStore internal constructor(
     }
 
     private fun Throwable.toSpeechFailure(): SpeechFailure =
-        if (this is SpeechModelInstallException) {
-            SpeechFailure(code, guidance)
-        } else {
-            SpeechFailure(
+        when (this) {
+            is SpeechModelInstallException -> SpeechFailure(code, guidance)
+            is SpeechPackageDeliveryException -> SpeechFailure(code, guidance)
+            else -> SpeechFailure(
                 code = "MODEL_INSTALL_FAILED",
                 actionableMessage = "The speech model could not be installed. Retry the download.",
             )

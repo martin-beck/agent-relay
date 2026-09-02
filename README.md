@@ -34,6 +34,7 @@ permission to redistribute source code, APKs, or project artifacts.
 | Quality gates | Detekt, strict lint/Kotlin warnings, dependency analysis, 70% aggregate coverage, Roborazzi visual regression, property tests, and bounded fuzzing |
 | Adaptive Compose UI and app integration | Provider-neutral setup and session launch, typed timeline, durable text composer, capability-gated controls, risk-aware approvals/questions, adaptive-boundary tests, and deterministic UI baselines implemented |
 | Changed files and safe export | Encrypted per-session shelf plus checked single-file export for local and SSH workspaces; previews, diffs, and batch export remain |
+| Offline speech | Provider-neutral contracts, a private verified model store, and hardened HTTPS/tar.bz2 delivery adapters; the first admitted model, inference, audio, and UI remain |
 | Signed release build and distribution | Not available |
 
 See the [product roadmap](docs/PRODUCT_ROADMAP.md) for planned behavior and
