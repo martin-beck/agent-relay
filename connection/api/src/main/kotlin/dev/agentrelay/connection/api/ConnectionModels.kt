@@ -121,15 +121,46 @@ enum class ConnectionFailureCategory {
     UNKNOWN,
 }
 
+enum class ConnectionFailureMessageKind {
+    PROFILE_PREPARATION_FAILED,
+}
+
+sealed interface ConnectionFailureMessage {
+    data class Generated(val kind: ConnectionFailureMessageKind) : ConnectionFailureMessage
+
+    data class Verbatim(val text: String) : ConnectionFailureMessage {
+        init {
+            require(text.isNotBlank()) { "Failure message must not be blank" }
+        }
+    }
+}
+
 data class ConnectionFailure(
     val category: ConnectionFailureCategory,
     val code: String,
-    val actionableMessage: String,
+    val message: ConnectionFailureMessage,
     val recoverable: Boolean,
 ) {
+    constructor(
+        category: ConnectionFailureCategory,
+        code: String,
+        actionableMessage: String,
+        recoverable: Boolean,
+    ) : this(
+        category = category,
+        code = code,
+        message = ConnectionFailureMessage.Verbatim(actionableMessage),
+        recoverable = recoverable,
+    )
+
+    val actionableMessage: String
+        get() = when (message) {
+            is ConnectionFailureMessage.Generated -> code
+            is ConnectionFailureMessage.Verbatim -> message.text
+        }
+
     init {
         require(code.matches(Regex("[A-Z][A-Z0-9_]{2,63}"))) { "Failure code must be stable and redacted" }
-        require(actionableMessage.isNotBlank()) { "Failure message must not be blank" }
     }
 }
 

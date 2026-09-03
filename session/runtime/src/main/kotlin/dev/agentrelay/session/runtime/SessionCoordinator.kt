@@ -4,6 +4,8 @@ import dev.agentrelay.connection.api.ConnectionChallengeId
 import dev.agentrelay.connection.api.ConnectionDisconnectReason
 import dev.agentrelay.connection.api.ConnectionFailure
 import dev.agentrelay.connection.api.ConnectionFailureCategory
+import dev.agentrelay.connection.api.ConnectionFailureMessage
+import dev.agentrelay.connection.api.ConnectionFailureMessageKind
 import dev.agentrelay.connection.api.ConnectionIdentityDecision
 import dev.agentrelay.connection.api.ConnectionProfileSummary
 import dev.agentrelay.connection.api.ConnectionProviderRegistry
@@ -402,7 +404,9 @@ class SessionCoordinator(
         val failure = ConnectionFailure(
             category = ConnectionFailureCategory.CONFIGURATION,
             code = "CONNECTION_SETUP_FAILED",
-            actionableMessage = "Connection profile could not be prepared",
+            message = ConnectionFailureMessage.Generated(
+                ConnectionFailureMessageKind.PROFILE_PREPARATION_FAILED,
+            ),
             recoverable = true,
         )
         stateMutex.withLock {

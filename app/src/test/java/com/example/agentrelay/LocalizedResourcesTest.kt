@@ -328,6 +328,7 @@ class LocalizedResourcesTest {
         )
 
         val PRESENTATION_FALLBACK_RESOURCES = listOf(
+            R.string.connection_failure_profile_preparation,
             R.string.session_action_title_review_required,
             R.string.session_question_prompt_fallback,
         )

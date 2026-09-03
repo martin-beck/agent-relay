@@ -358,4 +358,5 @@
     <string name="session_activity_summary_connection_reconnected">%1$s が再接続されました。</string>
     <string name="session_action_title_review_required">エージェントの操作を確認する必要があります。</string>
     <string name="session_question_prompt_fallback">エージェントの質問</string>
+    <string name="connection_failure_profile_preparation">接続プロファイルを準備できませんでした。</string>
 </resources>

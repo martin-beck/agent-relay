@@ -3,6 +3,8 @@ package com.example.agentrelay.ui.main
 import com.example.agentrelay.R
 import dev.agentrelay.connection.api.ConnectionCapability
 import dev.agentrelay.connection.api.ConnectionDisconnectReason
+import dev.agentrelay.connection.api.ConnectionFailureMessage
+import dev.agentrelay.connection.api.ConnectionFailureMessageKind
 import dev.agentrelay.connection.api.ConnectionIdentityDisposition
 import dev.agentrelay.connection.api.ConnectionProviderDescriptor
 import dev.agentrelay.connection.api.ConnectionState
@@ -779,9 +781,9 @@ internal object SessionHubUiMapper {
                 },
             )
         is ConnectionState.Connected -> null
-        is ConnectionState.Reconnecting -> UiMessage.Verbatim(lastFailure.actionableMessage)
+        is ConnectionState.Reconnecting -> lastFailure.message.toUiMessage()
         is ConnectionState.AwaitingIdentityTrust -> UiMessage.Verbatim(challenge.endpoint)
-        is ConnectionState.Failed -> UiMessage.Verbatim(failure.actionableMessage)
+        is ConnectionState.Failed -> failure.message.toUiMessage()
     }
 
     private fun ConnectionDisconnectReason.localizedStatusDetail(): UiMessage? = when (this) {
@@ -830,6 +832,16 @@ internal object SessionHubUiMapper {
     )
 
     private const val MAX_RENDERED_TRANSCRIPT_CHARS = 32_000
+}
+
+private fun ConnectionFailureMessage.toUiMessage(): UiMessage = when (this) {
+    is ConnectionFailureMessage.Generated -> UiMessage.Localized(
+        when (kind) {
+            ConnectionFailureMessageKind.PROFILE_PREPARATION_FAILED ->
+                R.string.connection_failure_profile_preparation
+        },
+    )
+    is ConnectionFailureMessage.Verbatim -> UiMessage.Verbatim(text)
 }
 
 private fun SessionPresentationText.toUiMessage(): UiMessage = when (this) {

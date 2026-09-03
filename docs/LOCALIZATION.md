@@ -39,7 +39,9 @@ transcripts, model identifiers, and provider output must remain verbatim.
 
 Use positional format arguments and plurals instead of concatenating translated
 sentences. Mark only genuine product or protocol constants as
-`translatable="false"`.
+`translatable="false"`. Connection and agent providers keep their actionable
+guidance verbatim; shared runtime-generated failures use typed kinds that Android
+resolves in the active locale.
 
 `scripts/ci/verify_android_locales.py` fails when:
 

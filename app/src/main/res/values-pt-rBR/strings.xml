@@ -374,4 +374,5 @@
     <string name="session_activity_summary_connection_reconnected">%1$s reconectada.</string>
     <string name="session_action_title_review_required">A ação do agente requer revisão.</string>
     <string name="session_question_prompt_fallback">Pergunta do agente</string>
+    <string name="connection_failure_profile_preparation">Não foi possível preparar o perfil de conexão.</string>
 </resources>

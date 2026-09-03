@@ -6,6 +6,8 @@ import dev.agentrelay.connection.api.ConnectionChallengeId
 import dev.agentrelay.connection.api.ConnectionDisconnectReason
 import dev.agentrelay.connection.api.ConnectionFailure
 import dev.agentrelay.connection.api.ConnectionFailureCategory
+import dev.agentrelay.connection.api.ConnectionFailureMessage
+import dev.agentrelay.connection.api.ConnectionFailureMessageKind
 import dev.agentrelay.connection.api.ConnectionIdentityChallenge
 import dev.agentrelay.connection.api.ConnectionIdentityDisposition
 import dev.agentrelay.connection.api.ConnectionPhase
@@ -315,6 +317,14 @@ class SessionHubUiMapperTest {
             actionableMessage = "Try the connection again.",
             recoverable = true,
         )
+        val setupFailure = ConnectionFailure(
+            category = ConnectionFailureCategory.CONFIGURATION,
+            code = "CONNECTION_SETUP_FAILED",
+            message = ConnectionFailureMessage.Generated(
+                ConnectionFailureMessageKind.PROFILE_PREPARATION_FAILED,
+            ),
+            recoverable = true,
+        )
         val statesByProfileId = linkedMapOf(
             "never" to disconnected(ConnectionDisconnectReason.NOT_CONNECTED),
             "user" to disconnected(ConnectionDisconnectReason.USER_REQUESTED),
@@ -359,6 +369,10 @@ class SessionHubUiMapperTest {
             "failed" to ConnectionState.Failed(
                 failure = failure,
                 atEpochMillis = 2,
+            ),
+            "setup" to ConnectionState.Failed(
+                failure = setupFailure,
+                atEpochMillis = 3,
             ),
         )
         val profiles = statesByProfileId.keys.map { id ->
@@ -433,6 +447,10 @@ class SessionHubUiMapperTest {
         assertEquals(
             UiMessage.Verbatim("Try the connection again."),
             connections.getValue("failed").statusDetail,
+        )
+        assertEquals(
+            UiMessage.Localized(R.string.connection_failure_profile_preparation),
+            connections.getValue("setup").statusDetail,
         )
         assertEquals("test.provider", connections.getValue("connected").providerName)
         assertEquals(

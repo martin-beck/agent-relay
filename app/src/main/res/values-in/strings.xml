@@ -358,4 +358,5 @@
     <string name="session_activity_summary_connection_reconnected">%1$s terhubung kembali.</string>
     <string name="session_action_title_review_required">Tindakan agen perlu ditinjau.</string>
     <string name="session_question_prompt_fallback">Pertanyaan agen</string>
+    <string name="connection_failure_profile_preparation">Profil koneksi tidak dapat disiapkan.</string>
 </resources>

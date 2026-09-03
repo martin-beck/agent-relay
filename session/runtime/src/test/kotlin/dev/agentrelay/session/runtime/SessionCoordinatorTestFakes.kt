@@ -49,6 +49,7 @@ internal class FakeConnectionProvider(
     label: String,
     initialRuntime: FakeRuntime,
     var failProfileDiscovery: Boolean = false,
+    var failConnectionLookup: Boolean = false,
 ) : ConnectionProvider {
     override val descriptor = ConnectionProviderDescriptor(
         id = ConnectionProviderId(providerId),
@@ -72,6 +73,7 @@ internal class FakeConnectionProvider(
     }
 
     override fun connection(profileId: ConnectionProfileId): ManagedConnection {
+        check(!failConnectionLookup) { "Injected connection lookup failure" }
         require(profileId == summary.id)
         return managed
     }
