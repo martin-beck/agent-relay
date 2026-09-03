@@ -102,6 +102,18 @@ class ConnectedTestEvidenceTest(unittest.TestCase):
         with self.assertRaisesRegex(VERIFY.EvidenceError, "could not be parsed"):
             VERIFY.collect_evidence(self.root)
 
+    def test_rejects_xml_entities(self) -> None:
+        self.write_report("app", tests=1)
+        report = next(self.root.rglob("TEST-*.xml"))
+        report.write_text(
+            '<!DOCTYPE testsuite [<!ENTITY count "1">]>'
+            '<testsuite tests="&count;" failures="0" errors="0" skipped="0" />',
+            encoding="utf-8",
+        )
+
+        with self.assertRaisesRegex(VERIFY.EvidenceError, "could not be parsed"):
+            VERIFY.collect_evidence(self.root)
+
 
 if __name__ == "__main__":
     unittest.main()

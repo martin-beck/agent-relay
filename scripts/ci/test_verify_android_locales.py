@@ -6,6 +6,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from hypothesis import given, settings, strategies
+
 SCRIPT_PATH = Path(__file__).with_name("verify_android_locales.py")
 SPEC = importlib.util.spec_from_file_location("verify_android_locales", SCRIPT_PATH)
 if SPEC is None or SPEC.loader is None:
@@ -228,6 +230,37 @@ class AndroidLocaleVerifierTest(unittest.TestCase):
 
         with self.assertRaisesRegex(VERIFY.LocaleError, "must be en-US"):
             VERIFY.verify_default_locale(properties)
+
+    @settings(derandomize=True, max_examples=80)
+    @given(
+        separator=strategies.sampled_from(("/", "\\", "..", " ")),
+        suffix=strategies.text(
+            alphabet=strategies.characters(whitelist_categories=("Ll", "Lu", "Nd")),
+            min_size=1,
+            max_size=12,
+        ),
+    )
+    def test_rejects_resource_directory_path_escapes(
+        self,
+        separator: str,
+        suffix: str,
+    ) -> None:
+        mapping = self.root / "config/android-locales.txt"
+        mapping.write_text(f"en-US=values\nde=values{separator}{suffix}\n", encoding="utf-8")
+
+        with self.assertRaisesRegex(VERIFY.LocaleError, "invalid locale mapping"):
+            VERIFY.read_locale_map(mapping)
+
+    def test_rejects_xml_entities(self) -> None:
+        catalog = self.resources / "values/strings.xml"
+        catalog.write_text(
+            '<!DOCTYPE resources [<!ENTITY payload "expanded">]>'
+            '<resources><string name="plain">&payload;</string></resources>',
+            encoding="utf-8",
+        )
+
+        with self.assertRaisesRegex(VERIFY.LocaleError, "could not parse Android resources"):
+            VERIFY.read_catalog(catalog)
 
 
 if __name__ == "__main__":

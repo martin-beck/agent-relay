@@ -20,7 +20,8 @@ representative physical-device release evidence.
 | --- | --- | --- |
 | Spotless with ktlint | Reproducible Kotlin, Gradle, Markdown, and YAML formatting | Any drift fails |
 | Pre-commit hygiene and EditorConfig | Parseable text files, LF endings, final newlines, indentation, file modes, merge-marker and case-conflict safety | Any finding fails; generated wrappers are not reformatted |
-| Ruff, mypy, and Radon | Python formatting, imports, defects, strict static types, McCabe complexity, and maintainability measurements | Ruff and mypy findings fail; complexity above 10 fails; Radon grades and maintainability index remain diagnostic |
+| Ruff, mypy, and Radon | Python formatting, imports, defects, security checks, strict static types, McCabe complexity, and maintainability measurements | Ruff and mypy findings fail; complexity above 10 fails; Radon grades and maintainability index remain diagnostic |
+| Pytest, Hypothesis, and Coverage.py | Deterministic examples and properties for repository validators, including branch coverage | Any test failure or less than 65% branch-aware production coverage fails |
 | Lizard | Language-independent cyclomatic complexity for Kotlin, Java, and Python | A function above 20 fails; no warning baseline |
 | markdownlint and Lychee | Portable Markdown structure plus valid local paths and anchors | Any finding fails; external network links run weekly with retries |
 | Vale | Project terminology, active and concise technical prose, and seven readability formulas | Terminology errors fail; voice, wording, and readability scores are advisory |
@@ -94,6 +95,7 @@ Run the full local gate:
 
 ```bash
 uv sync --locked --only-group quality --only-group docs
+uv run pytest
 uv run pre-commit run --all-files --show-diff-on-failure
 ./gradlew spotlessCheck detekt buildHealth test koverXmlReport koverVerify checkKotlinAbi lintDebug assembleDebug --stacktrace
 ```
@@ -105,10 +107,10 @@ uv run pre-commit install
 ```
 
 The checked-in `uv.lock` pins the pre-commit runner and every hook revision is
-frozen to an immutable commit. It also pins Radon and Lizard. CI installs Vale
-3.19.0 from its official release archive only after verifying the pinned
-SHA-256 checksum; developers install that same version locally. Dependabot proposes uv
-and pre-commit updates;
+frozen to an immutable commit. It also pins Pytest, Hypothesis, Coverage.py,
+Radon, and Lizard. CI installs Vale 3.19.0 from its official release archive
+only after verifying the pinned SHA-256 checksum; developers install that same
+version locally. Dependabot proposes uv and pre-commit updates;
 review the upstream release notes and the generated configuration diff before
 accepting them.
 
@@ -170,12 +172,17 @@ projects, while keeping source diffs semantic and reviewable.
   compiler treats warnings as errors, Detekt covers maintainability and likely
   defects, Lizard supplies a second language-independent complexity view, and
   dependency analysis checks module declarations.
-- **Python:** Ruff owns formatting, import ordering, common defect checks, and
-  safe modernization for Python 3.12, including a McCabe ceiling. Mypy runs in
-  strict mode with unreachable code diagnostics. Radon records cyclomatic rank
-  and maintainability index, while Lizard independently checks complexity.
-  Python support scripts retain focused `unittest` coverage; formatting,
-  typing, or metric success never substitutes for executing them.
+- **Python:** Ruff owns formatting, import ordering, common defect and security
+  checks, and safe modernization for Python 3.12, including a McCabe ceiling.
+  Mypy runs in strict mode with unreachable code diagnostics. Radon records
+  cyclomatic rank and maintainability index, while Lizard independently checks
+  complexity. Pytest executes the existing unit tests plus deterministic
+  Hypothesis properties for YAML and path boundaries. Coverage.py enables
+  branch measurement for the four production scripts and fails below a
+  ratcheted 65% combined branch-aware floor; test modules are excluded from that
+  percentage. XML inputs use
+  `defusedxml` so hostile entities fail closed. Formatting, typing, or metric
+  success never substitutes for executing the tests.
 - **Markdown:** Standalone documents use an ATX H1 followed by ordered heading
   levels, fenced code blocks with a language, consistent list indentation, and
   portable tables. Duplicate headings are permitted only under different
@@ -237,6 +244,7 @@ Generate human-readable reports while investigating:
 uv run radon cc scripts/ci scripts/docs --show-complexity --average --total-average
 uv run radon mi scripts/ci scripts/docs --show
 uv run lizard --CCN 20 --warnings_only .
+uv run pytest
 uv run pre-commit run vale --all-files
 ./gradlew detekt koverHtmlReport lintDebug
 ```
@@ -249,7 +257,8 @@ Verify the committed UI baselines separately:
 
 Reports are written below `build/reports/detekt`,
 `build/reports/dependency-analysis`, `build/reports/kover`, and
-`build/reports/problems`, plus `build/reports/quality` and each Android
+`build/reports/problems`, plus `build/reports/quality` (including Python
+branch-aware coverage XML) and each Android
 module's `build/reports` directory. CI retains them for 14 days.
 Repository-format findings are emitted directly in the pre-commit and GitHub
 Actions logs with file and line information.

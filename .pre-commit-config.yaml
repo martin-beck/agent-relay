@@ -47,11 +47,22 @@ repos:
       - id: mypy
         args: ["--config-file=pyproject.toml"]
         additional_dependencies:
+          - defusedxml==0.7.1
+          - hypothesis==6.167.1
           - Pillow==12.3.0
           - PyYAML==6.0.3
           - types-Pillow==10.2.0.20240822
           - types-PyYAML==6.0.12.20260815
         files: ^scripts/(ci|docs)/.*\.py$
+
+  - repo: local
+    hooks:
+      - id: python-tests
+        name: Test Python validators with branch coverage
+        entry: uv run pytest
+        language: system
+        pass_filenames: false
+        files: ^(pyproject\.toml|uv\.lock|scripts/(ci|docs)/.*\.py)$
 
   - repo: https://github.com/adrienverge/yamllint
     rev: cba56bcde1fdd01c1deb3f945e69764c291a6530  # frozen: v1.38.0
