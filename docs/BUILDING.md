@@ -298,6 +298,11 @@ Self-hosted build and device jobs use separate least-privilege runner pools.
 Each pool retains isolated local Gradle, uv, and pre-commit caches, so those jobs
 disable redundant GitHub cache archive restore and save operations while keeping
 the pinned setup actions and Gradle wrapper validation.
+`setup-java` continues to verify each downloaded JDK against the vendor-published
+SHA-256 checksum. Its additional GPG verification is disabled on the self-hosted
+pools because the action creates agent socket paths longer than Linux permits
+under their runner temporary directories. Re-enable that layer when the action
+or runner layout uses a shorter socket path.
 Sonar analysis is present but opt-in because a hosted service receives private
 source. See [Quality and safety](QUALITY.md#optional-centralized-analysis) for
 the required trusted variables, secret, and fail-safe behavior.
