@@ -7,9 +7,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.agentrelay.R
 import com.example.agentrelay.theme.AgentRelayTheme
 import dev.agentrelay.provider.api.AgentApprovalDecision
+import dev.agentrelay.provider.api.AgentApprovalType
+import dev.agentrelay.provider.api.AgentFileChangeKind
 import dev.agentrelay.provider.api.AgentSessionState
+import dev.agentrelay.session.api.SessionActionRisk
 import dev.agentrelay.session.api.SessionActionState
 import dev.agentrelay.session.api.SessionActivityType
 
@@ -38,7 +42,9 @@ private fun MainScreenLoadingPreview() {
 private fun MainScreenFatalErrorPreview() {
     PreviewMainScreen(
         state = MainScreenUiState.FatalError(
-            "The encrypted session store could not be opened. Retry after the device is unlocked.",
+            UiMessage.Verbatim(
+                "The encrypted session store could not be opened. Retry after the device is unlocked.",
+            ),
         ),
         darkTheme = true,
     )
@@ -173,7 +179,8 @@ internal fun previewHub(
         issues = listOf(
             CoordinatorIssueUiModel(
                 id = "preview-issue",
-                message = "One provider needs attention before it can reconnect.",
+                message =
+                UiMessage.Verbatim("One provider needs attention before it can reconnect."),
                 recoverable = true,
             ),
         ),
@@ -206,11 +213,13 @@ private fun previewSession(
     longContent: Boolean,
 ) = SessionUiModel(
     stableKey = "preview-session",
-    title = if (longContent) {
-        "Android-Sitzungsübersicht auf kleinen Bildschirmen barrierefrei prüfen"
-    } else {
-        "Refine the Android session hub"
-    },
+    title = UiMessage.Verbatim(
+        if (longContent) {
+            "Android-Sitzungsübersicht auf kleinen Bildschirmen barrierefrei prüfen"
+        } else {
+            "Refine the Android session hub"
+        },
+    ),
     preview = if (longContent) {
         "Die providerneutrale Laufzeit wartet auf eine sichere und eindeutig erklärte Entscheidung."
     } else {
@@ -243,7 +252,7 @@ private fun previewConnections() = listOf(
         target = "App-private workspace",
         authenticationLabel = null,
         status = ConnectionStatus.OFFLINE,
-        statusDetail = "Start the local service to discover agents.",
+        statusDetail = UiMessage.Verbatim("Start the local service to discover agents."),
         connectedAgentCount = 0,
         agentCount = 0,
         unavailableAgentCount = 0,
@@ -259,7 +268,7 @@ private fun previewConnections() = listOf(
         target = "Configured endpoint",
         authenticationLabel = "Managed app key",
         status = ConnectionStatus.IDENTITY_REVIEW,
-        statusDetail = "The saved host identity has changed.",
+        statusDetail = UiMessage.Verbatim("The saved host identity has changed."),
         connectedAgentCount = 0,
         agentCount = 1,
         unavailableAgentCount = 1,
@@ -291,11 +300,13 @@ private fun previewDetail(
             } else {
                 SessionActivityType.RECONNECTED
             },
-            summary = if (approvalRequired) {
-                "A command needs explicit approval."
-            } else {
-                "The session is ready."
-            },
+            summary = UiMessage.Verbatim(
+                if (approvalRequired) {
+                    "A command needs explicit approval."
+                } else {
+                    "The session is ready."
+                },
+            ),
             occurredAtEpochMillis = 1_788_200_000_000,
             requiresAction = approvalRequired,
             isRead = false,
@@ -304,7 +315,7 @@ private fun previewDetail(
     transcript = listOf(
         TranscriptEntryUiModel(
             id = "preview-transcript",
-            roleLabel = "Agent",
+            roleLabel = UiMessage.Verbatim("Agent"),
             kind = TimelineEntryKind.AGENT_COMMENTARY,
             text = "The deterministic preview fixture contains no live connection data.",
             wasTruncated = false,
@@ -318,7 +329,7 @@ private fun previewDetail(
         canSubmit = !approvalRequired,
         canInterrupt = true,
         statusMessage = if (approvalRequired) {
-            "Resolve the pending approval before sending more input."
+            UiMessage.Localized(R.string.session_composer_status_pending_action)
         } else {
             null
         },
@@ -329,8 +340,8 @@ private fun previewDetail(
             stableKey = "preview-artifact",
             sessionKey = session.stableKey,
             displayPath = "reports/ui-check.txt",
-            changeLabel = "Modified",
-            availabilityMessage = "Ready to save a checked copy.",
+            changeKind = AgentFileChangeKind.MODIFIED,
+            availabilityStatus = SessionArtifactAvailabilityStatus.READY,
             suggestedFileName = "ui-check.txt",
             isDownloadable = true,
             canSave = true,
@@ -346,8 +357,8 @@ private fun previewDetail(
 private fun previewApproval(session: SessionUiModel) = SessionActionUiModel(
     stableKey = "preview-approval",
     sessionKey = session.stableKey,
-    title = "Run the focused validation suite?",
-    typeLabel = "Command approval",
+    title = UiMessage.Verbatim("Run the focused validation suite?"),
+    type = AgentApprovalType.COMMAND,
     description = "Review the exact command and working directory before allowing it.",
     command = "./gradlew test lintDebug",
     scope = "/workspace/agent-relay",
@@ -360,20 +371,18 @@ private fun previewApproval(session: SessionUiModel) = SessionActionUiModel(
     decisions = listOf(
         SessionDecisionUiModel(
             decision = AgentApprovalDecision.APPROVE_ONCE,
-            label = "Approve once",
             requiresConfirmation = true,
             isPositive = true,
         ),
         SessionDecisionUiModel(
             decision = AgentApprovalDecision.DECLINE,
-            label = "Decline",
             requiresConfirmation = false,
             isPositive = false,
         ),
     ),
-    riskLabels = listOf("Command execution"),
+    risks = listOf(SessionActionRisk.DESTRUCTIVE_COMMAND),
     state = SessionActionState.PENDING,
-    completedDecisionLabel = null,
+    completedDecision = null,
     additionalConfirmationGiven = false,
     isBusy = false,
 )

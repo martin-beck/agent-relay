@@ -19,8 +19,8 @@ internal sealed interface ConnectionProfileEditorUiState {
         val hasUnsavedChanges: Boolean = false,
         val activeOperationId: String? = null,
         val fieldErrors: Map<String, String> = emptyMap(),
-        val error: String? = null,
-        val notice: String? = null,
+        val error: UiMessage? = null,
+        val notice: UiMessage? = null,
         val confirmDelete: Boolean = false,
         val confirmOperationId: String? = null,
     ) : ConnectionProfileEditorUiState {
@@ -89,7 +89,7 @@ internal data class ConnectionProfileFieldUiModel(
 }
 
 internal fun ConnectionProfileEditor.toUiState(
-    notice: String? = null,
+    notice: UiMessage? = null,
 ): ConnectionProfileEditorUiState.Editing = ConnectionProfileEditorUiState.Editing(
     providerId = providerId.value,
     profileId = profileId?.value,

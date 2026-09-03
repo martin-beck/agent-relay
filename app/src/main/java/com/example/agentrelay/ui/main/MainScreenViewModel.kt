@@ -2,6 +2,7 @@ package com.example.agentrelay.ui.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.agentrelay.R
 import com.example.agentrelay.data.SessionHubRuntime
 import dev.agentrelay.connection.api.ConnectionIdentityDecision
 import dev.agentrelay.connection.api.ConnectionState
@@ -35,7 +36,7 @@ internal class MainScreenViewModel(
 ) : ViewModel() {
     private val mutableUiState = MutableStateFlow<MainScreenUiState>(MainScreenUiState.Loading)
     private val selectedSessionKey = MutableStateFlow<String?>(null)
-    private val operationError = MutableStateFlow<String?>(null)
+    private val operationError = MutableStateFlow<UiMessage?>(null)
     private val busyConnectionKeys = MutableStateFlow<Set<String>>(emptySet())
     private val sessionInteractions = MutableStateFlow(SessionInteractionState())
     private val sessionCreator = MutableStateFlow<SessionCreatorUiState?>(null)
@@ -89,7 +90,7 @@ internal class MainScreenViewModel(
 
     fun refreshProfiles() {
         perform(
-            failureMessage = "Connection profiles could not be refreshed.",
+            failureMessage = UiMessage.Localized(R.string.main_error_profiles_refresh),
         ) {
             it.refreshProfiles()
         }
@@ -110,7 +111,7 @@ internal class MainScreenViewModel(
     fun connect(connectionKey: String) {
         performConnection(
             connectionKey = connectionKey,
-            failureMessage = "The connection could not be opened.",
+            failureMessage = UiMessage.Localized(R.string.main_error_connection_open),
         ) { active, key ->
             active.connect(key)
         }
@@ -119,7 +120,7 @@ internal class MainScreenViewModel(
     fun disconnect(connectionKey: String) {
         performConnection(
             connectionKey = connectionKey,
-            failureMessage = "The connection could not be closed cleanly.",
+            failureMessage = UiMessage.Localized(R.string.main_error_connection_close),
         ) { active, key ->
             active.disconnect(key)
         }
@@ -131,7 +132,7 @@ internal class MainScreenViewModel(
     ) {
         performConnection(
             connectionKey = connectionKey,
-            failureMessage = "The server identity decision could not be applied.",
+            failureMessage = UiMessage.Localized(R.string.main_error_identity_decision),
         ) { active, key ->
             val challenge = (
                 active.coordinatorSnapshot.value.connectionStates[key] as?
@@ -151,7 +152,7 @@ internal class MainScreenViewModel(
     fun rejectIdentity(connectionKey: String) {
         performConnection(
             connectionKey = connectionKey,
-            failureMessage = "The server identity decision could not be applied.",
+            failureMessage = UiMessage.Localized(R.string.main_error_identity_decision),
         ) { active, key ->
             val challenge = (
                 active.coordinatorSnapshot.value.connectionStates[key] as?
@@ -176,7 +177,7 @@ internal class MainScreenViewModel(
             ?.firstOrNull { it.locator.stableUiKey == sessionKey }
             ?.locator
         if (locator == null) {
-            operationError.value = "That session is no longer available."
+            operationError.value = UiMessage.Localized(R.string.main_error_session_unavailable)
             return
         }
         selectedSessionKey.value = sessionKey
@@ -187,7 +188,7 @@ internal class MainScreenViewModel(
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Throwable) {
-                operationError.value = "The session read state could not be saved."
+                operationError.value = UiMessage.Localized(R.string.main_error_session_read_save)
             }
         }
     }
@@ -210,11 +211,15 @@ internal class MainScreenViewModel(
         val active = runtime ?: return
         val locator = active.findSessionLocator(sessionKey)
         if (locator == null) {
-            operationError.value = "That session is no longer available."
+            operationError.value = UiMessage.Localized(R.string.main_error_session_unavailable)
             return
         }
         if (text.length > MAX_SESSION_DRAFT_CHARS) {
-            operationError.value = "Session drafts are limited to $MAX_SESSION_DRAFT_CHARS characters."
+            operationError.value = UiMessage.Plural(
+                resourceId = R.plurals.main_error_session_draft_too_long,
+                quantity = MAX_SESSION_DRAFT_CHARS,
+                formatArguments = listOf(MAX_SESSION_DRAFT_CHARS),
+            )
             return
         }
         val boundedStart = selectionStart.coerceIn(0, text.length)
@@ -243,7 +248,7 @@ internal class MainScreenViewModel(
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Throwable) {
-                operationError.value = "The session draft could not be saved securely."
+                operationError.value = UiMessage.Localized(R.string.main_error_session_draft_save)
             }
         }
         draftSaveJobs[sessionKey] = saveJob
@@ -259,24 +264,26 @@ internal class MainScreenViewModel(
         val record = active.sessionSnapshot.value.sessions
             .firstOrNull { it.locator.stableUiKey == sessionKey }
         if (record == null) {
-            operationError.value = "That session is no longer available."
+            operationError.value = UiMessage.Localized(R.string.main_error_session_unavailable)
             return
         }
         val draft = sessionInteractions.value.draftOverrides[sessionKey]
             ?: active.sessionSnapshot.value.drafts[record.locator]
         if (draft == null || draft.text.isBlank()) {
-            operationError.value = "Enter a message before sending."
+            operationError.value = UiMessage.Localized(R.string.main_error_session_message_required)
             return
         }
         val state = record.observation.agentState
         draftSaveJobs.remove(sessionKey)?.cancel()
         performSession(
             sessionKey = sessionKey,
-            failureMessage = if (state == AgentSessionState.RUNNING) {
-                "The active turn could not be steered."
-            } else {
-                "The session input could not be sent."
-            },
+            failureMessage = UiMessage.Localized(
+                if (state == AgentSessionState.RUNNING) {
+                    R.string.main_error_session_steer
+                } else {
+                    R.string.main_error_session_send
+                },
+            ),
         ) { opened, locator ->
             opened.updateDraft(locator, draft)
             when (state) {
@@ -293,8 +300,7 @@ internal class MainScreenViewModel(
                 } catch (cancelled: CancellationException) {
                     throw cancelled
                 } catch (_: Throwable) {
-                    operationError.value =
-                        "The message was delivered, but its saved draft could not be cleared securely."
+                    operationError.value = UiMessage.Localized(R.string.main_error_session_draft_clear)
                     return@performSession
                 }
                 sessionInteractions.update { current ->
@@ -306,12 +312,12 @@ internal class MainScreenViewModel(
 
     fun resumeSession(sessionKey: String) = performSession(
         sessionKey = sessionKey,
-        failureMessage = "The saved session could not be resumed.",
+        failureMessage = UiMessage.Localized(R.string.main_error_session_resume),
     ) { active, locator -> active.resumeSession(locator) }
 
     fun interruptSession(sessionKey: String) = performSession(
         sessionKey = sessionKey,
-        failureMessage = "The active turn could not be interrupted.",
+        failureMessage = UiMessage.Localized(R.string.main_error_session_interrupt),
     ) { active, locator -> active.interrupt(locator) }
 
     fun openSessionCreator(launcherKey: String) {
@@ -320,7 +326,7 @@ internal class MainScreenViewModel(
             ?.sessionLaunchers
             ?.firstOrNull { it.stableKey == launcherKey }
         if (launcher == null) {
-            operationError.value = "That agent endpoint is no longer ready."
+            operationError.value = UiMessage.Localized(R.string.main_error_agent_endpoint_unavailable)
             return
         }
         operationError.value = null
@@ -335,7 +341,11 @@ internal class MainScreenViewModel(
 
     fun updateSessionCreatorWorkingDirectory(value: String) {
         if (value.length > MAX_WORKING_DIRECTORY_CHARS) {
-            operationError.value = "Working directories are limited to $MAX_WORKING_DIRECTORY_CHARS characters."
+            operationError.value = UiMessage.Plural(
+                resourceId = R.plurals.main_error_working_directory_too_long,
+                quantity = MAX_WORKING_DIRECTORY_CHARS,
+                formatArguments = listOf(MAX_WORKING_DIRECTORY_CHARS),
+            )
             return
         }
         sessionCreator.update { current ->
@@ -345,7 +355,11 @@ internal class MainScreenViewModel(
 
     fun updateSessionCreatorModel(value: String) {
         if (value.length > MAX_MODEL_CHARS) {
-            operationError.value = "Model names are limited to $MAX_MODEL_CHARS characters."
+            operationError.value = UiMessage.Plural(
+                resourceId = R.plurals.main_error_model_name_too_long,
+                quantity = MAX_MODEL_CHARS,
+                formatArguments = listOf(MAX_MODEL_CHARS),
+            )
             return
         }
         sessionCreator.update { current ->
@@ -369,7 +383,7 @@ internal class MainScreenViewModel(
             .firstOrNull { it.stableUiKey == creator.launcherKey }
         if (endpoint == null) {
             sessionCreator.value = null
-            operationError.value = "That agent endpoint is no longer ready."
+            operationError.value = UiMessage.Localized(R.string.main_error_agent_endpoint_unavailable)
             return
         }
         operationError.value = null
@@ -389,7 +403,7 @@ internal class MainScreenViewModel(
                 throw cancelled
             } catch (_: Throwable) {
                 sessionCreator.update { it?.copy(isBusy = false) }
-                operationError.value = "The new agent session could not be started."
+                operationError.value = UiMessage.Localized(R.string.main_error_session_start)
             }
         }
     }
@@ -406,7 +420,7 @@ internal class MainScreenViewModel(
             it.id == actionKey && it.locator.stableUiKey == sessionKey
         }
         if (request == null) {
-            operationError.value = "That approval or question is no longer available."
+            operationError.value = UiMessage.Localized(R.string.main_error_action_unavailable)
             return
         }
         if (actionKey in sessionInteractions.value.busyActionKeys) {
@@ -427,12 +441,12 @@ internal class MainScreenViewModel(
                 )
             } catch (cancelled: CancellationException) {
                 throw cancelled
-            } catch (failure: SessionActionDeliveryUncertainException) {
-                operationError.value = failure.message
-            } catch (failure: SessionActionAuditFailureException) {
-                operationError.value = failure.message
+            } catch (_: SessionActionDeliveryUncertainException) {
+                operationError.value = UiMessage.Localized(R.string.main_error_action_delivery_uncertain)
+            } catch (_: SessionActionAuditFailureException) {
+                operationError.value = UiMessage.Localized(R.string.main_error_action_audit)
             } catch (_: Throwable) {
-                operationError.value = "The approval or question response could not be applied."
+                operationError.value = UiMessage.Localized(R.string.main_error_action_response)
             } finally {
                 sessionInteractions.update { current ->
                     current.copy(busyActionKeys = current.busyActionKeys - actionKey)
@@ -493,21 +507,21 @@ internal class MainScreenViewModel(
                 } catch (cancelled: CancellationException) {
                     throw cancelled
                 } catch (_: Throwable) {
-                    operationError.value = "Connection profiles could not be refreshed."
+                    operationError.value = UiMessage.Localized(R.string.main_error_profiles_refresh)
                 }
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Throwable) {
                 runtime = null
                 mutableUiState.value = MainScreenUiState.FatalError(
-                    "Secure session state could not be opened. Retry after unlocking the device.",
+                    UiMessage.Localized(R.string.main_error_secure_state_open),
                 )
             }
         }
     }
 
     private fun perform(
-        failureMessage: String,
+        failureMessage: UiMessage,
         operation: suspend (SessionHubRuntime) -> Unit,
     ) {
         val active = runtime ?: return
@@ -525,7 +539,7 @@ internal class MainScreenViewModel(
 
     private fun performConnection(
         connectionKey: String,
-        failureMessage: String,
+        failureMessage: UiMessage,
         operation: suspend (SessionHubRuntime, SessionConnectionKey) -> Unit,
     ) {
         val active = runtime ?: return
@@ -534,7 +548,7 @@ internal class MainScreenViewModel(
             .map { SessionConnectionKey(it.providerId, it.id) }
             .firstOrNull { it.stableUiKey == connectionKey }
         if (key == null) {
-            operationError.value = "That connection profile is no longer available."
+            operationError.value = UiMessage.Localized(R.string.profile_error_profile_unavailable)
             return
         }
         operationError.value = null
@@ -554,13 +568,13 @@ internal class MainScreenViewModel(
 
     private fun performSession(
         sessionKey: String,
-        failureMessage: String,
+        failureMessage: UiMessage,
         operation: suspend (SessionHubRuntime, SessionLocator) -> Unit,
     ) {
         val active = runtime ?: return
         val locator = active.findSessionLocator(sessionKey)
         if (locator == null) {
-            operationError.value = "That session is no longer available."
+            operationError.value = UiMessage.Localized(R.string.main_error_session_unavailable)
             return
         }
         if (sessionKey in sessionInteractions.value.busySessionKeys) {
@@ -612,7 +626,7 @@ private data class UiOperations(
 internal sealed interface MainScreenUiState {
     data object Loading : MainScreenUiState
 
-    data class FatalError(val message: String) : MainScreenUiState
+    data class FatalError(val message: UiMessage) : MainScreenUiState
 
     data class Ready(
         val hub: SessionHubUiModel,

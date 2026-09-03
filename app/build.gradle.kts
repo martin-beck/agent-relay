@@ -25,6 +25,9 @@ android {
     }
 
     buildTypes {
+        getByName("debug") {
+            isPseudoLocalesEnabled = true
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
@@ -39,6 +42,9 @@ android {
         aidl = false
         buildConfig = false
         shaders = false
+    }
+    androidResources {
+        generateLocaleConfig = true
     }
 
     packaging {
@@ -60,6 +66,7 @@ dependencies {
 
     // Core Android dependencies
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.annotation)
     implementation(libs.androidx.core.base)
     implementation(libs.androidx.core.ktx)
 
@@ -84,6 +91,7 @@ dependencies {
     implementation(project(":session:runtime"))
     implementation(project(":speech:api"))
     implementation(project(":ssh:android"))
+    implementation(project(":ssh:api"))
     implementation(project(":storage:android"))
     implementation(libs.kotlinx.serialization.json)
 
@@ -103,6 +111,8 @@ dependencies {
     // Local tests: jUnit, coroutines, Android runner
     testImplementation(libs.junit)
     testImplementation(libs.androidx.test.core)
+    testImplementation(libs.androidx.test.espresso.core)
+    testImplementation(libs.androidx.compose.ui.geometry)
     testImplementation(libs.androidx.compose.ui.test.junit4)
     testRuntimeOnly(libs.androidx.compose.ui.test.manifest)
     testImplementation(libs.androidx.test.ext.junit)

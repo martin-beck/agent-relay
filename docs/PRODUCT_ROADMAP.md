@@ -1,7 +1,7 @@
 # Remote Agent Terminal product roadmap
 
 - Status: Living document
-- Last updated: 2026-09-01
+- Last updated: 2026-09-02
 - External edit timestamp: 2026-09-01T23:32:39+02:00 (Europe/Berlin)
 - Edit origin: This roadmap revision was made outside the current autonomous development workflow.
 
@@ -424,6 +424,9 @@ Make every existing local and SSH session understandable, recoverable, and safe 
 - Provide accessible controls, readable event summaries, reliable clipboard behavior, and foreground-service handling only while Android itself must maintain an active operation.
 - Add structured error categories and remediation actions instead of generic connection errors.
 - Establish redaction rules for logs, notifications, exported evidence, and crash reports.
+- Resource all app-owned copy and bundle English, German, Simplified and Traditional Chinese, Russian, Spanish, Italian, French, Brazilian Portuguese, Hindi, Arabic, Bengali, Indonesian, and Japanese.
+- Keep interface locale independent from STT/TTS language and model selection.
+- Gate critical compact, large-text, and RTL layouts in every bundled locale plus the expansion and bidirectional pseudo-locales.
 
 ### Exit criteria
 
@@ -432,6 +435,8 @@ Make every existing local and SSH session understandable, recoverable, and safe 
 - Host-key changes cannot be silently accepted.
 - Every exported artifact is tied to a project, session, source path, content hash, and capture time.
 - Existing local and SSH behavior has automated lifecycle, reconnect, process-death, and artifact tests.
+- Critical localized UI flows have no clipped or overflowing controls, cut-off text, inaccessible touch targets, or missing semantics.
+- Release-ready translations have native-speaker review; structural and layout CI alone never imply linguistic approval.
 
 ## P1 — Introduce the project-first attention control plane
 
@@ -634,6 +639,8 @@ Make project context and control immediately accessible without sending private 
 - Let users choose a discovered Ollama service per project or task, with explicit data-routing policy.
 - Add Android shortcuts, widgets, share targets, and notification actions for common attention decisions.
 - Add optional voice capture that prepares a draft intent and scope for confirmation before execution.
+- Add opt-in install, update, removal, and storage management for admitted offline STT languages and TTS voices, independent of the interface locale.
+- Keep Android system speech services behind explicit alternative adapters; never infer their offline or privacy properties.
 - Support commands such as “show what needs me,” “summarize overnight changes,” and “prepare a validated fix,” mapped to visible workflows rather than opaque actions.
 - Keep indexing, embedding, and summarization resource-bounded and resumable.
 
@@ -643,6 +650,7 @@ Make project context and control immediately accessible without sending private 
 - No project content reaches a discovered or remote model without matching data-routing policy.
 - Voice and natural-language requests show the interpreted scope before privileged execution.
 - Index rebuild and model unavailability degrade gracefully without blocking core workflow control.
+- Every admitted speech package has exact checksum, license, size, compatibility, offline, cancellation, and representative-device quality evidence.
 
 ## P9 — Add auditable collaboration
 

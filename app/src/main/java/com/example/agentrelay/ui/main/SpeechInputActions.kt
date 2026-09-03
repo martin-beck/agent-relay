@@ -1,5 +1,6 @@
 package com.example.agentrelay.ui.main
 
+import com.example.agentrelay.R
 import dev.agentrelay.session.api.SessionDraft
 
 /**
@@ -9,7 +10,7 @@ internal class SpeechInputActions(
     private val controller: SpeechInputController,
     private val resolveDraft: (String) -> SessionDraft?,
     private val updateDraft: (String, String, Int, Int) -> Unit,
-    private val reportError: (String) -> Unit,
+    private val reportError: (UiMessage) -> Unit,
 ) {
     fun selectModel(modelId: String) = controller.selectModel(modelId)
 
@@ -26,19 +27,19 @@ internal class SpeechInputActions(
     fun dismiss(sessionKey: String) = controller.dismissResultOrFailure(sessionKey)
 
     fun permissionDenied() {
-        reportError("Microphone access is required only while recording offline voice input.")
+        reportError(UiMessage.Localized(R.string.speech_error_microphone_permission))
     }
 
     fun useTranscript(sessionKey: String) {
         val speechState = controller.state.value
         val transcript = speechState.transcript
         if (speechState.targetSessionKey != sessionKey || transcript == null) {
-            reportError("That voice transcript is no longer available.")
+            reportError(UiMessage.Localized(R.string.speech_error_transcript_unavailable))
             return
         }
         val currentDraft = resolveDraft(sessionKey)
         if (currentDraft == null) {
-            reportError("That session is no longer available.")
+            reportError(UiMessage.Localized(R.string.speech_error_session_unavailable))
             return
         }
         val updatedText = currentDraft.text.replaceRange(
@@ -48,12 +49,18 @@ internal class SpeechInputActions(
         )
         if (updatedText.length > MAX_SESSION_DRAFT_CHARS) {
             reportError(
-                "The voice transcript would exceed the $MAX_SESSION_DRAFT_CHARS character draft limit.",
+                UiMessage.Plural(
+                    R.plurals.speech_error_transcript_too_long,
+                    MAX_SESSION_DRAFT_CHARS,
+                    listOf(MAX_SESSION_DRAFT_CHARS),
+                ),
             )
             return
         }
         if (controller.consumeTranscript(sessionKey) != transcript) {
-            reportError("That voice transcript changed before it could be inserted.")
+            reportError(
+                UiMessage.Localized(R.string.speech_error_transcript_changed),
+            )
             return
         }
         val cursor = currentDraft.selectionStart + transcript.length

@@ -129,7 +129,7 @@ internal fun MainScreenContent(
             ) {
                 CircularProgressIndicator()
                 Text(
-                    text = "Loading Agent Relay...",
+                    text = stringResource(R.string.main_loading),
                     style = MaterialTheme.typography.bodyLarge,
                 )
             }
@@ -147,14 +147,14 @@ internal fun MainScreenContent(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 Text(
-                    text = state.message,
+                    text = state.message.resolve(),
                     style = MaterialTheme.typography.bodyLarge,
                     textAlign = TextAlign.Center,
                 )
                 Button(
                     onClick = actions.retry,
                 ) {
-                    Text("Retry")
+                    Text(stringResource(R.string.action_retry))
                 }
             }
         }
@@ -300,7 +300,7 @@ private fun BackgroundTransportCard(
 
     Card(modifier.testTag(BACKGROUND_TRANSPORT_TEST_TAG)) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(

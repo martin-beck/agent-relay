@@ -1,5 +1,6 @@
 package com.example.agentrelay.ui.main
 
+import com.example.agentrelay.R
 import com.example.agentrelay.data.SessionHubRuntime
 import dev.agentrelay.connection.api.ConnectionCapability
 import dev.agentrelay.connection.api.ConnectionChallengeId
@@ -49,7 +50,7 @@ class ConnectionProfileEditorControllerTest {
     @Test
     fun addEditAndSaveFlowUsesProviderOwnedFieldsAndReloadsSanitizedEditor() = runTest {
         val runtime = FakeProfileRuntime()
-        val reportedErrors = mutableListOf<String>()
+        val reportedErrors = mutableListOf<UiMessage>()
         val controller = ConnectionProfileEditorController(
             scope = this,
             runtime = { runtime },
@@ -78,7 +79,7 @@ class ConnectionProfileEditorControllerTest {
         assertEquals("temporary password", runtime.savedPassword)
         val saved = assertInstance<ConnectionProfileEditorUiState.Editing>(controller.state.value)
         assertEquals(PROFILE_ID.value, saved.profileId)
-        assertEquals("Profile saved securely.", saved.notice)
+        assertEquals(UiMessage.Verbatim("Profile saved securely."), saved.notice)
         assertEquals("", saved.fields.single { it.id == PASSWORD.value }.value)
         assertTrue(saved.fields.single { it.id == PASSWORD.value }.hasStoredSecret)
         assertTrue(reportedErrors.isEmpty())
@@ -103,14 +104,14 @@ class ConnectionProfileEditorControllerTest {
 
         val invalid = assertInstance<ConnectionProfileEditorUiState.Editing>(controller.state.value)
         assertEquals("Enter a password.", invalid.fieldErrors[PASSWORD.value])
-        assertEquals("Correct the highlighted profile fields.", invalid.error)
+        assertEquals(UiMessage.Localized(R.string.profile_error_validation), invalid.error)
 
         runtime.saveFailure = IllegalStateException("private-host.example secret failed")
         controller.save()
         advanceUntilIdle()
 
         val failed = assertInstance<ConnectionProfileEditorUiState.Editing>(controller.state.value)
-        assertEquals("The connection profile could not be saved securely.", failed.error)
+        assertEquals(UiMessage.Localized(R.string.profile_error_save), failed.error)
         assertFalse(failed.toString().contains("private-host"))
         assertFalse(failed.toString().contains("secret failed"))
     }
@@ -118,7 +119,7 @@ class ConnectionProfileEditorControllerTest {
     @Test
     fun successfulSaveWithReloadFailureReportsPartialSuccess() = runTest {
         val runtime = FakeProfileRuntime()
-        val errors = mutableListOf<String>()
+        val errors = mutableListOf<UiMessage>()
         val controller = ConnectionProfileEditorController(
             scope = this,
             runtime = { runtime },
@@ -135,16 +136,16 @@ class ConnectionProfileEditorControllerTest {
         assertEquals("Saved profile", runtime.savedText[LABEL])
         assertNull(controller.state.value)
         assertEquals(
-            "The profile was saved, but its editor could not be refreshed.",
+            UiMessage.Localized(R.string.profile_error_save_refresh),
             errors.single(),
         )
-        assertFalse(errors.single().contains("private reload detail"))
+        assertFalse(errors.single().toString().contains("private reload detail"))
     }
 
     @Test
     fun openFailureAndDismissalUseGenericMessagesAndClearEditorState() = runTest {
         val runtime = FakeProfileRuntime()
-        val errors = mutableListOf<String>()
+        val errors = mutableListOf<UiMessage>()
         val controller = ConnectionProfileEditorController(
             scope = this,
             runtime = { runtime },
@@ -156,8 +157,8 @@ class ConnectionProfileEditorControllerTest {
         advanceUntilIdle()
 
         assertNull(controller.state.value)
-        assertEquals("The connection profile editor could not be opened.", errors.single())
-        assertFalse(errors.single().contains("private editor detail"))
+        assertEquals(UiMessage.Localized(R.string.profile_error_open), errors.single())
+        assertFalse(errors.single().toString().contains("private editor detail"))
 
         runtime.editorFailure = null
         controller.add(PROVIDER_ID.value)
@@ -187,7 +188,7 @@ class ConnectionProfileEditorControllerTest {
         advanceUntilIdle()
 
         val failed = assertInstance<ConnectionProfileEditorUiState.Editing>(controller.state.value)
-        assertEquals("The connection profile could not be deleted securely.", failed.error)
+        assertEquals(UiMessage.Localized(R.string.profile_error_delete), failed.error)
         assertFalse(failed.confirmDelete)
         assertFalse(failed.isBusy)
         assertFalse(failed.toString().contains("private delete detail"))
@@ -197,7 +198,7 @@ class ConnectionProfileEditorControllerTest {
     @Test
     fun deleteRequiresConfirmationAndUnknownTargetsReportGenericErrors() = runTest {
         val runtime = FakeProfileRuntime(existingProfile = true)
-        val errors = mutableListOf<String>()
+        val errors = mutableListOf<UiMessage>()
         val controller = ConnectionProfileEditorController(
             scope = this,
             runtime = { runtime },
@@ -223,9 +224,9 @@ class ConnectionProfileEditorControllerTest {
         assertNull(controller.state.value)
 
         controller.edit("missing")
-        assertEquals("That connection profile is no longer available.", errors.last())
+        assertEquals(UiMessage.Localized(R.string.profile_error_profile_unavailable), errors.last())
         controller.add("missing.provider")
-        assertEquals("That connection provider is no longer available.", errors.last())
+        assertEquals(UiMessage.Localized(R.string.profile_error_provider_unavailable), errors.last())
     }
 
     @Test
@@ -264,7 +265,7 @@ class ConnectionProfileEditorControllerTest {
             runtime.performedOperations,
         )
         assertEquals(
-            "Profile operation completed.",
+            UiMessage.Verbatim("Profile operation completed."),
             assertInstance<ConnectionProfileEditorUiState.Editing>(controller.state.value).notice,
         )
 
@@ -281,6 +282,35 @@ class ConnectionProfileEditorControllerTest {
             ),
             runtime.performedOperations,
         )
+    }
+
+    @Test
+    fun successfulOperationWithReloadFailureReportsPartialSuccess() = runTest {
+        val runtime = FakeProfileRuntime(existingProfile = true)
+        val errors = mutableListOf<UiMessage>()
+        val controller = ConnectionProfileEditorController(
+            scope = this,
+            runtime = { runtime },
+            reportError = errors::add,
+        )
+        val key = SessionConnectionKey(PROVIDER_ID, PROFILE_ID).stableUiKey
+        controller.edit(key)
+        advanceUntilIdle()
+        runtime.existingEditorFailure = IllegalStateException("private operation reload detail")
+
+        controller.requestOperation(VERIFY_OPERATION.value)
+        advanceUntilIdle()
+
+        assertEquals(
+            listOf(Triple(PROVIDER_ID, PROFILE_ID, VERIFY_OPERATION)),
+            runtime.performedOperations,
+        )
+        assertNull(controller.state.value)
+        assertEquals(
+            listOf(UiMessage.Localized(R.string.profile_error_operation_refresh)),
+            errors,
+        )
+        assertFalse(errors.single().toString().contains("private operation reload detail"))
     }
 
     @Test
@@ -327,7 +357,7 @@ class ConnectionProfileEditorControllerTest {
         advanceUntilIdle()
 
         val actionable = assertInstance<ConnectionProfileEditorUiState.Editing>(controller.state.value)
-        assertEquals("Review the SSH host identity and retry.", actionable.error)
+        assertEquals(UiMessage.Verbatim("Review the SSH host identity and retry."), actionable.error)
         assertFalse(actionable.toString().contains("private-host"))
 
         runtime.operationFailure = IllegalStateException("secret operation detail")
@@ -336,7 +366,7 @@ class ConnectionProfileEditorControllerTest {
 
         val generic = assertInstance<ConnectionProfileEditorUiState.Editing>(controller.state.value)
         assertEquals(
-            "The connection profile operation could not be completed securely.",
+            UiMessage.Localized(R.string.profile_error_operation),
             generic.error,
         )
         assertFalse(generic.toString().contains("secret operation detail"))
@@ -364,7 +394,7 @@ class ConnectionProfileEditorControllerTest {
         assertFalse(timedOut.isBusy)
         assertNull(timedOut.activeOperationId)
         assertEquals(
-            "The connection profile operation timed out. Check the connection and retry.",
+            UiMessage.Localized(R.string.profile_error_operation_timeout),
             timedOut.error,
         )
 
@@ -374,7 +404,7 @@ class ConnectionProfileEditorControllerTest {
 
         val retried = assertInstance<ConnectionProfileEditorUiState.Editing>(controller.state.value)
         assertFalse(retried.isBusy)
-        assertEquals("Profile operation completed.", retried.notice)
+        assertEquals(UiMessage.Verbatim("Profile operation completed."), retried.notice)
     }
 
     @Test
@@ -397,7 +427,10 @@ class ConnectionProfileEditorControllerTest {
         advanceUntilIdle()
 
         val failed = assertInstance<ConnectionProfileEditorUiState.Editing>(controller.state.value)
-        assertEquals("Remove this profile as a jump host before deleting it.", failed.error)
+        assertEquals(
+            UiMessage.Verbatim("Remove this profile as a jump host before deleting it."),
+            failed.error,
+        )
         assertFalse(failed.isBusy)
         assertTrue(runtime.deleted.isEmpty())
     }

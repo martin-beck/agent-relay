@@ -30,10 +30,14 @@ import androidx.compose.ui.test.tryPerformAccessibilityChecks
 import androidx.compose.ui.unit.dp
 import androidx.test.filters.SdkSuppress
 import androidx.test.platform.app.InstrumentationRegistry
+import com.example.agentrelay.R
 import com.example.agentrelay.theme.AgentRelayTheme
 import dev.agentrelay.connection.api.ConnectionProfileFieldType
 import dev.agentrelay.provider.api.AgentApprovalDecision
+import dev.agentrelay.provider.api.AgentApprovalType
+import dev.agentrelay.provider.api.AgentFileChangeKind
 import dev.agentrelay.provider.api.AgentSessionState
+import dev.agentrelay.session.api.SessionActionRisk
 import dev.agentrelay.session.api.SessionActionState
 import dev.agentrelay.session.api.SessionActivityType
 import org.junit.Rule
@@ -49,13 +53,13 @@ class MainScreenTest {
         setContent(MainScreenUiState.Loading, recorder)
 
         composeTestRule.onNodeWithTag(MAIN_LOADING_TEST_TAG).assertIsDisplayed()
-        composeTestRule.onNodeWithText("Loading Agent Relay...").assertIsDisplayed()
+        composeTestRule.onNodeWithText(composeTestRule.resourceText(R.string.main_loading)).assertIsDisplayed()
     }
 
     @Test
     fun fatalError_explainsRecoveryAndRetries() {
         val recorder = ActionRecorder()
-        setContent(MainScreenUiState.FatalError("Session storage is unavailable."), recorder)
+        setContent(MainScreenUiState.FatalError(UiMessage.Verbatim("Session storage is unavailable.")), recorder)
 
         composeTestRule.onNodeWithTag(MAIN_FATAL_ERROR_TEST_TAG).assertIsDisplayed()
         composeTestRule.onNodeWithText("Session storage is unavailable.").assertIsDisplayed()
@@ -163,14 +167,11 @@ class MainScreenTest {
         composeTestRule.onNodeWithText("Staging bastion").performScrollTo().performClick()
         check(recorder.updatedField == "jump-host" to "jump-profile")
 
-        composeTestRule.onNodeWithText("Install public key").performScrollTo().performClick()
-        composeTestRule.onNodeWithText("Test key-only login").performScrollTo().performClick()
+        composeTestRule.profileOperation(R.string.ssh_profile_operation_install_key).performClick()
+        composeTestRule.profileOperation(R.string.ssh_profile_operation_verify_key).performClick()
 
         check(recorder.requestedOperations == listOf("install-public-key", "verify-key-login"))
-        composeTestRule
-            .onNodeWithText("ssh-ed25519 AAAATESTKEY")
-            .performScrollTo()
-            .assertIsDisplayed()
+        composeTestRule.scrollProfileToText("ssh-ed25519 AAAATESTKEY").assertIsDisplayed()
     }
 
     @Test
@@ -184,15 +185,9 @@ class MainScreenTest {
             recorder,
         )
 
-        composeTestRule
-            .onNodeWithText("Install public key on this remote account?")
-            .assertIsDisplayed()
-        composeTestRule
-            .onNodeWithText(
-                "Agent Relay will add only this app-managed public key to the remote account.",
-            )
-            .assertIsDisplayed()
-        composeTestRule.onNodeWithText("Install public key").performClick()
+        composeTestRule.onNodeWithText(composeTestRule.resourceText(R.string.ssh_profile_operation_install_key_title)).assertIsDisplayed()
+        composeTestRule.onNodeWithText(composeTestRule.resourceText(R.string.ssh_profile_operation_install_key_message)).assertIsDisplayed()
+        composeTestRule.onNodeWithText(composeTestRule.resourceText(R.string.ssh_profile_operation_install_key)).performClick()
 
         check(recorder.operationConfirmed)
     }
@@ -208,14 +203,8 @@ class MainScreenTest {
             recorder,
         )
 
-        composeTestRule
-            .onNodeWithText("Install public key")
-            .performScrollTo()
-            .assertIsNotEnabled()
-        composeTestRule
-            .onNodeWithText("Test key-only login")
-            .performScrollTo()
-            .assertIsNotEnabled()
+        composeTestRule.profileOperation(R.string.ssh_profile_operation_install_key).assertIsNotEnabled()
+        composeTestRule.profileOperation(R.string.ssh_profile_operation_verify_key).assertIsNotEnabled()
         check(recorder.requestedOperations.isEmpty())
     }
 
@@ -394,7 +383,9 @@ class MainScreenTest {
 
         check(recorder.actionResponse == null)
         composeTestRule.onNodeWithTag("action-confirmation-dialog").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Confirm submit answers").performClick()
+        val submit = composeTestRule.resourceText(R.string.session_action_decision_submit)
+        val confirm = composeTestRule.resourceText(R.string.session_action_confirm_decision, submit)
+        composeTestRule.onNodeWithText(confirm).performClick()
 
         check(
             recorder.actionResponse == RecordedActionResponse(
@@ -413,7 +404,7 @@ class MainScreenTest {
         val base = actionHub()
         val delivering = base.attentionActions.single().copy(
             state = SessionActionState.DELIVERING,
-            completedDecisionLabel = "Submit answers",
+            completedDecision = AgentApprovalDecision.SUBMIT,
             additionalConfirmationGiven = true,
             isBusy = true,
         )
@@ -453,7 +444,7 @@ class MainScreenTest {
                 models = listOf(SpeechModelOptionUiModel("compact", "English compact", true)),
                 selectedModelId = "compact",
                 selectedModelName = "English compact",
-                statusMessage = "Voice input stays on this device.",
+                statusMessage = UiMessage.Localized(R.string.speech_status_ready_private),
             ),
             recorder = recorder,
         )
@@ -478,7 +469,7 @@ class MainScreenTest {
                 ),
                 selectedModelId = "compact",
                 selectedModelName = "English compact",
-                statusMessage = "Install the verified offline model before using voice input.",
+                statusMessage = UiMessage.Localized(R.string.speech_status_install_model),
             ),
             recorder = recorder,
         )
@@ -506,12 +497,13 @@ class MainScreenTest {
                 selectedModelId = "compact",
                 selectedModelName = "English compact",
                 progressPercent = 42,
-                statusMessage = "Downloading the offline speech model...",
+                statusMessage = UiMessage.Localized(R.string.speech_status_downloading_model),
             ),
             recorder = recorder,
         )
 
-        composeTestRule.onNodeWithText("42 percent downloaded").performScrollTo().assertIsDisplayed()
+        val progress = composeTestRule.resourceText(R.string.speech_download_progress, 42)
+        composeTestRule.onNodeWithText(progress).performScrollTo().assertIsDisplayed()
         composeTestRule
             .onNodeWithText("Cancel model download")
             .performScrollTo()
@@ -530,7 +522,7 @@ class MainScreenTest {
                 selectedModelName = "English compact",
                 targetSessionKey = "session-key",
                 operationId = 7,
-                statusMessage = "Listening on device. Stop when you finish speaking.",
+                statusMessage = UiMessage.Localized(R.string.speech_status_listening),
             ),
             recorder = recorder,
         )
@@ -553,7 +545,7 @@ class MainScreenTest {
                 targetSessionKey = "session-key",
                 operationId = 8,
                 transcript = "Run the focused checks.",
-                statusMessage = "Review the transcript before inserting it into the session draft.",
+                statusMessage = UiMessage.Localized(R.string.speech_status_review_transcript),
             ),
             recorder = recorder,
         )
@@ -592,7 +584,7 @@ class MainScreenTest {
                 models = listOf(SpeechModelOptionUiModel("compact", "English compact", true)),
                 selectedModelId = "compact",
                 selectedModelName = "English compact",
-                statusMessage = "Voice input stays on this device.",
+                statusMessage = UiMessage.Localized(R.string.speech_status_ready_private),
             ),
             recorder = recorder,
         )
@@ -820,7 +812,7 @@ internal data class RecordedActionResponse(
 internal fun testHub(): SessionHubUiModel {
     val session = SessionUiModel(
         stableKey = "session-key",
-        title = "Investigate flaky build",
+        title = UiMessage.Verbatim("Investigate flaky build"),
         preview = "The test fixture is ready for review.",
         connectionLabel = "This device",
         connectionProviderName = "Local",
@@ -859,7 +851,7 @@ internal fun testHub(): SessionHubUiModel {
                 target = "Test endpoint",
                 authenticationLabel = "Test key",
                 status = ConnectionStatus.IDENTITY_REVIEW,
-                statusDetail = "Test endpoint",
+                statusDetail = UiMessage.Verbatim("Test endpoint"),
                 connectedAgentCount = 0,
                 agentCount = 0,
                 unavailableAgentCount = 0,
@@ -884,7 +876,7 @@ internal fun testHub(): SessionHubUiModel {
                 SessionActivityUiModel(
                     id = "activity",
                     type = SessionActivityType.APPROVAL_REQUIRED,
-                    summary = "A safe test action needs review.",
+                    summary = UiMessage.Verbatim("A safe test action needs review."),
                     occurredAtEpochMillis = 1_788_200_000_000,
                     requiresAction = true,
                     isRead = false,
@@ -893,7 +885,7 @@ internal fun testHub(): SessionHubUiModel {
             transcript = listOf(
                 TranscriptEntryUiModel(
                     id = "transcript",
-                    roleLabel = "Agent",
+                    roleLabel = UiMessage.Verbatim("Agent"),
                     kind = TimelineEntryKind.AGENT_COMMENTARY,
                     text = "Cached agent output",
                     wasTruncated = false,
@@ -907,15 +899,16 @@ internal fun testHub(): SessionHubUiModel {
                 submitMode = SessionSubmitMode.SEND,
                 canSubmit = false,
                 canInterrupt = true,
-                statusMessage = "Resolve the pending approval or question before sending more input.",
+                statusMessage =
+                UiMessage.Localized(R.string.session_composer_status_pending_action),
             ),
             artifacts = listOf(
                 SessionArtifactUiModel(
                     stableKey = "artifact-key",
                     sessionKey = "session-key",
                     displayPath = "reports/result.txt",
-                    changeLabel = "Modified",
-                    availabilityMessage = "Ready to save a checked copy.",
+                    changeKind = AgentFileChangeKind.MODIFIED,
+                    availabilityStatus = SessionArtifactAvailabilityStatus.READY,
                     suggestedFileName = "result.txt",
                     isDownloadable = true,
                     canSave = true,
@@ -944,8 +937,8 @@ internal fun actionHub(): SessionHubUiModel {
     val action = SessionActionUiModel(
         stableKey = "action-key",
         sessionKey = "session-key",
-        title = "Choose validation scope",
-        typeLabel = "Command approval",
+        title = UiMessage.Verbatim("Choose validation scope"),
+        type = AgentApprovalType.COMMAND,
         description = "The provider needs a scope before continuing.",
         command = "remove generated output",
         scope = "/workspace/project",
@@ -953,12 +946,12 @@ internal fun actionHub(): SessionHubUiModel {
         connectionProviderName = "Secure Shell",
         connectionTarget = "Test endpoint",
         agentProviderLabel = "Codex",
-        sessionTitle = "Investigate flaky build",
+        sessionTitle = UiMessage.Verbatim("Investigate flaky build"),
         questions = listOf(
             SessionQuestionUiModel(
                 stableKey = "question-key",
                 header = "Scope",
-                prompt = "Which tests should run?",
+                prompt = UiMessage.Verbatim("Which tests should run?"),
                 options = listOf(
                     SessionQuestionOptionUiModel(
                         label = "Focused tests",
@@ -972,20 +965,18 @@ internal fun actionHub(): SessionHubUiModel {
         decisions = listOf(
             SessionDecisionUiModel(
                 decision = AgentApprovalDecision.SUBMIT,
-                label = "Submit answers",
                 requiresConfirmation = true,
                 isPositive = true,
             ),
             SessionDecisionUiModel(
                 decision = AgentApprovalDecision.CANCEL,
-                label = "Cancel",
                 requiresConfirmation = false,
                 isPositive = false,
             ),
         ),
-        riskLabels = listOf("Credential or secret access"),
+        risks = listOf(SessionActionRisk.CREDENTIAL_ACCESS),
         state = SessionActionState.PENDING,
-        completedDecisionLabel = null,
+        completedDecision = null,
         additionalConfirmationGiven = false,
         isBusy = false,
     )
@@ -1139,5 +1130,5 @@ private fun testEditor() = ConnectionProfileEditorUiState.Editing(
     ),
     canDelete = true,
     fieldErrors = mapOf("profile-label" to "Enter a profile name."),
-    error = "Correct the highlighted profile fields.",
+    error = UiMessage.Localized(R.string.profile_error_validation),
 )

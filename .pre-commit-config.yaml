@@ -141,6 +141,13 @@ repos:
         language: system
         pass_filenames: false
         files: \.(java|kt|kts|py)$
+      - id: verify-android-locales
+        name: Verify Android locale resources
+        entry: python scripts/ci/verify_android_locales.py
+        language: system
+        pass_filenames: false
+        files: >-
+          ^(config/android-locales\.txt|app/src/main/res/(resources\.properties|values.*)|scripts/ci/verify_android_locales\.py)$
       - id: render-usage-workflows
         name: Render executable usage workflow pages
         entry: python scripts/docs/render_workflows.py --check

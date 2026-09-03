@@ -1,5 +1,6 @@
 package com.example.agentrelay.ui.main
 
+import com.example.agentrelay.R
 import com.example.agentrelay.data.ArtifactExportDestination
 import com.example.agentrelay.data.SessionHubRuntime
 import dev.agentrelay.provider.api.RemoteFileAccessException
@@ -23,7 +24,7 @@ internal data class ArtifactInteractionState(
 internal class ArtifactInteractionController(
     private val scope: CoroutineScope,
     private val runtime: () -> SessionHubRuntime?,
-    private val reportError: (String?) -> Unit,
+    private val reportError: (UiMessage?) -> Unit,
 ) {
     private val mutableState = MutableStateFlow(ArtifactInteractionState())
     private val exportJobs = mutableMapOf<String, Job>()
@@ -34,7 +35,7 @@ internal class ArtifactInteractionController(
         val active = runtime() ?: return
         val locator = active.findArtifactSessionLocator(sessionKey)
         if (locator == null) {
-            reportError("That session is no longer available.")
+            reportError(UiMessage.Localized(R.string.main_error_session_unavailable))
             return
         }
         if (sessionKey in state.value.refreshingSessionKeys) {
@@ -50,7 +51,7 @@ internal class ArtifactInteractionController(
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Throwable) {
-                reportError("Changed files could not be refreshed for this session.")
+                reportError(UiMessage.Localized(R.string.artifact_error_refresh))
             } finally {
                 mutableState.update { current ->
                     current.copy(refreshingSessionKeys = current.refreshingSessionKeys - sessionKey)
@@ -66,23 +67,23 @@ internal class ArtifactInteractionController(
     ) {
         val active = runtime()
         if (active == null) {
-            rejectDestination(destination, "That changed file is no longer available.")
+            rejectDestination(destination, UiMessage.Localized(R.string.artifact_error_unavailable))
             return
         }
         val locator = active.findArtifactSessionLocator(sessionKey)
         if (locator == null) {
-            rejectDestination(destination, "That changed file is no longer available.")
+            rejectDestination(destination, UiMessage.Localized(R.string.artifact_error_unavailable))
             return
         }
         val artifact = active.sessionSnapshot.value.artifacts.firstOrNull {
             it.locator == locator && it.stableUiKey == artifactKey
         }
         if (artifact == null) {
-            rejectDestination(destination, "That changed file is no longer available.")
+            rejectDestination(destination, UiMessage.Localized(R.string.artifact_error_unavailable))
             return
         }
         if (exportJobs[artifactKey]?.isActive == true) {
-            rejectDestination(destination, "That changed file is already being saved.")
+            rejectDestination(destination, UiMessage.Localized(R.string.artifact_error_save_in_progress))
             return
         }
         reportError(null)
@@ -127,10 +128,10 @@ internal class ArtifactInteractionController(
                 throw cancelled
             } catch (failure: RemoteFileAccessException) {
                 discardPartial(destination)
-                reportError(failure.actionableMessage)
+                reportError(UiMessage.Verbatim(failure.actionableMessage))
             } catch (_: Throwable) {
                 discardPartial(destination)
-                reportError("The checked file copy could not be saved.")
+                reportError(UiMessage.Localized(R.string.artifact_error_save))
             } finally {
                 if (!completed) {
                     updateTransfer(artifactKey, null)
@@ -151,7 +152,7 @@ internal class ArtifactInteractionController(
 
     private fun rejectDestination(
         destination: ArtifactExportDestination,
-        message: String,
+        message: UiMessage,
     ) {
         reportError(message)
         scope.launch { discardPartial(destination) }

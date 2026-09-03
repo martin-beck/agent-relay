@@ -119,6 +119,14 @@ in separate Gradle invocations:
 ./gradlew :app:verifyRoborazziDebug --stacktrace
 ```
 
+To regenerate or investigate only the multilingual profile-editor matrix, keep
+the same record-then-verify separation and use the test-name filter:
+
+```bash
+./gradlew :app:recordRoborazziDebug --tests '*MainScreenScreenshotTest.profile*'
+./gradlew :app:verifyRoborazziDebug --tests '*MainScreenScreenshotTest.profile*'
+```
+
 Review every changed PNG under `app/src/test/screenshots` before committing it.
 Do not combine record and verify in one Gradle invocation because both
 Roborazzi modes use the same Android unit-test task.

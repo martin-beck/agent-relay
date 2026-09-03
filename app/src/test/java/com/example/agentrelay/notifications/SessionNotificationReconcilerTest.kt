@@ -6,6 +6,7 @@ import dev.agentrelay.provider.api.AgentProviderId
 import dev.agentrelay.provider.api.AgentSessionId
 import dev.agentrelay.provider.api.AgentSessionState
 import dev.agentrelay.session.api.SessionActivity
+import dev.agentrelay.session.api.SessionActivitySummary
 import dev.agentrelay.session.api.SessionActivityType
 import dev.agentrelay.session.api.SessionHubSnapshot
 import dev.agentrelay.session.api.SessionLocator
@@ -193,7 +194,7 @@ class SessionNotificationReconcilerTest {
         id = id,
         locator = LOCATOR,
         type = type,
-        summary = "Summary",
+        summary = SessionActivitySummary.Verbatim("Summary"),
         eventAnchorId = null,
         occurredAtEpochMillis = 1L,
     )

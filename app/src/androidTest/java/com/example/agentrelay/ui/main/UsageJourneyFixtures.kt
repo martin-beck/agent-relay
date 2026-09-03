@@ -1,6 +1,7 @@
 package com.example.agentrelay.ui.main
 
 import dev.agentrelay.connection.api.ConnectionProfileFieldType
+import dev.agentrelay.provider.api.AgentApprovalDecision
 import dev.agentrelay.provider.api.AgentSessionState
 import dev.agentrelay.session.api.SessionActionState
 
@@ -58,7 +59,7 @@ internal fun firstReadySessionHub(): SessionHubUiModel {
     val hub = testHub()
     val detail = checkNotNull(hub.selectedSession)
     val session = detail.session.copy(
-        title = "First workspace review",
+        title = UiMessage.Verbatim("First workspace review"),
         preview = "Ready for your first instruction.",
         connectionLabel = "Workshop host",
         agentState = AgentSessionState.IDLE,
@@ -85,7 +86,7 @@ internal fun deliveringActionHub(): SessionHubUiModel {
     val hub = actionHub()
     val action = hub.attentionActions.single().copy(
         state = SessionActionState.DELIVERING,
-        completedDecisionLabel = "Submit answers",
+        completedDecision = AgentApprovalDecision.SUBMIT,
         additionalConfirmationGiven = true,
         isBusy = true,
     )
@@ -107,7 +108,7 @@ internal fun twoSessionHub(): SessionHubUiModel {
     val first = hub.sessions.single()
     val second = first.copy(
         stableKey = "release-session-key",
-        title = "Prepare release notes",
+        title = UiMessage.Verbatim("Prepare release notes"),
         preview = "Release notes are ready for a final check.",
         agentProviderLabel = "Claude Code",
         agentState = AgentSessionState.IDLE,
@@ -125,7 +126,7 @@ internal fun exportCompleteHub(): SessionHubUiModel {
     val hub = testHub()
     val detail = checkNotNull(hub.selectedSession)
     val artifact = detail.artifacts.single().copy(
-        availabilityMessage = "Verified copy saved.",
+        availabilityStatus = SessionArtifactAvailabilityStatus.READY,
         canSave = true,
         bytesWritten = 512,
         totalBytes = 512,

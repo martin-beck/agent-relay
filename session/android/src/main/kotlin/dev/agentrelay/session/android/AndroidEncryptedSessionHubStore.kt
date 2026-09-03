@@ -7,6 +7,8 @@ import dev.agentrelay.provider.api.AgentProviderId
 import dev.agentrelay.provider.api.AgentSessionId
 import dev.agentrelay.session.api.CachedTranscriptEntry
 import dev.agentrelay.session.api.SessionActivity
+import dev.agentrelay.session.api.SessionActivitySummary
+import dev.agentrelay.session.api.SessionActivitySummaryKind
 import dev.agentrelay.session.api.SessionActionRequest
 import dev.agentrelay.session.api.SessionArtifact
 import dev.agentrelay.session.api.SessionDraft
@@ -45,7 +47,7 @@ class AndroidEncryptedSessionHubStore internal constructor(
         val plaintext = documents.read(SESSION_HUB_DOCUMENT) ?: return@withLock SessionHubSnapshot()
         try {
             val document = json.decodeFromString(SessionHubDocument.serializer(), plaintext.decodeToString())
-            check(document.formatVersion == SESSION_HUB_FORMAT_VERSION) {
+            check(document.formatVersion in MIN_SESSION_HUB_FORMAT_VERSION..SESSION_HUB_FORMAT_VERSION) {
                 "Unsupported session hub document version"
             }
             document.toDomain()
@@ -77,7 +79,8 @@ internal val SESSION_HUB_NAMESPACE = SecureDocumentNamespace(
 )
 
 private const val SESSION_HUB_DOCUMENT = "session-hub-v1"
-private const val SESSION_HUB_FORMAT_VERSION = 1
+private const val MIN_SESSION_HUB_FORMAT_VERSION = 1
+private const val SESSION_HUB_FORMAT_VERSION = 2
 
 private fun sessionStoreJson() = Json {
     encodeDefaults = true
@@ -148,7 +151,9 @@ private data class SessionActivityDocument(
     val id: String,
     val locator: SessionLocatorDocument,
     val type: String,
-    val summary: String,
+    val summary: String? = null,
+    val summaryKind: String? = null,
+    val summaryArgument: String? = null,
     val eventAnchorId: String?,
     val occurredAtEpochMillis: Long,
     val isRead: Boolean,
@@ -167,7 +172,8 @@ internal data class SessionQuestionDocument(
     val id: String,
     val providerQuestionId: String,
     val header: String?,
-    val prompt: String,
+    val prompt: String? = null,
+    val promptKind: String? = null,
     val options: List<SessionQuestionOptionDocument>,
     val allowsOther: Boolean,
     val allowsMultiple: Boolean,
@@ -180,7 +186,8 @@ internal data class SessionActionRequestDocument(
     val locator: SessionLocatorDocument,
     val turnId: String?,
     val type: String,
-    val title: String,
+    val title: String? = null,
+    val titleKind: String? = null,
     val description: String?,
     val command: String?,
     val workingDirectory: String?,
@@ -347,7 +354,9 @@ private fun SessionActivity.toDocument() = SessionActivityDocument(
     id = id,
     locator = locator.toDocument(),
     type = type.name,
-    summary = summary,
+    summary = (summary as? SessionActivitySummary.Verbatim)?.text,
+    summaryKind = (summary as? SessionActivitySummary.Generated)?.kind?.name,
+    summaryArgument = (summary as? SessionActivitySummary.Generated)?.argument,
     eventAnchorId = eventAnchorId,
     occurredAtEpochMillis = occurredAtEpochMillis,
     isRead = isRead,
@@ -355,17 +364,29 @@ private fun SessionActivity.toDocument() = SessionActivityDocument(
     actionRequestId = actionRequestId,
 )
 
-private fun SessionActivityDocument.toDomain() = SessionActivity(
-    id = id,
-    locator = locator.toDomain(),
-    type = enumValue(type),
-    summary = summary,
-    eventAnchorId = eventAnchorId,
-    occurredAtEpochMillis = occurredAtEpochMillis,
-    isRead = isRead,
-    isResolved = isResolved,
-    actionRequestId = actionRequestId,
-)
+private fun SessionActivityDocument.toDomain(): SessionActivity {
+    val restoredSummary = if (summaryKind == null) {
+        check(summaryArgument == null) { "Verbatim activity summary has an argument" }
+        SessionActivitySummary.Verbatim(checkNotNull(summary))
+    } else {
+        check(summary == null) { "Generated activity summary contains verbatim text" }
+        SessionActivitySummary.Generated(
+            kind = enumValue<SessionActivitySummaryKind>(summaryKind),
+            argument = summaryArgument,
+        )
+    }
+    return SessionActivity(
+        id = id,
+        locator = locator.toDomain(),
+        type = enumValue(type),
+        summary = restoredSummary,
+        eventAnchorId = eventAnchorId,
+        occurredAtEpochMillis = occurredAtEpochMillis,
+        isRead = isRead,
+        isResolved = isResolved,
+        actionRequestId = actionRequestId,
+    )
+}
 
 private fun <T, K> List<T>.requireUniqueBy(
     key: (T) -> K,

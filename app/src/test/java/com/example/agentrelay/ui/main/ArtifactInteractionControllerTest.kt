@@ -1,5 +1,6 @@
 package com.example.agentrelay.ui.main
 
+import com.example.agentrelay.R
 import dev.agentrelay.connection.api.ConnectionProfileId
 import dev.agentrelay.connection.api.ConnectionProviderId
 import dev.agentrelay.provider.api.AgentProviderId
@@ -49,7 +50,7 @@ class ArtifactInteractionControllerTest {
                 chunks = flowOf("result".encodeToByteArray()),
             )
         }
-        var reportedError: String? = "stale"
+        var reportedError: UiMessage? = UiMessage.Verbatim("stale")
         val controller = ArtifactInteractionController(
             scope = this,
             runtime = { runtime },
@@ -89,7 +90,7 @@ class ArtifactInteractionControllerTest {
                 artifacts = listOf(artifact),
             ),
         )
-        var reportedError: String? = null
+        var reportedError: UiMessage? = null
         val controller = ArtifactInteractionController(
             scope = this,
             runtime = { runtime },
@@ -111,10 +112,12 @@ class ArtifactInteractionControllerTest {
 
         assertEquals(1, failedDestination.discardCount)
         assertEquals(
-            "The source file changed. Refresh changed files and try again.",
+            UiMessage.Verbatim(
+                "The source file changed. Refresh changed files and try again.",
+            ),
             reportedError,
         )
-        assertFalse(checkNotNull(reportedError).contains("private-host"))
+        assertFalse(checkNotNull(reportedError).toString().contains("private-host"))
 
         runtime.prepareArtifactFailure = null
         runtime.preparedArtifactDownload = preparedDownload(
@@ -147,7 +150,7 @@ class ArtifactInteractionControllerTest {
         runCurrent()
 
         assertEquals(1, duplicateDestination.discardCount)
-        assertEquals("That changed file is already being saved.", reportedError)
+        assertEquals(UiMessage.Localized(R.string.artifact_error_save_in_progress), reportedError)
         assertEquals(0, cancelledDestination.discardCount)
 
         reportedError = null
@@ -160,9 +163,54 @@ class ArtifactInteractionControllerTest {
     }
 
     @Test
+    fun appOwnedRefreshAndSaveFailuresDoNotExposeRuntimeDetails() = runTest {
+        val locator = artifactLocator(ConnectionProviderId("ssh.secure-shell"))
+        val artifact = artifact(locator)
+        val runtime = FakeSessionHubRuntime(
+            providers = emptyList(),
+            coordinator = SessionCoordinatorSnapshot(),
+            sessions = SessionHubSnapshot(
+                sessions = listOf(artifactSession(locator)),
+                artifacts = listOf(artifact),
+            ),
+        )
+        var reportedError: UiMessage? = null
+        val controller = ArtifactInteractionController(
+            scope = this,
+            runtime = { runtime },
+            reportError = { reportedError = it },
+        )
+
+        runtime.refreshArtifactFailure =
+            IllegalStateException("private.example.test changed-file refresh detail")
+        controller.refreshArtifacts(locator.stableUiKey)
+        advanceUntilIdle()
+        assertEquals(
+            UiMessage.Localized(R.string.artifact_error_refresh),
+            reportedError,
+        )
+
+        runtime.prepareArtifactFailure =
+            IllegalStateException("private.example.test checked-copy detail")
+        val destination = FakeArtifactDestination()
+        controller.exportArtifact(
+            locator.stableUiKey,
+            artifact.stableUiKey,
+            destination,
+        )
+        advanceUntilIdle()
+        assertEquals(1, destination.discardCount)
+        assertEquals(
+            UiMessage.Localized(R.string.artifact_error_save),
+            reportedError,
+        )
+        assertFalse(checkNotNull(reportedError).toString().contains("private.example.test"))
+    }
+
+    @Test
     fun rejectedSaveRequestsDiscardDocumentsCreatedByTheSystemPicker() = runTest {
         var runtime: FakeSessionHubRuntime? = null
-        var reportedError: String? = null
+        var reportedError: UiMessage? = null
         val controller = ArtifactInteractionController(
             scope = this,
             runtime = { runtime },
@@ -178,7 +226,7 @@ class ArtifactInteractionControllerTest {
         advanceUntilIdle()
 
         assertEquals(1, unavailableDestination.discardCount)
-        assertEquals("That changed file is no longer available.", reportedError)
+        assertEquals(UiMessage.Localized(R.string.artifact_error_unavailable), reportedError)
 
         val activeRuntime = FakeSessionHubRuntime(
             providers = emptyList(),
@@ -198,7 +246,7 @@ class ArtifactInteractionControllerTest {
         advanceUntilIdle()
 
         assertEquals(1, missingArtifactDestination.discardCount)
-        assertEquals("That changed file is no longer available.", reportedError)
+        assertEquals(UiMessage.Localized(R.string.artifact_error_unavailable), reportedError)
         assertTrue(activeRuntime.preparedArtifactRequests.isEmpty())
     }
 }
