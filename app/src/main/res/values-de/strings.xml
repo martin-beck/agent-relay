@@ -185,4 +185,22 @@
     <string name="session_action_confirm_decision">Bestätigen: %1$s</string>
     <string name="action_go_back">Zurück</string>
     <string name="session_action_other_answer">Andere Antwort</string>
+    <string name="main_loading">Agent Relay wird geladen…</string>
+    <string name="session_card_no_preview">Keine Vorschau verfügbar.</string>
+    <string name="session_card_pinned">Angeheftet</string>
+    <string name="session_state_not_loaded">Nicht geladen</string>
+    <string name="session_state_idle">Inaktiv</string>
+    <string name="session_state_running">Wird ausgeführt</string>
+    <string name="session_state_waiting_for_approval">Wartet auf Freigabe</string>
+    <string name="session_state_unknown">Unbekannt</string>
+    <string name="session_card_accessibility_context">Anbieter %1$s; Verbindung %2$s; Agent %3$s</string>
+    <string name="accessibility_separator">. </string>
+    <plurals name="session_card_unread">
+        <item quantity="one">%1$d ungelesen</item>
+        <item quantity="other">%1$d ungelesen</item>
+    </plurals>
+    <plurals name="session_card_awaiting_action">
+        <item quantity="one">%1$d Aktion wartet auf Prüfung</item>
+        <item quantity="other">%1$d Aktionen warten auf Prüfung</item>
+    </plurals>
 </resources>

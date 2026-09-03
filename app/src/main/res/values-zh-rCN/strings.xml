@@ -183,4 +183,20 @@
     <string name="session_action_confirm_decision">确认：%1$s</string>
     <string name="action_go_back">返回</string>
     <string name="session_action_other_answer">其他答案</string>
+    <string name="main_loading">正在加载 Agent Relay…</string>
+    <string name="session_card_no_preview">没有可用的预览。</string>
+    <string name="session_card_pinned">已固定</string>
+    <string name="session_state_not_loaded">未加载</string>
+    <string name="session_state_idle">空闲</string>
+    <string name="session_state_running">运行中</string>
+    <string name="session_state_waiting_for_approval">等待批准</string>
+    <string name="session_state_unknown">未知</string>
+    <string name="session_card_accessibility_context">提供程序 %1$s，连接 %2$s，智能体 %3$s</string>
+    <string name="accessibility_separator">。</string>
+    <plurals name="session_card_unread">
+        <item quantity="other">%1$d 条未读</item>
+    </plurals>
+    <plurals name="session_card_awaiting_action">
+        <item quantity="other">%1$d 项操作等待审核</item>
+    </plurals>
 </resources>

@@ -185,4 +185,22 @@
     <string name="session_action_confirm_decision">पुष्टि करें: %1$s</string>
     <string name="action_go_back">वापस जाएँ</string>
     <string name="session_action_other_answer">अन्य जवाब</string>
+    <string name="main_loading">Agent Relay लोड हो रहा है…</string>
+    <string name="session_card_no_preview">कोई पूर्वावलोकन उपलब्ध नहीं है।</string>
+    <string name="session_card_pinned">पिन किया गया</string>
+    <string name="session_state_not_loaded">लोड नहीं हुआ</string>
+    <string name="session_state_idle">निष्क्रिय</string>
+    <string name="session_state_running">चल रहा है</string>
+    <string name="session_state_waiting_for_approval">मंज़ूरी की प्रतीक्षा में</string>
+    <string name="session_state_unknown">अज्ञात</string>
+    <string name="session_card_accessibility_context">प्रदाता %1$s; कनेक्शन %2$s; एजेंट %3$s</string>
+    <string name="accessibility_separator">. </string>
+    <plurals name="session_card_unread">
+        <item quantity="one">%1$d अपठित</item>
+        <item quantity="other">%1$d अपठित</item>
+    </plurals>
+    <plurals name="session_card_awaiting_action">
+        <item quantity="one">%1$d कार्रवाई समीक्षा की प्रतीक्षा में</item>
+        <item quantity="other">%1$d कार्रवाइयाँ समीक्षा की प्रतीक्षा में</item>
+    </plurals>
 </resources>

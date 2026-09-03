@@ -185,4 +185,22 @@
     <string name="session_action_confirm_decision">নিশ্চিত করুন: %1$s</string>
     <string name="action_go_back">ফিরে যান</string>
     <string name="session_action_other_answer">অন্য উত্তর</string>
+    <string name="main_loading">Agent Relay লোড হচ্ছে…</string>
+    <string name="session_card_no_preview">কোনো পূর্বরূপ নেই।</string>
+    <string name="session_card_pinned">পিন করা</string>
+    <string name="session_state_not_loaded">লোড করা হয়নি</string>
+    <string name="session_state_idle">নিষ্ক্রিয়</string>
+    <string name="session_state_running">চলছে</string>
+    <string name="session_state_waiting_for_approval">অনুমোদনের অপেক্ষায়</string>
+    <string name="session_state_unknown">অজানা</string>
+    <string name="session_card_accessibility_context">প্রদানকারী %1$s; সংযোগ %2$s; এজেন্ট %3$s</string>
+    <string name="accessibility_separator">. </string>
+    <plurals name="session_card_unread">
+        <item quantity="one">%1$dটি অপঠিত</item>
+        <item quantity="other">%1$dটি অপঠিত</item>
+    </plurals>
+    <plurals name="session_card_awaiting_action">
+        <item quantity="one">%1$dটি কাজ পর্যালোচনার অপেক্ষায়</item>
+        <item quantity="other">%1$dটি কাজ পর্যালোচনার অপেক্ষায়</item>
+    </plurals>
 </resources>

@@ -126,6 +126,20 @@ class LocalizedResourcesTest {
                 R.string.session_action_scope_value,
                 "/workspace/test",
             )
+            val sessionAccessibilityContext = context.getString(
+                R.string.session_card_accessibility_context,
+                *opaqueValues.toTypedArray(),
+            )
+            val unreadSessions = context.resources.getQuantityString(
+                R.plurals.session_card_unread,
+                2,
+                2,
+            )
+            val awaitingActions = context.resources.getQuantityString(
+                R.plurals.session_card_awaiting_action,
+                2,
+                2,
+            )
 
             opaqueValues.forEach { value ->
                 assertTrue(languageTag, sessionContext.contains(value))
@@ -168,6 +182,15 @@ class LocalizedResourcesTest {
             ACTION_LABEL_RESOURCES.forEach { resource ->
                 assertTrue(languageTag, context.getString(resource).isNotBlank())
             }
+            opaqueValues.forEach { value ->
+                assertTrue(languageTag, sessionAccessibilityContext.contains(value))
+            }
+            assertFalse(languageTag, sessionAccessibilityContext.contains("%1\$"))
+            assertTrue(languageTag, unreadSessions.isNotBlank())
+            assertTrue(languageTag, awaitingActions.isNotBlank())
+            assertFalse(languageTag, unreadSessions.contains("%1\$"))
+            assertFalse(languageTag, awaitingActions.contains("%1\$"))
+            assertTrue(languageTag, context.getString(R.string.main_loading).isNotBlank())
             val localizedNumber = NumberFormat
                 .getIntegerInstance(Locale.forLanguageTag(languageTag))
                 .format(42)

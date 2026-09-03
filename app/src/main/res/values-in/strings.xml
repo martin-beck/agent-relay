@@ -183,4 +183,20 @@
     <string name="session_action_confirm_decision">Konfirmasi: %1$s</string>
     <string name="action_go_back">Kembali</string>
     <string name="session_action_other_answer">Jawaban lain</string>
+    <string name="main_loading">Memuat Agent Relay…</string>
+    <string name="session_card_no_preview">Pratinjau tidak tersedia.</string>
+    <string name="session_card_pinned">Disematkan</string>
+    <string name="session_state_not_loaded">Belum dimuat</string>
+    <string name="session_state_idle">Diam</string>
+    <string name="session_state_running">Berjalan</string>
+    <string name="session_state_waiting_for_approval">Menunggu persetujuan</string>
+    <string name="session_state_unknown">Tidak diketahui</string>
+    <string name="session_card_accessibility_context">Penyedia %1$s; koneksi %2$s; agen %3$s</string>
+    <string name="accessibility_separator">. </string>
+    <plurals name="session_card_unread">
+        <item quantity="other">%1$d belum dibaca</item>
+    </plurals>
+    <plurals name="session_card_awaiting_action">
+        <item quantity="other">%1$d tindakan menunggu peninjauan</item>
+    </plurals>
 </resources>

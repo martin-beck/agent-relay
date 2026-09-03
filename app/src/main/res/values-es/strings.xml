@@ -187,4 +187,24 @@
     <string name="session_action_confirm_decision">Confirmar: %1$s</string>
     <string name="action_go_back">Volver</string>
     <string name="session_action_other_answer">Otra respuesta</string>
+    <string name="main_loading">Cargando Agent Relay…</string>
+    <string name="session_card_no_preview">No hay vista previa disponible.</string>
+    <string name="session_card_pinned">Fijada</string>
+    <string name="session_state_not_loaded">Sin cargar</string>
+    <string name="session_state_idle">Inactiva</string>
+    <string name="session_state_running">En ejecución</string>
+    <string name="session_state_waiting_for_approval">En espera de aprobación</string>
+    <string name="session_state_unknown">Desconocida</string>
+    <string name="session_card_accessibility_context">Proveedor %1$s; conexión %2$s; agente %3$s</string>
+    <string name="accessibility_separator">. </string>
+    <plurals name="session_card_unread">
+        <item quantity="one">%1$d sin leer</item>
+        <item quantity="many">%1$d sin leer</item>
+        <item quantity="other">%1$d sin leer</item>
+    </plurals>
+    <plurals name="session_card_awaiting_action">
+        <item quantity="one">%1$d acción pendiente de revisión</item>
+        <item quantity="many">%1$d acciones pendientes de revisión</item>
+        <item quantity="other">%1$d acciones pendientes de revisión</item>
+    </plurals>
 </resources>

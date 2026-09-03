@@ -129,7 +129,7 @@ internal fun MainScreenContent(
             ) {
                 CircularProgressIndicator()
                 Text(
-                    text = "Loading Agent Relay...",
+                    text = stringResource(R.string.main_loading),
                     style = MaterialTheme.typography.bodyLarge,
                 )
             }

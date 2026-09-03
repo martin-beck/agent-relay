@@ -189,4 +189,26 @@
     <string name="session_action_confirm_decision">Подтвердить: %1$s</string>
     <string name="action_go_back">Назад</string>
     <string name="session_action_other_answer">Другой ответ</string>
+    <string name="main_loading">Загрузка Agent Relay…</string>
+    <string name="session_card_no_preview">Предпросмотр недоступен.</string>
+    <string name="session_card_pinned">Закреплена</string>
+    <string name="session_state_not_loaded">Не загружен</string>
+    <string name="session_state_idle">Неактивен</string>
+    <string name="session_state_running">Выполняется</string>
+    <string name="session_state_waiting_for_approval">Ожидает подтверждения</string>
+    <string name="session_state_unknown">Неизвестен</string>
+    <string name="session_card_accessibility_context">Поставщик %1$s; подключение %2$s; агент %3$s</string>
+    <string name="accessibility_separator">. </string>
+    <plurals name="session_card_unread">
+        <item quantity="one">%1$d непрочитанное</item>
+        <item quantity="few">%1$d непрочитанных</item>
+        <item quantity="many">%1$d непрочитанных</item>
+        <item quantity="other">%1$d непрочитанных</item>
+    </plurals>
+    <plurals name="session_card_awaiting_action">
+        <item quantity="one">%1$d действие ожидает проверки</item>
+        <item quantity="few">%1$d действия ожидают проверки</item>
+        <item quantity="many">%1$d действий ожидают проверки</item>
+        <item quantity="other">%1$d действия ожидают проверки</item>
+    </plurals>
 </resources>

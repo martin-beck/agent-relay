@@ -183,4 +183,20 @@
     <string name="session_action_confirm_decision">確認：%1$s</string>
     <string name="action_go_back">戻る</string>
     <string name="session_action_other_answer">その他の回答</string>
+    <string name="main_loading">Agent Relay を読み込んでいます…</string>
+    <string name="session_card_no_preview">プレビューはありません。</string>
+    <string name="session_card_pinned">固定済み</string>
+    <string name="session_state_not_loaded">未読み込み</string>
+    <string name="session_state_idle">待機中</string>
+    <string name="session_state_running">実行中</string>
+    <string name="session_state_waiting_for_approval">承認待ち</string>
+    <string name="session_state_unknown">不明</string>
+    <string name="session_card_accessibility_context">プロバイダー %1$s、接続 %2$s、エージェント %3$s</string>
+    <string name="accessibility_separator">。</string>
+    <plurals name="session_card_unread">
+        <item quantity="other">未読 %1$d 件</item>
+    </plurals>
+    <plurals name="session_card_awaiting_action">
+        <item quantity="other">確認待ちの操作 %1$d 件</item>
+    </plurals>
 </resources>

@@ -215,4 +215,22 @@
     <string name="session_action_confirm_decision">Confirm: %1$s</string>
     <string name="action_go_back">Go back</string>
     <string name="session_action_other_answer">Other answer</string>
+    <string name="main_loading">Loading Agent Relay…</string>
+    <string name="session_card_no_preview">No preview is available.</string>
+    <string name="session_card_pinned">Pinned</string>
+    <string name="session_state_not_loaded">Not loaded</string>
+    <string name="session_state_idle">Idle</string>
+    <string name="session_state_running">Running</string>
+    <string name="session_state_waiting_for_approval">Waiting for approval</string>
+    <string name="session_state_unknown">Unknown</string>
+    <string name="session_card_accessibility_context">Provider %1$s; connection %2$s; agent %3$s</string>
+    <string name="accessibility_separator">. </string>
+    <plurals name="session_card_unread">
+        <item quantity="one">%1$d unread</item>
+        <item quantity="other">%1$d unread</item>
+    </plurals>
+    <plurals name="session_card_awaiting_action">
+        <item quantity="one">%1$d action awaiting review</item>
+        <item quantity="other">%1$d actions awaiting review</item>
+    </plurals>
 </resources>

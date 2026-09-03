@@ -193,4 +193,30 @@
     <string name="session_action_confirm_decision">تأكيد: %1$s</string>
     <string name="action_go_back">رجوع</string>
     <string name="session_action_other_answer">إجابة أخرى</string>
+    <string name="main_loading">جارٍ تحميل Agent Relay…</string>
+    <string name="session_card_no_preview">لا تتوفر معاينة.</string>
+    <string name="session_card_pinned">مثبتة</string>
+    <string name="session_state_not_loaded">غير محملة</string>
+    <string name="session_state_idle">خاملة</string>
+    <string name="session_state_running">قيد التشغيل</string>
+    <string name="session_state_waiting_for_approval">في انتظار الموافقة</string>
+    <string name="session_state_unknown">غير معروفة</string>
+    <string name="session_card_accessibility_context">الموفر %1$s؛ الاتصال %2$s؛ الوكيل %3$s</string>
+    <string name="accessibility_separator">. </string>
+    <plurals name="session_card_unread">
+        <item quantity="zero">%1$d عناصر غير مقروءة</item>
+        <item quantity="one">%1$d غير مقروء</item>
+        <item quantity="two">%1$d غير مقروءين</item>
+        <item quantity="few">%1$d عناصر غير مقروءة</item>
+        <item quantity="many">%1$d عنصرًا غير مقروء</item>
+        <item quantity="other">%1$d عنصر غير مقروء</item>
+    </plurals>
+    <plurals name="session_card_awaiting_action">
+        <item quantity="zero">%1$d إجراءات تنتظر المراجعة</item>
+        <item quantity="one">%1$d إجراء ينتظر المراجعة</item>
+        <item quantity="two">%1$d إجراءان ينتظران المراجعة</item>
+        <item quantity="few">%1$d إجراءات تنتظر المراجعة</item>
+        <item quantity="many">%1$d إجراءً ينتظر المراجعة</item>
+        <item quantity="other">%1$d إجراء ينتظر المراجعة</item>
+    </plurals>
 </resources>

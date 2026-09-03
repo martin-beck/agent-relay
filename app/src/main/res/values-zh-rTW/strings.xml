@@ -183,4 +183,20 @@
     <string name="session_action_confirm_decision">確認：%1$s</string>
     <string name="action_go_back">返回</string>
     <string name="session_action_other_answer">其他答案</string>
+    <string name="main_loading">正在載入 Agent Relay…</string>
+    <string name="session_card_no_preview">沒有可用的預覽。</string>
+    <string name="session_card_pinned">已固定</string>
+    <string name="session_state_not_loaded">未載入</string>
+    <string name="session_state_idle">閒置</string>
+    <string name="session_state_running">執行中</string>
+    <string name="session_state_waiting_for_approval">等待核准</string>
+    <string name="session_state_unknown">未知</string>
+    <string name="session_card_accessibility_context">提供者 %1$s，連線 %2$s，代理程式 %3$s</string>
+    <string name="accessibility_separator">。</string>
+    <plurals name="session_card_unread">
+        <item quantity="other">%1$d 則未讀</item>
+    </plurals>
+    <plurals name="session_card_awaiting_action">
+        <item quantity="other">%1$d 項操作等待審核</item>
+    </plurals>
 </resources>
