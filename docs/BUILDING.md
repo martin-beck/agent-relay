@@ -143,6 +143,14 @@ verified-copy, and unavailable-file matrix:
 ./gradlew :app:verifyRoborazziDebug --tests '*ArtifactScreenshotTest'
 ```
 
+Use the speech-install class filter for the compact model-selection,
+download, failure, and ready-state matrix:
+
+```bash
+./gradlew :app:recordRoborazziDebug --tests '*SpeechInstallScreenshotTest'
+./gradlew :app:verifyRoborazziDebug --tests '*SpeechInstallScreenshotTest'
+```
+
 Review every changed PNG under `app/src/test/screenshots` before committing it.
 Do not combine record and verify in one Gradle invocation because both
 Roborazzi modes use the same Android unit-test task.
