@@ -116,12 +116,13 @@ supported release.
   identity data were removed before private GitHub publication.
 - Published history is scanned for secrets and uses the GitHub no-reply author
   identity.
+- Explicit foreground-service-backed background connections and privacy-safe
+  notification delivery are implemented; live-provider physical-device evidence remains.
 
 ### Known limitations
 
 - The current session hub is an early control surface. Queued/offline input and
   changed-file preview, diff, and batch-export workflows are not yet exposed.
 - Voice input and attachments are not yet integrated with the text composer.
-- Offline speech and background recovery/notifications are not yet wired into
-  the application.
+- Offline speech and process-death recovery are not yet wired into the application.
 - Manual TalkBack/keyboard release audits and production release signing remain.

@@ -13,6 +13,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performScrollToKey
 import androidx.compose.ui.unit.Density
+import com.example.agentrelay.background.BackgroundTransportState
 import com.example.agentrelay.theme.AgentRelayTheme
 import com.github.takahirom.roborazzi.RoborazziOptions
 import com.github.takahirom.roborazzi.captureRoboImage
@@ -100,6 +101,17 @@ class MainScreenScreenshotTest {
     }
 
     @Test
+    fun backgroundActiveCompactLight() {
+        capture(
+            name = "main_background_active_compact_light",
+            widthDp = 360,
+            heightDp = 800,
+            state = MainScreenUiState.Ready(previewHub()),
+            backgroundTransportState = BackgroundTransportState.ACTIVE,
+        )
+    }
+
+    @Test
     fun longContentCompactLightLargeText() {
         capture(
             name = "main_long_content_compact_light_large_text",
@@ -142,6 +154,7 @@ class MainScreenScreenshotTest {
         state: MainScreenUiState,
         fontScale: Float = 1f,
         darkTheme: Boolean = false,
+        backgroundTransportState: BackgroundTransportState = BackgroundTransportState.STOPPED,
         afterSetContent: () -> Unit = {},
     ) {
         RuntimeEnvironment.setQualifiers("w${widthDp}dp-h${heightDp}dp-420dpi")
@@ -164,6 +177,7 @@ class MainScreenScreenshotTest {
                         MainScreenContent(
                             state = state,
                             actions = previewActions(),
+                            backgroundTransportState = backgroundTransportState,
                         )
                     }
                 }

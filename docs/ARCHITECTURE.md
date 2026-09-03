@@ -172,15 +172,21 @@ repository. Transfer progress belongs to the short-lived UI controller. Compose
 is a projection of these sources and must not become a second authority.
 
 The process lifecycle is a provider-neutral composition boundary. Moving the
-app to the background serially suspends an already-created session runtime;
-returning to the foreground resumes it only after any earlier suspension has
-finished. Lifecycle events never initialize the runtime on their own. If the
-runtime is first requested while the process is already backgrounded, it is
-suspended before being returned. Duplicate and obsolete transitions are
-coalesced, cancellation remains structured, and failures become a detail-free
-observable lifecycle state suitable for later status and notification
-projection. Provider error text and connection details are never placed in that
-state or the Android log.
+app to the background serially suspends an already-created session runtime
+unless the user explicitly started background connection mode. Returning to the
+foreground resumes it only after any earlier suspension has finished. Lifecycle
+events never initialize the runtime on their own. If the runtime is first
+requested while the process is already backgrounded, it is suspended before
+being returned unless the foreground service owns its connection lifetime.
+Duplicate and obsolete transitions are coalesced, cancellation remains
+structured, and failures become a detail-free observable lifecycle state.
+Provider error text and connection details are never placed in that state or
+the Android log.
+
+The non-exported foreground service uses Android's remoteMessaging type for the
+user-initiated relay of text between the phone and remote agent host. It is
+non-sticky, never starts at boot, exposes fixed privacy-safe status only, and
+always provides user-visible open and stop actions.
 
 UI keys are derived from the complete provider-scoped locator. Session
 navigation uses a fixed SHA-256 digest so saved navigation state cannot expose a

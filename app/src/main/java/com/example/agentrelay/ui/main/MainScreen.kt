@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.agentrelay.R
+import com.example.agentrelay.background.BackgroundTransportState
 import com.example.agentrelay.notifications.SessionNotificationPermissionState
 import dev.agentrelay.provider.api.AgentApprovalDecision
 
@@ -35,6 +36,7 @@ internal const val MAIN_FATAL_ERROR_TEST_TAG = "main-fatal-error"
 internal const val SESSION_HUB_LIST_TEST_TAG = "session-hub-list"
 internal const val SESSION_DETAIL_PANE_TEST_TAG = "session-detail-pane"
 internal const val NOTIFICATION_PERMISSION_TEST_TAG = "notification-permission"
+internal const val BACKGROUND_TRANSPORT_TEST_TAG = "background-transport"
 
 @Composable
 internal fun MainScreen(
@@ -47,6 +49,9 @@ internal fun MainScreen(
         SessionNotificationPermissionState.HIDDEN,
     onRequestNotificationPermission: () -> Unit = {},
     onOpenNotificationSettings: () -> Unit = {},
+    backgroundTransportState: BackgroundTransportState = BackgroundTransportState.STOPPED,
+    onStartBackgroundTransport: () -> Unit = {},
+    onStopBackgroundTransport: () -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val actions = remember(viewModel, onOpenSession, onSaveArtifact, speechActions) {
@@ -93,6 +98,9 @@ internal fun MainScreen(
         notificationPermissionState = notificationPermissionState,
         onRequestNotificationPermission = onRequestNotificationPermission,
         onOpenNotificationSettings = onOpenNotificationSettings,
+        backgroundTransportState = backgroundTransportState,
+        onStartBackgroundTransport = onStartBackgroundTransport,
+        onStopBackgroundTransport = onStopBackgroundTransport,
         modifier = modifier,
     )
 }
@@ -106,6 +114,9 @@ internal fun MainScreenContent(
         SessionNotificationPermissionState.HIDDEN,
     onRequestNotificationPermission: () -> Unit = {},
     onOpenNotificationSettings: () -> Unit = {},
+    backgroundTransportState: BackgroundTransportState = BackgroundTransportState.STOPPED,
+    onStartBackgroundTransport: () -> Unit = {},
+    onStopBackgroundTransport: () -> Unit = {},
 ) {
     when (state) {
         MainScreenUiState.Loading -> Box(
@@ -149,28 +160,29 @@ internal fun MainScreenContent(
         }
 
         is MainScreenUiState.Ready -> {
-            if (notificationPermissionState == SessionNotificationPermissionState.HIDDEN) {
-                AdaptiveSessionHub(
-                    hub = state.hub,
-                    speechInput = state.speechInput,
-                    actions = actions,
-                    modifier = modifier,
-                )
-            } else {
-                Column(modifier.fillMaxSize()) {
+            Column(modifier.fillMaxSize()) {
+                if (notificationPermissionState != SessionNotificationPermissionState.HIDDEN) {
                     SessionNotificationPermissionCard(
                         state = notificationPermissionState,
                         onRequestPermission = onRequestNotificationPermission,
                         onOpenSettings = onOpenNotificationSettings,
                         modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
                     )
-                    AdaptiveSessionHub(
-                        hub = state.hub,
-                        speechInput = state.speechInput,
-                        actions = actions,
-                        modifier = Modifier.weight(1f),
-                    )
                 }
+                BackgroundTransportCard(
+                    state = backgroundTransportState,
+                    notificationsAvailable =
+                    notificationPermissionState == SessionNotificationPermissionState.HIDDEN,
+                    onStart = onStartBackgroundTransport,
+                    onStop = onStopBackgroundTransport,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+                )
+                AdaptiveSessionHub(
+                    hub = state.hub,
+                    speechInput = state.speechInput,
+                    actions = actions,
+                    modifier = Modifier.weight(1f),
+                )
             }
             state.profileEditor?.let { editor ->
                 ConnectionProfileEditorDialog(editor, actions)
@@ -230,6 +242,78 @@ private fun SessionNotificationPermissionCard(
             )
             OutlinedButton(
                 onClick = onClick,
+                modifier = Modifier.align(Alignment.End),
+            ) {
+                Text(buttonLabel)
+            }
+        }
+    }
+}
+
+@Composable
+private fun BackgroundTransportCard(
+    state: BackgroundTransportState,
+    notificationsAvailable: Boolean,
+    onStart: () -> Unit,
+    onStop: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val explanation = when (state) {
+        BackgroundTransportState.STOPPED ->
+            if (notificationsAvailable) {
+                stringResource(R.string.background_transport_stopped)
+            } else {
+                stringResource(R.string.background_transport_requires_notifications)
+            }
+        BackgroundTransportState.STARTING ->
+            stringResource(R.string.background_transport_starting)
+        BackgroundTransportState.ACTIVE ->
+            stringResource(R.string.background_transport_active)
+        BackgroundTransportState.STOPPING ->
+            stringResource(R.string.background_transport_stopping)
+        BackgroundTransportState.START_FAILED ->
+            stringResource(R.string.background_transport_failed)
+    }
+    val buttonLabel = when (state) {
+        BackgroundTransportState.STOPPED ->
+            stringResource(R.string.background_transport_start)
+        BackgroundTransportState.STARTING ->
+            stringResource(R.string.background_transport_starting)
+        BackgroundTransportState.ACTIVE ->
+            stringResource(R.string.background_transport_stop_button)
+        BackgroundTransportState.STOPPING ->
+            stringResource(R.string.background_transport_stopping)
+        BackgroundTransportState.START_FAILED ->
+            stringResource(R.string.background_transport_retry)
+    }
+    val stopRequested = state == BackgroundTransportState.ACTIVE ||
+        state == BackgroundTransportState.STOPPING
+    val buttonEnabled = when (state) {
+        BackgroundTransportState.STOPPED,
+        BackgroundTransportState.START_FAILED,
+        -> notificationsAvailable
+        BackgroundTransportState.ACTIVE -> true
+        BackgroundTransportState.STARTING,
+        BackgroundTransportState.STOPPING,
+        -> false
+    }
+
+    Card(modifier.testTag(BACKGROUND_TRANSPORT_TEST_TAG)) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.background_transport_title),
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Text(
+                text = explanation,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            OutlinedButton(
+                onClick = if (stopRequested) onStop else onStart,
+                enabled = buttonEnabled,
                 modifier = Modifier.align(Alignment.End),
             ) {
                 Text(buttonLabel)

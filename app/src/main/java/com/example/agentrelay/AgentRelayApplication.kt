@@ -4,6 +4,8 @@ import android.app.Application
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ProcessLifecycleOwner
+import com.example.agentrelay.background.AndroidBackgroundTransportStarter
+import com.example.agentrelay.background.BackgroundTransportController
 import com.example.agentrelay.data.CoordinatorSessionHubRuntime
 import com.example.agentrelay.data.BackgroundAwareSessionHubRuntime
 import com.example.agentrelay.data.SessionHubRuntime
@@ -27,14 +29,21 @@ import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 class AgentRelayApplication : Application() {
     private val lifecycleScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    internal val graph by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+    private val graphDelegate = lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
         AgentRelayGraph(applicationContext, lifecycleScope)
+    }
+    internal val graph by graphDelegate
+    internal val backgroundTransport by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+        BackgroundTransportController(
+            AndroidBackgroundTransportStarter(applicationContext),
+        )
     }
 
     private val backgroundLifecycle = AppBackgroundLifecycleObserver(
@@ -49,6 +58,15 @@ class AgentRelayApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         ProcessLifecycleOwner.get().lifecycle.addObserver(backgroundLifecycle)
+    }
+
+    internal fun releaseBackgroundTransportAfterServiceDestruction() {
+        if (!graphDelegate.isInitialized()) {
+            return
+        }
+        lifecycleScope.launch {
+            graph.disableBackgroundTransportIfInitialized()
+        }
     }
 
     private companion object {
@@ -70,7 +88,9 @@ internal class AgentRelayGraph(
     @Volatile
     private var sessionRuntime: SessionHubRuntime? = null
     private var notificationAttached = false
-    private var backgroundRequested = false
+    private var appForeground = true
+    private var backgroundTransportActive = false
+    private var connectionsSuspended = false
 
     suspend fun sessionHubRuntime(): SessionHubRuntime {
         return initializationMutex.withLock {
@@ -78,15 +98,14 @@ internal class AgentRelayGraph(
                 sessionRuntime = created
             }
             if (!notificationAttached) {
-                if (backgroundRequested) {
-                    (runtime as? BackgroundAwareSessionHubRuntime)
-                        ?.suspendForBackground()
-                }
+                applyConnectionLifetime(runtime)
                 notificationRuntime.attach(
                     snapshots = runtime.sessionSnapshot,
-                    initiallyForeground = !backgroundRequested,
+                    initiallyForeground = appForeground,
                 )
                 notificationAttached = true
+            } else {
+                applyConnectionLifetime(runtime)
             }
             runtime
         }
@@ -94,11 +113,10 @@ internal class AgentRelayGraph(
 
     suspend fun suspendForBackgroundIfInitialized() {
         initializationMutex.withLock {
-            backgroundRequested = true
+            appForeground = false
             val active = sessionRuntime
             if (active != null) {
-                (active as? BackgroundAwareSessionHubRuntime)
-                    ?.suspendForBackground()
+                applyConnectionLifetime(active)
                 notificationRuntime.enterBackground()
             }
         }
@@ -106,12 +124,27 @@ internal class AgentRelayGraph(
 
     suspend fun resumeFromBackgroundIfInitialized() {
         initializationMutex.withLock {
-            backgroundRequested = false
+            appForeground = true
             val active = sessionRuntime
             if (active != null) {
                 notificationRuntime.enterForeground()
-                (active as? BackgroundAwareSessionHubRuntime)
-                    ?.resumeFromBackground()
+                applyConnectionLifetime(active)
+            }
+        }
+    }
+
+    suspend fun enableBackgroundTransport() {
+        initializationMutex.withLock {
+            backgroundTransportActive = true
+        }
+        sessionHubRuntime()
+    }
+
+    suspend fun disableBackgroundTransportIfInitialized() {
+        initializationMutex.withLock {
+            backgroundTransportActive = false
+            sessionRuntime?.let { active ->
+                applyConnectionLifetime(active)
             }
         }
     }
@@ -122,6 +155,23 @@ internal class AgentRelayGraph(
                 notificationRuntime.retryCurrent()
             }
         }
+    }
+
+    private suspend fun applyConnectionLifetime(runtime: SessionHubRuntime) {
+        val shouldSuspend = shouldSuspendProviderConnections(
+            appForeground = appForeground,
+            backgroundTransportActive = backgroundTransportActive,
+        )
+        if (connectionsSuspended == shouldSuspend) {
+            return
+        }
+        val backgroundAware = runtime as? BackgroundAwareSessionHubRuntime ?: return
+        if (shouldSuspend) {
+            backgroundAware.suspendForBackground()
+        } else {
+            backgroundAware.resumeFromBackground()
+        }
+        connectionsSuspended = shouldSuspend
     }
 
     private suspend fun createSessionRuntime(): SessionHubRuntime {
@@ -179,3 +229,8 @@ internal class AgentRelayGraph(
         const val LOG_TAG = "AgentRelay"
     }
 }
+
+internal fun shouldSuspendProviderConnections(
+    appForeground: Boolean,
+    backgroundTransportActive: Boolean,
+): Boolean = !appForeground && !backgroundTransportActive
