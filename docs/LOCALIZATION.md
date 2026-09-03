@@ -78,8 +78,8 @@ baselines make the same failures visible in pull requests.
 This is still bounded evidence, not full locale qualification. Profile editing
 and compact session-detail questions plus sensitive confirmations, as well as
 changed-file progress/cancel/result and offline speech selection/install states,
-now have equivalent per-locale matrices. Notification permission still requires
-that coverage.
+and notification permission plus settings recovery now have equivalent
+per-locale matrices.
 
 Representative API 36 device tests supplement deterministic JVM screenshots;
 they do not replace them.
