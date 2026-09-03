@@ -249,4 +249,11 @@
     <string name="session_artifact_path_deleted">削除されたファイル</string>
     <string name="session_artifact_path_outside_workspace">ワークスペース外のファイル</string>
     <string name="session_artifact_path_workspace_unknown">ワークスペースが不明なファイル</string>
+    <string name="speech_error_microphone_permission">オフライン音声入力の録音中にのみ、マイクへのアクセスが必要です。</string>
+    <string name="speech_error_transcript_unavailable">その音声文字起こしは利用できなくなりました。</string>
+    <string name="speech_error_session_unavailable">そのセッションは利用できなくなりました。</string>
+    <plurals name="speech_error_transcript_too_long">
+        <item quantity="other">音声文字起こしを挿入すると、下書きの上限である %1$d 文字を超えます。</item>
+    </plurals>
+    <string name="speech_error_transcript_changed">その音声文字起こしは挿入前に変更されました。</string>
 </resources>

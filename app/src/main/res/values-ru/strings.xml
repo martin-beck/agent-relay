@@ -261,4 +261,14 @@
     <string name="session_artifact_path_deleted">Удалённый файл</string>
     <string name="session_artifact_path_outside_workspace">Файл вне рабочей области</string>
     <string name="session_artifact_path_workspace_unknown">Файл с неизвестной рабочей областью</string>
+    <string name="speech_error_microphone_permission">Доступ к микрофону требуется только во время записи голосового ввода офлайн.</string>
+    <string name="speech_error_transcript_unavailable">Эта голосовая расшифровка больше недоступна.</string>
+    <string name="speech_error_session_unavailable">Этот сеанс больше недоступен.</string>
+    <plurals name="speech_error_transcript_too_long">
+        <item quantity="one">Голосовая расшифровка превысит ограничение черновика в %1$d символ.</item>
+        <item quantity="few">Голосовая расшифровка превысит ограничение черновика в %1$d символа.</item>
+        <item quantity="many">Голосовая расшифровка превысит ограничение черновика в %1$d символов.</item>
+        <item quantity="other">Голосовая расшифровка превысит ограничение черновика в %1$d символов.</item>
+    </plurals>
+    <string name="speech_error_transcript_changed">Эта голосовая расшифровка изменилась до того, как её удалось вставить.</string>
 </resources>

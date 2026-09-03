@@ -113,6 +113,11 @@ class LocalizedResourcesTest {
                 3,
                 3,
             )
+            val speechTranscriptTooLong = context.resources.getQuantityString(
+                R.plurals.speech_error_transcript_too_long,
+                32_000,
+                32_000,
+            )
             val downloadProgress = context.getString(R.string.speech_download_progress, 42)
             val requiredField = context.getString(
                 R.string.profile_editor_required,
@@ -170,6 +175,9 @@ class LocalizedResourcesTest {
             assertFalse(languageTag, actionContext.contains("%1\$"))
             assertFalse(languageTag, detailContext.contains("%1\$"))
             assertFalse(languageTag, messageTo.contains("%1\$"))
+            SPEECH_ERROR_RESOURCES.forEach { resource ->
+                assertTrue(languageTag, context.getString(resource).isNotBlank())
+            }
             assertFalse(languageTag, risk.contains("%1\$"))
             assertFalse(languageTag, addProfile.contains("%1\$"))
             assertFalse(languageTag, startOnConnection.contains("%1\$"))
@@ -206,6 +214,8 @@ class LocalizedResourcesTest {
             assertTrue(languageTag, artifactProgress.contains(localizedNumber))
             assertTrue(languageTag, artifactProgress.contains(localizedTotal))
             assertFalse(languageTag, artifactProgress.contains("%1\$"))
+            assertFalse(languageTag, speechTranscriptTooLong.contains("%1\$"))
+            assertFalse(languageTag, speechTranscriptTooLong.contains("%d"))
             assertFalse(languageTag, artifactProgress.contains("%2\$"))
 
             assertTrue(languageTag, downloadProgress.contains(localizedNumber))
@@ -325,6 +335,14 @@ class LocalizedResourcesTest {
             R.string.session_artifact_path_outside_workspace,
             R.string.session_artifact_path_workspace_unknown,
         )
+
+        val SPEECH_ERROR_RESOURCES = listOf(
+            R.string.speech_error_microphone_permission,
+            R.string.speech_error_transcript_unavailable,
+            R.string.speech_error_session_unavailable,
+            R.string.speech_error_transcript_changed,
+        )
+
         val EXPECTED_GENERATED_LOCALES = setOf(
             "en-US",
             "ar",

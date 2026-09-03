@@ -48,7 +48,7 @@ internal fun SessionHubList(
         hub.operationError?.let { message ->
             item(key = "operation-error") {
                 MessageCard(
-                    message,
+                    message.resolve(),
                     true,
                     stringResource(R.string.action_dismiss),
                     actions.dismissError,

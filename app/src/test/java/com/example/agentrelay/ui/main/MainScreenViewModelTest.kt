@@ -155,7 +155,7 @@ class MainScreenViewModelTest {
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
 
         assertEquals(
-            "Connection profiles could not be refreshed.",
+            UiMessage.Verbatim("Connection profiles could not be refreshed."),
             (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
         )
 
@@ -172,7 +172,7 @@ class MainScreenViewModelTest {
         viewModel.refreshProfiles()
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
         assertEquals(
-            "Connection profiles could not be refreshed.",
+            UiMessage.Verbatim("Connection profiles could not be refreshed."),
             (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
         )
         runtime.failRefresh = false
@@ -199,7 +199,7 @@ class MainScreenViewModelTest {
         viewModel.disconnect(stableConnectionKey)
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
         assertEquals(
-            "The connection could not be closed cleanly.",
+            UiMessage.Verbatim("The connection could not be closed cleanly."),
             (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
         )
         assertFalse(
@@ -210,7 +210,7 @@ class MainScreenViewModelTest {
         viewModel.connect("missing-connection")
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
         assertEquals(
-            "That connection profile is no longer available.",
+            UiMessage.Verbatim("That connection profile is no longer available."),
             (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
         )
         viewModel.clearOperationError()
@@ -221,7 +221,7 @@ class MainScreenViewModelTest {
         viewModel.selectSession(stableSessionKey)
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
         assertEquals(
-            "The session read state could not be saved.",
+            UiMessage.Verbatim("The session read state could not be saved."),
             (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
         )
         viewModel.clearSelection()
@@ -234,7 +234,7 @@ class MainScreenViewModelTest {
         viewModel.selectSession("missing-session")
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
         assertEquals(
-            "That session is no longer available.",
+            UiMessage.Verbatim("That session is no longer available."),
             (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
         )
 
@@ -242,14 +242,14 @@ class MainScreenViewModelTest {
         viewModel.submitSessionDraft("missing-session")
         mainDispatcherRule.dispatcher.scheduler.runCurrent()
         assertEquals(
-            "That session is no longer available.",
+            UiMessage.Verbatim("That session is no longer available."),
             (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
         )
         viewModel.clearOperationError()
         viewModel.updateSessionDraft("missing-session", "Keep this", 0, 9)
         mainDispatcherRule.dispatcher.scheduler.runCurrent()
         assertEquals(
-            "That session is no longer available.",
+            UiMessage.Verbatim("That session is no longer available."),
             (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
         )
 
@@ -257,7 +257,7 @@ class MainScreenViewModelTest {
         viewModel.resumeSession("missing-session")
         mainDispatcherRule.dispatcher.scheduler.runCurrent()
         assertEquals(
-            "That session is no longer available.",
+            UiMessage.Verbatim("That session is no longer available."),
             (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
         )
 
@@ -294,7 +294,7 @@ class MainScreenViewModelTest {
         viewModel.submitSessionDraft(sessionKey)
         scheduler.runCurrent()
         assertEquals(
-            "Enter a message before sending.",
+            UiMessage.Verbatim("Enter a message before sending."),
             (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
         )
 
@@ -302,7 +302,7 @@ class MainScreenViewModelTest {
         viewModel.updateSessionDraft(sessionKey, "x".repeat(32_001), 0, 0)
         scheduler.runCurrent()
         assertEquals(
-            "Session drafts are limited to 32000 characters.",
+            UiMessage.Verbatim("Session drafts are limited to 32000 characters."),
             (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
         )
 
@@ -317,7 +317,7 @@ class MainScreenViewModelTest {
         scheduler.advanceTimeBy(300L)
         scheduler.runCurrent()
         val failedSave = viewModel.uiState.value as MainScreenUiState.Ready
-        assertEquals("The session draft could not be saved securely.", failedSave.hub.operationError)
+        assertEquals(UiMessage.Verbatim("The session draft could not be saved securely."), failedSave.hub.operationError)
         assertEquals("Keep this saved", failedSave.hub.selectedSession?.composer?.draftText)
         assertTrue(runtime.savedDrafts.isEmpty())
 
@@ -325,7 +325,7 @@ class MainScreenViewModelTest {
         viewModel.submitSessionDraft(sessionKey)
         scheduler.advanceUntilIdle()
         assertEquals(
-            "The session input could not be sent.",
+            UiMessage.Verbatim("The session input could not be sent."),
             (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
         )
         assertTrue(runtime.sent.isEmpty())
@@ -428,7 +428,7 @@ class MainScreenViewModelTest {
         assertEquals("Preserve this input", runtime.savedDrafts.single().second.text)
         val ready = viewModel.uiState.value as MainScreenUiState.Ready
         assertEquals("Preserve this input", ready.hub.selectedSession?.composer?.draftText)
-        assertEquals("The session input could not be sent.", ready.hub.operationError)
+        assertEquals(UiMessage.Verbatim("The session input could not be sent."), ready.hub.operationError)
         assertTrue(runtime.sent.isEmpty())
 
         viewModel.viewModelScope.cancel()
@@ -469,7 +469,7 @@ class MainScreenViewModelTest {
         assertEquals("Deliver once", runtime.savedDrafts.single().second.text)
         assertEquals("Deliver once", ready.hub.selectedSession?.composer?.draftText)
         assertEquals(
-            "The message was delivered, but its saved draft could not be cleared securely.",
+            UiMessage.Verbatim("The message was delivered, but its saved draft could not be cleared securely."),
             ready.hub.operationError,
         )
 

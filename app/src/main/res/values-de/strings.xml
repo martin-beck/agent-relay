@@ -253,4 +253,12 @@
     <string name="session_artifact_path_deleted">Gelöschte Datei</string>
     <string name="session_artifact_path_outside_workspace">Datei außerhalb des Arbeitsbereichs</string>
     <string name="session_artifact_path_workspace_unknown">Datei mit unbekanntem Arbeitsbereich</string>
+    <string name="speech_error_microphone_permission">Mikrofonzugriff ist nur während der Aufnahme einer Offline-Spracheingabe erforderlich.</string>
+    <string name="speech_error_transcript_unavailable">Dieses Sprachtranskript ist nicht mehr verfügbar.</string>
+    <string name="speech_error_session_unavailable">Diese Sitzung ist nicht mehr verfügbar.</string>
+    <plurals name="speech_error_transcript_too_long">
+        <item quantity="one">Das Sprachtranskript würde die Entwurfsgrenze von %1$d Zeichen überschreiten.</item>
+        <item quantity="other">Das Sprachtranskript würde die Entwurfsgrenze von %1$d Zeichen überschreiten.</item>
+    </plurals>
+    <string name="speech_error_transcript_changed">Dieses Sprachtranskript wurde geändert, bevor es eingefügt werden konnte.</string>
 </resources>

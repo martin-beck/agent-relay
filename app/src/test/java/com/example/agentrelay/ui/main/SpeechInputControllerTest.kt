@@ -1,5 +1,6 @@
 package com.example.agentrelay.ui.main
 
+import com.example.agentrelay.R
 import dev.agentrelay.session.api.SessionDraft
 import dev.agentrelay.speech.api.OfflineSpeechService
 import dev.agentrelay.speech.api.SpeechFailure
@@ -257,6 +258,75 @@ class SpeechInputControllerTest {
 @OptIn(ExperimentalCoroutinesApi::class)
 class SpeechInputActionsTest {
     @Test
+    fun permissionAndUnavailableTargetsExposeLocalizedMessages() = runTest {
+        val service = readyService()
+        val controller = SpeechInputController(this, service) {}
+        val errors = mutableListOf<UiMessage>()
+        val actions = SpeechInputActions(
+            controller = controller,
+            resolveDraft = { null },
+            updateDraft = { _, _, _, _ -> error("Unexpected draft update") },
+            reportError = errors::add,
+        )
+
+        actions.permissionDenied()
+        actions.useTranscript("session-a")
+        controller.startListening("session-a")
+        runCurrent()
+        service.recognitionState.value = SpeechRecognitionState.Result(
+            SpeechOperationId(1L),
+            SpeechModelId("voice.test"),
+            "reviewed transcript",
+        )
+        runCurrent()
+        actions.useTranscript("session-a")
+
+        assertEquals(
+            listOf(
+                UiMessage.Localized(R.string.speech_error_microphone_permission),
+                UiMessage.Localized(R.string.speech_error_transcript_unavailable),
+                UiMessage.Localized(R.string.speech_error_session_unavailable),
+            ),
+            errors,
+        )
+        controller.close()
+    }
+
+    @Test
+    fun transcriptConsumptionRaceExposesLocalizedMessage() = runTest {
+        val service = readyService()
+        val controller = SpeechInputController(this, service) {}
+        val errors = mutableListOf<UiMessage>()
+        val draft = SessionDraft("", 0, 0, 1L)
+        val actions = SpeechInputActions(
+            controller = controller,
+            resolveDraft = {
+                controller.consumeTranscript("session-a")
+                draft
+            },
+            updateDraft = { _, _, _, _ -> error("Unexpected draft update") },
+            reportError = errors::add,
+        )
+
+        controller.startListening("session-a")
+        runCurrent()
+        service.recognitionState.value = SpeechRecognitionState.Result(
+            SpeechOperationId(1L),
+            SpeechModelId("voice.test"),
+            "reviewed transcript",
+        )
+        runCurrent()
+        actions.useTranscript("session-a")
+
+        assertEquals(
+            listOf(UiMessage.Localized(R.string.speech_error_transcript_changed)),
+            errors,
+        )
+        assertEquals(SpeechInputPhase.READY, controller.state.value.phase)
+        controller.close()
+    }
+
+    @Test
     fun reviewedTranscriptReplacesOnlyTheCurrentSelection() = runTest {
         val service = readyService()
         val controller = SpeechInputController(this, service) {}
@@ -267,7 +337,7 @@ class SpeechInputActionsTest {
             updatedAtEpochMillis = 1L,
         )
         var updatedDraft: SessionDraft? = null
-        val errors = mutableListOf<String>()
+        val errors = mutableListOf<UiMessage>()
         val actions = SpeechInputActions(
             controller = controller,
             resolveDraft = { sessionKey ->
@@ -309,7 +379,7 @@ class SpeechInputActionsTest {
             updatedAtEpochMillis = 1L,
         )
         var updatedDraft: SessionDraft? = null
-        val errors = mutableListOf<String>()
+        val errors = mutableListOf<UiMessage>()
         val actions = SpeechInputActions(
             controller = controller,
             resolveDraft = { originalDraft },
@@ -333,8 +403,11 @@ class SpeechInputActionsTest {
         assertEquals(SpeechInputPhase.RESULT, controller.state.value.phase)
         assertEquals(
             listOf(
-                "The voice transcript would exceed the " +
-                    "$MAX_SESSION_DRAFT_CHARS character draft limit.",
+                UiMessage.Plural(
+                    R.plurals.speech_error_transcript_too_long,
+                    MAX_SESSION_DRAFT_CHARS,
+                    listOf(MAX_SESSION_DRAFT_CHARS),
+                ),
             ),
             errors,
         )

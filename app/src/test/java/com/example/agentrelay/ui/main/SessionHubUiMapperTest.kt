@@ -537,7 +537,7 @@ class SessionHubUiMapperTest {
             sessions = SessionHubSnapshot(sessions = listOf(fallbackSession)),
             connectionProviders = emptyList(),
             selectedSessionKey = sessionLocator.stableUiKey,
-            operationError = "A safe operation failed.",
+            operationError = UiMessage.Verbatim("A safe operation failed."),
             busyConnectionKeys = setOf(
                 SessionConnectionKey(
                     providerId,
@@ -567,7 +567,7 @@ class SessionHubUiMapperTest {
         assertEquals("Codex session", mapped.sessions.single().title)
         assertEquals("test.provider", mapped.selectedSession?.session?.connectionProviderName)
         assertEquals(listOf("new", "old"), mapped.issues.map(CoordinatorIssueUiModel::id))
-        assertEquals("A safe operation failed.", mapped.operationError)
+        assertEquals(UiMessage.Verbatim("A safe operation failed."), mapped.operationError)
         assertTrue(mapped.isRefreshingProfiles)
     }
 

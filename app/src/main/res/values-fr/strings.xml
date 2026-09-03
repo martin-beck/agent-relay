@@ -257,4 +257,13 @@
     <string name="session_artifact_path_deleted">Fichier supprimé</string>
     <string name="session_artifact_path_outside_workspace">Fichier hors de l’espace de travail</string>
     <string name="session_artifact_path_workspace_unknown">Fichier dont l’espace de travail est inconnu</string>
+    <string name="speech_error_microphone_permission">L’accès au microphone est requis uniquement pendant l’enregistrement de la saisie vocale hors ligne.</string>
+    <string name="speech_error_transcript_unavailable">Cette transcription vocale n’est plus disponible.</string>
+    <string name="speech_error_session_unavailable">Cette session n’est plus disponible.</string>
+    <plurals name="speech_error_transcript_too_long">
+        <item quantity="one">La transcription vocale dépasserait la limite de %1$d caractère du brouillon.</item>
+        <item quantity="many">La transcription vocale dépasserait la limite de %1$d caractères du brouillon.</item>
+        <item quantity="other">La transcription vocale dépasserait la limite de %1$d caractères du brouillon.</item>
+    </plurals>
+    <string name="speech_error_transcript_changed">Cette transcription vocale a changé avant de pouvoir être insérée.</string>
 </resources>

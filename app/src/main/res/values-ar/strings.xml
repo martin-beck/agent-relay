@@ -269,4 +269,16 @@
     <string name="session_artifact_path_deleted">ملف محذوف</string>
     <string name="session_artifact_path_outside_workspace">ملف خارج مساحة العمل</string>
     <string name="session_artifact_path_workspace_unknown">ملف بمساحة عمل غير معروفة</string>
+    <string name="speech_error_microphone_permission">لا يلزم الوصول إلى الميكروفون إلا أثناء تسجيل الإدخال الصوتي بلا اتصال.</string>
+    <string name="speech_error_transcript_unavailable">لم يعد نص الإدخال الصوتي هذا متاحًا.</string>
+    <string name="speech_error_session_unavailable">لم تعد هذه الجلسة متاحة.</string>
+    <plurals name="speech_error_transcript_too_long">
+        <item quantity="zero">سيتجاوز نص الإدخال الصوتي حد المسودة البالغ %1$d حرفًا.</item>
+        <item quantity="one">سيتجاوز نص الإدخال الصوتي حد المسودة البالغ %1$d حرفًا.</item>
+        <item quantity="two">سيتجاوز نص الإدخال الصوتي حد المسودة البالغ %1$d حرفًا.</item>
+        <item quantity="few">سيتجاوز نص الإدخال الصوتي حد المسودة البالغ %1$d حرفًا.</item>
+        <item quantity="many">سيتجاوز نص الإدخال الصوتي حد المسودة البالغ %1$d حرفًا.</item>
+        <item quantity="other">سيتجاوز نص الإدخال الصوتي حد المسودة البالغ %1$d حرفًا.</item>
+    </plurals>
+    <string name="speech_error_transcript_changed">تغيّر نص الإدخال الصوتي قبل إدراجه.</string>
 </resources>

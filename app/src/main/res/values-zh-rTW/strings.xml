@@ -249,4 +249,11 @@
     <string name="session_artifact_path_deleted">已刪除的檔案</string>
     <string name="session_artifact_path_outside_workspace">工作區之外的檔案</string>
     <string name="session_artifact_path_workspace_unknown">工作區未知的檔案</string>
+    <string name="speech_error_microphone_permission">只有錄製離線語音輸入時才需要麥克風權限。</string>
+    <string name="speech_error_transcript_unavailable">該語音轉寫已無法使用。</string>
+    <string name="speech_error_session_unavailable">該工作階段已無法使用。</string>
+    <plurals name="speech_error_transcript_too_long">
+        <item quantity="other">語音轉寫將超過草稿的 %1$d 個字元限制。</item>
+    </plurals>
+    <string name="speech_error_transcript_changed">該語音轉寫在插入前已變更。</string>
 </resources>

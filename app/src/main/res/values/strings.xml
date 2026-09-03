@@ -283,4 +283,12 @@
     <string name="session_artifact_path_deleted">Deleted file</string>
     <string name="session_artifact_path_outside_workspace">File outside workspace</string>
     <string name="session_artifact_path_workspace_unknown">File with unknown workspace</string>
+    <string name="speech_error_microphone_permission">Microphone access is required only while recording offline voice input.</string>
+    <string name="speech_error_transcript_unavailable">That voice transcript is no longer available.</string>
+    <string name="speech_error_session_unavailable">That session is no longer available.</string>
+    <plurals name="speech_error_transcript_too_long">
+        <item quantity="one">The voice transcript would exceed the %1$d-character draft limit.</item>
+        <item quantity="other">The voice transcript would exceed the %1$d-character draft limit.</item>
+    </plurals>
+    <string name="speech_error_transcript_changed">That voice transcript changed before it could be inserted.</string>
 </resources>

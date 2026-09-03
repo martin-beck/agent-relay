@@ -257,4 +257,13 @@
     <string name="session_artifact_path_deleted">Archivo eliminado</string>
     <string name="session_artifact_path_outside_workspace">Archivo fuera del espacio de trabajo</string>
     <string name="session_artifact_path_workspace_unknown">Archivo con espacio de trabajo desconocido</string>
+    <string name="speech_error_microphone_permission">El acceso al micrófono solo es necesario mientras se graba la entrada de voz sin conexión.</string>
+    <string name="speech_error_transcript_unavailable">Esa transcripción de voz ya no está disponible.</string>
+    <string name="speech_error_session_unavailable">Esa sesión ya no está disponible.</string>
+    <plurals name="speech_error_transcript_too_long">
+        <item quantity="one">La transcripción de voz superaría el límite de %1$d carácter del borrador.</item>
+        <item quantity="many">La transcripción de voz superaría el límite de %1$d caracteres del borrador.</item>
+        <item quantity="other">La transcripción de voz superaría el límite de %1$d caracteres del borrador.</item>
+    </plurals>
+    <string name="speech_error_transcript_changed">Esa transcripción de voz cambió antes de que pudiera insertarse.</string>
 </resources>

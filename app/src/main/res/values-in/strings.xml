@@ -249,4 +249,11 @@
     <string name="session_artifact_path_deleted">File yang dihapus</string>
     <string name="session_artifact_path_outside_workspace">File di luar ruang kerja</string>
     <string name="session_artifact_path_workspace_unknown">File dengan ruang kerja yang tidak diketahui</string>
+    <string name="speech_error_microphone_permission">Akses mikrofon hanya diperlukan saat merekam input suara offline.</string>
+    <string name="speech_error_transcript_unavailable">Transkrip suara tersebut sudah tidak tersedia.</string>
+    <string name="speech_error_session_unavailable">Sesi tersebut sudah tidak tersedia.</string>
+    <plurals name="speech_error_transcript_too_long">
+        <item quantity="other">Transkrip suara akan melebihi batas draf %1$d karakter.</item>
+    </plurals>
+    <string name="speech_error_transcript_changed">Transkrip suara tersebut berubah sebelum dapat disisipkan.</string>
 </resources>

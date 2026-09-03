@@ -253,4 +253,12 @@
     <string name="session_artifact_path_deleted">हटाई गई फ़ाइल</string>
     <string name="session_artifact_path_outside_workspace">कार्यस्थान के बाहर की फ़ाइल</string>
     <string name="session_artifact_path_workspace_unknown">अज्ञात कार्यस्थान वाली फ़ाइल</string>
+    <string name="speech_error_microphone_permission">ऑफ़लाइन वॉइस इनपुट रिकॉर्ड करते समय ही माइक्रोफ़ोन की अनुमति आवश्यक है।</string>
+    <string name="speech_error_transcript_unavailable">वह वॉइस ट्रांसक्रिप्ट अब उपलब्ध नहीं है।</string>
+    <string name="speech_error_session_unavailable">वह सत्र अब उपलब्ध नहीं है।</string>
+    <plurals name="speech_error_transcript_too_long">
+        <item quantity="one">वॉइस ट्रांसक्रिप्ट ड्राफ़्ट की %1$d वर्ण सीमा से अधिक हो जाएगा।</item>
+        <item quantity="other">वॉइस ट्रांसक्रिप्ट ड्राफ़्ट की %1$d वर्ण सीमा से अधिक हो जाएगा।</item>
+    </plurals>
+    <string name="speech_error_transcript_changed">वह वॉइस ट्रांसक्रिप्ट डालने से पहले बदल गया।</string>
 </resources>

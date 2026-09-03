@@ -35,7 +35,7 @@ internal class MainScreenViewModel(
 ) : ViewModel() {
     private val mutableUiState = MutableStateFlow<MainScreenUiState>(MainScreenUiState.Loading)
     private val selectedSessionKey = MutableStateFlow<String?>(null)
-    private val operationError = MutableStateFlow<String?>(null)
+    private val operationError = MutableStateFlow<UiMessage?>(null)
     private val busyConnectionKeys = MutableStateFlow<Set<String>>(emptySet())
     private val sessionInteractions = MutableStateFlow(SessionInteractionState())
     private val sessionCreator = MutableStateFlow<SessionCreatorUiState?>(null)
@@ -45,19 +45,19 @@ internal class MainScreenViewModel(
     private val profileEditor = ConnectionProfileEditorController(
         scope = viewModelScope,
         runtime = { runtime },
-        reportError = { operationError.value = it },
+        reportError = operationError::setVerbatim,
     )
     internal val profileOperations = ConnectionProfileOperationActions(profileEditor)
 
     internal val artifactInteractions = ArtifactInteractionController(
         scope = viewModelScope,
         runtime = { runtime },
-        reportError = { operationError.value = it },
+        reportError = operationError::setVerbatim,
     )
     internal val speechInput = SpeechInputController(
         scope = viewModelScope,
         service = speechService,
-        reportError = { operationError.value = it },
+        reportError = operationError::setVerbatim,
     ).also(::addCloseable)
     internal val speechActions = SpeechInputActions(
         controller = speechInput,
@@ -176,7 +176,7 @@ internal class MainScreenViewModel(
             ?.firstOrNull { it.locator.stableUiKey == sessionKey }
             ?.locator
         if (locator == null) {
-            operationError.value = "That session is no longer available."
+            operationError.setVerbatim("That session is no longer available.")
             return
         }
         selectedSessionKey.value = sessionKey
@@ -187,7 +187,7 @@ internal class MainScreenViewModel(
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Throwable) {
-                operationError.value = "The session read state could not be saved."
+                operationError.setVerbatim("The session read state could not be saved.")
             }
         }
     }
@@ -210,11 +210,11 @@ internal class MainScreenViewModel(
         val active = runtime ?: return
         val locator = active.findSessionLocator(sessionKey)
         if (locator == null) {
-            operationError.value = "That session is no longer available."
+            operationError.setVerbatim("That session is no longer available.")
             return
         }
         if (text.length > MAX_SESSION_DRAFT_CHARS) {
-            operationError.value = "Session drafts are limited to $MAX_SESSION_DRAFT_CHARS characters."
+            operationError.setVerbatim("Session drafts are limited to $MAX_SESSION_DRAFT_CHARS characters.")
             return
         }
         val boundedStart = selectionStart.coerceIn(0, text.length)
@@ -243,7 +243,7 @@ internal class MainScreenViewModel(
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Throwable) {
-                operationError.value = "The session draft could not be saved securely."
+                operationError.setVerbatim("The session draft could not be saved securely.")
             }
         }
         draftSaveJobs[sessionKey] = saveJob
@@ -259,13 +259,13 @@ internal class MainScreenViewModel(
         val record = active.sessionSnapshot.value.sessions
             .firstOrNull { it.locator.stableUiKey == sessionKey }
         if (record == null) {
-            operationError.value = "That session is no longer available."
+            operationError.setVerbatim("That session is no longer available.")
             return
         }
         val draft = sessionInteractions.value.draftOverrides[sessionKey]
             ?: active.sessionSnapshot.value.drafts[record.locator]
         if (draft == null || draft.text.isBlank()) {
-            operationError.value = "Enter a message before sending."
+            operationError.setVerbatim("Enter a message before sending.")
             return
         }
         val state = record.observation.agentState
@@ -293,8 +293,9 @@ internal class MainScreenViewModel(
                 } catch (cancelled: CancellationException) {
                     throw cancelled
                 } catch (_: Throwable) {
-                    operationError.value =
-                        "The message was delivered, but its saved draft could not be cleared securely."
+                    operationError.setVerbatim(
+                        "The message was delivered, but its saved draft could not be cleared securely.",
+                    )
                     return@performSession
                 }
                 sessionInteractions.update { current ->
@@ -320,7 +321,7 @@ internal class MainScreenViewModel(
             ?.sessionLaunchers
             ?.firstOrNull { it.stableKey == launcherKey }
         if (launcher == null) {
-            operationError.value = "That agent endpoint is no longer ready."
+            operationError.setVerbatim("That agent endpoint is no longer ready.")
             return
         }
         operationError.value = null
@@ -335,7 +336,7 @@ internal class MainScreenViewModel(
 
     fun updateSessionCreatorWorkingDirectory(value: String) {
         if (value.length > MAX_WORKING_DIRECTORY_CHARS) {
-            operationError.value = "Working directories are limited to $MAX_WORKING_DIRECTORY_CHARS characters."
+            operationError.setVerbatim("Working directories are limited to $MAX_WORKING_DIRECTORY_CHARS characters.")
             return
         }
         sessionCreator.update { current ->
@@ -345,7 +346,7 @@ internal class MainScreenViewModel(
 
     fun updateSessionCreatorModel(value: String) {
         if (value.length > MAX_MODEL_CHARS) {
-            operationError.value = "Model names are limited to $MAX_MODEL_CHARS characters."
+            operationError.setVerbatim("Model names are limited to $MAX_MODEL_CHARS characters.")
             return
         }
         sessionCreator.update { current ->
@@ -369,7 +370,7 @@ internal class MainScreenViewModel(
             .firstOrNull { it.stableUiKey == creator.launcherKey }
         if (endpoint == null) {
             sessionCreator.value = null
-            operationError.value = "That agent endpoint is no longer ready."
+            operationError.setVerbatim("That agent endpoint is no longer ready.")
             return
         }
         operationError.value = null
@@ -389,7 +390,7 @@ internal class MainScreenViewModel(
                 throw cancelled
             } catch (_: Throwable) {
                 sessionCreator.update { it?.copy(isBusy = false) }
-                operationError.value = "The new agent session could not be started."
+                operationError.setVerbatim("The new agent session could not be started.")
             }
         }
     }
@@ -406,7 +407,7 @@ internal class MainScreenViewModel(
             it.id == actionKey && it.locator.stableUiKey == sessionKey
         }
         if (request == null) {
-            operationError.value = "That approval or question is no longer available."
+            operationError.setVerbatim("That approval or question is no longer available.")
             return
         }
         if (actionKey in sessionInteractions.value.busyActionKeys) {
@@ -428,11 +429,11 @@ internal class MainScreenViewModel(
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (failure: SessionActionDeliveryUncertainException) {
-                operationError.value = failure.message
+                operationError.setVerbatim(failure.message)
             } catch (failure: SessionActionAuditFailureException) {
-                operationError.value = failure.message
+                operationError.setVerbatim(failure.message)
             } catch (_: Throwable) {
-                operationError.value = "The approval or question response could not be applied."
+                operationError.setVerbatim("The approval or question response could not be applied.")
             } finally {
                 sessionInteractions.update { current ->
                     current.copy(busyActionKeys = current.busyActionKeys - actionKey)
@@ -493,7 +494,7 @@ internal class MainScreenViewModel(
                 } catch (cancelled: CancellationException) {
                     throw cancelled
                 } catch (_: Throwable) {
-                    operationError.value = "Connection profiles could not be refreshed."
+                    operationError.setVerbatim("Connection profiles could not be refreshed.")
                 }
             } catch (cancelled: CancellationException) {
                 throw cancelled
@@ -518,7 +519,7 @@ internal class MainScreenViewModel(
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Throwable) {
-                operationError.value = failureMessage
+                operationError.setVerbatim(failureMessage)
             }
         }
     }
@@ -534,7 +535,7 @@ internal class MainScreenViewModel(
             .map { SessionConnectionKey(it.providerId, it.id) }
             .firstOrNull { it.stableUiKey == connectionKey }
         if (key == null) {
-            operationError.value = "That connection profile is no longer available."
+            operationError.setVerbatim("That connection profile is no longer available.")
             return
         }
         operationError.value = null
@@ -545,7 +546,7 @@ internal class MainScreenViewModel(
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Throwable) {
-                operationError.value = failureMessage
+                operationError.setVerbatim(failureMessage)
             } finally {
                 busyConnectionKeys.value -= connectionKey
             }
@@ -560,7 +561,7 @@ internal class MainScreenViewModel(
         val active = runtime ?: return
         val locator = active.findSessionLocator(sessionKey)
         if (locator == null) {
-            operationError.value = "That session is no longer available."
+            operationError.setVerbatim("That session is no longer available.")
             return
         }
         if (sessionKey in sessionInteractions.value.busySessionKeys) {
@@ -576,7 +577,7 @@ internal class MainScreenViewModel(
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Throwable) {
-                operationError.value = failureMessage
+                operationError.setVerbatim(failureMessage)
             } finally {
                 sessionInteractions.update { current ->
                     current.copy(busySessionKeys = current.busySessionKeys - sessionKey)
@@ -590,6 +591,10 @@ internal class MainScreenViewModel(
         const val MAX_WORKING_DIRECTORY_CHARS = 4_096
         const val MAX_MODEL_CHARS = 256
     }
+}
+
+private fun MutableStateFlow<UiMessage?>.setVerbatim(message: String?) {
+    value = message?.let(UiMessage::Verbatim)
 }
 
 private fun SessionHubRuntime.findSessionLocator(sessionKey: String): SessionLocator? =

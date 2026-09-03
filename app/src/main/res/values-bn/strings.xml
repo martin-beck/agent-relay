@@ -253,4 +253,12 @@
     <string name="session_artifact_path_deleted">মুছে ফেলা ফাইল</string>
     <string name="session_artifact_path_outside_workspace">ওয়ার্কস্পেসের বাইরের ফাইল</string>
     <string name="session_artifact_path_workspace_unknown">অজানা ওয়ার্কস্পেসের ফাইল</string>
+    <string name="speech_error_microphone_permission">অফলাইন ভয়েস ইনপুট রেকর্ড করার সময়ই শুধু মাইক্রোফোন অ্যাক্সেস প্রয়োজন।</string>
+    <string name="speech_error_transcript_unavailable">সেই ভয়েস ট্রান্সক্রিপ্টটি আর পাওয়া যাচ্ছে না।</string>
+    <string name="speech_error_session_unavailable">সেই সেশনটি আর পাওয়া যাচ্ছে না।</string>
+    <plurals name="speech_error_transcript_too_long">
+        <item quantity="one">ভয়েস ট্রান্সক্রিপ্টটি খসড়ার %1$d অক্ষরের সীমা ছাড়িয়ে যাবে।</item>
+        <item quantity="other">ভয়েস ট্রান্সক্রিপ্টটি খসড়ার %1$d অক্ষরের সীমা ছাড়িয়ে যাবে।</item>
+    </plurals>
+    <string name="speech_error_transcript_changed">ভয়েস ট্রান্সক্রিপ্টটি যোগ করার আগেই পরিবর্তিত হয়েছে।</string>
 </resources>
