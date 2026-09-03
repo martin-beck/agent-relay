@@ -15,6 +15,22 @@ FORMAT_ARGUMENT = re.compile(
     r"(?<!%)%(?!%)(?:(?P<position>[1-9][0-9]*)\$)?[-#+ 0,(]*[0-9]*(?:\.[0-9]+)?(?P<kind>[a-zA-Z])"
 )
 
+PLURAL_QUANTITIES_BY_LANGUAGE = {
+    "ar": frozenset({"zero", "one", "two", "few", "many", "other"}),
+    "bn": frozenset({"one", "other"}),
+    "de": frozenset({"one", "other"}),
+    "en": frozenset({"one", "other"}),
+    "es": frozenset({"one", "many", "other"}),
+    "fr": frozenset({"one", "many", "other"}),
+    "hi": frozenset({"one", "other"}),
+    "id": frozenset({"other"}),
+    "it": frozenset({"one", "many", "other"}),
+    "ja": frozenset({"other"}),
+    "pt": frozenset({"one", "many", "other"}),
+    "ru": frozenset({"one", "few", "many", "other"}),
+    "zh": frozenset({"other"}),
+}
+
 
 class LocaleError(RuntimeError):
     """The locale declaration or one of its Android resources is invalid."""
@@ -120,21 +136,42 @@ def read_catalog(path: Path) -> dict[tuple[str, str], Resource]:
     return catalog
 
 
+def verify_plural_quantities(
+    path: Path,
+    key: tuple[str, str],
+    language_tag: str,
+    resource: Resource,
+) -> None:
+    if resource.kind != "plurals":
+        return
+    language = language_tag.split("-", maxsplit=1)[0]
+    expected = PLURAL_QUANTITIES_BY_LANGUAGE.get(language)
+    if expected is None:
+        raise LocaleError(f"{path}: no plural quantity rules declared for {language_tag}")
+    actual = {variant for variant, _ in resource.variants}
+    missing = sorted(expected - actual)
+    unused = sorted(actual - expected)
+    if not missing and not unused:
+        return
+    kind, name = key
+    details: list[str] = []
+    if missing:
+        details.append("missing quantities " + ", ".join(missing))
+    if unused:
+        details.append("unused quantities " + ", ".join(unused))
+    raise LocaleError(f"{path}: {kind}/{name} " + "; ".join(details))
+
+
 def verify_resource_arguments(
     path: Path,
     key: tuple[str, str],
+    language_tag: str,
     default_resource: Resource,
     localized_resource: Resource,
 ) -> None:
     localized_arguments = localized_resource.format_arguments
     default_arguments = default_resource.format_arguments
-    if default_resource.kind == "plurals":
-        missing_variants = sorted(set(default_arguments) - set(localized_arguments))
-        if missing_variants:
-            kind, name = key
-            raise LocaleError(
-                f"{path}: {kind}/{name} is missing quantities {', '.join(missing_variants)}"
-            )
+    verify_plural_quantities(path, key, language_tag, localized_resource)
     for variant, arguments in localized_arguments.items():
         expected_arguments = default_arguments.get(variant, default_arguments.get("other"))
         if arguments == expected_arguments:
@@ -151,8 +188,11 @@ def verify_catalogs(
     default_directory = locale_map.get("en-US")
     if default_directory != "values":
         raise LocaleError("en-US must map to the unqualified values directory")
-    default_catalog = read_catalog(resource_root / default_directory / "strings.xml")
+    default_path = resource_root / default_directory / "strings.xml"
+    default_catalog = read_catalog(default_path)
     counts = {"en-US": len(default_catalog)}
+    for key, resource in default_catalog.items():
+        verify_plural_quantities(default_path, key, "en-US", resource)
     default_keys = set(default_catalog)
     for tag, directory in locale_map.items():
         if tag == "en-US":
@@ -170,7 +210,7 @@ def verify_catalogs(
                 details.append("extra " + ", ".join(f"{kind}/{name}" for kind, name in extra))
             raise LocaleError(f"{path}: " + "; ".join(details))
         for key, default_resource in default_catalog.items():
-            verify_resource_arguments(path, key, default_resource, catalog[key])
+            verify_resource_arguments(path, key, tag, default_resource, catalog[key])
         counts[tag] = len(catalog)
     return counts
 

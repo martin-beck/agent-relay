@@ -97,4 +97,12 @@
     <string name="connection_status_reconnecting">再接続中</string>
     <string name="connection_status_identity_review">ID を確認</string>
     <string name="connection_status_failed">失敗</string>
+    <string name="connection_agent_check_after_connect">接続後にエージェントプロバイダーを確認します。</string>
+    <plurals name="connection_agent_ready">
+        <item quantity="other">%2$d 件中 %1$d 件のエージェントプロバイダーが準備完了</item>
+    </plurals>
+    <string name="connection_agent_none_ready">この接続で準備ができているインストール済みエージェントプロバイダーはありません。</string>
+    <plurals name="connection_agent_checking">
+        <item quantity="other">%1$d 件のエージェントプロバイダーを確認中</item>
+    </plurals>
 </resources>

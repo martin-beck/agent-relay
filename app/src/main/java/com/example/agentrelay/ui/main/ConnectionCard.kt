@@ -29,6 +29,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import com.example.agentrelay.R
 
@@ -253,11 +254,22 @@ private fun ConnectionStatusChip(status: ConnectionStatus) {
     }
 }
 
+@Composable
 private fun agentSummary(connection: ConnectionUiModel): String = when {
-    connection.agentCount == 0 -> "Agent providers are checked after connecting."
+    connection.agentCount == 0 -> stringResource(R.string.connection_agent_check_after_connect)
     connection.connectedAgentCount > 0 ->
-        "${connection.connectedAgentCount} of ${connection.agentCount} agent providers ready"
+        pluralStringResource(
+            R.plurals.connection_agent_ready,
+            connection.connectedAgentCount,
+            connection.connectedAgentCount,
+            connection.agentCount,
+        )
     connection.unavailableAgentCount == connection.agentCount ->
-        "No installed agent provider is ready on this connection."
-    else -> "Checking ${connection.agentCount} agent providers"
+        stringResource(R.string.connection_agent_none_ready)
+    else ->
+        pluralStringResource(
+            R.plurals.connection_agent_checking,
+            connection.agentCount,
+            connection.agentCount,
+        )
 }

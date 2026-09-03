@@ -97,4 +97,14 @@
     <string name="connection_status_reconnecting">फिर से कनेक्ट हो रहा है</string>
     <string name="connection_status_identity_review">पहचान की समीक्षा करें</string>
     <string name="connection_status_failed">विफल</string>
+    <string name="connection_agent_check_after_connect">कनेक्ट होने के बाद एजेंट प्रदाताओं की जाँच की जाती है।</string>
+    <plurals name="connection_agent_ready">
+        <item quantity="one">%2$d में से %1$d एजेंट प्रदाता तैयार है</item>
+        <item quantity="other">%2$d में से %1$d एजेंट प्रदाता तैयार हैं</item>
+    </plurals>
+    <string name="connection_agent_none_ready">इस कनेक्शन पर कोई इंस्टॉल किया गया एजेंट प्रदाता तैयार नहीं है।</string>
+    <plurals name="connection_agent_checking">
+        <item quantity="one">%1$d एजेंट प्रदाता की जाँच की जा रही है</item>
+        <item quantity="other">%1$d एजेंट प्रदाताओं की जाँच की जा रही है</item>
+    </plurals>
 </resources>

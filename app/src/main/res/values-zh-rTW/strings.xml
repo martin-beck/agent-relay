@@ -97,4 +97,12 @@
     <string name="connection_status_reconnecting">正在重新連線</string>
     <string name="connection_status_identity_review">檢查身分</string>
     <string name="connection_status_failed">失敗</string>
+    <string name="connection_agent_check_after_connect">連線後會檢查代理程式提供者。</string>
+    <plurals name="connection_agent_ready">
+        <item quantity="other">%2$d 個代理程式提供者中有 %1$d 個已就緒</item>
+    </plurals>
+    <string name="connection_agent_none_ready">此連線上沒有已安裝且就緒的代理程式提供者。</string>
+    <plurals name="connection_agent_checking">
+        <item quantity="other">正在檢查 %1$d 個代理程式提供者</item>
+    </plurals>
 </resources>

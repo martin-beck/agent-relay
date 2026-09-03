@@ -97,4 +97,16 @@
     <string name="connection_status_reconnecting">Reconectando</string>
     <string name="connection_status_identity_review">Revisar identidad</string>
     <string name="connection_status_failed">Error</string>
+    <string name="connection_agent_check_after_connect">Los proveedores de agentes se comprueban después de conectar.</string>
+    <plurals name="connection_agent_ready">
+        <item quantity="one">%1$d de %2$d proveedor de agentes está listo</item>
+        <item quantity="many">%1$d de %2$d proveedores de agentes están listos</item>
+        <item quantity="other">%1$d de %2$d proveedores de agentes están listos</item>
+    </plurals>
+    <string name="connection_agent_none_ready">No hay ningún proveedor de agentes instalado listo en esta conexión.</string>
+    <plurals name="connection_agent_checking">
+        <item quantity="one">Se está comprobando %1$d proveedor de agentes</item>
+        <item quantity="many">Se están comprobando %1$d proveedores de agentes</item>
+        <item quantity="other">Se están comprobando %1$d proveedores de agentes</item>
+    </plurals>
 </resources>

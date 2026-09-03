@@ -127,4 +127,14 @@
     <string name="connection_status_reconnecting">Reconnecting</string>
     <string name="connection_status_identity_review">Review identity</string>
     <string name="connection_status_failed">Failed</string>
+    <string name="connection_agent_check_after_connect">Agent providers are checked after connecting.</string>
+    <plurals name="connection_agent_ready">
+        <item quantity="one">%1$d of %2$d agent provider ready</item>
+        <item quantity="other">%1$d of %2$d agent providers ready</item>
+    </plurals>
+    <string name="connection_agent_none_ready">No installed agent provider is ready on this connection.</string>
+    <plurals name="connection_agent_checking">
+        <item quantity="one">Checking %1$d agent provider</item>
+        <item quantity="other">Checking %1$d agent providers</item>
+    </plurals>
 </resources>

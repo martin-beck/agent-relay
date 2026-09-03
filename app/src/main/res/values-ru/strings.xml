@@ -97,4 +97,18 @@
     <string name="connection_status_reconnecting">Повторное подключение</string>
     <string name="connection_status_identity_review">Проверить идентификатор</string>
     <string name="connection_status_failed">Ошибка</string>
+    <string name="connection_agent_check_after_connect">Поставщики агентов проверяются после подключения.</string>
+    <plurals name="connection_agent_ready">
+        <item quantity="one">Готов %1$d из %2$d поставщиков агентов</item>
+        <item quantity="few">Готовы %1$d из %2$d поставщиков агентов</item>
+        <item quantity="many">Готовы %1$d из %2$d поставщиков агентов</item>
+        <item quantity="other">Готовы %1$d из %2$d поставщиков агентов</item>
+    </plurals>
+    <string name="connection_agent_none_ready">Ни один установленный поставщик агентов не готов для этого подключения.</string>
+    <plurals name="connection_agent_checking">
+        <item quantity="one">Проверяется %1$d поставщик агентов</item>
+        <item quantity="few">Проверяются %1$d поставщика агентов</item>
+        <item quantity="many">Проверяются %1$d поставщиков агентов</item>
+        <item quantity="other">Проверяются %1$d поставщиков агентов</item>
+    </plurals>
 </resources>

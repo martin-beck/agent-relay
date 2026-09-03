@@ -97,4 +97,14 @@
     <string name="connection_status_reconnecting">Wiederverbindung</string>
     <string name="connection_status_identity_review">Identität prüfen</string>
     <string name="connection_status_failed">Fehlgeschlagen</string>
+    <string name="connection_agent_check_after_connect">Agentenanbieter werden nach dem Verbinden geprüft.</string>
+    <plurals name="connection_agent_ready">
+        <item quantity="one">%1$d von %2$d Agentenanbietern ist bereit</item>
+        <item quantity="other">%1$d von %2$d Agentenanbietern sind bereit</item>
+    </plurals>
+    <string name="connection_agent_none_ready">Kein installierter Agentenanbieter ist für diese Verbindung bereit.</string>
+    <plurals name="connection_agent_checking">
+        <item quantity="one">%1$d Agentenanbieter wird geprüft</item>
+        <item quantity="other">%1$d Agentenanbieter werden geprüft</item>
+    </plurals>
 </resources>

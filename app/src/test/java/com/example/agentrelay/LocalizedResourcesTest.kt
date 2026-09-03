@@ -85,6 +85,17 @@ class LocalizedResourcesTest {
                 R.string.connection_identity_previously_trusted,
                 "SHA256:test-fingerprint",
             )
+            val readyAgents = context.resources.getQuantityString(
+                R.plurals.connection_agent_ready,
+                2,
+                2,
+                3,
+            )
+            val checkingAgents = context.resources.getQuantityString(
+                R.plurals.connection_agent_checking,
+                3,
+                3,
+            )
             val downloadProgress = context.getString(R.string.speech_download_progress, 42)
 
             opaqueValues.forEach { value ->
@@ -107,6 +118,10 @@ class LocalizedResourcesTest {
             assertFalse(languageTag, identityContext.contains("%1\$"))
             assertFalse(languageTag, identityContext.contains("%2\$"))
             assertFalse(languageTag, previouslyTrusted.contains("%1\$"))
+            assertTrue(languageTag, readyAgents.isNotBlank())
+            assertFalse(languageTag, readyAgents.contains("%1\$"))
+            assertFalse(languageTag, readyAgents.contains("%2\$"))
+            assertFalse(languageTag, checkingAgents.contains("%1\$"))
             assertFalse(languageTag, actionContext.contains("%1\$"))
             assertFalse(languageTag, risk.contains("%1\$"))
             assertFalse(languageTag, addProfile.contains("%1\$"))

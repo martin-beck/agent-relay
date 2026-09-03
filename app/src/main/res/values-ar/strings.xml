@@ -97,4 +97,22 @@
     <string name="connection_status_reconnecting">جارٍ إعادة الاتصال</string>
     <string name="connection_status_identity_review">مراجعة الهوية</string>
     <string name="connection_status_failed">فشل</string>
+    <string name="connection_agent_check_after_connect">يتم التحقق من موفري الوكلاء بعد الاتصال.</string>
+    <plurals name="connection_agent_ready">
+        <item quantity="zero">الجاهز من موفري الوكلاء: %1$d من %2$d</item>
+        <item quantity="one">الجاهز من موفري الوكلاء: %1$d من %2$d</item>
+        <item quantity="two">الجاهز من موفري الوكلاء: %1$d من %2$d</item>
+        <item quantity="few">الجاهز من موفري الوكلاء: %1$d من %2$d</item>
+        <item quantity="many">الجاهز من موفري الوكلاء: %1$d من %2$d</item>
+        <item quantity="other">الجاهز من موفري الوكلاء: %1$d من %2$d</item>
+    </plurals>
+    <string name="connection_agent_none_ready">لا يوجد موفر وكلاء مثبت جاهز على هذا الاتصال.</string>
+    <plurals name="connection_agent_checking">
+        <item quantity="zero">جارٍ التحقق من موفري الوكلاء: %1$d</item>
+        <item quantity="one">جارٍ التحقق من موفري الوكلاء: %1$d</item>
+        <item quantity="two">جارٍ التحقق من موفري الوكلاء: %1$d</item>
+        <item quantity="few">جارٍ التحقق من موفري الوكلاء: %1$d</item>
+        <item quantity="many">جارٍ التحقق من موفري الوكلاء: %1$d</item>
+        <item quantity="other">جارٍ التحقق من موفري الوكلاء: %1$d</item>
+    </plurals>
 </resources>

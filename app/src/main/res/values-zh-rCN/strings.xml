@@ -97,4 +97,12 @@
     <string name="connection_status_reconnecting">正在重新连接</string>
     <string name="connection_status_identity_review">审核身份</string>
     <string name="connection_status_failed">失败</string>
+    <string name="connection_agent_check_after_connect">连接后将检查智能体提供程序。</string>
+    <plurals name="connection_agent_ready">
+        <item quantity="other">%2$d 个智能体提供程序中有 %1$d 个已就绪</item>
+    </plurals>
+    <string name="connection_agent_none_ready">此连接上没有已安装且就绪的智能体提供程序。</string>
+    <plurals name="connection_agent_checking">
+        <item quantity="other">正在检查 %1$d 个智能体提供程序</item>
+    </plurals>
 </resources>

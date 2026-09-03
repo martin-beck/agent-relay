@@ -67,7 +67,11 @@ class AndroidLocaleVerifierTest(unittest.TestCase):
 
         self.assertEqual({"en-US": 3, "de": 3}, counts)
 
-    def test_accepts_language_specific_extra_plural_quantity(self) -> None:
+    def test_accepts_language_specific_plural_quantities(self) -> None:
+        (self.resources / "values-ru").mkdir()
+        (self.root / "config/android-locales.txt").write_text(
+            "en-US=values\nru=values-ru\n", encoding="utf-8"
+        )
         self.write_catalog(
             "values",
             (
@@ -78,12 +82,13 @@ class AndroidLocaleVerifierTest(unittest.TestCase):
             ),
         )
         self.write_catalog(
-            "values-de",
+            "values-ru",
             (
                 '<plurals name="files">'
-                '<item quantity="zero">%1$d Dateien</item>'
-                '<item quantity="one">%1$d Datei</item>'
-                '<item quantity="other">%1$d Dateien</item>'
+                '<item quantity="one">%1$d файл</item>'
+                '<item quantity="few">%1$d файла</item>'
+                '<item quantity="many">%1$d файлов</item>'
+                '<item quantity="other">%1$d файла</item>'
                 "</plurals>"
             ),
         )
@@ -93,7 +98,29 @@ class AndroidLocaleVerifierTest(unittest.TestCase):
             VERIFY.read_locale_map(self.root / "config/android-locales.txt"),
         )
 
-        self.assertEqual({"en-US": 1, "de": 1}, counts)
+        self.assertEqual({"en-US": 1, "ru": 1}, counts)
+
+    def test_rejects_unused_plural_quantity(self) -> None:
+        self.write_catalog(
+            "values",
+            '<plurals name="files"><item quantity="one">One</item><item quantity="other">Many</item></plurals>',
+        )
+        self.write_catalog(
+            "values-de",
+            (
+                '<plurals name="files">'
+                '<item quantity="zero">Keine</item>'
+                '<item quantity="one">Eine</item>'
+                '<item quantity="other">Viele</item>'
+                "</plurals>"
+            ),
+        )
+
+        with self.assertRaisesRegex(VERIFY.LocaleError, "unused quantities zero"):
+            VERIFY.verify_catalogs(
+                self.resources,
+                VERIFY.read_locale_map(self.root / "config/android-locales.txt"),
+            )
 
     def test_rejects_missing_required_plural_quantity(self) -> None:
         self.write_catalog(
