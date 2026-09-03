@@ -149,6 +149,15 @@
     <string name="profile_editor_required">%1$s（必填）</string>
     <string name="profile_editor_delete_title">刪除連線設定檔？</string>
     <string name="profile_editor_delete_message">這會移除設定檔、其已儲存的認證資料，以及未與其他設定檔共用的所有已儲存主機身分。</string>
+    <string name="profile_error_provider_unavailable">此連線提供者已無法使用。</string>
+    <string name="profile_error_profile_unavailable">此連線設定檔已無法使用。</string>
+    <string name="profile_error_validation">請更正醒目提示的設定檔欄位。</string>
+    <string name="profile_error_save">無法安全地儲存連線設定檔。</string>
+    <string name="profile_error_save_refresh">設定檔已儲存，但無法重新整理其編輯器。</string>
+    <string name="profile_error_operation">無法安全地完成連線設定檔操作。</string>
+    <string name="profile_error_operation_refresh">操作成功，但無法重新整理設定檔編輯器。</string>
+    <string name="profile_error_delete">無法安全地刪除連線設定檔。</string>
+    <string name="profile_error_open">無法開啟連線設定檔編輯器。</string>
     <string name="session_action_type_command">命令核准</string>
     <string name="session_action_type_file_change">檔案變更核准</string>
     <string name="session_action_type_question">問題</string>

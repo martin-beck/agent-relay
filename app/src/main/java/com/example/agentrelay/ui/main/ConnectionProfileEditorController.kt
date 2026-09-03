@@ -1,5 +1,6 @@
 package com.example.agentrelay.ui.main
 
+import com.example.agentrelay.R
 import com.example.agentrelay.data.SessionHubRuntime
 import dev.agentrelay.connection.api.ConnectionProfileDeleteException
 import dev.agentrelay.connection.api.ConnectionProfileFieldId
@@ -27,7 +28,7 @@ import kotlinx.coroutines.launch
 internal class ConnectionProfileEditorController(
     private val scope: CoroutineScope,
     private val runtime: () -> SessionHubRuntime?,
-    private val reportError: (String) -> Unit,
+    private val reportError: (UiMessage) -> Unit,
 ) {
     private val mutableState = MutableStateFlow<ConnectionProfileEditorUiState?>(null)
     private var job: Job? = null
@@ -39,7 +40,7 @@ internal class ConnectionProfileEditorController(
         val active = runtime() ?: return
         val provider = active.connectionProviders.firstOrNull { it.id.value == providerId }
         if (provider == null) {
-            reportError("That connection provider is no longer available.")
+            reportError(UiMessage.Localized(R.string.profile_error_provider_unavailable))
             return
         }
         open(active, provider.id, null)
@@ -49,7 +50,7 @@ internal class ConnectionProfileEditorController(
         val active = runtime() ?: return
         val key = active.connectionKey(connectionKey)
         if (key == null) {
-            reportError("That connection profile is no longer available.")
+            reportError(UiMessage.Localized(R.string.profile_error_profile_unavailable))
             return
         }
         open(active, key.providerId, key.profileId)
@@ -92,7 +93,7 @@ internal class ConnectionProfileEditorController(
                     busy,
                     editor.copy(
                         fieldErrors = invalid.fieldErrors.mapKeys { it.key.value },
-                        error = "Correct the highlighted profile fields.",
+                        error = UiMessage.Localized(R.string.profile_error_validation),
                     ),
                 )
                 return@replaceJob
@@ -100,7 +101,9 @@ internal class ConnectionProfileEditorController(
                 replaceIfCurrent(
                     currentGeneration,
                     busy,
-                    editor.copy(error = "The connection profile could not be saved securely."),
+                    editor.copy(
+                        error = UiMessage.Localized(R.string.profile_error_save),
+                    ),
                 )
                 return@replaceJob
             }
@@ -108,12 +111,14 @@ internal class ConnectionProfileEditorController(
                 active.profileEditor(
                     providerId = saved.profile.providerId,
                     profileId = saved.profile.id,
-                ).toUiState(saved.notice)
+                ).toUiState(saved.notice?.let(UiMessage::Verbatim))
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Throwable) {
                 if (replaceIfCurrent(currentGeneration, busy, null)) {
-                    reportError("The profile was saved, but its editor could not be refreshed.")
+                    reportError(
+                        UiMessage.Localized(R.string.profile_error_save_refresh),
+                    )
                 }
                 return@replaceJob
             }
@@ -194,7 +199,7 @@ internal class ConnectionProfileEditorController(
                     busy,
                     editor.copy(
                         confirmOperationId = null,
-                        error = failure.actionableMessage,
+                        error = UiMessage.Verbatim(failure.actionableMessage),
                     ),
                 )
                 return@replaceJob
@@ -204,7 +209,7 @@ internal class ConnectionProfileEditorController(
                     busy,
                     editor.copy(
                         confirmOperationId = null,
-                        error = "The connection profile operation could not be completed securely.",
+                        error = UiMessage.Localized(R.string.profile_error_operation),
                     ),
                 )
                 return@replaceJob
@@ -213,12 +218,14 @@ internal class ConnectionProfileEditorController(
                 active.profileEditor(
                     providerId = ConnectionProviderId(editor.providerId),
                     profileId = profileId,
-                ).toUiState(result.notice)
+                ).toUiState(UiMessage.Verbatim(result.notice))
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Throwable) {
                 if (replaceIfCurrent(currentGeneration, busy, null)) {
-                    reportError("The operation succeeded, but the profile editor could not be refreshed.")
+                    reportError(
+                        UiMessage.Localized(R.string.profile_error_operation_refresh),
+                    )
                 }
                 return@replaceJob
             }
@@ -261,7 +268,7 @@ internal class ConnectionProfileEditorController(
                     busy,
                     editor.copy(
                         confirmDelete = false,
-                        error = failure.actionableMessage,
+                        error = UiMessage.Verbatim(failure.actionableMessage),
                     ),
                 )
             } catch (_: Throwable) {
@@ -270,7 +277,7 @@ internal class ConnectionProfileEditorController(
                     busy,
                     editor.copy(
                         confirmDelete = false,
-                        error = "The connection profile could not be deleted securely.",
+                        error = UiMessage.Localized(R.string.profile_error_delete),
                     ),
                 )
             }
@@ -301,7 +308,7 @@ internal class ConnectionProfileEditorController(
                         null,
                     )
                 ) {
-                    reportError("The connection profile editor could not be opened.")
+                    reportError(UiMessage.Localized(R.string.profile_error_open))
                 }
             }
         }

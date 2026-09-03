@@ -149,6 +149,15 @@
     <string name="profile_editor_required">%1$s（必須）</string>
     <string name="profile_editor_delete_title">接続プロファイルを削除しますか？</string>
     <string name="profile_editor_delete_message">プロファイル、保存された認証情報、および他のプロファイルと共有されていない保存済みホスト ID が削除されます。</string>
+    <string name="profile_error_provider_unavailable">この接続プロバイダーは利用できなくなりました。</string>
+    <string name="profile_error_profile_unavailable">この接続プロファイルは利用できなくなりました。</string>
+    <string name="profile_error_validation">強調表示されたプロファイル項目を修正してください。</string>
+    <string name="profile_error_save">接続プロファイルを安全に保存できませんでした。</string>
+    <string name="profile_error_save_refresh">プロファイルは保存されましたが、エディターを更新できませんでした。</string>
+    <string name="profile_error_operation">接続プロファイルの操作を安全に完了できませんでした。</string>
+    <string name="profile_error_operation_refresh">操作は成功しましたが、プロファイルエディターを更新できませんでした。</string>
+    <string name="profile_error_delete">接続プロファイルを安全に削除できませんでした。</string>
+    <string name="profile_error_open">接続プロファイルエディターを開けませんでした。</string>
     <string name="session_action_type_command">コマンドの承認</string>
     <string name="session_action_type_file_change">ファイル変更の承認</string>
     <string name="session_action_type_question">質問</string>

@@ -317,6 +317,15 @@ class LocalizedResourcesTest {
             R.string.ssh_profile_operation_install_key_message,
             R.string.ssh_profile_operation_verify_key,
             R.string.ssh_profile_operation_verify_key_support,
+            R.string.profile_error_provider_unavailable,
+            R.string.profile_error_profile_unavailable,
+            R.string.profile_error_validation,
+            R.string.profile_error_save,
+            R.string.profile_error_save_refresh,
+            R.string.profile_error_operation,
+            R.string.profile_error_operation_refresh,
+            R.string.profile_error_delete,
+            R.string.profile_error_open,
         )
 
         val ARTIFACT_RESOURCES = listOf(

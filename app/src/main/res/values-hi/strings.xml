@@ -151,6 +151,15 @@
     <string name="profile_editor_required">%1$s (आवश्यक)</string>
     <string name="profile_editor_delete_title">कनेक्शन प्रोफ़ाइल हटाएँ?</string>
     <string name="profile_editor_delete_message">इससे प्रोफ़ाइल, उसके संग्रहीत क्रेडेंशियल और ऐसी सहेजी गई होस्ट पहचान हट जाएगी जो किसी अन्य प्रोफ़ाइल के साथ साझा नहीं है।</string>
+    <string name="profile_error_provider_unavailable">यह कनेक्शन प्रोवाइडर अब उपलब्ध नहीं है।</string>
+    <string name="profile_error_profile_unavailable">यह कनेक्शन प्रोफ़ाइल अब उपलब्ध नहीं है।</string>
+    <string name="profile_error_validation">हाइलाइट किए गए प्रोफ़ाइल फ़ील्ड ठीक करें।</string>
+    <string name="profile_error_save">कनेक्शन प्रोफ़ाइल को सुरक्षित रूप से सेव नहीं किया जा सका।</string>
+    <string name="profile_error_save_refresh">प्रोफ़ाइल सेव हो गई, लेकिन इसके एडिटर को रीफ़्रेश नहीं किया जा सका।</string>
+    <string name="profile_error_operation">कनेक्शन प्रोफ़ाइल का ऑपरेशन सुरक्षित रूप से पूरा नहीं किया जा सका।</string>
+    <string name="profile_error_operation_refresh">ऑपरेशन सफल रहा, लेकिन प्रोफ़ाइल एडिटर को रीफ़्रेश नहीं किया जा सका।</string>
+    <string name="profile_error_delete">कनेक्शन प्रोफ़ाइल को सुरक्षित रूप से डिलीट नहीं किया जा सका।</string>
+    <string name="profile_error_open">कनेक्शन प्रोफ़ाइल एडिटर को खोला नहीं जा सका।</string>
     <string name="session_action_type_command">कमांड की मंज़ूरी</string>
     <string name="session_action_type_file_change">फ़ाइल बदलाव की मंज़ूरी</string>
     <string name="session_action_type_question">सवाल</string>

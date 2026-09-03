@@ -153,6 +153,15 @@
     <string name="profile_editor_required">%1$s (obligatorio)</string>
     <string name="profile_editor_delete_title">¿Eliminar el perfil de conexión?</string>
     <string name="profile_editor_delete_message">Esto elimina el perfil, sus credenciales guardadas y cualquier identidad de host guardada que no comparta otro perfil.</string>
+    <string name="profile_error_provider_unavailable">Este proveedor de conexión ya no está disponible.</string>
+    <string name="profile_error_profile_unavailable">Este perfil de conexión ya no está disponible.</string>
+    <string name="profile_error_validation">Corrige los campos de perfil resaltados.</string>
+    <string name="profile_error_save">No se pudo guardar el perfil de conexión de forma segura.</string>
+    <string name="profile_error_save_refresh">El perfil se guardó, pero no se pudo actualizar su editor.</string>
+    <string name="profile_error_operation">No se pudo completar de forma segura la operación del perfil de conexión.</string>
+    <string name="profile_error_operation_refresh">La operación se completó, pero no se pudo actualizar el editor de perfiles.</string>
+    <string name="profile_error_delete">No se pudo eliminar el perfil de conexión de forma segura.</string>
+    <string name="profile_error_open">No se pudo abrir el editor de perfiles de conexión.</string>
     <string name="session_action_type_command">Aprobación de comando</string>
     <string name="session_action_type_file_change">Aprobación de cambio de archivo</string>
     <string name="session_action_type_question">Pregunta</string>

@@ -45,7 +45,7 @@ internal class MainScreenViewModel(
     private val profileEditor = ConnectionProfileEditorController(
         scope = viewModelScope,
         runtime = { runtime },
-        reportError = operationError::setVerbatim,
+        reportError = { operationError.value = it },
     )
     internal val profileOperations = ConnectionProfileOperationActions(profileEditor)
 

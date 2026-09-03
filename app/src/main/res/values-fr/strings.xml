@@ -153,6 +153,15 @@
     <string name="profile_editor_required">%1$s (obligatoire)</string>
     <string name="profile_editor_delete_title">Supprimer le profil de connexion ?</string>
     <string name="profile_editor_delete_message">Cette action supprime le profil, ses identifiants enregistrés et toute identité d’hôte enregistrée qui n’est pas partagée par un autre profil.</string>
+    <string name="profile_error_provider_unavailable">Ce fournisseur de connexion n’est plus disponible.</string>
+    <string name="profile_error_profile_unavailable">Ce profil de connexion n’est plus disponible.</string>
+    <string name="profile_error_validation">Corrigez les champs de profil mis en évidence.</string>
+    <string name="profile_error_save">Le profil de connexion n’a pas pu être enregistré de manière sécurisée.</string>
+    <string name="profile_error_save_refresh">Le profil a été enregistré, mais son éditeur n’a pas pu être actualisé.</string>
+    <string name="profile_error_operation">L’opération sur le profil de connexion n’a pas pu être effectuée de manière sécurisée.</string>
+    <string name="profile_error_operation_refresh">L’opération a réussi, mais l’éditeur de profil n’a pas pu être actualisé.</string>
+    <string name="profile_error_delete">Le profil de connexion n’a pas pu être supprimé de manière sécurisée.</string>
+    <string name="profile_error_open">L’éditeur de profil de connexion n’a pas pu être ouvert.</string>
     <string name="session_action_type_command">Approbation de commande</string>
     <string name="session_action_type_file_change">Approbation de modification de fichier</string>
     <string name="session_action_type_question">Question</string>

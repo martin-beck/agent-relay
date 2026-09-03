@@ -155,6 +155,15 @@
     <string name="profile_editor_required">%1$s (обязательно)</string>
     <string name="profile_editor_delete_title">Удалить профиль подключения?</string>
     <string name="profile_editor_delete_message">Будут удалены профиль, сохранённые учётные данные и сохранённые идентификаторы хоста, которые не используются другим профилем.</string>
+    <string name="profile_error_provider_unavailable">Этот поставщик подключения больше недоступен.</string>
+    <string name="profile_error_profile_unavailable">Этот профиль подключения больше недоступен.</string>
+    <string name="profile_error_validation">Исправьте выделенные поля профиля.</string>
+    <string name="profile_error_save">Не удалось безопасно сохранить профиль подключения.</string>
+    <string name="profile_error_save_refresh">Профиль сохранен, но не удалось обновить его редактор.</string>
+    <string name="profile_error_operation">Не удалось безопасно завершить операцию с профилем подключения.</string>
+    <string name="profile_error_operation_refresh">Операция выполнена, но не удалось обновить редактор профиля.</string>
+    <string name="profile_error_delete">Не удалось безопасно удалить профиль подключения.</string>
+    <string name="profile_error_open">Не удалось открыть редактор профиля подключения.</string>
     <string name="session_action_type_command">Подтверждение команды</string>
     <string name="session_action_type_file_change">Подтверждение изменения файла</string>
     <string name="session_action_type_question">Вопрос</string>

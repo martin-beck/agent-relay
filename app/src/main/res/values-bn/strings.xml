@@ -151,6 +151,15 @@
     <string name="profile_editor_required">%1$s (আবশ্যক)</string>
     <string name="profile_editor_delete_title">সংযোগ প্রোফাইল মুছবেন?</string>
     <string name="profile_editor_delete_message">এতে প্রোফাইল, সংরক্ষিত শংসাপত্র এবং অন্য কোনো প্রোফাইলের সঙ্গে ভাগ না করা সংরক্ষিত হোস্ট পরিচয় মুছে যাবে।</string>
+    <string name="profile_error_provider_unavailable">এই সংযোগ প্রদানকারীটি আর উপলভ্য নেই।</string>
+    <string name="profile_error_profile_unavailable">এই সংযোগ প্রোফাইলটি আর উপলভ্য নেই।</string>
+    <string name="profile_error_validation">হাইলাইট করা প্রোফাইল ফিল্ডগুলি সংশোধন করুন।</string>
+    <string name="profile_error_save">সংযোগ প্রোফাইলটি নিরাপদভাবে সংরক্ষণ করা যায়নি।</string>
+    <string name="profile_error_save_refresh">প্রোফাইলটি সংরক্ষিত হয়েছে, কিন্তু এর এডিটর রিফ্রেশ করা যায়নি।</string>
+    <string name="profile_error_operation">সংযোগ প্রোফাইল অপারেশনটি নিরাপদভাবে সম্পন্ন করা যায়নি।</string>
+    <string name="profile_error_operation_refresh">অপারেশনটি সফল হয়েছে, কিন্তু প্রোফাইল এডিটর রিফ্রেশ করা যায়নি।</string>
+    <string name="profile_error_delete">সংযোগ প্রোফাইলটি নিরাপদভাবে মুছে ফেলা যায়নি।</string>
+    <string name="profile_error_open">সংযোগ প্রোফাইল এডিটর খোলা যায়নি।</string>
     <string name="session_action_type_command">কমান্ড অনুমোদন</string>
     <string name="session_action_type_file_change">ফাইল পরিবর্তন অনুমোদন</string>
     <string name="session_action_type_question">প্রশ্ন</string>

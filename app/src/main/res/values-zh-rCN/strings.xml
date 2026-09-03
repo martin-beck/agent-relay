@@ -149,6 +149,15 @@
     <string name="profile_editor_required">%1$s（必填）</string>
     <string name="profile_editor_delete_title">删除连接配置？</string>
     <string name="profile_editor_delete_message">这将删除该配置、其已存储的凭据，以及未被其他配置共享的所有已保存主机身份。</string>
+    <string name="profile_error_provider_unavailable">此连接提供程序已不可用。</string>
+    <string name="profile_error_profile_unavailable">此连接配置文件已不可用。</string>
+    <string name="profile_error_validation">请更正突出显示的配置文件字段。</string>
+    <string name="profile_error_save">无法安全保存连接配置文件。</string>
+    <string name="profile_error_save_refresh">配置文件已保存，但无法刷新其编辑器。</string>
+    <string name="profile_error_operation">无法安全完成连接配置文件操作。</string>
+    <string name="profile_error_operation_refresh">操作成功，但无法刷新配置文件编辑器。</string>
+    <string name="profile_error_delete">无法安全删除连接配置文件。</string>
+    <string name="profile_error_open">无法打开连接配置文件编辑器。</string>
     <string name="session_action_type_command">命令批准</string>
     <string name="session_action_type_file_change">文件更改批准</string>
     <string name="session_action_type_question">问题</string>

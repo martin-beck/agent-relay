@@ -151,6 +151,15 @@
     <string name="profile_editor_required">%1$s (erforderlich)</string>
     <string name="profile_editor_delete_title">Verbindungsprofil löschen?</string>
     <string name="profile_editor_delete_message">Dadurch werden das Profil, seine gespeicherten Anmeldedaten und jede gespeicherte Hostidentität entfernt, die nicht von einem anderen Profil verwendet wird.</string>
+    <string name="profile_error_provider_unavailable">Dieser Verbindungsanbieter ist nicht mehr verfügbar.</string>
+    <string name="profile_error_profile_unavailable">Dieses Verbindungsprofil ist nicht mehr verfügbar.</string>
+    <string name="profile_error_validation">Korrigieren Sie die hervorgehobenen Profilfelder.</string>
+    <string name="profile_error_save">Das Verbindungsprofil konnte nicht sicher gespeichert werden.</string>
+    <string name="profile_error_save_refresh">Das Profil wurde gespeichert, aber der Editor konnte nicht aktualisiert werden.</string>
+    <string name="profile_error_operation">Der Vorgang für das Verbindungsprofil konnte nicht sicher abgeschlossen werden.</string>
+    <string name="profile_error_operation_refresh">Der Vorgang war erfolgreich, aber der Profileditor konnte nicht aktualisiert werden.</string>
+    <string name="profile_error_delete">Das Verbindungsprofil konnte nicht sicher gelöscht werden.</string>
+    <string name="profile_error_open">Der Verbindungsprofil-Editor konnte nicht geöffnet werden.</string>
     <string name="session_action_type_command">Befehlsfreigabe</string>
     <string name="session_action_type_file_change">Freigabe von Dateiänderungen</string>
     <string name="session_action_type_question">Frage</string>

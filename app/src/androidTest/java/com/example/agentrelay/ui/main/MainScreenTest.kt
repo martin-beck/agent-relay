@@ -30,6 +30,7 @@ import androidx.compose.ui.test.tryPerformAccessibilityChecks
 import androidx.compose.ui.unit.dp
 import androidx.test.filters.SdkSuppress
 import androidx.test.platform.app.InstrumentationRegistry
+import com.example.agentrelay.R
 import com.example.agentrelay.theme.AgentRelayTheme
 import dev.agentrelay.connection.api.ConnectionProfileFieldType
 import dev.agentrelay.provider.api.AgentApprovalDecision
@@ -1140,5 +1141,5 @@ private fun testEditor() = ConnectionProfileEditorUiState.Editing(
     ),
     canDelete = true,
     fieldErrors = mapOf("profile-label" to "Enter a profile name."),
-    error = "Correct the highlighted profile fields.",
+    error = UiMessage.Localized(R.string.profile_error_validation),
 )

@@ -100,7 +100,7 @@ private fun ProfileEditor(
                 editor.notice?.let { notice ->
                     item(key = "profile-notice") {
                         Text(
-                            text = notice,
+                            text = notice.resolve(),
                             modifier = Modifier.semantics {
                                 liveRegion = LiveRegionMode.Polite
                             },
@@ -112,7 +112,7 @@ private fun ProfileEditor(
                 editor.error?.let { error ->
                     item(key = "profile-error") {
                         Text(
-                            text = error,
+                            text = error.resolve(),
                             modifier = Modifier.semantics {
                                 liveRegion = LiveRegionMode.Assertive
                             },
@@ -525,7 +525,7 @@ private fun previewConnectionProfileEditor() = ConnectionProfileEditorUiState.Ed
         ),
     ),
     canDelete = true,
-    notice = "Profile saved securely.",
+    notice = UiMessage.Verbatim("Profile saved securely."),
 )
 
 private fun previewProfileActions() = SessionHubActions(

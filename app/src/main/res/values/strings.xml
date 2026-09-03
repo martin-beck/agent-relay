@@ -181,6 +181,15 @@
     <string name="profile_editor_required">%1$s (required)</string>
     <string name="profile_editor_delete_title">Delete connection profile?</string>
     <string name="profile_editor_delete_message">This removes the profile, its stored credentials, and any saved host identity that is not shared by another profile.</string>
+    <string name="profile_error_provider_unavailable">That connection provider is no longer available.</string>
+    <string name="profile_error_profile_unavailable">That connection profile is no longer available.</string>
+    <string name="profile_error_validation">Correct the highlighted profile fields.</string>
+    <string name="profile_error_save">The connection profile could not be saved securely.</string>
+    <string name="profile_error_save_refresh">The profile was saved, but its editor could not be refreshed.</string>
+    <string name="profile_error_operation">The connection profile operation could not be completed securely.</string>
+    <string name="profile_error_operation_refresh">The operation succeeded, but the profile editor could not be refreshed.</string>
+    <string name="profile_error_delete">The connection profile could not be deleted securely.</string>
+    <string name="profile_error_open">The connection profile editor could not be opened.</string>
     <string name="session_action_type_command">Command approval</string>
     <string name="session_action_type_file_change">File change approval</string>
     <string name="session_action_type_question">Question</string>

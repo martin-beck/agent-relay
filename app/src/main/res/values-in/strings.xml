@@ -149,6 +149,15 @@
     <string name="profile_editor_required">%1$s (wajib)</string>
     <string name="profile_editor_delete_title">Hapus profil koneksi?</string>
     <string name="profile_editor_delete_message">Tindakan ini menghapus profil, kredensial tersimpan, dan identitas host tersimpan yang tidak digunakan bersama oleh profil lain.</string>
+    <string name="profile_error_provider_unavailable">Penyedia koneksi ini tidak lagi tersedia.</string>
+    <string name="profile_error_profile_unavailable">Profil koneksi ini tidak lagi tersedia.</string>
+    <string name="profile_error_validation">Perbaiki kolom profil yang disorot.</string>
+    <string name="profile_error_save">Profil koneksi tidak dapat disimpan dengan aman.</string>
+    <string name="profile_error_save_refresh">Profil telah disimpan, tetapi editornya tidak dapat dimuat ulang.</string>
+    <string name="profile_error_operation">Operasi profil koneksi tidak dapat diselesaikan dengan aman.</string>
+    <string name="profile_error_operation_refresh">Operasi berhasil, tetapi editor profil tidak dapat dimuat ulang.</string>
+    <string name="profile_error_delete">Profil koneksi tidak dapat dihapus dengan aman.</string>
+    <string name="profile_error_open">Editor profil koneksi tidak dapat dibuka.</string>
     <string name="session_action_type_command">Persetujuan perintah</string>
     <string name="session_action_type_file_change">Persetujuan perubahan file</string>
     <string name="session_action_type_question">Pertanyaan</string>
