@@ -77,9 +77,9 @@ baselines make the same failures visible in pull requests.
 
 This is still bounded evidence, not full locale qualification. Profile editing
 and compact session-detail questions plus sensitive confirmations, as well as
-changed-file progress/cancel/result states, now have equivalent per-locale
-matrices. Speech installation and notification permission still require that
-coverage.
+changed-file progress/cancel/result and offline speech selection/install states,
+now have equivalent per-locale matrices. Notification permission still requires
+that coverage.
 
 Representative API 36 device tests supplement deterministic JVM screenshots;
 they do not replace them.
@@ -92,6 +92,11 @@ English. The app must model an installed speech package by BCP-47 language tag,
 capability (STT or TTS), model or voice identity, runtime compatibility, and
 version. One multilingual model may satisfy several language tags without
 duplicating its files.
+
+The current speech controls expose model selection, install/retry, download
+progress/cancel, and installed/ready states. They do not yet expose package
+storage size, license terms, or a separate install-confirmation surface, so the
+locale matrix makes no visual-coverage claim for those planned details.
 
 Agent Relay should manage offline packages itself instead of assuming that an
 Android system speech service has installed a language. System STT and TTS may
