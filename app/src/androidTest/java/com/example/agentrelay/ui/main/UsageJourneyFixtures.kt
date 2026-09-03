@@ -1,6 +1,7 @@
 package com.example.agentrelay.ui.main
 
 import dev.agentrelay.connection.api.ConnectionProfileFieldType
+import dev.agentrelay.provider.api.AgentApprovalDecision
 import dev.agentrelay.provider.api.AgentSessionState
 import dev.agentrelay.session.api.SessionActionState
 
@@ -85,7 +86,7 @@ internal fun deliveringActionHub(): SessionHubUiModel {
     val hub = actionHub()
     val action = hub.attentionActions.single().copy(
         state = SessionActionState.DELIVERING,
-        completedDecisionLabel = "Submit answers",
+        completedDecision = AgentApprovalDecision.SUBMIT,
         additionalConfirmationGiven = true,
         isBusy = true,
     )

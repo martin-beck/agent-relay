@@ -9,7 +9,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.agentrelay.theme.AgentRelayTheme
 import dev.agentrelay.provider.api.AgentApprovalDecision
+import dev.agentrelay.provider.api.AgentApprovalType
 import dev.agentrelay.provider.api.AgentSessionState
+import dev.agentrelay.session.api.SessionActionRisk
 import dev.agentrelay.session.api.SessionActionState
 import dev.agentrelay.session.api.SessionActivityType
 
@@ -347,7 +349,7 @@ private fun previewApproval(session: SessionUiModel) = SessionActionUiModel(
     stableKey = "preview-approval",
     sessionKey = session.stableKey,
     title = "Run the focused validation suite?",
-    typeLabel = "Command approval",
+    type = AgentApprovalType.COMMAND,
     description = "Review the exact command and working directory before allowing it.",
     command = "./gradlew test lintDebug",
     scope = "/workspace/agent-relay",
@@ -360,20 +362,18 @@ private fun previewApproval(session: SessionUiModel) = SessionActionUiModel(
     decisions = listOf(
         SessionDecisionUiModel(
             decision = AgentApprovalDecision.APPROVE_ONCE,
-            label = "Approve once",
             requiresConfirmation = true,
             isPositive = true,
         ),
         SessionDecisionUiModel(
             decision = AgentApprovalDecision.DECLINE,
-            label = "Decline",
             requiresConfirmation = false,
             isPositive = false,
         ),
     ),
-    riskLabels = listOf("Command execution"),
+    risks = listOf(SessionActionRisk.DESTRUCTIVE_COMMAND),
     state = SessionActionState.PENDING,
-    completedDecisionLabel = null,
+    completedDecision = null,
     additionalConfirmationGiven = false,
     isBusy = false,
 )

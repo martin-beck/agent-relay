@@ -420,8 +420,11 @@ class SessionHubUiMapperTest {
         assertTrue(attention.decisions.first().requiresConfirmation)
         assertTrue(attention.isBusy)
         assertEquals(
-            listOf("Destructive command", "Broad filesystem access"),
-            attention.riskLabels,
+            listOf(
+                SessionActionRisk.DESTRUCTIVE_COMMAND,
+                SessionActionRisk.BROAD_FILESYSTEM_ACCESS,
+            ),
+            attention.risks,
         )
         assertEquals("stable-question-key", attention.questions.single().stableKey)
         assertEquals(2, mapped.selectedSession?.actions?.size)

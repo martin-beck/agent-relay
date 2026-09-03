@@ -118,6 +118,14 @@ class LocalizedResourcesTest {
                 R.string.profile_editor_required,
                 opaqueValues[1],
             )
+            val actionDecision = context.getString(
+                R.string.session_action_resolved_with_confirmation,
+                "Decision 42",
+            )
+            val actionScope = context.getString(
+                R.string.session_action_scope_value,
+                "/workspace/test",
+            )
 
             opaqueValues.forEach { value ->
                 assertTrue(languageTag, sessionContext.contains(value))
@@ -153,6 +161,13 @@ class LocalizedResourcesTest {
             assertFalse(languageTag, startOnConnection.contains("%1\$"))
             assertTrue(languageTag, requiredField.contains(opaqueValues[1]))
             assertFalse(languageTag, requiredField.contains("%1\$"))
+            assertTrue(languageTag, actionDecision.contains("Decision 42"))
+            assertFalse(languageTag, actionDecision.contains("%1\$"))
+            assertTrue(languageTag, actionScope.contains("/workspace/test"))
+            assertFalse(languageTag, actionScope.contains("%1\$"))
+            ACTION_LABEL_RESOURCES.forEach { resource ->
+                assertTrue(languageTag, context.getString(resource).isNotBlank())
+            }
             val localizedNumber = NumberFormat
                 .getIntegerInstance(Locale.forLanguageTag(languageTag))
                 .format(42)
@@ -208,6 +223,23 @@ class LocalizedResourcesTest {
 
     private companion object {
         const val ANDROID_NAMESPACE = "http://schemas.android.com/apk/res/android"
+
+        val ACTION_LABEL_RESOURCES = listOf(
+            R.string.session_action_type_command,
+            R.string.session_action_type_file_change,
+            R.string.session_action_type_question,
+            R.string.session_action_type_permission,
+            R.string.session_action_type_external_tool,
+            R.string.session_action_decision_approve_once,
+            R.string.session_action_decision_approve_for_session,
+            R.string.session_action_decision_submit,
+            R.string.session_action_decision_decline,
+            R.string.session_action_risk_destructive_command,
+            R.string.session_action_risk_broad_filesystem,
+            R.string.session_action_risk_credential_access,
+            R.string.session_action_risk_network_expansion,
+            R.string.session_action_risk_external_tool,
+        )
 
         val EXPECTED_GENERATED_LOCALES = setOf(
             "en-US",

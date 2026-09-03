@@ -288,7 +288,7 @@ private fun AttentionActionCard(
             liveRegion = LiveRegionMode.Polite
         },
         colors = CardDefaults.cardColors(
-            containerColor = if (action.riskLabels.isNotEmpty()) {
+            containerColor = if (action.risks.isNotEmpty()) {
                 MaterialTheme.colorScheme.errorContainer
             } else {
                 MaterialTheme.colorScheme.tertiaryContainer
@@ -303,7 +303,7 @@ private fun AttentionActionCard(
                 text = if (action.state == SessionActionState.DELIVERING) {
                     stringResource(R.string.session_hub_response_pending_confirmation)
                 } else {
-                    action.typeLabel
+                    action.type.localizedLabel()
                 },
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
@@ -322,9 +322,9 @@ private fun AttentionActionCard(
                 ),
                 style = MaterialTheme.typography.bodySmall,
             )
-            action.riskLabels.forEach { risk ->
+            action.risks.forEach { risk ->
                 Text(
-                    text = stringResource(R.string.session_hub_risk, risk),
+                    text = stringResource(R.string.session_hub_risk, risk.localizedLabel()),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error,
                 )

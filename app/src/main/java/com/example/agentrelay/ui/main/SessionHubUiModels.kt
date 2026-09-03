@@ -152,7 +152,7 @@ internal data class SessionActionUiModel(
     val stableKey: String,
     val sessionKey: String,
     val title: String,
-    val typeLabel: String,
+    val type: AgentApprovalType,
     val description: String?,
     val command: String?,
     val scope: String?,
@@ -163,9 +163,9 @@ internal data class SessionActionUiModel(
     val sessionTitle: String,
     val questions: List<SessionQuestionUiModel>,
     val decisions: List<SessionDecisionUiModel>,
-    val riskLabels: List<String>,
+    val risks: List<SessionActionRisk>,
     val state: SessionActionState,
-    val completedDecisionLabel: String?,
+    val completedDecision: AgentApprovalDecision?,
     val additionalConfirmationGiven: Boolean,
     val isBusy: Boolean,
 )
@@ -186,7 +186,6 @@ internal data class SessionQuestionOptionUiModel(
 
 internal data class SessionDecisionUiModel(
     val decision: AgentApprovalDecision,
-    val label: String,
     val requiresConfirmation: Boolean,
     val isPositive: Boolean,
 )
@@ -516,7 +515,7 @@ internal object SessionHubUiMapper {
         stableKey = id,
         sessionKey = locator.stableUiKey,
         title = title,
-        typeLabel = type.uiLabel,
+        type = type,
         description = description,
         command = command,
         scope = workingDirectory ?: record.observation.projectPath,
@@ -543,46 +542,16 @@ internal object SessionHubUiMapper {
             .map { candidate ->
                 SessionDecisionUiModel(
                     decision = candidate,
-                    label = candidate.uiLabel,
                     requiresConfirmation = requiresAdditionalConfirmation(candidate),
                     isPositive = candidate in POSITIVE_DECISIONS,
                 )
             },
-        riskLabels = riskReasons
-            .sortedBy(SessionActionRisk::ordinal)
-            .map { it.uiLabel },
+        risks = riskReasons.sortedBy(SessionActionRisk::ordinal),
         state = state,
-        completedDecisionLabel = decision?.uiLabel,
+        completedDecision = decision,
         additionalConfirmationGiven = additionalConfirmationGiven,
         isBusy = isBusy || state == SessionActionState.DELIVERING,
     )
-
-    private val AgentApprovalType.uiLabel: String
-        get() = when (this) {
-            AgentApprovalType.COMMAND -> "Command approval"
-            AgentApprovalType.FILE_CHANGE -> "File change approval"
-            AgentApprovalType.USER_INPUT -> "Question"
-            AgentApprovalType.PERMISSION -> "Permission request"
-            AgentApprovalType.EXTERNAL_TOOL -> "External tool approval"
-        }
-
-    private val AgentApprovalDecision.uiLabel: String
-        get() = when (this) {
-            AgentApprovalDecision.APPROVE_ONCE -> "Approve once"
-            AgentApprovalDecision.APPROVE_FOR_SESSION -> "Approve for session"
-            AgentApprovalDecision.SUBMIT -> "Submit answers"
-            AgentApprovalDecision.DECLINE -> "Decline"
-            AgentApprovalDecision.CANCEL -> "Cancel"
-        }
-
-    private val SessionActionRisk.uiLabel: String
-        get() = when (this) {
-            SessionActionRisk.DESTRUCTIVE_COMMAND -> "Destructive command"
-            SessionActionRisk.BROAD_FILESYSTEM_ACCESS -> "Broad filesystem access"
-            SessionActionRisk.CREDENTIAL_ACCESS -> "Credential or secret access"
-            SessionActionRisk.NETWORK_EXPANSION -> "Network access expansion"
-            SessionActionRisk.EXTERNAL_TOOL -> "External tool execution"
-        }
 
     private fun SessionActivity.toUiModel() = SessionActivityUiModel(
         id = id,

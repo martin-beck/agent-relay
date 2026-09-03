@@ -33,7 +33,9 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.example.agentrelay.theme.AgentRelayTheme
 import dev.agentrelay.connection.api.ConnectionProfileFieldType
 import dev.agentrelay.provider.api.AgentApprovalDecision
+import dev.agentrelay.provider.api.AgentApprovalType
 import dev.agentrelay.provider.api.AgentSessionState
+import dev.agentrelay.session.api.SessionActionRisk
 import dev.agentrelay.session.api.SessionActionState
 import dev.agentrelay.session.api.SessionActivityType
 import org.junit.Rule
@@ -413,7 +415,7 @@ class MainScreenTest {
         val base = actionHub()
         val delivering = base.attentionActions.single().copy(
             state = SessionActionState.DELIVERING,
-            completedDecisionLabel = "Submit answers",
+            completedDecision = AgentApprovalDecision.SUBMIT,
             additionalConfirmationGiven = true,
             isBusy = true,
         )
@@ -945,7 +947,7 @@ internal fun actionHub(): SessionHubUiModel {
         stableKey = "action-key",
         sessionKey = "session-key",
         title = "Choose validation scope",
-        typeLabel = "Command approval",
+        type = AgentApprovalType.COMMAND,
         description = "The provider needs a scope before continuing.",
         command = "remove generated output",
         scope = "/workspace/project",
@@ -972,20 +974,18 @@ internal fun actionHub(): SessionHubUiModel {
         decisions = listOf(
             SessionDecisionUiModel(
                 decision = AgentApprovalDecision.SUBMIT,
-                label = "Submit answers",
                 requiresConfirmation = true,
                 isPositive = true,
             ),
             SessionDecisionUiModel(
                 decision = AgentApprovalDecision.CANCEL,
-                label = "Cancel",
                 requiresConfirmation = false,
                 isPositive = false,
             ),
         ),
-        riskLabels = listOf("Credential or secret access"),
+        risks = listOf(SessionActionRisk.CREDENTIAL_ACCESS),
         state = SessionActionState.PENDING,
-        completedDecisionLabel = null,
+        completedDecision = null,
         additionalConfirmationGiven = false,
         isBusy = false,
     )
