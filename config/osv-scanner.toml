@@ -1,0 +1,179 @@
+# Exact, expiring exceptions for vulnerable transitive tools that are absent from
+# every shipped compile and runtime configuration. The offline repository check
+# rejects broad overrides, expired exceptions, or movement into production.
+
+[[PackageOverrides]]
+name = "com.google.guava:guava"
+version = "31.0.1-android"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-12-01
+reason = "Android test and lint tooling only; not packaged in the application."
+
+[[PackageOverrides]]
+name = "com.google.protobuf:protobuf-java"
+version = "3.24.4"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-12-01
+reason = "Android test and lint tooling only; not packaged in the application."
+
+[[PackageOverrides]]
+name = "com.google.protobuf:protobuf-javalite"
+version = "3.19.1"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-12-01
+reason = "Android test and lint tooling only; not packaged in the application."
+
+[[PackageOverrides]]
+name = "com.google.protobuf:protobuf-kotlin"
+version = "3.24.4"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-12-01
+reason = "Android test and lint tooling only; not packaged in the application."
+
+[[PackageOverrides]]
+name = "io.netty:netty-codec"
+version = "4.1.110.Final"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-12-01
+reason = "AGP internal test tooling only; not packaged in the application."
+
+[[PackageOverrides]]
+name = "io.netty:netty-codec"
+version = "4.1.93.Final"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-12-01
+reason = "AGP internal test tooling only; not packaged in the application."
+
+[[PackageOverrides]]
+name = "io.netty:netty-codec-http"
+version = "4.1.110.Final"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-12-01
+reason = "AGP internal test tooling only; not packaged in the application."
+
+[[PackageOverrides]]
+name = "io.netty:netty-codec-http"
+version = "4.1.93.Final"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-12-01
+reason = "AGP internal test tooling only; not packaged in the application."
+
+[[PackageOverrides]]
+name = "io.netty:netty-codec-http2"
+version = "4.1.110.Final"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-12-01
+reason = "AGP internal test tooling only; not packaged in the application."
+
+[[PackageOverrides]]
+name = "io.netty:netty-codec-http2"
+version = "4.1.93.Final"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-12-01
+reason = "AGP internal test tooling only; not packaged in the application."
+
+[[PackageOverrides]]
+name = "io.netty:netty-common"
+version = "4.1.110.Final"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-12-01
+reason = "AGP internal test tooling only; not packaged in the application."
+
+[[PackageOverrides]]
+name = "io.netty:netty-common"
+version = "4.1.93.Final"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-12-01
+reason = "AGP internal test tooling only; not packaged in the application."
+
+[[PackageOverrides]]
+name = "io.netty:netty-handler"
+version = "4.1.110.Final"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-12-01
+reason = "AGP internal test tooling only; not packaged in the application."
+
+[[PackageOverrides]]
+name = "io.netty:netty-handler"
+version = "4.1.93.Final"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-12-01
+reason = "AGP internal test tooling only; not packaged in the application."
+
+[[PackageOverrides]]
+name = "io.netty:netty-handler-proxy"
+version = "4.1.110.Final"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-12-01
+reason = "AGP internal test tooling only; not packaged in the application."
+
+[[PackageOverrides]]
+name = "io.netty:netty-handler-proxy"
+version = "4.1.93.Final"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-12-01
+reason = "AGP internal test tooling only; not packaged in the application."
+
+[[PackageOverrides]]
+name = "org.apache.commons:commons-lang3"
+version = "3.16.0"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-12-01
+reason = "Android test and lint tooling only; not packaged in the application."
+
+[[PackageOverrides]]
+name = "org.apache.httpcomponents:httpclient"
+version = "4.5.6"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-12-01
+reason = "Android test and lint tooling only; not packaged in the application."
+
+[[PackageOverrides]]
+name = "org.bouncycastle:bcpkix-jdk18on"
+version = "1.79"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-12-01
+reason = "AGP internal test tooling only; not packaged in the application."
+
+[[PackageOverrides]]
+name = "org.bouncycastle:bcprov-jdk18on"
+version = "1.79"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-12-01
+reason = "AGP internal test tooling only; not packaged in the application."
+
+[[PackageOverrides]]
+name = "org.bouncycastle:bcprov-jdk18on"
+version = "1.81"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-12-01
+reason = "Android unit-test tooling only; not packaged in the application."
+
+[[PackageOverrides]]
+name = "org.jsoup:jsoup"
+version = "1.15.1"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-12-01
+reason = "Android instrumentation-test tooling only; not packaged in the application."

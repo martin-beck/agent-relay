@@ -1,0 +1,8 @@
+# This is a Gradle generated file for dependency locking.
+# Manual edits can break the build and are not advised.
+# This file is expected to be part of source control.
+commons-codec:commons-codec:1.19.0=buildScriptClasspath,compileClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
+commons-io:commons-io:2.20.0=buildScriptClasspath,compileClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
+org.apache.commons:commons-compress:1.28.0=buildScriptClasspath,compileClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
+org.apache.commons:commons-lang3:3.18.0=buildScriptClasspath,compileClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
+empty=annotationProcessor,testAnnotationProcessor
