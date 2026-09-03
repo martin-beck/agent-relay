@@ -66,4 +66,18 @@
     <string name="session_hub_add_profile">Добавить профиль %1$s</string>
     <string name="session_hub_start_on_connection">Запустить %1$s на %2$s</string>
     <string name="session_hub_review_in">Проверить в %1$s</string>
+    <string name="list_separator">\u00A0·\u00A0</string>
+    <string name="session_hub_attention_title">Требуется внимание</string>
+    <string name="session_hub_attention_subtitle">Проверьте вопросы и запросы на подтверждение поставщика, прежде чем продолжить работу.</string>
+    <string name="session_hub_connections_title">Подключения</string>
+    <string name="session_hub_connections_subtitle">Локальный и удалённый доступ используют общий независимый от поставщика центр сеансов.</string>
+    <string name="session_hub_connections_empty">Нет доступных профилей подключения. Обновите, чтобы повторить попытку.</string>
+    <string name="session_hub_recent_sessions_title">Недавние сеансы</string>
+    <string name="session_hub_recent_sessions_subtitle">Непрочитанный вывод и требуемые решения остаются видимыми для всех подключений.</string>
+    <string name="session_hub_sessions_empty">Сеансы пока не найдены. Подключите профиль, чтобы проверить поставщиков агентов.</string>
+    <string name="session_hub_start_subtitle">Выберите готового поставщика агентов и при необходимости задайте рабочую область и модель.</string>
+    <string name="session_hub_tagline">Продолжайте работу с агентами на этом устройстве и доверенных SSH-узлах.</string>
+    <string name="session_hub_response_pending_confirmation">Ответ ожидает подтверждения поставщика</string>
+    <string name="session_hub_action_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
+    <string name="session_hub_risk">Риск: %1$s</string>
 </resources>

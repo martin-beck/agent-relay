@@ -96,4 +96,18 @@
     <string name="session_hub_add_profile">Add %1$s profile</string>
     <string name="session_hub_start_on_connection">Start %1$s on %2$s</string>
     <string name="session_hub_review_in">Review in %1$s</string>
+    <string name="list_separator">\u00A0·\u00A0</string>
+    <string name="session_hub_attention_title">Needs attention</string>
+    <string name="session_hub_attention_subtitle">Review provider questions and approvals before work can continue.</string>
+    <string name="session_hub_connections_title">Connections</string>
+    <string name="session_hub_connections_subtitle">Local and remote access share one provider-neutral session hub.</string>
+    <string name="session_hub_connections_empty">No connection profiles are available. Refresh to try again.</string>
+    <string name="session_hub_recent_sessions_title">Recent sessions</string>
+    <string name="session_hub_recent_sessions_subtitle">Unread output and required decisions stay visible across connections.</string>
+    <string name="session_hub_sessions_empty">No sessions have been discovered yet. Connect a profile to check its agent providers.</string>
+    <string name="session_hub_start_subtitle">Choose a ready agent provider and optionally set its workspace and model.</string>
+    <string name="session_hub_tagline">Continue agent work across this device and trusted SSH hosts.</string>
+    <string name="session_hub_response_pending_confirmation">Response awaiting provider confirmation</string>
+    <string name="session_hub_action_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
+    <string name="session_hub_risk">Risk: %1$s</string>
 </resources>

@@ -66,4 +66,18 @@
     <string name="session_hub_add_profile">%1$s プロファイルを追加</string>
     <string name="session_hub_start_on_connection">%2$s で %1$s を開始</string>
     <string name="session_hub_review_in">%1$s で確認</string>
+    <string name="list_separator">\u00A0·\u00A0</string>
+    <string name="session_hub_attention_title">要対応</string>
+    <string name="session_hub_attention_subtitle">作業を続ける前に、プロバイダーからの質問と承認要求を確認してください。</string>
+    <string name="session_hub_connections_title">接続</string>
+    <string name="session_hub_connections_subtitle">ローカルアクセスとリモートアクセスは、プロバイダーに依存しない同じセッションハブを使用します。</string>
+    <string name="session_hub_connections_empty">利用可能な接続プロファイルがありません。更新して再試行してください。</string>
+    <string name="session_hub_recent_sessions_title">最近のセッション</string>
+    <string name="session_hub_recent_sessions_subtitle">未読の出力と必要な判断は接続をまたいで表示されます。</string>
+    <string name="session_hub_sessions_empty">セッションはまだ見つかっていません。プロファイルに接続してエージェントプロバイダーを確認してください。</string>
+    <string name="session_hub_start_subtitle">準備済みのエージェントプロバイダーを選び、必要に応じてワークスペースとモデルを設定します。</string>
+    <string name="session_hub_tagline">このデバイスと信頼済み SSH ホストでエージェント作業を続けます。</string>
+    <string name="session_hub_response_pending_confirmation">プロバイダーの確認待ち</string>
+    <string name="session_hub_action_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
+    <string name="session_hub_risk">リスク：%1$s</string>
 </resources>

@@ -66,4 +66,18 @@
     <string name="session_hub_add_profile">Ajouter un profil %1$s</string>
     <string name="session_hub_start_on_connection">Démarrer %1$s sur %2$s</string>
     <string name="session_hub_review_in">Examiner dans %1$s</string>
+    <string name="list_separator">\u00A0·\u00A0</string>
+    <string name="session_hub_attention_title">Attention requise</string>
+    <string name="session_hub_attention_subtitle">Examinez les questions et autorisations du fournisseur avant de continuer.</string>
+    <string name="session_hub_connections_title">Connexions</string>
+    <string name="session_hub_connections_subtitle">Les accès local et distant partagent un même espace de sessions indépendant du fournisseur.</string>
+    <string name="session_hub_connections_empty">Aucun profil de connexion n’est disponible. Actualisez pour réessayer.</string>
+    <string name="session_hub_recent_sessions_title">Sessions récentes</string>
+    <string name="session_hub_recent_sessions_subtitle">Les sorties non lues et les décisions requises restent visibles entre les connexions.</string>
+    <string name="session_hub_sessions_empty">Aucune session n’a encore été découverte. Connectez un profil pour vérifier ses fournisseurs d’agents.</string>
+    <string name="session_hub_start_subtitle">Choisissez un fournisseur d’agents prêt et définissez éventuellement son espace de travail et son modèle.</string>
+    <string name="session_hub_tagline">Poursuivez le travail des agents sur cet appareil et des hôtes SSH approuvés.</string>
+    <string name="session_hub_response_pending_confirmation">Réponse en attente de confirmation du fournisseur</string>
+    <string name="session_hub_action_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
+    <string name="session_hub_risk">Risque : %1$s</string>
 </resources>

@@ -66,4 +66,18 @@
     <string name="session_hub_add_profile">添加 %1$s 配置</string>
     <string name="session_hub_start_on_connection">在 %2$s 上启动 %1$s</string>
     <string name="session_hub_review_in">在 %1$s 中审核</string>
+    <string name="list_separator">\u00A0·\u00A0</string>
+    <string name="session_hub_attention_title">需要处理</string>
+    <string name="session_hub_attention_subtitle">请先审核提供程序的问题和批准请求，然后再继续工作。</string>
+    <string name="session_hub_connections_title">连接</string>
+    <string name="session_hub_connections_subtitle">本地和远程访问共用一个与提供程序无关的会话中心。</string>
+    <string name="session_hub_connections_empty">没有可用的连接配置。请刷新后重试。</string>
+    <string name="session_hub_recent_sessions_title">最近的会话</string>
+    <string name="session_hub_recent_sessions_subtitle">未读输出和待处理决定在各连接间始终可见。</string>
+    <string name="session_hub_sessions_empty">尚未发现会话。请连接一个配置以检查其代理提供程序。</string>
+    <string name="session_hub_start_subtitle">选择已就绪的代理提供程序，并可选择设置其工作区和模型。</string>
+    <string name="session_hub_tagline">在此设备和受信任的 SSH 主机上继续代理工作。</string>
+    <string name="session_hub_response_pending_confirmation">响应正在等待提供程序确认</string>
+    <string name="session_hub_action_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
+    <string name="session_hub_risk">风险：%1$s</string>
 </resources>

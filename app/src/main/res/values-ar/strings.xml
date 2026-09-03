@@ -66,4 +66,18 @@
     <string name="session_hub_add_profile">إضافة ملف تعريف %1$s</string>
     <string name="session_hub_start_on_connection">بدء %1$s على %2$s</string>
     <string name="session_hub_review_in">مراجعة في %1$s</string>
+    <string name="list_separator">\u00A0·\u00A0</string>
+    <string name="session_hub_attention_title">يتطلب الانتباه</string>
+    <string name="session_hub_attention_subtitle">راجع أسئلة المزوّد والموافقات قبل متابعة العمل.</string>
+    <string name="session_hub_connections_title">الاتصالات</string>
+    <string name="session_hub_connections_subtitle">تتشارك الاتصالات المحلية والبعيدة مركز جلسات مستقلاً عن المزوّد.</string>
+    <string name="session_hub_connections_empty">لا تتوفر ملفات تعريف اتصال. حدّث للمحاولة مرة أخرى.</string>
+    <string name="session_hub_recent_sessions_title">الجلسات الأخيرة</string>
+    <string name="session_hub_recent_sessions_subtitle">تبقى المخرجات غير المقروءة والقرارات المطلوبة ظاهرة عبر الاتصالات.</string>
+    <string name="session_hub_sessions_empty">لم يتم العثور على جلسات بعد. اتصل بملف تعريف للتحقق من مزوّدي الوكلاء.</string>
+    <string name="session_hub_start_subtitle">اختر مزوّد وكيل جاهزًا، وحدد مساحة العمل والنموذج اختياريًا.</string>
+    <string name="session_hub_tagline">تابع عمل الوكلاء على هذا الجهاز ومضيفات SSH الموثوقة.</string>
+    <string name="session_hub_response_pending_confirmation">الرد بانتظار تأكيد المزوّد</string>
+    <string name="session_hub_action_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
+    <string name="session_hub_risk">المخاطر: %1$s</string>
 </resources>

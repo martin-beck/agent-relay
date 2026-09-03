@@ -66,4 +66,18 @@
     <string name="session_hub_add_profile">Aggiungi profilo %1$s</string>
     <string name="session_hub_start_on_connection">Avvia %1$s su %2$s</string>
     <string name="session_hub_review_in">Esamina in %1$s</string>
+    <string name="list_separator">\u00A0·\u00A0</string>
+    <string name="session_hub_attention_title">Richiede attenzione</string>
+    <string name="session_hub_attention_subtitle">Esamina domande e approvazioni del provider prima di continuare.</string>
+    <string name="session_hub_connections_title">Connessioni</string>
+    <string name="session_hub_connections_subtitle">L’accesso locale e remoto condivide un hub di sessioni indipendente dal provider.</string>
+    <string name="session_hub_connections_empty">Nessun profilo di connessione disponibile. Aggiorna per riprovare.</string>
+    <string name="session_hub_recent_sessions_title">Sessioni recenti</string>
+    <string name="session_hub_recent_sessions_subtitle">Output non letti e decisioni richieste restano visibili tra le connessioni.</string>
+    <string name="session_hub_sessions_empty">Non è stata ancora trovata alcuna sessione. Connetti un profilo per verificarne i provider di agenti.</string>
+    <string name="session_hub_start_subtitle">Scegli un provider di agenti pronto e, facoltativamente, imposta area di lavoro e modello.</string>
+    <string name="session_hub_tagline">Continua il lavoro degli agenti su questo dispositivo e su host SSH attendibili.</string>
+    <string name="session_hub_response_pending_confirmation">Risposta in attesa della conferma del provider</string>
+    <string name="session_hub_action_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
+    <string name="session_hub_risk">Rischio: %1$s</string>
 </resources>

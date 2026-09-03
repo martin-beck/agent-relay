@@ -66,4 +66,18 @@
     <string name="session_hub_add_profile">%1$s प्रोफ़ाइल जोड़ें</string>
     <string name="session_hub_start_on_connection">%2$s पर %1$s शुरू करें</string>
     <string name="session_hub_review_in">%1$s में समीक्षा करें</string>
+    <string name="list_separator">\u00A0·\u00A0</string>
+    <string name="session_hub_attention_title">ध्यान देना आवश्यक</string>
+    <string name="session_hub_attention_subtitle">काम जारी रखने से पहले प्रदाता के प्रश्नों और अनुमोदनों की समीक्षा करें।</string>
+    <string name="session_hub_connections_title">कनेक्शन</string>
+    <string name="session_hub_connections_subtitle">स्थानीय और रिमोट एक्सेस एक प्रदाता-निरपेक्ष सत्र हब साझा करते हैं।</string>
+    <string name="session_hub_connections_empty">कोई कनेक्शन प्रोफ़ाइल उपलब्ध नहीं है। फिर से कोशिश करने के लिए रीफ़्रेश करें।</string>
+    <string name="session_hub_recent_sessions_title">हाल के सत्र</string>
+    <string name="session_hub_recent_sessions_subtitle">अपठित आउटपुट और आवश्यक निर्णय सभी कनेक्शन में दिखाई देते हैं।</string>
+    <string name="session_hub_sessions_empty">अभी कोई सत्र नहीं मिला। उसके एजेंट प्रदाताओं को जाँचने के लिए प्रोफ़ाइल कनेक्ट करें।</string>
+    <string name="session_hub_start_subtitle">तैयार एजेंट प्रदाता चुनें और चाहें तो उसका कार्यक्षेत्र और मॉडल सेट करें।</string>
+    <string name="session_hub_tagline">इस डिवाइस और विश्वसनीय SSH होस्ट पर एजेंट का काम जारी रखें।</string>
+    <string name="session_hub_response_pending_confirmation">प्रतिक्रिया प्रदाता की पुष्टि की प्रतीक्षा में है</string>
+    <string name="session_hub_action_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
+    <string name="session_hub_risk">जोखिम: %1$s</string>
 </resources>

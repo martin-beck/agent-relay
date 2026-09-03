@@ -70,8 +70,8 @@ internal fun SessionHubList(
         if (hub.attentionActions.isNotEmpty()) {
             item(key = "attention-heading") {
                 SectionHeading(
-                    title = "Needs attention",
-                    subtitle = "Review provider questions and approvals before work can continue.",
+                    title = stringResource(R.string.session_hub_attention_title),
+                    subtitle = stringResource(R.string.session_hub_attention_subtitle),
                 )
             }
             items(
@@ -86,8 +86,8 @@ internal fun SessionHubList(
         }
         item(key = "connections-heading") {
             SectionHeading(
-                title = "Connections",
-                subtitle = "Local and remote access share one provider-neutral session hub.",
+                title = stringResource(R.string.session_hub_connections_title),
+                subtitle = stringResource(R.string.session_hub_connections_subtitle),
             )
         }
         items(
@@ -103,7 +103,7 @@ internal fun SessionHubList(
         }
         if (hub.connections.isEmpty()) {
             item(key = "connections-empty") {
-                EmptyCard("No connection profiles are available. Refresh to try again.")
+                EmptyCard(stringResource(R.string.session_hub_connections_empty))
             }
         } else {
             items(hub.connections, key = ConnectionUiModel::stableKey) { connection ->
@@ -122,14 +122,14 @@ internal fun SessionHubList(
         sessionLaunchers(hub.sessionLaunchers, actions.openSessionCreator)
         item(key = "sessions-heading") {
             SectionHeading(
-                title = "Recent sessions",
-                subtitle = "Unread output and required decisions stay visible across connections.",
+                title = stringResource(R.string.session_hub_recent_sessions_title),
+                subtitle = stringResource(R.string.session_hub_recent_sessions_subtitle),
             )
         }
         if (hub.sessions.isEmpty()) {
             item(key = "sessions-empty") {
                 EmptyCard(
-                    "No sessions have been discovered yet. Connect a profile to check its agent providers.",
+                    stringResource(R.string.session_hub_sessions_empty),
                 )
             }
         } else {
@@ -153,8 +153,8 @@ private fun LazyListScope.sessionLaunchers(
     }
     item(key = "start-sessions-heading") {
         SectionHeading(
-            title = "Start a new session",
-            subtitle = "Choose a ready agent provider and optionally set its workspace and model.",
+            title = stringResource(R.string.session_creator_title),
+            subtitle = stringResource(R.string.session_hub_start_subtitle),
         )
     }
     items(
@@ -191,13 +191,13 @@ private fun HubHeader(
         ) {
             Column(Modifier.weight(1f)) {
                 Text(
-                    text = "Agent Relay",
+                    text = stringResource(R.string.app_name),
                     modifier = Modifier.semantics { heading() },
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.SemiBold,
                 )
                 Text(
-                    text = hub.availableConnectionProviders.joinToString(separator = "  -  "),
+                    text = hub.availableConnectionProviders.joinToString(separator = stringResource(R.string.list_separator)),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.primary,
                 )
@@ -217,7 +217,7 @@ private fun HubHeader(
             }
         }
         Text(
-            text = "Continue agent work across this device and trusted SSH hosts.",
+            text = stringResource(R.string.session_hub_tagline),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -301,7 +301,7 @@ private fun AttentionActionCard(
         ) {
             Text(
                 text = if (action.state == SessionActionState.DELIVERING) {
-                    "Response awaiting provider confirmation"
+                    stringResource(R.string.session_hub_response_pending_confirmation)
                 } else {
                     action.typeLabel
                 },
@@ -314,13 +314,17 @@ private fun AttentionActionCard(
                 fontWeight = FontWeight.SemiBold,
             )
             Text(
-                text = action.connectionProviderName + "  -  " + action.connectionLabel +
-                    "  -  " + action.agentProviderLabel,
+                text = stringResource(
+                    R.string.session_hub_action_context,
+                    action.connectionProviderName,
+                    action.connectionLabel,
+                    action.agentProviderLabel,
+                ),
                 style = MaterialTheme.typography.bodySmall,
             )
             action.riskLabels.forEach { risk ->
                 Text(
-                    text = "Risk: $risk",
+                    text = stringResource(R.string.session_hub_risk, risk),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error,
                 )

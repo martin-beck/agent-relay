@@ -64,6 +64,14 @@ class LocalizedResourcesTest {
                 R.string.session_hub_review_in,
                 opaqueValues[1],
             )
+            val actionContext = context.getString(
+                R.string.session_hub_action_context,
+                *opaqueValues.toTypedArray(),
+            )
+            val risk = context.getString(
+                R.string.session_hub_risk,
+                opaqueValues[0],
+            )
             val downloadProgress = context.getString(R.string.speech_download_progress, 42)
 
             opaqueValues.forEach { value ->
@@ -74,6 +82,12 @@ class LocalizedResourcesTest {
             assertTrue(languageTag, startOnConnection.contains(opaqueValues[2]))
             assertTrue(languageTag, startOnConnection.contains(opaqueValues[1]))
             assertTrue(languageTag, reviewIn.contains(opaqueValues[1]))
+            opaqueValues.forEach { value ->
+                assertTrue(languageTag, actionContext.contains(value))
+            }
+            assertTrue(languageTag, risk.contains(opaqueValues[0]))
+            assertFalse(languageTag, actionContext.contains("%1\$"))
+            assertFalse(languageTag, risk.contains("%1\$"))
             assertFalse(languageTag, addProfile.contains("%1\$"))
             assertFalse(languageTag, startOnConnection.contains("%1\$"))
             val localizedNumber = NumberFormat

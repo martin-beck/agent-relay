@@ -66,4 +66,18 @@
     <string name="session_hub_add_profile">新增 %1$s 設定檔</string>
     <string name="session_hub_start_on_connection">在 %2$s 上啟動 %1$s</string>
     <string name="session_hub_review_in">在 %1$s 中檢查</string>
+    <string name="list_separator">\u00A0·\u00A0</string>
+    <string name="session_hub_attention_title">需要處理</string>
+    <string name="session_hub_attention_subtitle">請先檢查提供者的問題和核准要求，再繼續工作。</string>
+    <string name="session_hub_connections_title">連線</string>
+    <string name="session_hub_connections_subtitle">本機與遠端存取共用一個不受提供者限制的工作階段中心。</string>
+    <string name="session_hub_connections_empty">沒有可用的連線設定檔。請重新整理後再試一次。</string>
+    <string name="session_hub_recent_sessions_title">最近的工作階段</string>
+    <string name="session_hub_recent_sessions_subtitle">未讀輸出與待處理決定會在各連線間保持可見。</string>
+    <string name="session_hub_sessions_empty">尚未發現工作階段。請連線設定檔以檢查其代理提供者。</string>
+    <string name="session_hub_start_subtitle">選擇已就緒的代理提供者，並可選擇設定其工作區與模型。</string>
+    <string name="session_hub_tagline">在此裝置和受信任的 SSH 主機上繼續代理工作。</string>
+    <string name="session_hub_response_pending_confirmation">回應正在等待提供者確認</string>
+    <string name="session_hub_action_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
+    <string name="session_hub_risk">風險：%1$s</string>
 </resources>
