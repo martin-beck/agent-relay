@@ -154,7 +154,7 @@ internal fun MainScreenContent(
                 Button(
                     onClick = actions.retry,
                 ) {
-                    Text("Retry")
+                    Text(stringResource(R.string.action_retry))
                 }
             }
         }

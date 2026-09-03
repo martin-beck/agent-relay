@@ -60,4 +60,10 @@
     <string name="speech_dismiss_error">वॉइस त्रुटि बंद करें</string>
     <string name="speech_model_label">ऑफ़लाइन मॉडल</string>
     <string name="speech_model_installed">%1$s - इंस्टॉल किया गया</string>
+    <string name="action_retry">फिर से कोशिश करें</string>
+    <string name="action_refresh">रीफ़्रेश करें</string>
+    <string name="action_dismiss">बंद करें</string>
+    <string name="session_hub_add_profile">%1$s प्रोफ़ाइल जोड़ें</string>
+    <string name="session_hub_start_on_connection">%2$s पर %1$s शुरू करें</string>
+    <string name="session_hub_review_in">%1$s में समीक्षा करें</string>
 </resources>

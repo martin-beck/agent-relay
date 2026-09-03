@@ -60,4 +60,10 @@
     <string name="speech_dismiss_error">إغلاق خطأ الإدخال الصوتي</string>
     <string name="speech_model_label">نموذج بلا اتصال</string>
     <string name="speech_model_installed">%1$s - مثبّت</string>
+    <string name="action_retry">إعادة المحاولة</string>
+    <string name="action_refresh">تحديث</string>
+    <string name="action_dismiss">إغلاق</string>
+    <string name="session_hub_add_profile">إضافة ملف تعريف %1$s</string>
+    <string name="session_hub_start_on_connection">بدء %1$s على %2$s</string>
+    <string name="session_hub_review_in">مراجعة في %1$s</string>
 </resources>

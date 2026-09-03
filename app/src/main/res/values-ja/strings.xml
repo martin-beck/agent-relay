@@ -60,4 +60,10 @@
     <string name="speech_dismiss_error">音声エラーを閉じる</string>
     <string name="speech_model_label">オフラインモデル</string>
     <string name="speech_model_installed">%1$s - インストール済み</string>
+    <string name="action_retry">再試行</string>
+    <string name="action_refresh">更新</string>
+    <string name="action_dismiss">閉じる</string>
+    <string name="session_hub_add_profile">%1$s プロファイルを追加</string>
+    <string name="session_hub_start_on_connection">%2$s で %1$s を開始</string>
+    <string name="session_hub_review_in">%1$s で確認</string>
 </resources>

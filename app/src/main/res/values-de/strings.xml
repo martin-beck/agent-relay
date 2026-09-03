@@ -60,4 +60,10 @@
     <string name="speech_dismiss_error">Sprachfehler schließen</string>
     <string name="speech_model_label">Offline-Modell</string>
     <string name="speech_model_installed">%1$s - installiert</string>
+    <string name="action_retry">Erneut versuchen</string>
+    <string name="action_refresh">Aktualisieren</string>
+    <string name="action_dismiss">Schließen</string>
+    <string name="session_hub_add_profile">%1$s-Profil hinzufügen</string>
+    <string name="session_hub_start_on_connection">%1$s auf %2$s starten</string>
+    <string name="session_hub_review_in">In %1$s prüfen</string>
 </resources>

@@ -51,12 +51,31 @@ class LocalizedResourcesTest {
                 R.string.speech_selected_model,
                 "model.test",
             )
+            val addProfile = context.getString(
+                R.string.session_hub_add_profile,
+                opaqueValues[0],
+            )
+            val startOnConnection = context.getString(
+                R.string.session_hub_start_on_connection,
+                opaqueValues[2],
+                opaqueValues[1],
+            )
+            val reviewIn = context.getString(
+                R.string.session_hub_review_in,
+                opaqueValues[1],
+            )
             val downloadProgress = context.getString(R.string.speech_download_progress, 42)
 
             opaqueValues.forEach { value ->
                 assertTrue(languageTag, sessionContext.contains(value))
             }
             assertTrue(languageTag, selectedModel.contains("model.test"))
+            assertTrue(languageTag, addProfile.contains(opaqueValues[0]))
+            assertTrue(languageTag, startOnConnection.contains(opaqueValues[2]))
+            assertTrue(languageTag, startOnConnection.contains(opaqueValues[1]))
+            assertTrue(languageTag, reviewIn.contains(opaqueValues[1]))
+            assertFalse(languageTag, addProfile.contains("%1\$"))
+            assertFalse(languageTag, startOnConnection.contains("%1\$"))
             val localizedNumber = NumberFormat
                 .getIntegerInstance(Locale.forLanguageTag(languageTag))
                 .format(42)

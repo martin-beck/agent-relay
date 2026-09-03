@@ -60,4 +60,10 @@
     <string name="speech_dismiss_error">ভয়েস ত্রুটি বন্ধ করুন</string>
     <string name="speech_model_label">অফলাইন মডেল</string>
     <string name="speech_model_installed">%1$s - ইনস্টল করা</string>
+    <string name="action_retry">পুনরায় চেষ্টা করুন</string>
+    <string name="action_refresh">রিফ্রেশ করুন</string>
+    <string name="action_dismiss">বন্ধ করুন</string>
+    <string name="session_hub_add_profile">%1$s প্রোফাইল যোগ করুন</string>
+    <string name="session_hub_start_on_connection">%2$s-এ %1$s শুরু করুন</string>
+    <string name="session_hub_review_in">%1$s-এ পর্যালোচনা করুন</string>
 </resources>

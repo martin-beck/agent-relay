@@ -60,4 +60,10 @@
     <string name="speech_dismiss_error">Fermer l’erreur vocale</string>
     <string name="speech_model_label">Modèle hors ligne</string>
     <string name="speech_model_installed">%1$s - installé</string>
+    <string name="action_retry">Réessayer</string>
+    <string name="action_refresh">Actualiser</string>
+    <string name="action_dismiss">Fermer</string>
+    <string name="session_hub_add_profile">Ajouter un profil %1$s</string>
+    <string name="session_hub_start_on_connection">Démarrer %1$s sur %2$s</string>
+    <string name="session_hub_review_in">Examiner dans %1$s</string>
 </resources>

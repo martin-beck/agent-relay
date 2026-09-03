@@ -60,4 +60,10 @@
     <string name="speech_dismiss_error">Tutup kesalahan suara</string>
     <string name="speech_model_label">Model offline</string>
     <string name="speech_model_installed">%1$s - terpasang</string>
+    <string name="action_retry">Coba lagi</string>
+    <string name="action_refresh">Segarkan</string>
+    <string name="action_dismiss">Tutup</string>
+    <string name="session_hub_add_profile">Tambahkan profil %1$s</string>
+    <string name="session_hub_start_on_connection">Mulai %1$s di %2$s</string>
+    <string name="session_hub_review_in">Tinjau di %1$s</string>
 </resources>

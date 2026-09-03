@@ -26,6 +26,8 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.example.agentrelay.R
 import dev.agentrelay.session.api.SessionActionState
 
 @Composable
@@ -45,14 +47,23 @@ internal fun SessionHubList(
         }
         hub.operationError?.let { message ->
             item(key = "operation-error") {
-                MessageCard(message, true, "Dismiss", actions.dismissError)
+                MessageCard(
+                    message,
+                    true,
+                    stringResource(R.string.action_dismiss),
+                    actions.dismissError,
+                )
             }
         }
         items(hub.issues, key = { "issue:" + it.id }) { issue ->
             MessageCard(
                 message = issue.message,
                 isError = !issue.recoverable,
-                actionLabel = if (issue.recoverable) "Refresh" else null,
+                actionLabel = if (issue.recoverable) {
+                    stringResource(R.string.action_refresh)
+                } else {
+                    null
+                },
                 onAction = if (issue.recoverable) actions.refresh else null,
             )
         }
@@ -87,7 +98,7 @@ internal fun SessionHubList(
                 onClick = { actions.addProfile(provider.stableKey) },
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text("Add ${provider.name} profile")
+                Text(stringResource(R.string.session_hub_add_profile, provider.name))
             }
         }
         if (hub.connections.isEmpty()) {
@@ -155,7 +166,13 @@ private fun LazyListScope.sessionLaunchers(
             modifier = Modifier.fillMaxWidth(),
         ) {
             Column {
-                Text("Start ${launcher.agentProviderLabel} on ${launcher.connectionLabel}")
+                Text(
+                    stringResource(
+                        R.string.session_hub_start_on_connection,
+                        launcher.agentProviderLabel,
+                        launcher.connectionLabel,
+                    ),
+                )
                 Text(launcher.connectionProviderName, style = MaterialTheme.typography.labelSmall)
             }
         }
@@ -195,7 +212,7 @@ private fun HubHeader(
                         strokeWidth = 2.dp,
                     )
                 } else {
-                    Text("Refresh")
+                    Text(stringResource(R.string.action_refresh))
                 }
             }
         }
@@ -312,7 +329,7 @@ private fun AttentionActionCard(
                 onClick = onReview,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text("Review in ${action.sessionTitle}")
+                Text(stringResource(R.string.session_hub_review_in, action.sessionTitle))
             }
         }
     }

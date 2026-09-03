@@ -60,4 +60,10 @@
     <string name="speech_dismiss_error">关闭语音错误</string>
     <string name="speech_model_label">离线模型</string>
     <string name="speech_model_installed">%1$s - 已安装</string>
+    <string name="action_retry">重试</string>
+    <string name="action_refresh">刷新</string>
+    <string name="action_dismiss">关闭</string>
+    <string name="session_hub_add_profile">添加 %1$s 配置</string>
+    <string name="session_hub_start_on_connection">在 %2$s 上启动 %1$s</string>
+    <string name="session_hub_review_in">在 %1$s 中审核</string>
 </resources>
