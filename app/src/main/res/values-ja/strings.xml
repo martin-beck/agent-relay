@@ -131,4 +131,11 @@
     <string name="session_artifact_copy_saved_verified">コピーを保存し、ソースのチェックサムを確認しました。</string>
     <string name="session_artifact_save_another_copy">別のコピーを保存</string>
     <string name="session_artifact_save_copy">コピーを保存</string>
+    <string name="session_timeline_truncated">安全に表示するため、長いエントリを切り詰めました。</string>
+    <string name="session_activity_new_output">新しい出力</string>
+    <string name="session_activity_approval_required">承認が必要</string>
+    <string name="session_activity_question">質問</string>
+    <string name="session_activity_failure">失敗</string>
+    <string name="session_activity_reconnected">再接続済み</string>
+    <string name="session_activity_turn_completed">ターン完了</string>
 </resources>

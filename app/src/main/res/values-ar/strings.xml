@@ -141,4 +141,11 @@
     <string name="session_artifact_copy_saved_verified">تم حفظ النسخة والتحقق من المجموع الاختباري للمصدر.</string>
     <string name="session_artifact_save_another_copy">حفظ نسخة أخرى</string>
     <string name="session_artifact_save_copy">حفظ نسخة</string>
+    <string name="session_timeline_truncated">تم اقتطاع الإدخال الطويل لعرضه بأمان.</string>
+    <string name="session_activity_new_output">مخرجات جديدة</string>
+    <string name="session_activity_approval_required">الموافقة مطلوبة</string>
+    <string name="session_activity_question">سؤال</string>
+    <string name="session_activity_failure">فشل</string>
+    <string name="session_activity_reconnected">تمت إعادة الاتصال</string>
+    <string name="session_activity_turn_completed">اكتمل الدور</string>
 </resources>

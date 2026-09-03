@@ -135,4 +135,11 @@
     <string name="session_artifact_copy_saved_verified">Copia salvata e checksum dell’origine verificato.</string>
     <string name="session_artifact_save_another_copy">Salva un’altra copia</string>
     <string name="session_artifact_save_copy">Salva copia</string>
+    <string name="session_timeline_truncated">La voce lunga è stata troncata per una visualizzazione sicura.</string>
+    <string name="session_activity_new_output">Nuovo output</string>
+    <string name="session_activity_approval_required">Approvazione richiesta</string>
+    <string name="session_activity_question">Domanda</string>
+    <string name="session_activity_failure">Errore</string>
+    <string name="session_activity_reconnected">Riconnesso</string>
+    <string name="session_activity_turn_completed">Turno completato</string>
 </resources>

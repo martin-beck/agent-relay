@@ -131,4 +131,11 @@
     <string name="session_artifact_copy_saved_verified">副本已保存，且源文件校验和已验证。</string>
     <string name="session_artifact_save_another_copy">再保存一个副本</string>
     <string name="session_artifact_save_copy">保存副本</string>
+    <string name="session_timeline_truncated">长条目已截断，以便安全显示。</string>
+    <string name="session_activity_new_output">新输出</string>
+    <string name="session_activity_approval_required">需要批准</string>
+    <string name="session_activity_question">问题</string>
+    <string name="session_activity_failure">失败</string>
+    <string name="session_activity_reconnected">已重新连接</string>
+    <string name="session_activity_turn_completed">轮次已完成</string>
 </resources>

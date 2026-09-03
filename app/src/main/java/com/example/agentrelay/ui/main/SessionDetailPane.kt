@@ -536,7 +536,7 @@ private fun TranscriptCard(entry: TranscriptEntryUiModel) {
             }
             if (entry.wasTruncated) {
                 Text(
-                    text = "Long entry truncated for safe rendering.",
+                    text = stringResource(R.string.session_timeline_truncated),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -593,13 +593,14 @@ private fun DetailPlaceholder(message: String) {
     )
 }
 
+@Composable
 private fun activityTypeLabel(type: SessionActivityType): String = when (type) {
-    SessionActivityType.NEW_OUTPUT -> "New output"
-    SessionActivityType.APPROVAL_REQUIRED -> "Approval required"
-    SessionActivityType.QUESTION -> "Question"
-    SessionActivityType.FAILURE -> "Failure"
-    SessionActivityType.RECONNECTED -> "Reconnected"
-    SessionActivityType.TURN_COMPLETED -> "Turn completed"
+    SessionActivityType.NEW_OUTPUT -> stringResource(R.string.session_activity_new_output)
+    SessionActivityType.APPROVAL_REQUIRED -> stringResource(R.string.session_activity_approval_required)
+    SessionActivityType.QUESTION -> stringResource(R.string.session_activity_question)
+    SessionActivityType.FAILURE -> stringResource(R.string.session_activity_failure)
+    SessionActivityType.RECONNECTED -> stringResource(R.string.session_activity_reconnected)
+    SessionActivityType.TURN_COMPLETED -> stringResource(R.string.session_activity_turn_completed)
 }
 
 private fun formatTimestamp(epochMillis: Long): String =

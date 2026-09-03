@@ -133,4 +133,11 @@
     <string name="session_artifact_copy_saved_verified">Kopie gespeichert und Prüfsumme der Quelle verifiziert.</string>
     <string name="session_artifact_save_another_copy">Weitere Kopie speichern</string>
     <string name="session_artifact_save_copy">Kopie speichern</string>
+    <string name="session_timeline_truncated">Langer Eintrag zur sicheren Darstellung gekürzt.</string>
+    <string name="session_activity_new_output">Neue Ausgabe</string>
+    <string name="session_activity_approval_required">Genehmigung erforderlich</string>
+    <string name="session_activity_question">Frage</string>
+    <string name="session_activity_failure">Fehler</string>
+    <string name="session_activity_reconnected">Wieder verbunden</string>
+    <string name="session_activity_turn_completed">Durchlauf abgeschlossen</string>
 </resources>

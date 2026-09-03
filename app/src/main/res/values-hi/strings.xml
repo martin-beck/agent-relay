@@ -133,4 +133,11 @@
     <string name="session_artifact_copy_saved_verified">कॉपी सहेजी गई और स्रोत चेकसम सत्यापित किया गया।</string>
     <string name="session_artifact_save_another_copy">एक और कॉपी सहेजें</string>
     <string name="session_artifact_save_copy">कॉपी सहेजें</string>
+    <string name="session_timeline_truncated">सुरक्षित प्रदर्शन के लिए लंबी प्रविष्टि छोटी कर दी गई।</string>
+    <string name="session_activity_new_output">नया आउटपुट</string>
+    <string name="session_activity_approval_required">स्वीकृति आवश्यक</string>
+    <string name="session_activity_question">प्रश्न</string>
+    <string name="session_activity_failure">विफलता</string>
+    <string name="session_activity_reconnected">फिर से कनेक्ट हुआ</string>
+    <string name="session_activity_turn_completed">टर्न पूरा हुआ</string>
 </resources>
