@@ -118,4 +118,11 @@
     <string name="session_detail_activity">Aktivitas</string>
     <string name="session_detail_activity_empty">Tidak ada aktivitas terbaru yang tercatat untuk sesi ini.</string>
     <string name="session_detail_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
+    <string name="session_composer_message">Pesan</string>
+    <string name="session_composer_message_to">Pesan untuk %1$s</string>
+    <string name="session_composer_draft_saved">Draf ini tetap bersama sesi sampai Anda mengirimnya.</string>
+    <string name="session_composer_resume">Lanjutkan sesi</string>
+    <string name="session_composer_interrupt">Hentikan giliran</string>
+    <string name="session_composer_steer">Arahkan giliran aktif</string>
+    <string name="session_composer_send">Kirim</string>
 </resources>

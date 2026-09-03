@@ -334,7 +334,7 @@ private fun SessionComposer(
         }
     }
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        DetailHeading("Message")
+        DetailHeading(stringResource(R.string.session_composer_message))
         OutlinedTextField(
             value = editorValue,
             onValueChange = { changed ->
@@ -364,12 +364,12 @@ private fun SessionComposer(
                     true
                 }
                 .testTag("session-composer-input"),
-            label = { Text("Message to ${detail.session.agentProviderLabel}") },
+            label = { Text(stringResource(R.string.session_composer_message_to, detail.session.agentProviderLabel)) },
             enabled = !composer.isBusy,
             supportingText = {
                 Text(
                     text = composer.statusMessage
-                        ?: "This draft stays with the session until you send it.",
+                        ?: stringResource(R.string.session_composer_draft_saved),
                     modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                 )
             },
@@ -391,12 +391,12 @@ private fun SessionComposer(
             }
             if (composer.canResume) {
                 OutlinedButton(onClick = { onResumeSession(sessionKey) }) {
-                    Text("Resume session")
+                    Text(stringResource(R.string.session_composer_resume))
                 }
             }
             if (composer.canInterrupt) {
                 OutlinedButton(onClick = { onInterruptSession(sessionKey) }) {
-                    Text("Interrupt turn")
+                    Text(stringResource(R.string.session_composer_interrupt))
                 }
             }
             Button(
@@ -405,9 +405,9 @@ private fun SessionComposer(
             ) {
                 Text(
                     if (composer.submitMode == SessionSubmitMode.STEER) {
-                        "Steer active turn"
+                        stringResource(R.string.session_composer_steer)
                     } else {
-                        "Send"
+                        stringResource(R.string.session_composer_send)
                     },
                 )
             }

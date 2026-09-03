@@ -118,4 +118,11 @@
     <string name="session_detail_activity">アクティビティ</string>
     <string name="session_detail_activity_empty">このセッションの最近のアクティビティは記録されていません。</string>
     <string name="session_detail_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
+    <string name="session_composer_message">メッセージ</string>
+    <string name="session_composer_message_to">%1$s へのメッセージ</string>
+    <string name="session_composer_draft_saved">この下書きは送信するまでセッションに保持されます。</string>
+    <string name="session_composer_resume">セッションを再開</string>
+    <string name="session_composer_interrupt">ターンを中断</string>
+    <string name="session_composer_steer">進行中のターンを誘導</string>
+    <string name="session_composer_send">送信</string>
 </resources>

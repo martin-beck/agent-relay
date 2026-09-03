@@ -124,4 +124,11 @@
     <string name="session_detail_activity">Активность</string>
     <string name="session_detail_activity_empty">Для этого сеанса нет недавней активности.</string>
     <string name="session_detail_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
+    <string name="session_composer_message">Сообщение</string>
+    <string name="session_composer_message_to">Сообщение для %1$s</string>
+    <string name="session_composer_draft_saved">Этот черновик остается в сеансе до отправки.</string>
+    <string name="session_composer_resume">Возобновить сеанс</string>
+    <string name="session_composer_interrupt">Прервать ход</string>
+    <string name="session_composer_steer">Направить активный ход</string>
+    <string name="session_composer_send">Отправить</string>
 </resources>

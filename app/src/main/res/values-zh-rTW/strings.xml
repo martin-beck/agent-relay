@@ -118,4 +118,11 @@
     <string name="session_detail_activity">活動</string>
     <string name="session_detail_activity_empty">沒有記錄這個工作階段的近期活動。</string>
     <string name="session_detail_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
+    <string name="session_composer_message">訊息</string>
+    <string name="session_composer_message_to">給 %1$s 的訊息</string>
+    <string name="session_composer_draft_saved">此草稿會保留在工作階段中，直到您傳送為止。</string>
+    <string name="session_composer_resume">繼續工作階段</string>
+    <string name="session_composer_interrupt">中斷回合</string>
+    <string name="session_composer_steer">引導進行中的回合</string>
+    <string name="session_composer_send">傳送</string>
 </resources>

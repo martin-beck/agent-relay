@@ -122,4 +122,11 @@
     <string name="session_detail_activity">Activité</string>
     <string name="session_detail_activity_empty">Aucune activité récente n’est enregistrée pour cette session.</string>
     <string name="session_detail_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
+    <string name="session_composer_message">Message</string>
+    <string name="session_composer_message_to">Message pour %1$s</string>
+    <string name="session_composer_draft_saved">Ce brouillon reste dans la session jusqu’à son envoi.</string>
+    <string name="session_composer_resume">Reprendre la session</string>
+    <string name="session_composer_interrupt">Interrompre le tour</string>
+    <string name="session_composer_steer">Guider le tour actif</string>
+    <string name="session_composer_send">Envoyer</string>
 </resources>

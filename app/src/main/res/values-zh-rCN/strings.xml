@@ -118,4 +118,11 @@
     <string name="session_detail_activity">活动</string>
     <string name="session_detail_activity_empty">没有记录此会话的近期活动。</string>
     <string name="session_detail_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
+    <string name="session_composer_message">消息</string>
+    <string name="session_composer_message_to">发给 %1$s 的消息</string>
+    <string name="session_composer_draft_saved">在发送前，此草稿会保留在会话中。</string>
+    <string name="session_composer_resume">继续会话</string>
+    <string name="session_composer_interrupt">中断轮次</string>
+    <string name="session_composer_steer">引导当前轮次</string>
+    <string name="session_composer_send">发送</string>
 </resources>

@@ -120,4 +120,11 @@
     <string name="session_detail_activity">गतिविधि</string>
     <string name="session_detail_activity_empty">इस सत्र के लिए कोई हाल की गतिविधि रिकॉर्ड नहीं है।</string>
     <string name="session_detail_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
+    <string name="session_composer_message">संदेश</string>
+    <string name="session_composer_message_to">%1$s को संदेश</string>
+    <string name="session_composer_draft_saved">यह ड्राफ़्ट भेजे जाने तक सत्र के साथ रहता है।</string>
+    <string name="session_composer_resume">सत्र फिर से शुरू करें</string>
+    <string name="session_composer_interrupt">टर्न रोकें</string>
+    <string name="session_composer_steer">सक्रिय टर्न को निर्देशित करें</string>
+    <string name="session_composer_send">भेजें</string>
 </resources>

@@ -120,4 +120,11 @@
     <string name="session_detail_activity">কার্যকলাপ</string>
     <string name="session_detail_activity_empty">এই সেশনের কোনো সাম্প্রতিক কার্যকলাপ রেকর্ড করা নেই।</string>
     <string name="session_detail_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
+    <string name="session_composer_message">বার্তা</string>
+    <string name="session_composer_message_to">%1$s-কে বার্তা</string>
+    <string name="session_composer_draft_saved">আপনি পাঠানো পর্যন্ত এই খসড়াটি সেশনের সঙ্গে থাকবে।</string>
+    <string name="session_composer_resume">সেশন পুনরায় শুরু করুন</string>
+    <string name="session_composer_interrupt">পালা বাধা দিন</string>
+    <string name="session_composer_steer">সক্রিয় পালা পরিচালনা করুন</string>
+    <string name="session_composer_send">পাঠান</string>
 </resources>

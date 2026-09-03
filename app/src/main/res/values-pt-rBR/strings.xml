@@ -122,4 +122,11 @@
     <string name="session_detail_activity">Atividade</string>
     <string name="session_detail_activity_empty">Nenhuma atividade recente foi registrada para esta sessão.</string>
     <string name="session_detail_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
+    <string name="session_composer_message">Mensagem</string>
+    <string name="session_composer_message_to">Mensagem para %1$s</string>
+    <string name="session_composer_draft_saved">Este rascunho permanece na sessão até você enviá-lo.</string>
+    <string name="session_composer_resume">Retomar sessão</string>
+    <string name="session_composer_interrupt">Interromper turno</string>
+    <string name="session_composer_steer">Orientar turno ativo</string>
+    <string name="session_composer_send">Enviar</string>
 </resources>
