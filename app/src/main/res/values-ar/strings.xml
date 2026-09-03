@@ -281,4 +281,11 @@
         <item quantity="other">سيتجاوز نص الإدخال الصوتي حد المسودة البالغ %1$d حرفًا.</item>
     </plurals>
     <string name="speech_error_transcript_changed">تغيّر نص الإدخال الصوتي قبل إدراجه.</string>
+    <string name="speech_error_model_install">تعذر تثبيت نموذج الكلام بلا اتصال.</string>
+    <string name="speech_error_model_download_cancel">تعذر إلغاء تنزيل نموذج الكلام بشكل سليم.</string>
+    <string name="speech_error_model_required">ثبّت نموذج نسخ بلا اتصال تم التحقق منه قبل استخدام الإدخال الصوتي.</string>
+    <string name="speech_error_start">تعذر بدء الإدخال الصوتي. تحقق من الوصول إلى الميكروفون وحاول مرة أخرى.</string>
+    <string name="speech_error_stop">تعذر إيقاف الإدخال الصوتي بشكل سليم.</string>
+    <string name="speech_error_previous_session_cancel">تعذر إلغاء الإدخال الصوتي من الجلسة السابقة بشكل سليم.</string>
+    <string name="speech_error_cancel">تعذر إلغاء الإدخال الصوتي بشكل سليم.</string>
 </resources>

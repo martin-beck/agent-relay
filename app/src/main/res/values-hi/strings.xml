@@ -261,4 +261,11 @@
         <item quantity="other">वॉइस ट्रांसक्रिप्ट ड्राफ़्ट की %1$d वर्ण सीमा से अधिक हो जाएगा।</item>
     </plurals>
     <string name="speech_error_transcript_changed">वह वॉइस ट्रांसक्रिप्ट डालने से पहले बदल गया।</string>
+    <string name="speech_error_model_install">ऑफ़लाइन स्पीच मॉडल इंस्टॉल नहीं किया जा सका।</string>
+    <string name="speech_error_model_download_cancel">स्पीच मॉडल का डाउनलोड ठीक से रद्द नहीं किया जा सका।</string>
+    <string name="speech_error_model_required">वॉइस इनपुट का उपयोग करने से पहले सत्यापित ऑफ़लाइन ट्रांसक्रिप्शन मॉडल इंस्टॉल करें।</string>
+    <string name="speech_error_start">वॉइस इनपुट शुरू नहीं किया जा सका। माइक्रोफ़ोन एक्सेस जाँचें और फिर प्रयास करें।</string>
+    <string name="speech_error_stop">वॉइस इनपुट ठीक से रोका नहीं जा सका।</string>
+    <string name="speech_error_previous_session_cancel">पिछले सत्र का वॉइस इनपुट ठीक से रद्द नहीं किया जा सका।</string>
+    <string name="speech_error_cancel">वॉइस इनपुट ठीक से रद्द नहीं किया जा सका।</string>
 </resources>

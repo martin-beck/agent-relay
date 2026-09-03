@@ -261,4 +261,11 @@
         <item quantity="other">Das Sprachtranskript würde die Entwurfsgrenze von %1$d Zeichen überschreiten.</item>
     </plurals>
     <string name="speech_error_transcript_changed">Dieses Sprachtranskript wurde geändert, bevor es eingefügt werden konnte.</string>
+    <string name="speech_error_model_install">Das Offline-Sprachmodell konnte nicht installiert werden.</string>
+    <string name="speech_error_model_download_cancel">Der Download des Sprachmodells konnte nicht ordnungsgemäß abgebrochen werden.</string>
+    <string name="speech_error_model_required">Installieren Sie ein geprüftes Offline-Transkriptionsmodell, bevor Sie die Spracheingabe verwenden.</string>
+    <string name="speech_error_start">Die Spracheingabe konnte nicht gestartet werden. Prüfen Sie den Mikrofonzugriff und versuchen Sie es erneut.</string>
+    <string name="speech_error_stop">Die Spracheingabe konnte nicht ordnungsgemäß beendet werden.</string>
+    <string name="speech_error_previous_session_cancel">Die Spracheingabe aus der vorherigen Sitzung konnte nicht ordnungsgemäß abgebrochen werden.</string>
+    <string name="speech_error_cancel">Die Spracheingabe konnte nicht ordnungsgemäß abgebrochen werden.</string>
 </resources>

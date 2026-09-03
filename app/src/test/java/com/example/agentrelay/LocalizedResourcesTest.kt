@@ -341,6 +341,13 @@ class LocalizedResourcesTest {
             R.string.speech_error_transcript_unavailable,
             R.string.speech_error_session_unavailable,
             R.string.speech_error_transcript_changed,
+            R.string.speech_error_model_install,
+            R.string.speech_error_model_download_cancel,
+            R.string.speech_error_model_required,
+            R.string.speech_error_start,
+            R.string.speech_error_stop,
+            R.string.speech_error_previous_session_cancel,
+            R.string.speech_error_cancel,
         )
 
         val EXPECTED_GENERATED_LOCALES = setOf(

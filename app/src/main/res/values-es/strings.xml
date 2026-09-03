@@ -266,4 +266,11 @@
         <item quantity="other">La transcripción de voz superaría el límite de %1$d caracteres del borrador.</item>
     </plurals>
     <string name="speech_error_transcript_changed">Esa transcripción de voz cambió antes de que pudiera insertarse.</string>
+    <string name="speech_error_model_install">No se pudo instalar el modelo de voz sin conexión.</string>
+    <string name="speech_error_model_download_cancel">No se pudo cancelar correctamente la descarga del modelo de voz.</string>
+    <string name="speech_error_model_required">Instala un modelo verificado de transcripción sin conexión antes de usar la entrada de voz.</string>
+    <string name="speech_error_start">No se pudo iniciar la entrada de voz. Comprueba el acceso al micrófono e inténtalo de nuevo.</string>
+    <string name="speech_error_stop">No se pudo detener correctamente la entrada de voz.</string>
+    <string name="speech_error_previous_session_cancel">No se pudo cancelar correctamente la entrada de voz de la sesión anterior.</string>
+    <string name="speech_error_cancel">No se pudo cancelar correctamente la entrada de voz.</string>
 </resources>

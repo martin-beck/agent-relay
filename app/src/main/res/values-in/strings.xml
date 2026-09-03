@@ -256,4 +256,11 @@
         <item quantity="other">Transkrip suara akan melebihi batas draf %1$d karakter.</item>
     </plurals>
     <string name="speech_error_transcript_changed">Transkrip suara tersebut berubah sebelum dapat disisipkan.</string>
+    <string name="speech_error_model_install">Model suara offline tidak dapat diinstal.</string>
+    <string name="speech_error_model_download_cancel">Unduhan model suara tidak dapat dibatalkan dengan benar.</string>
+    <string name="speech_error_model_required">Instal model transkripsi offline terverifikasi sebelum menggunakan input suara.</string>
+    <string name="speech_error_start">Input suara tidak dapat dimulai. Periksa akses mikrofon lalu coba lagi.</string>
+    <string name="speech_error_stop">Input suara tidak dapat dihentikan dengan benar.</string>
+    <string name="speech_error_previous_session_cancel">Input suara dari sesi sebelumnya tidak dapat dibatalkan dengan benar.</string>
+    <string name="speech_error_cancel">Input suara tidak dapat dibatalkan dengan benar.</string>
 </resources>

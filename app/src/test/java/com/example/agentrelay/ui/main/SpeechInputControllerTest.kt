@@ -33,7 +33,7 @@ import org.junit.Test
 class SpeechInputControllerTest {
     @Test
     fun missingRuntimeIsTruthfullyUnavailable() = runTest {
-        val errors = mutableListOf<String>()
+        val errors = mutableListOf<UiMessage>()
         val controller = SpeechInputController(this, null, errors::add)
 
         assertEquals(SpeechInputPhase.UNAVAILABLE, controller.state.value.phase)
@@ -57,7 +57,7 @@ class SpeechInputControllerTest {
                 SpeechModelState(synthesis, SpeechModelAvailability.Ready),
             ),
         )
-        val errors = mutableListOf<String>()
+        val errors = mutableListOf<UiMessage>()
         val controller = SpeechInputController(this, service, errors::add)
 
         assertEquals(SpeechInputPhase.MODEL_REQUIRED, controller.state.value.phase)
@@ -91,6 +91,71 @@ class SpeechInputControllerTest {
         assertEquals(SpeechInputPhase.READY, controller.state.value.phase)
         assertTrue(controller.state.value.canStart)
         assertTrue(errors.isEmpty())
+        controller.close()
+    }
+
+    @Test
+    fun controllerOperationFailuresExposeLocalizedMessages() = runTest {
+        val model = descriptor("voice.test", SpeechModelCapability.TRANSCRIPTION)
+        val service = FakeOfflineSpeechService(
+            listOf(SpeechModelState(model, SpeechModelAvailability.NotInstalled)),
+        )
+        val errors = mutableListOf<UiMessage>()
+        val controller = SpeechInputController(this, service, errors::add)
+
+        service.installFailure = IllegalStateException("private install path")
+        controller.installSelectedModel()
+        runCurrent()
+        service.cancelInstallFailure = IllegalStateException("private download path")
+        controller.cancelSelectedModelInstall()
+        runCurrent()
+        controller.startListening("session-a")
+        service.modelStates.value = listOf(SpeechModelState(model, SpeechModelAvailability.Ready))
+        runCurrent()
+        service.stopFailure = IllegalStateException("private stop state")
+        controller.startListening("session-a")
+        runCurrent()
+        controller.stopListening("session-a")
+        runCurrent()
+        service.cancelFailure = IllegalStateException("private cancel state")
+        controller.cancelListening("session-a")
+        runCurrent()
+
+        assertEquals(
+            listOf(
+                UiMessage.Localized(R.string.speech_error_model_install),
+                UiMessage.Localized(R.string.speech_error_model_download_cancel),
+                UiMessage.Localized(R.string.speech_error_model_required),
+                UiMessage.Localized(R.string.speech_error_stop),
+                UiMessage.Localized(R.string.speech_error_cancel),
+            ),
+            errors,
+        )
+        assertFalse(errors.joinToString().contains("private"))
+        controller.close()
+    }
+
+    @Test
+    fun staleStartCancellationFailureExposesLocalizedMessage() = runTest {
+        val pendingStart = CompletableDeferred<SpeechOperationId>()
+        val service = readyService().apply {
+            deferredStart = pendingStart
+            cancelFailure = IllegalStateException("private previous session")
+        }
+        val errors = mutableListOf<UiMessage>()
+        val controller = SpeechInputController(this, service, errors::add)
+
+        controller.startListening("session-a")
+        runCurrent()
+        controller.cancelForSessionChange("session-b")
+        pendingStart.complete(SpeechOperationId(42L))
+        runCurrent()
+
+        assertEquals(
+            listOf(UiMessage.Localized(R.string.speech_error_previous_session_cancel)),
+            errors,
+        )
+        assertFalse(errors.single().toString().contains("private"))
         controller.close()
     }
 
@@ -206,17 +271,17 @@ class SpeechInputControllerTest {
         val service = readyService().apply {
             startFailure = IllegalStateException("private model path")
         }
-        val errors = mutableListOf<String>()
+        val errors = mutableListOf<UiMessage>()
         val controller = SpeechInputController(this, service, errors::add)
 
         controller.startListening("session-a")
         runCurrent()
 
         assertEquals(
-            listOf("Voice input could not be started. Check microphone access and try again."),
+            listOf(UiMessage.Localized(R.string.speech_error_start)),
             errors,
         )
-        assertFalse(errors.single().contains("private"))
+        assertFalse(errors.single().toString().contains("private"))
         assertEquals(SpeechInputPhase.READY, controller.state.value.phase)
         controller.close()
     }
@@ -427,6 +492,10 @@ private class FakeOfflineSpeechService(
     val startCalls = mutableListOf<SpeechModelId>()
     val stopCalls = mutableListOf<SpeechOperationId>()
     val cancelCalls = mutableListOf<SpeechOperationId>()
+    var installFailure: Throwable? = null
+    var cancelInstallFailure: Throwable? = null
+    var stopFailure: Throwable? = null
+    var cancelFailure: Throwable? = null
     var startFailure: Throwable? = null
     var deferredStart: CompletableDeferred<SpeechOperationId>? = null
     var closeCalls = 0
@@ -437,10 +506,12 @@ private class FakeOfflineSpeechService(
     override val playback: StateFlow<SpeechPlaybackState> = playbackState.asStateFlow()
 
     override suspend fun installModel(modelId: SpeechModelId) {
+        installFailure?.let { throw it }
         installCalls += modelId
     }
 
     override suspend fun cancelModelInstall(modelId: SpeechModelId) {
+        cancelInstallFailure?.let { throw it }
         cancelInstallCalls += modelId
     }
 
@@ -461,6 +532,7 @@ private class FakeOfflineSpeechService(
     }
 
     override suspend fun stopListening(operationId: SpeechOperationId) {
+        stopFailure?.let { throw it }
         stopCalls += operationId
         val listening = recognitionState.value as? SpeechRecognitionState.Listening ?: return
         if (listening.operationId == operationId) {
@@ -470,6 +542,7 @@ private class FakeOfflineSpeechService(
     }
 
     override suspend fun cancelListening(operationId: SpeechOperationId) {
+        cancelFailure?.let { throw it }
         cancelCalls += operationId
         if (recognitionState.value.operationIdOrNullForTest() == operationId) {
             recognitionState.value = SpeechRecognitionState.Idle

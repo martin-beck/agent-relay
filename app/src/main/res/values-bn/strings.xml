@@ -261,4 +261,11 @@
         <item quantity="other">ভয়েস ট্রান্সক্রিপ্টটি খসড়ার %1$d অক্ষরের সীমা ছাড়িয়ে যাবে।</item>
     </plurals>
     <string name="speech_error_transcript_changed">ভয়েস ট্রান্সক্রিপ্টটি যোগ করার আগেই পরিবর্তিত হয়েছে।</string>
+    <string name="speech_error_model_install">অফলাইন স্পিচ মডেলটি ইনস্টল করা যায়নি।</string>
+    <string name="speech_error_model_download_cancel">স্পিচ মডেলের ডাউনলোডটি সঠিকভাবে বাতিল করা যায়নি।</string>
+    <string name="speech_error_model_required">ভয়েস ইনপুট ব্যবহারের আগে একটি যাচাইকৃত অফলাইন ট্রান্সক্রিপশন মডেল ইনস্টল করুন।</string>
+    <string name="speech_error_start">ভয়েস ইনপুট শুরু করা যায়নি। মাইক্রোফোন অ্যাক্সেস পরীক্ষা করে আবার চেষ্টা করুন।</string>
+    <string name="speech_error_stop">ভয়েস ইনপুট সঠিকভাবে থামানো যায়নি।</string>
+    <string name="speech_error_previous_session_cancel">আগের সেশনের ভয়েস ইনপুট সঠিকভাবে বাতিল করা যায়নি।</string>
+    <string name="speech_error_cancel">ভয়েস ইনপুট সঠিকভাবে বাতিল করা যায়নি।</string>
 </resources>

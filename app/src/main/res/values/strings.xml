@@ -291,4 +291,11 @@
         <item quantity="other">The voice transcript would exceed the %1$d-character draft limit.</item>
     </plurals>
     <string name="speech_error_transcript_changed">That voice transcript changed before it could be inserted.</string>
+    <string name="speech_error_model_install">The offline speech model could not be installed.</string>
+    <string name="speech_error_model_download_cancel">The speech model download could not be cancelled cleanly.</string>
+    <string name="speech_error_model_required">Install a verified offline transcription model before using voice input.</string>
+    <string name="speech_error_start">Voice input could not be started. Check microphone access and try again.</string>
+    <string name="speech_error_stop">Voice input could not be stopped cleanly.</string>
+    <string name="speech_error_previous_session_cancel">Voice input from the previous session could not be cancelled cleanly.</string>
+    <string name="speech_error_cancel">Voice input could not be cancelled cleanly.</string>
 </resources>

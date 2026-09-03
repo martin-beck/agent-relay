@@ -256,4 +256,11 @@
         <item quantity="other">音声文字起こしを挿入すると、下書きの上限である %1$d 文字を超えます。</item>
     </plurals>
     <string name="speech_error_transcript_changed">その音声文字起こしは挿入前に変更されました。</string>
+    <string name="speech_error_model_install">オフライン音声モデルをインストールできませんでした。</string>
+    <string name="speech_error_model_download_cancel">音声モデルのダウンロードを正常にキャンセルできませんでした。</string>
+    <string name="speech_error_model_required">音声入力を使用する前に、検証済みのオフライン文字起こしモデルをインストールしてください。</string>
+    <string name="speech_error_start">音声入力を開始できませんでした。マイクへのアクセスを確認して、もう一度お試しください。</string>
+    <string name="speech_error_stop">音声入力を正常に停止できませんでした。</string>
+    <string name="speech_error_previous_session_cancel">前のセッションの音声入力を正常にキャンセルできませんでした。</string>
+    <string name="speech_error_cancel">音声入力を正常にキャンセルできませんでした。</string>
 </resources>

@@ -266,4 +266,11 @@
         <item quantity="other">A transcrição de voz excederia o limite de %1$d caracteres do rascunho.</item>
     </plurals>
     <string name="speech_error_transcript_changed">Essa transcrição de voz mudou antes de ser inserida.</string>
+    <string name="speech_error_model_install">Não foi possível instalar o modelo de voz off-line.</string>
+    <string name="speech_error_model_download_cancel">Não foi possível cancelar corretamente o download do modelo de voz.</string>
+    <string name="speech_error_model_required">Instale um modelo verificado de transcrição off-line antes de usar a entrada de voz.</string>
+    <string name="speech_error_start">Não foi possível iniciar a entrada de voz. Verifique o acesso ao microfone e tente novamente.</string>
+    <string name="speech_error_stop">Não foi possível interromper corretamente a entrada de voz.</string>
+    <string name="speech_error_previous_session_cancel">Não foi possível cancelar corretamente a entrada de voz da sessão anterior.</string>
+    <string name="speech_error_cancel">Não foi possível cancelar corretamente a entrada de voz.</string>
 </resources>

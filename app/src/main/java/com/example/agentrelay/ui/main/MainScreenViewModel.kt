@@ -57,7 +57,7 @@ internal class MainScreenViewModel(
     internal val speechInput = SpeechInputController(
         scope = viewModelScope,
         service = speechService,
-        reportError = operationError::setVerbatim,
+        reportError = { operationError.value = it },
     ).also(::addCloseable)
     internal val speechActions = SpeechInputActions(
         controller = speechInput,

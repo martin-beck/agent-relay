@@ -256,4 +256,11 @@
         <item quantity="other">語音轉寫將超過草稿的 %1$d 個字元限制。</item>
     </plurals>
     <string name="speech_error_transcript_changed">該語音轉寫在插入前已變更。</string>
+    <string name="speech_error_model_install">無法安裝離線語音模型。</string>
+    <string name="speech_error_model_download_cancel">無法正常取消語音模型下載。</string>
+    <string name="speech_error_model_required">請先安裝經過驗證的離線轉寫模型，然後再使用語音輸入。</string>
+    <string name="speech_error_start">無法啟動語音輸入。請檢查麥克風權限後重試。</string>
+    <string name="speech_error_stop">無法正常停止語音輸入。</string>
+    <string name="speech_error_previous_session_cancel">無法正常取消上一個工作階段中的語音輸入。</string>
+    <string name="speech_error_cancel">無法正常取消語音輸入。</string>
 </resources>

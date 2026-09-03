@@ -1,5 +1,6 @@
 package com.example.agentrelay.ui.main
 
+import com.example.agentrelay.R
 import dev.agentrelay.speech.api.OfflineSpeechService
 import dev.agentrelay.speech.api.SpeechModelAvailability
 import dev.agentrelay.speech.api.SpeechModelCapability
@@ -97,7 +98,7 @@ internal data class SpeechInputUiState(
 internal class SpeechInputController(
     private val scope: CoroutineScope,
     private val service: OfflineSpeechService?,
-    private val reportError: (String) -> Unit,
+    private val reportError: (UiMessage) -> Unit,
 ) : AutoCloseable {
     private val mutableState = MutableStateFlow(unavailableSpeechInputState())
     private var selectedModelId: SpeechModelId? = null
@@ -146,7 +147,7 @@ internal class SpeechInputController(
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Throwable) {
-                reportError("The offline speech model could not be installed.")
+                reportError(UiMessage.Localized(R.string.speech_error_model_install))
             }
         }
     }
@@ -160,7 +161,7 @@ internal class SpeechInputController(
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Throwable) {
-                reportError("The speech model download could not be cancelled cleanly.")
+                reportError(UiMessage.Localized(R.string.speech_error_model_download_cancel))
             }
         }
     }
@@ -172,7 +173,7 @@ internal class SpeechInputController(
         }
         val selected = selectedModel()
         if (selected?.availability != SpeechModelAvailability.Ready) {
-            reportError("Install a verified offline transcription model before using voice input.")
+            reportError(UiMessage.Localized(R.string.speech_error_model_required))
             return
         }
         val generation = ++startGeneration
@@ -191,9 +192,7 @@ internal class SpeechInputController(
                 throw cancelled
             } catch (_: Throwable) {
                 if (generation == startGeneration && startingSessionKey == sessionKey) {
-                    reportError(
-                        "Voice input could not be started. Check microphone access and try again.",
-                    )
+                    reportError(UiMessage.Localized(R.string.speech_error_start))
                 }
             } finally {
                 if (generation == startGeneration && startingSessionKey == sessionKey) {
@@ -213,7 +212,7 @@ internal class SpeechInputController(
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Throwable) {
-                reportError("Voice input could not be stopped cleanly.")
+                reportError(UiMessage.Localized(R.string.speech_error_stop))
             }
         }
     }
@@ -285,9 +284,7 @@ internal class SpeechInputController(
             try {
                 opened.cancelListening(operationId)
             } catch (_: Throwable) {
-                reportError(
-                    "Voice input from the previous session could not be cancelled cleanly.",
-                )
+                reportError(UiMessage.Localized(R.string.speech_error_previous_session_cancel))
             }
         }
     }
@@ -313,7 +310,7 @@ internal class SpeechInputController(
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Throwable) {
-                reportError("Voice input could not be cancelled cleanly.")
+                reportError(UiMessage.Localized(R.string.speech_error_cancel))
             }
         }
     }

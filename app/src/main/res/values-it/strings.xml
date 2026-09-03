@@ -266,4 +266,11 @@
         <item quantity="other">La trascrizione vocale supererebbe il limite di %1$d caratteri della bozza.</item>
     </plurals>
     <string name="speech_error_transcript_changed">Questa trascrizione vocale è cambiata prima di poter essere inserita.</string>
+    <string name="speech_error_model_install">Non è stato possibile installare il modello vocale offline.</string>
+    <string name="speech_error_model_download_cancel">Non è stato possibile annullare correttamente il download del modello vocale.</string>
+    <string name="speech_error_model_required">Installa un modello verificato di trascrizione offline prima di usare l’input vocale.</string>
+    <string name="speech_error_start">Non è stato possibile avviare l’input vocale. Controlla l’accesso al microfono e riprova.</string>
+    <string name="speech_error_stop">Non è stato possibile arrestare correttamente l’input vocale.</string>
+    <string name="speech_error_previous_session_cancel">Non è stato possibile annullare correttamente l’input vocale della sessione precedente.</string>
+    <string name="speech_error_cancel">Non è stato possibile annullare correttamente l’input vocale.</string>
 </resources>

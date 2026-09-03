@@ -266,4 +266,11 @@
         <item quantity="other">La transcription vocale dépasserait la limite de %1$d caractères du brouillon.</item>
     </plurals>
     <string name="speech_error_transcript_changed">Cette transcription vocale a changé avant de pouvoir être insérée.</string>
+    <string name="speech_error_model_install">Impossible d’installer le modèle vocal hors ligne.</string>
+    <string name="speech_error_model_download_cancel">Impossible d’annuler correctement le téléchargement du modèle vocal.</string>
+    <string name="speech_error_model_required">Installez un modèle vérifié de transcription hors ligne avant d’utiliser la saisie vocale.</string>
+    <string name="speech_error_start">Impossible de démarrer la saisie vocale. Vérifiez l’accès au microphone et réessayez.</string>
+    <string name="speech_error_stop">Impossible d’arrêter correctement la saisie vocale.</string>
+    <string name="speech_error_previous_session_cancel">Impossible d’annuler correctement la saisie vocale de la session précédente.</string>
+    <string name="speech_error_cancel">Impossible d’annuler correctement la saisie vocale.</string>
 </resources>

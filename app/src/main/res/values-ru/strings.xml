@@ -271,4 +271,11 @@
         <item quantity="other">Голосовая расшифровка превысит ограничение черновика в %1$d символов.</item>
     </plurals>
     <string name="speech_error_transcript_changed">Эта голосовая расшифровка изменилась до того, как её удалось вставить.</string>
+    <string name="speech_error_model_install">Не удалось установить офлайн-модель речи.</string>
+    <string name="speech_error_model_download_cancel">Не удалось корректно отменить загрузку речевой модели.</string>
+    <string name="speech_error_model_required">Установите проверенную офлайн-модель распознавания речи перед использованием голосового ввода.</string>
+    <string name="speech_error_start">Не удалось запустить голосовой ввод. Проверьте доступ к микрофону и повторите попытку.</string>
+    <string name="speech_error_stop">Не удалось корректно остановить голосовой ввод.</string>
+    <string name="speech_error_previous_session_cancel">Не удалось корректно отменить голосовой ввод из предыдущего сеанса.</string>
+    <string name="speech_error_cancel">Не удалось корректно отменить голосовой ввод.</string>
 </resources>
