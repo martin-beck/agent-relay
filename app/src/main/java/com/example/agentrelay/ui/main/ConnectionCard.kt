@@ -184,7 +184,10 @@ private fun IdentityChallengeCard(
             if (challenge.previousFingerprints.isNotEmpty()) {
                 SelectionContainer {
                     Text(
-                        text = stringResource(R.string.connection_identity_previously_trusted, challenge.previousFingerprints.joinToString()),
+                        text = stringResource(
+                            R.string.connection_identity_previously_trusted,
+                            challenge.previousFingerprints.joinToString(),
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onErrorContainer,
                     )
