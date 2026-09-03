@@ -49,6 +49,8 @@ current journeys and clearly labeled planned behavior. See the
 [product roadmap](docs/PRODUCT_ROADMAP.md) for delivery order and the
 [architecture guide](docs/ARCHITECTURE.md) for module boundaries.
 
+AI-assisted work follows the [canonical development process](docs/DEVELOPMENT.md).
+
 ## Build
 
 Required tools:

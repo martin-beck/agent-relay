@@ -83,7 +83,15 @@ repos:
       - id: lychee
         alias: lychee-local
         name: Check local Markdown links
-        args: ["LYCHEE_VERSION=0.24.2", "--offline", "--root-dir", ".", "--include-fragments", "--no-progress"]
+        args:
+          - LYCHEE_VERSION=0.24.2
+          - --offline
+          - --root-dir
+          - .
+          - --include-fragments
+          - --no-progress
+          - --exclude
+          - ^file:///.*/agent-relay-state/?$
         types: [markdown]
       - id: lychee
         alias: lychee-online

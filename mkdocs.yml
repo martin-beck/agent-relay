@@ -47,6 +47,7 @@ nav:
   - Usage: USAGE.md
   - Install: INSTALLING.md
   - Build: BUILDING.md
+  - Development process: DEVELOPMENT.md
   - Architecture: ARCHITECTURE.md
   - Connection providers: CONNECTION_PROVIDERS.md
   - Provider operations: PROVIDER_OPERATIONS.md
