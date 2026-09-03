@@ -65,12 +65,16 @@ internal fun ConnectionProfileEditorDialog(
         )
 
         is ConnectionProfileEditorUiState.Editing -> {
-            val confirmedOperation = state.confirmedOperation()
+            val localizedState = state.localizedConnectionProfile()
+            val confirmedOperation = localizedState.confirmedOperation()
             when {
-                state.confirmDelete -> DeleteProfileConfirmation(state, actions)
+                state.confirmDelete -> DeleteProfileConfirmation(localizedState, actions)
                 confirmedOperation != null ->
-                    ProfileOperationConfirmation(state, confirmedOperation, actions)
-                else -> ProfileEditor(state, actions)
+                    ProfileOperationConfirmation(localizedState, confirmedOperation, actions)
+                else -> ProfileEditor(
+                    localizedState,
+                    actions,
+                )
             }
         }
     }

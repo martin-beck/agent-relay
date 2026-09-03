@@ -182,6 +182,9 @@ class LocalizedResourcesTest {
             ACTION_LABEL_RESOURCES.forEach { resource ->
                 assertTrue(languageTag, context.getString(resource).isNotBlank())
             }
+            SSH_PROFILE_RESOURCES.forEach { resource ->
+                assertTrue(languageTag, context.getString(resource).isNotBlank())
+            }
             opaqueValues.forEach { value ->
                 assertTrue(languageTag, sessionAccessibilityContext.contains(value))
             }
@@ -264,6 +267,44 @@ class LocalizedResourcesTest {
             R.string.session_action_risk_external_tool,
         )
 
+        val SSH_PROFILE_RESOURCES = listOf(
+            R.string.ssh_profile_title_add,
+            R.string.ssh_profile_title_edit,
+            R.string.ssh_profile_field_name,
+            R.string.ssh_profile_field_host,
+            R.string.ssh_profile_field_port,
+            R.string.ssh_profile_field_username,
+            R.string.ssh_profile_field_jump_host,
+            R.string.ssh_profile_field_authentication,
+            R.string.ssh_profile_field_password,
+            R.string.ssh_profile_field_private_key,
+            R.string.ssh_profile_field_passphrase_mode,
+            R.string.ssh_profile_field_new_passphrase,
+            R.string.ssh_profile_field_public_key,
+            R.string.ssh_profile_support_name,
+            R.string.ssh_profile_support_jump_host,
+            R.string.ssh_profile_support_password,
+            R.string.ssh_profile_support_private_key,
+            R.string.ssh_profile_support_passphrase,
+            R.string.ssh_profile_support_public_key,
+            R.string.ssh_profile_public_key_pending,
+            R.string.ssh_profile_option_direct,
+            R.string.ssh_profile_passphrase_keep,
+            R.string.ssh_profile_passphrase_none,
+            R.string.ssh_profile_passphrase_replace,
+            R.string.ssh_profile_auth_password,
+            R.string.ssh_profile_auth_imported_key,
+            R.string.ssh_profile_auth_keystore_key,
+            R.string.ssh_profile_auth_password_support,
+            R.string.ssh_profile_auth_imported_key_support,
+            R.string.ssh_profile_auth_keystore_key_support,
+            R.string.ssh_profile_operation_install_key,
+            R.string.ssh_profile_operation_install_key_support,
+            R.string.ssh_profile_operation_install_key_title,
+            R.string.ssh_profile_operation_install_key_message,
+            R.string.ssh_profile_operation_verify_key,
+            R.string.ssh_profile_operation_verify_key_support,
+        )
         val EXPECTED_GENERATED_LOCALES = setOf(
             "en-US",
             "ar",

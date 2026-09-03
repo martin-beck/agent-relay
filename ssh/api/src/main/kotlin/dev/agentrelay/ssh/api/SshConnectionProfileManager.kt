@@ -130,7 +130,7 @@ class SshConnectionProfileManager(
                         id = PUBLIC_KEY,
                         label = "App-managed public key",
                         type = ConnectionProfileFieldType.READ_ONLY,
-                        value = publicKey?.openSshPublicKey ?: "Created after saving this profile.",
+                        value = publicKey?.openSshPublicKey.orEmpty(),
                         supportingText =
                         "The private key stays in Android Keystore. Install this public key on the remote account.",
                         maxLength = MAX_PUBLIC_KEY_CHARS,
