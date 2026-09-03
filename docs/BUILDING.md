@@ -127,6 +127,14 @@ the same record-then-verify separation and use the test-name filter:
 ./gradlew :app:verifyRoborazziDebug --tests '*MainScreenScreenshotTest.profile*'
 ```
 
+Use the dedicated class filter for the compact session-detail question and
+confirmation matrix:
+
+```bash
+./gradlew :app:recordRoborazziDebug --tests '*SessionDetailScreenshotTest'
+./gradlew :app:verifyRoborazziDebug --tests '*SessionDetailScreenshotTest'
+```
+
 Review every changed PNG under `app/src/test/screenshots` before committing it.
 Do not combine record and verify in one Gradle invocation because both
 Roborazzi modes use the same Android unit-test task.

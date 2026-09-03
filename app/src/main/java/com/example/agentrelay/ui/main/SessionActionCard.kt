@@ -9,6 +9,9 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -31,14 +34,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.agentrelay.R
@@ -242,12 +250,14 @@ private fun ActionQuestions(
     answerState: ActionAnswerState,
     enabled: Boolean,
 ) {
+    val focusManager = LocalFocusManager.current
     questions.forEach { question ->
         QuestionInput(
             question = question,
             selected = answerState.selectedOptions[question.stableKey].orEmpty(),
             otherAnswer = answerState.otherAnswers[question.stableKey].orEmpty(),
             enabled = enabled,
+            focusManager = focusManager,
             onSelectedChanged = { answerState.select(question, it) },
             onOtherChanged = { answerState.changeOther(question, it) },
         )
@@ -411,6 +421,7 @@ private fun QuestionInput(
     selected: Set<String>,
     otherAnswer: String,
     enabled: Boolean,
+    focusManager: FocusManager,
     onSelectedChanged: (Set<String>) -> Unit,
     onOtherChanged: (String) -> Unit,
 ) {
@@ -425,11 +436,23 @@ private fun QuestionInput(
         Text(question.prompt.resolve(), style = MaterialTheme.typography.bodyMedium)
         if (question.options.isNotEmpty()) {
             FlowRow(
+                modifier = if (question.allowsMultiple) {
+                    Modifier
+                } else {
+                    Modifier.selectableGroup()
+                },
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 question.options.forEach { option ->
                     FilterChip(
+                        modifier = Modifier.semantics {
+                            role = if (question.allowsMultiple) {
+                                Role.Checkbox
+                            } else {
+                                Role.RadioButton
+                            }
+                        },
                         selected = option.label in selected,
                         onClick = {
                             onSelectedChanged(
@@ -464,6 +487,16 @@ private fun QuestionInput(
                 label = { Text(stringResource(R.string.session_action_other_answer)) },
                 singleLine = !question.allowsMultiple,
                 maxLines = if (question.allowsMultiple) 4 else 1,
+                keyboardOptions = KeyboardOptions(
+                    imeAction = if (question.allowsMultiple) {
+                        ImeAction.Default
+                    } else {
+                        ImeAction.Done
+                    },
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = { focusManager.clearFocus() },
+                ),
             )
         }
     }

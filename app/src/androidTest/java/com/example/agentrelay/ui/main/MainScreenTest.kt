@@ -650,7 +650,9 @@ class MainScreenTest {
         }
 
         composeTestRule.enableAccessibilityChecks()
-        composeTestRule.onRoot().tryPerformAccessibilityChecks()
+        assertSensitiveActionAccessibility(composeTestRule.onRoot()) { text ->
+            composeTestRule.onNodeWithText(text)
+        }
     }
 
     private inline fun withKeyboardFocusMode(block: () -> Unit) {

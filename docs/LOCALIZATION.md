@@ -75,9 +75,10 @@ asserts that critical localized text is displayed; and rejects text nodes or
 rendered text lines that leave the viewport or use ellipsis. Reviewed Roborazzi
 baselines make the same failures visible in pull requests.
 
-This is a bounded first slice, not full locale qualification. Profile editing,
-session detail and questions, artifact progress, speech installation, and
-notification permission still require equivalent per-locale matrices.
+This is still bounded evidence, not full locale qualification. Profile editing
+and compact session-detail questions plus sensitive confirmations now have
+equivalent per-locale matrices. Artifact progress, speech installation, and
+notification permission still require that coverage.
 Representative API 36 device tests supplement deterministic JVM screenshots;
 they do not replace them.
 
