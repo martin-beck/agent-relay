@@ -158,6 +158,7 @@ class MainScreenScreenshotTest {
         afterSetContent: () -> Unit = {},
     ) {
         RuntimeEnvironment.setQualifiers("w${widthDp}dp-h${heightDp}dp-420dpi")
+        composeTestRule.mainClock.autoAdvance = false
         composeTestRule.activity.setContent {
             val density = LocalDensity.current
             CompositionLocalProvider(
@@ -184,6 +185,8 @@ class MainScreenScreenshotTest {
             }
         }
         afterSetContent()
+        composeTestRule.mainClock.advanceTimeBy(SCREENSHOT_CLOCK_MILLIS)
+        composeTestRule.waitForIdle()
 
         composeTestRule.onRoot().captureRoboImage(
             filePath = "src/test/screenshots/$name.png",
@@ -192,5 +195,9 @@ class MainScreenScreenshotTest {
                 recordOptions = RoborazziOptions.RecordOptions(resizeScale = 0.5),
             ),
         )
+    }
+
+    private companion object {
+        const val SCREENSHOT_CLOCK_MILLIS = 1_000L
     }
 }
