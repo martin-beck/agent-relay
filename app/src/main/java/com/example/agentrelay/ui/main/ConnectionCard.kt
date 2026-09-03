@@ -29,6 +29,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.example.agentrelay.R
 
 @Composable
 internal fun ConnectionCard(
@@ -87,7 +89,7 @@ internal fun ConnectionCard(
             )
             connection.authenticationLabel?.let {
                 Text(
-                    text = "Authentication: $it",
+                    text = stringResource(R.string.connection_authentication, it),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -109,7 +111,7 @@ internal fun ConnectionCard(
                         onClick = onConnect,
                         enabled = !connection.isBusy,
                     ) {
-                        Text("Connect")
+                        Text(stringResource(R.string.connection_connect))
                     }
                 }
                 if (connection.canDisconnect) {
@@ -117,7 +119,7 @@ internal fun ConnectionCard(
                         onClick = onDisconnect,
                         enabled = !connection.isBusy,
                     ) {
-                        Text("Disconnect")
+                        Text(stringResource(R.string.connection_disconnect))
                     }
                 }
                 if (connection.canEdit) {
@@ -125,7 +127,7 @@ internal fun ConnectionCard(
                         onClick = onEdit,
                         enabled = !connection.isBusy,
                     ) {
-                        Text("Edit profile")
+                        Text(stringResource(R.string.connection_edit_profile))
                     }
                 }
                 if (connection.isBusy) {
@@ -157,9 +159,9 @@ private fun IdentityChallengeCard(
         ) {
             Text(
                 text = if (challenge.isChangedIdentity) {
-                    "Server identity changed"
+                    stringResource(R.string.connection_identity_changed)
                 } else {
-                    "Verify new server identity"
+                    stringResource(R.string.connection_identity_verify_new)
                 },
                 modifier = Modifier.semantics { heading() },
                 style = MaterialTheme.typography.titleSmall,
@@ -167,7 +169,7 @@ private fun IdentityChallengeCard(
                 color = MaterialTheme.colorScheme.onErrorContainer,
             )
             Text(
-                text = challenge.endpoint + "  -  " + challenge.algorithm,
+                text = stringResource(R.string.connection_identity_context, challenge.endpoint, challenge.algorithm),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onErrorContainer,
             )
@@ -181,7 +183,7 @@ private fun IdentityChallengeCard(
             if (challenge.previousFingerprints.isNotEmpty()) {
                 SelectionContainer {
                     Text(
-                        text = "Previously trusted: " + challenge.previousFingerprints.joinToString(),
+                        text = stringResource(R.string.connection_identity_previously_trusted, challenge.previousFingerprints.joinToString()),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onErrorContainer,
                     )
@@ -199,13 +201,19 @@ private fun IdentityChallengeCard(
                         ButtonDefaults.buttonColors()
                     },
                 ) {
-                    Text(if (challenge.isChangedIdentity) "Replace identity" else "Trust identity")
+                    Text(
+                        if (challenge.isChangedIdentity) {
+                            stringResource(R.string.connection_identity_replace)
+                        } else {
+                            stringResource(R.string.connection_identity_trust)
+                        },
+                    )
                 }
                 TextButton(
                     onClick = onReject,
                     enabled = enabled,
                 ) {
-                    Text("Reject")
+                    Text(stringResource(R.string.connection_identity_reject))
                 }
             }
         }
@@ -215,12 +223,12 @@ private fun IdentityChallengeCard(
 @Composable
 private fun ConnectionStatusChip(status: ConnectionStatus) {
     val label = when (status) {
-        ConnectionStatus.OFFLINE -> "Offline"
-        ConnectionStatus.CONNECTING -> "Connecting"
-        ConnectionStatus.ONLINE -> "Online"
-        ConnectionStatus.RECONNECTING -> "Reconnecting"
-        ConnectionStatus.IDENTITY_REVIEW -> "Review identity"
-        ConnectionStatus.FAILED -> "Failed"
+        ConnectionStatus.OFFLINE -> stringResource(R.string.connection_status_offline)
+        ConnectionStatus.CONNECTING -> stringResource(R.string.connection_status_connecting)
+        ConnectionStatus.ONLINE -> stringResource(R.string.connection_status_online)
+        ConnectionStatus.RECONNECTING -> stringResource(R.string.connection_status_reconnecting)
+        ConnectionStatus.IDENTITY_REVIEW -> stringResource(R.string.connection_status_identity_review)
+        ConnectionStatus.FAILED -> stringResource(R.string.connection_status_failed)
     }
     val colors = when (status) {
         ConnectionStatus.ONLINE ->

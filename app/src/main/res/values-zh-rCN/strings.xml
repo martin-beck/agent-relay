@@ -80,4 +80,21 @@
     <string name="session_hub_response_pending_confirmation">响应正在等待提供程序确认</string>
     <string name="session_hub_action_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
     <string name="session_hub_risk">风险：%1$s</string>
+    <string name="connection_authentication">身份验证：%1$s</string>
+    <string name="connection_connect">连接</string>
+    <string name="connection_disconnect">断开连接</string>
+    <string name="connection_edit_profile">编辑配置</string>
+    <string name="connection_identity_changed">服务器身份已更改</string>
+    <string name="connection_identity_verify_new">验证新的服务器身份</string>
+    <string name="connection_identity_context">%1$s\u00A0·\u00A0%2$s</string>
+    <string name="connection_identity_previously_trusted">以前信任的身份：%1$s</string>
+    <string name="connection_identity_replace">替换身份</string>
+    <string name="connection_identity_trust">信任身份</string>
+    <string name="connection_identity_reject">拒绝</string>
+    <string name="connection_status_offline">离线</string>
+    <string name="connection_status_connecting">连接中</string>
+    <string name="connection_status_online">在线</string>
+    <string name="connection_status_reconnecting">正在重新连接</string>
+    <string name="connection_status_identity_review">审核身份</string>
+    <string name="connection_status_failed">失败</string>
 </resources>

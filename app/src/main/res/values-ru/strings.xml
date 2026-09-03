@@ -80,4 +80,21 @@
     <string name="session_hub_response_pending_confirmation">Ответ ожидает подтверждения поставщика</string>
     <string name="session_hub_action_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
     <string name="session_hub_risk">Риск: %1$s</string>
+    <string name="connection_authentication">Аутентификация: %1$s</string>
+    <string name="connection_connect">Подключиться</string>
+    <string name="connection_disconnect">Отключиться</string>
+    <string name="connection_edit_profile">Изменить профиль</string>
+    <string name="connection_identity_changed">Идентификационные данные сервера изменились</string>
+    <string name="connection_identity_verify_new">Проверить новые идентификационные данные сервера</string>
+    <string name="connection_identity_context">%1$s\u00A0·\u00A0%2$s</string>
+    <string name="connection_identity_previously_trusted">Ранее доверенные данные: %1$s</string>
+    <string name="connection_identity_replace">Заменить идентификатор</string>
+    <string name="connection_identity_trust">Доверять идентификатору</string>
+    <string name="connection_identity_reject">Отклонить</string>
+    <string name="connection_status_offline">Не в сети</string>
+    <string name="connection_status_connecting">Подключение</string>
+    <string name="connection_status_online">В сети</string>
+    <string name="connection_status_reconnecting">Повторное подключение</string>
+    <string name="connection_status_identity_review">Проверить идентификатор</string>
+    <string name="connection_status_failed">Ошибка</string>
 </resources>

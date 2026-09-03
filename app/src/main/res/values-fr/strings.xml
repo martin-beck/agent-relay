@@ -80,4 +80,21 @@
     <string name="session_hub_response_pending_confirmation">Réponse en attente de confirmation du fournisseur</string>
     <string name="session_hub_action_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
     <string name="session_hub_risk">Risque : %1$s</string>
+    <string name="connection_authentication">Authentification : %1$s</string>
+    <string name="connection_connect">Se connecter</string>
+    <string name="connection_disconnect">Se déconnecter</string>
+    <string name="connection_edit_profile">Modifier le profil</string>
+    <string name="connection_identity_changed">L’identité du serveur a changé</string>
+    <string name="connection_identity_verify_new">Vérifier la nouvelle identité du serveur</string>
+    <string name="connection_identity_context">%1$s\u00A0·\u00A0%2$s</string>
+    <string name="connection_identity_previously_trusted">Précédemment approuvées : %1$s</string>
+    <string name="connection_identity_replace">Remplacer l’identité</string>
+    <string name="connection_identity_trust">Approuver l’identité</string>
+    <string name="connection_identity_reject">Refuser</string>
+    <string name="connection_status_offline">Hors ligne</string>
+    <string name="connection_status_connecting">Connexion…</string>
+    <string name="connection_status_online">En ligne</string>
+    <string name="connection_status_reconnecting">Reconnexion…</string>
+    <string name="connection_status_identity_review">Vérifier l’identité</string>
+    <string name="connection_status_failed">Échec</string>
 </resources>

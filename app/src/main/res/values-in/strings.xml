@@ -80,4 +80,21 @@
     <string name="session_hub_response_pending_confirmation">Respons menunggu konfirmasi penyedia</string>
     <string name="session_hub_action_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
     <string name="session_hub_risk">Risiko: %1$s</string>
+    <string name="connection_authentication">Autentikasi: %1$s</string>
+    <string name="connection_connect">Hubungkan</string>
+    <string name="connection_disconnect">Putuskan</string>
+    <string name="connection_edit_profile">Edit profil</string>
+    <string name="connection_identity_changed">Identitas server berubah</string>
+    <string name="connection_identity_verify_new">Verifikasi identitas server baru</string>
+    <string name="connection_identity_context">%1$s\u00A0·\u00A0%2$s</string>
+    <string name="connection_identity_previously_trusted">Sebelumnya dipercaya: %1$s</string>
+    <string name="connection_identity_replace">Ganti identitas</string>
+    <string name="connection_identity_trust">Percayai identitas</string>
+    <string name="connection_identity_reject">Tolak</string>
+    <string name="connection_status_offline">Offline</string>
+    <string name="connection_status_connecting">Menghubungkan</string>
+    <string name="connection_status_online">Online</string>
+    <string name="connection_status_reconnecting">Menghubungkan kembali</string>
+    <string name="connection_status_identity_review">Tinjau identitas</string>
+    <string name="connection_status_failed">Gagal</string>
 </resources>

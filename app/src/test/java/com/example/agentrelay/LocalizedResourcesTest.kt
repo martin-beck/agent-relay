@@ -72,6 +72,19 @@ class LocalizedResourcesTest {
                 R.string.session_hub_risk,
                 opaqueValues[0],
             )
+            val authentication = context.getString(
+                R.string.connection_authentication,
+                "Public key: id_test",
+            )
+            val identityContext = context.getString(
+                R.string.connection_identity_context,
+                "relay.example.test:22",
+                "ssh-ed25519",
+            )
+            val previouslyTrusted = context.getString(
+                R.string.connection_identity_previously_trusted,
+                "SHA256:test-fingerprint",
+            )
             val downloadProgress = context.getString(R.string.speech_download_progress, 42)
 
             opaqueValues.forEach { value ->
@@ -86,6 +99,14 @@ class LocalizedResourcesTest {
                 assertTrue(languageTag, actionContext.contains(value))
             }
             assertTrue(languageTag, risk.contains(opaqueValues[0]))
+            assertTrue(languageTag, authentication.contains("Public key: id_test"))
+            assertTrue(languageTag, identityContext.contains("relay.example.test:22"))
+            assertTrue(languageTag, identityContext.contains("ssh-ed25519"))
+            assertTrue(languageTag, previouslyTrusted.contains("SHA256:test-fingerprint"))
+            assertFalse(languageTag, authentication.contains("%1\$"))
+            assertFalse(languageTag, identityContext.contains("%1\$"))
+            assertFalse(languageTag, identityContext.contains("%2\$"))
+            assertFalse(languageTag, previouslyTrusted.contains("%1\$"))
             assertFalse(languageTag, actionContext.contains("%1\$"))
             assertFalse(languageTag, risk.contains("%1\$"))
             assertFalse(languageTag, addProfile.contains("%1\$"))

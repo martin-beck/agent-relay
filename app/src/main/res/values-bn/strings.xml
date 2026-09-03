@@ -80,4 +80,21 @@
     <string name="session_hub_response_pending_confirmation">প্রদানকারীর নিশ্চিতকরণের অপেক্ষায় প্রতিক্রিয়া</string>
     <string name="session_hub_action_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
     <string name="session_hub_risk">ঝুঁকি: %1$s</string>
+    <string name="connection_authentication">প্রমাণীকরণ: %1$s</string>
+    <string name="connection_connect">সংযোগ করুন</string>
+    <string name="connection_disconnect">সংযোগ বিচ্ছিন্ন করুন</string>
+    <string name="connection_edit_profile">প্রোফাইল সম্পাদনা করুন</string>
+    <string name="connection_identity_changed">সার্ভারের পরিচয় পরিবর্তিত হয়েছে</string>
+    <string name="connection_identity_verify_new">নতুন সার্ভার পরিচয় যাচাই করুন</string>
+    <string name="connection_identity_context">%1$s\u00A0·\u00A0%2$s</string>
+    <string name="connection_identity_previously_trusted">আগে বিশ্বস্ত: %1$s</string>
+    <string name="connection_identity_replace">পরিচয় প্রতিস্থাপন করুন</string>
+    <string name="connection_identity_trust">পরিচয় বিশ্বাস করুন</string>
+    <string name="connection_identity_reject">প্রত্যাখ্যান করুন</string>
+    <string name="connection_status_offline">অফলাইন</string>
+    <string name="connection_status_connecting">সংযোগ করা হচ্ছে</string>
+    <string name="connection_status_online">অনলাইন</string>
+    <string name="connection_status_reconnecting">পুনরায় সংযোগ করা হচ্ছে</string>
+    <string name="connection_status_identity_review">পরিচয় পর্যালোচনা করুন</string>
+    <string name="connection_status_failed">ব্যর্থ</string>
 </resources>

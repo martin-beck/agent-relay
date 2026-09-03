@@ -80,4 +80,21 @@
     <string name="session_hub_response_pending_confirmation">回應正在等待提供者確認</string>
     <string name="session_hub_action_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
     <string name="session_hub_risk">風險：%1$s</string>
+    <string name="connection_authentication">身分驗證：%1$s</string>
+    <string name="connection_connect">連線</string>
+    <string name="connection_disconnect">中斷連線</string>
+    <string name="connection_edit_profile">編輯設定檔</string>
+    <string name="connection_identity_changed">伺服器身分已變更</string>
+    <string name="connection_identity_verify_new">驗證新的伺服器身分</string>
+    <string name="connection_identity_context">%1$s\u00A0·\u00A0%2$s</string>
+    <string name="connection_identity_previously_trusted">先前信任的身分：%1$s</string>
+    <string name="connection_identity_replace">取代身分</string>
+    <string name="connection_identity_trust">信任身分</string>
+    <string name="connection_identity_reject">拒絕</string>
+    <string name="connection_status_offline">離線</string>
+    <string name="connection_status_connecting">連線中</string>
+    <string name="connection_status_online">上線</string>
+    <string name="connection_status_reconnecting">正在重新連線</string>
+    <string name="connection_status_identity_review">檢查身分</string>
+    <string name="connection_status_failed">失敗</string>
 </resources>

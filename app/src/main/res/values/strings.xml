@@ -110,4 +110,21 @@
     <string name="session_hub_response_pending_confirmation">Response awaiting provider confirmation</string>
     <string name="session_hub_action_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
     <string name="session_hub_risk">Risk: %1$s</string>
+    <string name="connection_authentication">Authentication: %1$s</string>
+    <string name="connection_connect">Connect</string>
+    <string name="connection_disconnect">Disconnect</string>
+    <string name="connection_edit_profile">Edit profile</string>
+    <string name="connection_identity_changed">Server identity changed</string>
+    <string name="connection_identity_verify_new">Verify new server identity</string>
+    <string name="connection_identity_context">%1$s\u00A0·\u00A0%2$s</string>
+    <string name="connection_identity_previously_trusted">Previously trusted: %1$s</string>
+    <string name="connection_identity_replace">Replace identity</string>
+    <string name="connection_identity_trust">Trust identity</string>
+    <string name="connection_identity_reject">Reject</string>
+    <string name="connection_status_offline">Offline</string>
+    <string name="connection_status_connecting">Connecting</string>
+    <string name="connection_status_online">Online</string>
+    <string name="connection_status_reconnecting">Reconnecting</string>
+    <string name="connection_status_identity_review">Review identity</string>
+    <string name="connection_status_failed">Failed</string>
 </resources>

@@ -80,4 +80,21 @@
     <string name="session_hub_response_pending_confirmation">الرد بانتظار تأكيد المزوّد</string>
     <string name="session_hub_action_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
     <string name="session_hub_risk">المخاطر: %1$s</string>
+    <string name="connection_authentication">المصادقة: %1$s</string>
+    <string name="connection_connect">اتصال</string>
+    <string name="connection_disconnect">قطع الاتصال</string>
+    <string name="connection_edit_profile">تعديل ملف التعريف</string>
+    <string name="connection_identity_changed">تغيرت هوية الخادم</string>
+    <string name="connection_identity_verify_new">التحقق من هوية الخادم الجديدة</string>
+    <string name="connection_identity_context">%1$s\u00A0·\u00A0%2$s</string>
+    <string name="connection_identity_previously_trusted">موثوق سابقًا: %1$s</string>
+    <string name="connection_identity_replace">استبدال الهوية</string>
+    <string name="connection_identity_trust">الوثوق بالهوية</string>
+    <string name="connection_identity_reject">رفض</string>
+    <string name="connection_status_offline">غير متصل</string>
+    <string name="connection_status_connecting">جارٍ الاتصال</string>
+    <string name="connection_status_online">متصل</string>
+    <string name="connection_status_reconnecting">جارٍ إعادة الاتصال</string>
+    <string name="connection_status_identity_review">مراجعة الهوية</string>
+    <string name="connection_status_failed">فشل</string>
 </resources>

@@ -80,4 +80,21 @@
     <string name="session_hub_response_pending_confirmation">プロバイダーの確認待ち</string>
     <string name="session_hub_action_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
     <string name="session_hub_risk">リスク：%1$s</string>
+    <string name="connection_authentication">認証：%1$s</string>
+    <string name="connection_connect">接続</string>
+    <string name="connection_disconnect">切断</string>
+    <string name="connection_edit_profile">プロファイルを編集</string>
+    <string name="connection_identity_changed">サーバー ID が変更されました</string>
+    <string name="connection_identity_verify_new">新しいサーバー ID を確認</string>
+    <string name="connection_identity_context">%1$s\u00A0·\u00A0%2$s</string>
+    <string name="connection_identity_previously_trusted">以前の信頼済み ID：%1$s</string>
+    <string name="connection_identity_replace">ID を置き換える</string>
+    <string name="connection_identity_trust">ID を信頼する</string>
+    <string name="connection_identity_reject">拒否</string>
+    <string name="connection_status_offline">オフライン</string>
+    <string name="connection_status_connecting">接続中</string>
+    <string name="connection_status_online">オンライン</string>
+    <string name="connection_status_reconnecting">再接続中</string>
+    <string name="connection_status_identity_review">ID を確認</string>
+    <string name="connection_status_failed">失敗</string>
 </resources>
