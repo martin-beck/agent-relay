@@ -26,6 +26,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
@@ -40,6 +41,8 @@ import androidx.compose.ui.unit.dp
 import com.example.agentrelay.R
 import com.example.agentrelay.theme.AgentRelayTheme
 import dev.agentrelay.connection.api.ConnectionProfileFieldType
+
+internal const val PROFILE_EDITOR_LIST_TEST_TAG = "profile-editor-list"
 
 @Composable
 internal fun ConnectionProfileEditorDialog(
@@ -96,7 +99,8 @@ private fun ProfileEditor(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(max = 560.dp),
+                    .heightIn(max = 560.dp)
+                    .testTag(PROFILE_EDITOR_LIST_TEST_TAG),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 editor.notice?.let { notice ->

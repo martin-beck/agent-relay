@@ -53,7 +53,7 @@ class MainScreenTest {
         setContent(MainScreenUiState.Loading, recorder)
 
         composeTestRule.onNodeWithTag(MAIN_LOADING_TEST_TAG).assertIsDisplayed()
-        composeTestRule.onNodeWithText("Loading Agent Relay...").assertIsDisplayed()
+        composeTestRule.onNodeWithText(composeTestRule.resourceText(R.string.main_loading)).assertIsDisplayed()
     }
 
     @Test
@@ -167,14 +167,11 @@ class MainScreenTest {
         composeTestRule.onNodeWithText("Staging bastion").performScrollTo().performClick()
         check(recorder.updatedField == "jump-host" to "jump-profile")
 
-        composeTestRule.onNodeWithText("Install public key").performScrollTo().performClick()
-        composeTestRule.onNodeWithText("Test key-only login").performScrollTo().performClick()
+        composeTestRule.profileOperation(R.string.ssh_profile_operation_install_key).performClick()
+        composeTestRule.profileOperation(R.string.ssh_profile_operation_verify_key).performClick()
 
         check(recorder.requestedOperations == listOf("install-public-key", "verify-key-login"))
-        composeTestRule
-            .onNodeWithText("ssh-ed25519 AAAATESTKEY")
-            .performScrollTo()
-            .assertIsDisplayed()
+        composeTestRule.scrollProfileToText("ssh-ed25519 AAAATESTKEY").assertIsDisplayed()
     }
 
     @Test
@@ -188,15 +185,9 @@ class MainScreenTest {
             recorder,
         )
 
-        composeTestRule
-            .onNodeWithText("Install public key on this remote account?")
-            .assertIsDisplayed()
-        composeTestRule
-            .onNodeWithText(
-                "Agent Relay will add only this app-managed public key to the remote account.",
-            )
-            .assertIsDisplayed()
-        composeTestRule.onNodeWithText("Install public key").performClick()
+        composeTestRule.onNodeWithText(composeTestRule.resourceText(R.string.ssh_profile_operation_install_key_title)).assertIsDisplayed()
+        composeTestRule.onNodeWithText(composeTestRule.resourceText(R.string.ssh_profile_operation_install_key_message)).assertIsDisplayed()
+        composeTestRule.onNodeWithText(composeTestRule.resourceText(R.string.ssh_profile_operation_install_key)).performClick()
 
         check(recorder.operationConfirmed)
     }
@@ -212,14 +203,8 @@ class MainScreenTest {
             recorder,
         )
 
-        composeTestRule
-            .onNodeWithText("Install public key")
-            .performScrollTo()
-            .assertIsNotEnabled()
-        composeTestRule
-            .onNodeWithText("Test key-only login")
-            .performScrollTo()
-            .assertIsNotEnabled()
+        composeTestRule.profileOperation(R.string.ssh_profile_operation_install_key).assertIsNotEnabled()
+        composeTestRule.profileOperation(R.string.ssh_profile_operation_verify_key).assertIsNotEnabled()
         check(recorder.requestedOperations.isEmpty())
     }
 
@@ -398,7 +383,9 @@ class MainScreenTest {
 
         check(recorder.actionResponse == null)
         composeTestRule.onNodeWithTag("action-confirmation-dialog").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Confirm submit answers").performClick()
+        val submit = composeTestRule.resourceText(R.string.session_action_decision_submit)
+        val confirm = composeTestRule.resourceText(R.string.session_action_confirm_decision, submit)
+        composeTestRule.onNodeWithText(confirm).performClick()
 
         check(
             recorder.actionResponse == RecordedActionResponse(
@@ -515,7 +502,8 @@ class MainScreenTest {
             recorder = recorder,
         )
 
-        composeTestRule.onNodeWithText("42 percent downloaded").performScrollTo().assertIsDisplayed()
+        val progress = composeTestRule.resourceText(R.string.speech_download_progress, 42)
+        composeTestRule.onNodeWithText(progress).performScrollTo().assertIsDisplayed()
         composeTestRule
             .onNodeWithText("Cancel model download")
             .performScrollTo()
