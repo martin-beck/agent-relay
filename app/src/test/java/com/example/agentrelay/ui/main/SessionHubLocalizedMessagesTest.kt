@@ -14,6 +14,10 @@ import dev.agentrelay.provider.api.AgentSessionId
 import dev.agentrelay.provider.api.AgentSessionState
 import dev.agentrelay.provider.api.AgentTranscriptRole
 import dev.agentrelay.session.api.CachedTranscriptEntry
+import dev.agentrelay.session.api.SessionActivity
+import dev.agentrelay.session.api.SessionActivitySummary
+import dev.agentrelay.session.api.SessionActivitySummaryKind
+import dev.agentrelay.session.api.SessionActivityType
 import dev.agentrelay.session.api.SessionDraft
 import dev.agentrelay.session.api.SessionHubSnapshot
 import dev.agentrelay.session.api.SessionLocator
@@ -196,6 +200,77 @@ class SessionHubLocalizedMessagesTest {
         )
         assertFalse(mapped.issues.first().recoverable)
         assertTrue(mapped.issues.drop(1).all(CoordinatorIssueUiModel::recoverable))
+    }
+
+    @Test
+    fun activitySummariesMapGeneratedKindsAndVerbatimContent() {
+        val connectionProviderId = ConnectionProviderId("local.device")
+        val profileId = ConnectionProfileId("this-device")
+        val sessionLocator = localizedLocator(connectionProviderId, profileId)
+        val cases = listOf(
+            SessionActivitySummary.Generated(SessionActivitySummaryKind.NEW_AGENT_OUTPUT) to
+                UiMessage.Localized(R.string.session_activity_summary_new_agent_output),
+            SessionActivitySummary.Generated(SessionActivitySummaryKind.TOOL_FAILED) to
+                UiMessage.Localized(R.string.session_activity_summary_tool_failed),
+            SessionActivitySummary.Generated(
+                SessionActivitySummaryKind.NAMED_TOOL_FAILED,
+                "Shell",
+            ) to UiMessage.Localized(
+                R.string.session_activity_summary_named_tool_failed,
+                listOf("Shell"),
+            ),
+            SessionActivitySummary.Generated(SessionActivitySummaryKind.AGENT_TURN_COMPLETED) to
+                UiMessage.Localized(R.string.session_activity_summary_agent_turn_completed),
+            SessionActivitySummary.Generated(SessionActivitySummaryKind.AGENT_TURN_FAILED) to
+                UiMessage.Localized(R.string.session_activity_summary_agent_turn_failed),
+            SessionActivitySummary.Generated(SessionActivitySummaryKind.AGENT_PROVIDER_FAILED) to
+                UiMessage.Localized(R.string.session_activity_summary_agent_provider_failed),
+            SessionActivitySummary.Generated(
+                SessionActivitySummaryKind.AGENT_QUESTION_REQUIRES_ANSWER,
+            ) to UiMessage.Localized(
+                R.string.session_activity_summary_agent_question_requires_answer,
+            ),
+            SessionActivitySummary.Generated(SessionActivitySummaryKind.AGENT_APPROVAL_REQUIRED) to
+                UiMessage.Localized(R.string.session_activity_summary_agent_approval_required),
+            SessionActivitySummary.Generated(
+                SessionActivitySummaryKind.CONNECTION_RECONNECTED,
+                "Workstation 42",
+            ) to UiMessage.Localized(
+                R.string.session_activity_summary_connection_reconnected,
+                listOf("Workstation 42"),
+            ),
+            SessionActivitySummary.Verbatim("Provider-owned detail") to
+                UiMessage.Verbatim("Provider-owned detail"),
+        )
+        val snapshot = SessionHubSnapshot(
+            sessions = listOf(localizedRecord(sessionLocator, "Activity messages", "This device")),
+            activities = cases.mapIndexed { index, (summary, _) ->
+                SessionActivity(
+                    id = "activity-$index",
+                    locator = sessionLocator,
+                    type = SessionActivityType.NEW_OUTPUT,
+                    summary = summary,
+                    eventAnchorId = null,
+                    occurredAtEpochMillis = index.toLong(),
+                )
+            },
+        )
+
+        val mapped = SessionHubUiMapper.map(
+            coordinator = SessionCoordinatorSnapshot(
+                profiles = listOf(localizedProfile(connectionProviderId, profileId, "This device")),
+            ),
+            sessions = snapshot,
+            connectionProviders = listOf(localizedDescriptor(connectionProviderId, "Local")),
+            selectedSessionKey = sessionLocator.stableUiKey,
+            operationError = null,
+            busyConnectionKeys = emptySet(),
+        )
+
+        assertEquals(
+            cases.map { it.second }.asReversed(),
+            mapped.selectedSession?.activities?.map { it.summary },
+        )
     }
 
     @Test

@@ -29,6 +29,7 @@ import dev.agentrelay.session.api.SessionActionRequest
 import dev.agentrelay.session.api.SessionActionRisk
 import dev.agentrelay.session.api.SessionActionState
 import dev.agentrelay.session.api.SessionActivity
+import dev.agentrelay.session.api.SessionActivitySummary
 import dev.agentrelay.session.api.SessionActivityType
 import dev.agentrelay.session.api.SessionArtifact
 import dev.agentrelay.session.api.SessionArtifactAvailability
@@ -70,7 +71,7 @@ class SessionHubUiMapperTest {
                     id = "approval-1",
                     locator = sshLocator,
                     type = SessionActivityType.APPROVAL_REQUIRED,
-                    summary = "Review the remote command",
+                    summary = SessionActivitySummary.Verbatim("Review the remote command"),
                     eventAnchorId = "approval",
                     occurredAtEpochMillis = 100,
                 ),

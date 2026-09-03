@@ -218,7 +218,9 @@ class LocalizedResourcesTest {
             ACTION_LABEL_RESOURCES.forEach { resource ->
                 assertTrue(languageTag, context.getString(resource).isNotBlank())
             }
-            COORDINATOR_ISSUE_RESOURCES.forEach { (resource, arguments) ->
+            (COORDINATOR_ISSUE_RESOURCES + ACTIVITY_SUMMARY_RESOURCES).forEach {
+                    (resource, arguments),
+                ->
                 val rendered = context.getString(resource, *arguments.toTypedArray())
                 arguments.forEach { argument ->
                     assertTrue(languageTag, rendered.contains(argument))
@@ -331,6 +333,18 @@ class LocalizedResourcesTest {
             R.string.session_issue_provider_synchronization to
                 listOf("Agent 42", "Connection 42"),
             R.string.session_issue_session_persistence to listOf("Agent 42"),
+        )
+
+        val ACTIVITY_SUMMARY_RESOURCES = mapOf(
+            R.string.session_activity_summary_new_agent_output to emptyList(),
+            R.string.session_activity_summary_tool_failed to emptyList(),
+            R.string.session_activity_summary_named_tool_failed to listOf("Tool 42"),
+            R.string.session_activity_summary_agent_turn_completed to emptyList(),
+            R.string.session_activity_summary_agent_turn_failed to emptyList(),
+            R.string.session_activity_summary_agent_provider_failed to emptyList(),
+            R.string.session_activity_summary_agent_question_requires_answer to emptyList(),
+            R.string.session_activity_summary_agent_approval_required to emptyList(),
+            R.string.session_activity_summary_connection_reconnected to listOf("Connection 42"),
         )
 
         val SSH_PROFILE_RESOURCES = listOf(

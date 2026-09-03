@@ -888,7 +888,7 @@ internal fun testHub(): SessionHubUiModel {
                 SessionActivityUiModel(
                     id = "activity",
                     type = SessionActivityType.APPROVAL_REQUIRED,
-                    summary = "A safe test action needs review.",
+                    summary = UiMessage.Verbatim("A safe test action needs review."),
                     occurredAtEpochMillis = 1_788_200_000_000,
                     requiresAction = true,
                     isRead = false,

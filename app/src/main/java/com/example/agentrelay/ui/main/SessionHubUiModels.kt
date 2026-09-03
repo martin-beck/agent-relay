@@ -15,6 +15,8 @@ import dev.agentrelay.provider.api.AgentSessionState
 import dev.agentrelay.provider.api.AgentTranscriptRole
 import dev.agentrelay.session.api.CachedTranscriptEntry
 import dev.agentrelay.session.api.SessionActivity
+import dev.agentrelay.session.api.SessionActivitySummary
+import dev.agentrelay.session.api.SessionActivitySummaryKind
 import dev.agentrelay.session.api.SessionActivityType
 import dev.agentrelay.session.api.SessionActionRequest
 import dev.agentrelay.session.api.SessionActionRisk
@@ -224,7 +226,7 @@ internal data class SessionComposerUiModel(
 internal data class SessionActivityUiModel(
     val id: String,
     val type: SessionActivityType,
-    val summary: String,
+    val summary: UiMessage,
     val occurredAtEpochMillis: Long,
     val requiresAction: Boolean,
     val isRead: Boolean,
@@ -598,7 +600,7 @@ internal object SessionHubUiMapper {
     private fun SessionActivity.toUiModel() = SessionActivityUiModel(
         id = id,
         type = type,
-        summary = summary,
+        summary = summary.toUiMessage(),
         occurredAtEpochMillis = occurredAtEpochMillis,
         requiresAction = requiresAction,
         isRead = isRead,
@@ -826,4 +828,34 @@ internal object SessionHubUiMapper {
     )
 
     private const val MAX_RENDERED_TRANSCRIPT_CHARS = 32_000
+}
+
+private fun SessionActivitySummary.toUiMessage(): UiMessage = when (this) {
+    is SessionActivitySummary.Verbatim -> UiMessage.Verbatim(text)
+    is SessionActivitySummary.Generated -> when (kind) {
+        SessionActivitySummaryKind.NEW_AGENT_OUTPUT ->
+            UiMessage.Localized(R.string.session_activity_summary_new_agent_output)
+        SessionActivitySummaryKind.TOOL_FAILED ->
+            UiMessage.Localized(R.string.session_activity_summary_tool_failed)
+        SessionActivitySummaryKind.NAMED_TOOL_FAILED ->
+            UiMessage.Localized(
+                R.string.session_activity_summary_named_tool_failed,
+                listOf(requireNotNull(argument)),
+            )
+        SessionActivitySummaryKind.AGENT_TURN_COMPLETED ->
+            UiMessage.Localized(R.string.session_activity_summary_agent_turn_completed)
+        SessionActivitySummaryKind.AGENT_TURN_FAILED ->
+            UiMessage.Localized(R.string.session_activity_summary_agent_turn_failed)
+        SessionActivitySummaryKind.AGENT_PROVIDER_FAILED ->
+            UiMessage.Localized(R.string.session_activity_summary_agent_provider_failed)
+        SessionActivitySummaryKind.AGENT_QUESTION_REQUIRES_ANSWER ->
+            UiMessage.Localized(R.string.session_activity_summary_agent_question_requires_answer)
+        SessionActivitySummaryKind.AGENT_APPROVAL_REQUIRED ->
+            UiMessage.Localized(R.string.session_activity_summary_agent_approval_required)
+        SessionActivitySummaryKind.CONNECTION_RECONNECTED ->
+            UiMessage.Localized(
+                R.string.session_activity_summary_connection_reconnected,
+                listOf(requireNotNull(argument)),
+            )
+    }
 }

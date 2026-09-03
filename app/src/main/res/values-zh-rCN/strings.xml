@@ -347,4 +347,13 @@
     <string name="speech_error_stop">无法正常停止语音输入。</string>
     <string name="speech_error_previous_session_cancel">无法正常取消上一会话中的语音输入。</string>
     <string name="speech_error_cancel">无法正常取消语音输入。</string>
+    <string name="session_activity_summary_new_agent_output">新的代理输出</string>
+    <string name="session_activity_summary_tool_failed">工具失败。</string>
+    <string name="session_activity_summary_named_tool_failed">%1$s 失败。</string>
+    <string name="session_activity_summary_agent_turn_completed">代理轮次已完成。</string>
+    <string name="session_activity_summary_agent_turn_failed">代理轮次失败。</string>
+    <string name="session_activity_summary_agent_provider_failed">代理提供程序失败。</string>
+    <string name="session_activity_summary_agent_question_requires_answer">代理问题需要回答。</string>
+    <string name="session_activity_summary_agent_approval_required">需要批准代理操作。</string>
+    <string name="session_activity_summary_connection_reconnected">%1$s 已重新连接。</string>
 </resources>

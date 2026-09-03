@@ -387,4 +387,13 @@
     <string name="speech_error_stop">تعذر إيقاف الإدخال الصوتي بشكل سليم.</string>
     <string name="speech_error_previous_session_cancel">تعذر إلغاء الإدخال الصوتي من الجلسة السابقة بشكل سليم.</string>
     <string name="speech_error_cancel">تعذر إلغاء الإدخال الصوتي بشكل سليم.</string>
+    <string name="session_activity_summary_new_agent_output">مخرجات جديدة من الوكيل</string>
+    <string name="session_activity_summary_tool_failed">فشلت الأداة.</string>
+    <string name="session_activity_summary_named_tool_failed">فشل %1$s.</string>
+    <string name="session_activity_summary_agent_turn_completed">اكتملت دورة الوكيل.</string>
+    <string name="session_activity_summary_agent_turn_failed">فشلت دورة الوكيل.</string>
+    <string name="session_activity_summary_agent_provider_failed">فشل موفر الوكيل.</string>
+    <string name="session_activity_summary_agent_question_requires_answer">يتطلب سؤال الوكيل إجابة.</string>
+    <string name="session_activity_summary_agent_approval_required">موافقة الوكيل مطلوبة.</string>
+    <string name="session_activity_summary_connection_reconnected">تمت إعادة اتصال %1$s.</string>
 </resources>

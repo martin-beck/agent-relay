@@ -363,4 +363,13 @@
     <string name="speech_error_stop">Impossible d’arrêter correctement la saisie vocale.</string>
     <string name="speech_error_previous_session_cancel">Impossible d’annuler correctement la saisie vocale de la session précédente.</string>
     <string name="speech_error_cancel">Impossible d’annuler correctement la saisie vocale.</string>
+    <string name="session_activity_summary_new_agent_output">Nouvelle sortie de l’agent</string>
+    <string name="session_activity_summary_tool_failed">Échec de l’outil.</string>
+    <string name="session_activity_summary_named_tool_failed">Échec de %1$s.</string>
+    <string name="session_activity_summary_agent_turn_completed">Tour de l’agent terminé.</string>
+    <string name="session_activity_summary_agent_turn_failed">Échec du tour de l’agent.</string>
+    <string name="session_activity_summary_agent_provider_failed">Échec du fournisseur de l’agent.</string>
+    <string name="session_activity_summary_agent_question_requires_answer">La question de l’agent nécessite une réponse.</string>
+    <string name="session_activity_summary_agent_approval_required">Approbation de l’agent requise.</string>
+    <string name="session_activity_summary_connection_reconnected">%1$s reconnecté.</string>
 </resources>

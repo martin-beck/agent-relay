@@ -103,11 +103,48 @@ enum class SessionActivityType {
     TURN_COMPLETED,
 }
 
+enum class SessionActivitySummaryKind {
+    NEW_AGENT_OUTPUT,
+    TOOL_FAILED,
+    NAMED_TOOL_FAILED,
+    AGENT_TURN_COMPLETED,
+    AGENT_TURN_FAILED,
+    AGENT_PROVIDER_FAILED,
+    AGENT_QUESTION_REQUIRES_ANSWER,
+    AGENT_APPROVAL_REQUIRED,
+    CONNECTION_RECONNECTED,
+}
+
+sealed interface SessionActivitySummary {
+    data class Generated(
+        val kind: SessionActivitySummaryKind,
+        val argument: String? = null,
+    ) : SessionActivitySummary {
+        init {
+            if (kind.requiresArgument) {
+                requireBounded(requireNotNull(argument), "Activity summary argument", MAX_LABEL_CHARS)
+            } else {
+                require(argument == null) { "Activity summary kind does not accept an argument" }
+            }
+        }
+    }
+
+    data class Verbatim(val text: String) : SessionActivitySummary {
+        init {
+            requireBounded(text, "Activity summary", MAX_ACTIVITY_CHARS)
+        }
+    }
+}
+
+private val SessionActivitySummaryKind.requiresArgument: Boolean
+    get() = this == SessionActivitySummaryKind.NAMED_TOOL_FAILED ||
+        this == SessionActivitySummaryKind.CONNECTION_RECONNECTED
+
 data class SessionActivity(
     val id: String,
     val locator: SessionLocator,
     val type: SessionActivityType,
-    val summary: String,
+    val summary: SessionActivitySummary,
     val eventAnchorId: String?,
     val actionRequestId: String? = null,
     val occurredAtEpochMillis: Long,
@@ -116,7 +153,6 @@ data class SessionActivity(
 ) {
     init {
         requireBounded(id, "Activity id", MAX_ID_CHARS)
-        requireBounded(summary, "Activity summary", MAX_ACTIVITY_CHARS)
         eventAnchorId?.let { requireBounded(it, "Event anchor id", MAX_ID_CHARS) }
         actionRequestId?.let { requireBounded(it, "Action request id", MAX_ID_CHARS) }
         require(occurredAtEpochMillis >= 0L)

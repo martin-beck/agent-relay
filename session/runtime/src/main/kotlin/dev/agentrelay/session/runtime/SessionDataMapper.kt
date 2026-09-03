@@ -12,6 +12,8 @@ import dev.agentrelay.provider.api.AgentTranscriptEntry
 import dev.agentrelay.provider.api.AgentTranscriptRole
 import dev.agentrelay.session.api.CachedTranscriptEntry
 import dev.agentrelay.session.api.SessionActivity
+import dev.agentrelay.session.api.SessionActivitySummary
+import dev.agentrelay.session.api.SessionActivitySummaryKind
 import dev.agentrelay.session.api.SessionActivityType
 import dev.agentrelay.session.api.SessionActionRequest
 import dev.agentrelay.session.api.SessionActionRisk
@@ -117,7 +119,11 @@ internal object SessionDataMapper {
                 event.itemId ?: event.turnId?.value
                     ?: (now.toString() + ":" + event.channel + ":" + digest(event.text)),
             )
-            val summary = nonBlankSummary(event.text, "New agent output")
+            val providerSummary = boundedProviderSummary(event.text)
+            val summary = generatedActivitySummary(
+                event.text,
+                SessionActivitySummaryKind.NEW_AGENT_OUTPUT,
+            )
             SessionEventProjection(
                 activity = SessionActivity(
                     id = ("output:" + messageId).boundedActivityId(),
@@ -137,7 +143,7 @@ internal object SessionDataMapper {
                     text = text,
                     createdAtEpochMillis = now,
                 ),
-                preview = summary,
+                preview = providerSummary,
             )
         }
         is AgentEvent.ToolChanged -> {
@@ -150,10 +156,7 @@ internal object SessionDataMapper {
                         id = ("tool-failed:" + anchor).boundedActivityId(),
                         locator = locator,
                         type = SessionActivityType.FAILURE,
-                        summary = nonBlankSummary(
-                            event.summary,
-                            event.toolName.take(256) + " failed",
-                        ),
+                        summary = event.activitySummary(),
                         eventAnchorId = anchor,
                         occurredAtEpochMillis = now,
                     ),
@@ -174,11 +177,12 @@ internal object SessionDataMapper {
                 "turn",
                 event.turnId?.value ?: (now.toString() + ":" + event.successful),
             )
-            val summary = if (event.successful) {
-                "Agent turn completed"
+            val providerSummary = if (event.successful) {
+                null
             } else {
-                nonBlankSummary(event.errorMessage, "Agent turn failed")
+                boundedProviderSummary(event.errorMessage)
             }
+            val summary = event.activitySummary()
             SessionEventProjection(
                 activity = SessionActivity(
                     id = ("turn-completed:" + anchor).boundedActivityId(),
@@ -193,13 +197,17 @@ internal object SessionDataMapper {
                     occurredAtEpochMillis = now,
                 ),
                 state = if (event.successful) AgentSessionState.IDLE else AgentSessionState.FAILED,
-                preview = summary,
+                preview = providerSummary,
             )
         }
         is AgentEvent.SessionStateChanged -> SessionEventProjection(state = event.state)
         is AgentEvent.Error -> {
             val anchor = boundedIdentifier("error", now.toString() + ":" + digest(event.message))
-            val summary = nonBlankSummary(event.message, "Agent provider failed")
+            val providerSummary = boundedProviderSummary(event.message)
+            val summary = generatedActivitySummary(
+                event.message,
+                SessionActivitySummaryKind.AGENT_PROVIDER_FAILED,
+            )
             SessionEventProjection(
                 activity = SessionActivity(
                     id = ("error:" + anchor).boundedActivityId(),
@@ -210,7 +218,7 @@ internal object SessionDataMapper {
                     occurredAtEpochMillis = now,
                 ),
                 state = AgentSessionState.FAILED,
-                preview = summary,
+                preview = providerSummary,
             )
         }
     }
@@ -223,9 +231,14 @@ internal object SessionDataMapper {
         val request = actionRequest(event.approval, locator, now)
         val question = event.approval.type == AgentApprovalType.USER_INPUT ||
             event.approval.questions.isNotEmpty()
-        val summary = nonBlankSummary(
+        val providerSummary = boundedProviderSummary(event.approval.title)
+        val summary = generatedActivitySummary(
             event.approval.title,
-            if (question) "Agent question requires an answer" else "Agent approval required",
+            if (question) {
+                SessionActivitySummaryKind.AGENT_QUESTION_REQUIRES_ANSWER
+            } else {
+                SessionActivitySummaryKind.AGENT_APPROVAL_REQUIRED
+            },
         )
         return SessionEventProjection(
             activity = SessionActivity(
@@ -243,7 +256,7 @@ internal object SessionDataMapper {
             ),
             actionRequest = request,
             state = AgentSessionState.WAITING_FOR_APPROVAL,
-            preview = summary,
+            preview = providerSummary,
         )
     }
 
@@ -383,10 +396,6 @@ internal object SessionDataMapper {
     private fun boundedNullable(value: String, maximum: Int): String? =
         value.trim().takeIf(String::isNotEmpty)?.take(maximum)
 
-    private fun nonBlankSummary(value: String?, fallback: String): String =
-        value?.trim()?.takeIf(String::isNotEmpty)?.take(MAX_ACTIVITY_CHARS)
-            ?: fallback.take(MAX_ACTIVITY_CHARS)
-
     private fun boundedIdentifier(prefix: String, value: String): String {
         val candidate = value.trim()
         return if (candidate.isNotEmpty() && candidate.length <= MAX_ID_CHARS) {
@@ -400,11 +409,9 @@ internal object SessionDataMapper {
         if (length <= MAX_ID_CHARS) this else "activity:" + digest(this)
 
     private const val MAX_ID_CHARS = 512
-    private const val MAX_LABEL_CHARS = 256
     private const val MAX_TITLE_CHARS = 1_024
     private const val MAX_PATH_CHARS = 4_096
     private const val MAX_PREVIEW_CHARS = 16_384
-    private const val MAX_ACTIVITY_CHARS = 16_384
     private const val MAX_TRANSCRIPT_CHARS = 1024 * 1024
     private const val MAX_DESCRIPTION_CHARS = 16_384
     private const val MAX_COMMAND_CHARS = 64 * 1024
@@ -439,6 +446,39 @@ internal object SessionDataMapper {
     )
     private val BROAD_PATHS = setOf("", "/", "/home", "/root", "~", "\$home", "c:", "c:\\", "c:\\users")
 }
+
+private fun generatedActivitySummary(
+    providerSummary: String?,
+    fallbackKind: SessionActivitySummaryKind,
+): SessionActivitySummary = boundedProviderSummary(providerSummary)
+    ?.let(SessionActivitySummary::Verbatim)
+    ?: SessionActivitySummary.Generated(fallbackKind)
+
+private fun AgentEvent.ToolChanged.activitySummary(): SessionActivitySummary =
+    boundedProviderSummary(summary)?.let(SessionActivitySummary::Verbatim)
+        ?: boundedProviderLabel(toolName)?.let { boundedToolName ->
+            SessionActivitySummary.Generated(
+                SessionActivitySummaryKind.NAMED_TOOL_FAILED,
+                boundedToolName,
+            )
+        }
+        ?: SessionActivitySummary.Generated(SessionActivitySummaryKind.TOOL_FAILED)
+
+private fun AgentEvent.TurnCompleted.activitySummary(): SessionActivitySummary =
+    if (successful) {
+        SessionActivitySummary.Generated(SessionActivitySummaryKind.AGENT_TURN_COMPLETED)
+    } else {
+        generatedActivitySummary(errorMessage, SessionActivitySummaryKind.AGENT_TURN_FAILED)
+    }
+
+private fun boundedProviderSummary(value: String?): String? =
+    value?.trim()?.takeIf(String::isNotEmpty)?.take(MAX_ACTIVITY_CHARS)
+
+private fun boundedProviderLabel(value: String?): String? =
+    value?.trim()?.takeIf(String::isNotEmpty)?.take(MAX_LABEL_CHARS)
+
+private const val MAX_LABEL_CHARS = 256
+private const val MAX_ACTIVITY_CHARS = 16_384
 
 private fun digest(value: String): String =
     MessageDigest.getInstance("SHA-256")

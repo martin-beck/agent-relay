@@ -18,6 +18,8 @@ import dev.agentrelay.provider.api.AgentTranscriptEntry
 import dev.agentrelay.provider.api.ProviderReadiness
 import dev.agentrelay.provider.api.RemoteAgentRuntime
 import dev.agentrelay.session.api.SessionActivity
+import dev.agentrelay.session.api.SessionActivitySummary
+import dev.agentrelay.session.api.SessionActivitySummaryKind
 import dev.agentrelay.session.api.SessionActivityType
 import dev.agentrelay.session.api.SessionEventUpdate
 import dev.agentrelay.session.api.SessionHubRepository
@@ -367,7 +369,7 @@ internal class ProfileRuntimeController(
                 profile = profile,
                 descriptor = descriptor,
                 locator = locator,
-                preview = projection.preview ?: "Agent session activity",
+                preview = projection.preview.orEmpty(),
                 now = now,
             )
             val observation = base.copy(
@@ -410,7 +412,10 @@ internal class ProfileRuntimeController(
                                 id = "reconnected:" + now + ":" + runtimeGeneration,
                                 locator = record.locator,
                                 type = SessionActivityType.RECONNECTED,
-                                summary = (profile.label.take(16_000) + " reconnected").trim(),
+                                summary = SessionActivitySummary.Generated(
+                                    SessionActivitySummaryKind.CONNECTION_RECONNECTED,
+                                    profile.label.take(256),
+                                ),
                                 eventAnchorId = anchor,
                                 occurredAtEpochMillis = now,
                             ),

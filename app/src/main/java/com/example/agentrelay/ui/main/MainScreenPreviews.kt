@@ -300,11 +300,13 @@ private fun previewDetail(
             } else {
                 SessionActivityType.RECONNECTED
             },
-            summary = if (approvalRequired) {
-                "A command needs explicit approval."
-            } else {
-                "The session is ready."
-            },
+            summary = UiMessage.Verbatim(
+                if (approvalRequired) {
+                    "A command needs explicit approval."
+                } else {
+                    "The session is ready."
+                },
+            ),
             occurredAtEpochMillis = 1_788_200_000_000,
             requiresAction = approvalRequired,
             isRead = false,

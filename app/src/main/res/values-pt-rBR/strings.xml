@@ -363,4 +363,13 @@
     <string name="speech_error_stop">Não foi possível interromper corretamente a entrada de voz.</string>
     <string name="speech_error_previous_session_cancel">Não foi possível cancelar corretamente a entrada de voz da sessão anterior.</string>
     <string name="speech_error_cancel">Não foi possível cancelar corretamente a entrada de voz.</string>
+    <string name="session_activity_summary_new_agent_output">Nova saída do agente</string>
+    <string name="session_activity_summary_tool_failed">Falha na ferramenta.</string>
+    <string name="session_activity_summary_named_tool_failed">Falha em %1$s.</string>
+    <string name="session_activity_summary_agent_turn_completed">Turno do agente concluído.</string>
+    <string name="session_activity_summary_agent_turn_failed">Falha no turno do agente.</string>
+    <string name="session_activity_summary_agent_provider_failed">Falha no provedor do agente.</string>
+    <string name="session_activity_summary_agent_question_requires_answer">A pergunta do agente exige uma resposta.</string>
+    <string name="session_activity_summary_agent_approval_required">É necessária a aprovação do agente.</string>
+    <string name="session_activity_summary_connection_reconnected">%1$s reconectada.</string>
 </resources>

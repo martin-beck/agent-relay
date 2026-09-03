@@ -371,4 +371,13 @@
     <string name="speech_error_stop">Не удалось корректно остановить голосовой ввод.</string>
     <string name="speech_error_previous_session_cancel">Не удалось корректно отменить голосовой ввод из предыдущего сеанса.</string>
     <string name="speech_error_cancel">Не удалось корректно отменить голосовой ввод.</string>
+    <string name="session_activity_summary_new_agent_output">Новый ответ агента</string>
+    <string name="session_activity_summary_tool_failed">Сбой инструмента.</string>
+    <string name="session_activity_summary_named_tool_failed">Сбой: %1$s.</string>
+    <string name="session_activity_summary_agent_turn_completed">Ход агента завершен.</string>
+    <string name="session_activity_summary_agent_turn_failed">Не удалось завершить ход агента.</string>
+    <string name="session_activity_summary_agent_provider_failed">Сбой поставщика агента.</string>
+    <string name="session_activity_summary_agent_question_requires_answer">На вопрос агента требуется ответ.</string>
+    <string name="session_activity_summary_agent_approval_required">Требуется одобрение действия агента.</string>
+    <string name="session_activity_summary_connection_reconnected">Подключение %1$s восстановлено.</string>
 </resources>

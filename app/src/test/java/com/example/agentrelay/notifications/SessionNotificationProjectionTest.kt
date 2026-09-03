@@ -6,6 +6,7 @@ import dev.agentrelay.provider.api.AgentProviderId
 import dev.agentrelay.provider.api.AgentSessionId
 import dev.agentrelay.provider.api.AgentSessionState
 import dev.agentrelay.session.api.SessionActivity
+import dev.agentrelay.session.api.SessionActivitySummary
 import dev.agentrelay.session.api.SessionActivityType
 import dev.agentrelay.session.api.SessionHubSnapshot
 import dev.agentrelay.session.api.SessionLocator
@@ -219,7 +220,7 @@ class SessionNotificationProjectionTest {
         id = id,
         locator = locator,
         type = type,
-        summary = summary,
+        summary = SessionActivitySummary.Verbatim(summary),
         eventAnchorId = null,
         occurredAtEpochMillis = occurredAt,
         isRead = isRead,

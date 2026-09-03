@@ -355,4 +355,13 @@
     <string name="speech_error_stop">Die Spracheingabe konnte nicht ordnungsgemäß beendet werden.</string>
     <string name="speech_error_previous_session_cancel">Die Spracheingabe aus der vorherigen Sitzung konnte nicht ordnungsgemäß abgebrochen werden.</string>
     <string name="speech_error_cancel">Die Spracheingabe konnte nicht ordnungsgemäß abgebrochen werden.</string>
+    <string name="session_activity_summary_new_agent_output">Neue Agentenausgabe</string>
+    <string name="session_activity_summary_tool_failed">Tool fehlgeschlagen.</string>
+    <string name="session_activity_summary_named_tool_failed">%1$s ist fehlgeschlagen.</string>
+    <string name="session_activity_summary_agent_turn_completed">Agentenrunde abgeschlossen.</string>
+    <string name="session_activity_summary_agent_turn_failed">Agentenrunde fehlgeschlagen.</string>
+    <string name="session_activity_summary_agent_provider_failed">Agentenanbieter fehlgeschlagen.</string>
+    <string name="session_activity_summary_agent_question_requires_answer">Eine Agentenfrage muss beantwortet werden.</string>
+    <string name="session_activity_summary_agent_approval_required">Agentengenehmigung erforderlich.</string>
+    <string name="session_activity_summary_connection_reconnected">%1$s wurde wieder verbunden.</string>
 </resources>

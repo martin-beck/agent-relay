@@ -440,7 +440,7 @@ class PersistentSessionHubRepositoryTest {
         id = id,
         locator = locator,
         type = type,
-        summary = id,
+        summary = SessionActivitySummary.Verbatim(id),
         eventAnchorId = "event-$id",
         occurredAtEpochMillis = at,
     )

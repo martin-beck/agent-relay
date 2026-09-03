@@ -385,4 +385,13 @@
     <string name="speech_error_stop">Voice input could not be stopped cleanly.</string>
     <string name="speech_error_previous_session_cancel">Voice input from the previous session could not be cancelled cleanly.</string>
     <string name="speech_error_cancel">Voice input could not be cancelled cleanly.</string>
+    <string name="session_activity_summary_new_agent_output">New agent output</string>
+    <string name="session_activity_summary_tool_failed">Tool failed.</string>
+    <string name="session_activity_summary_named_tool_failed">%1$s failed.</string>
+    <string name="session_activity_summary_agent_turn_completed">Agent turn completed.</string>
+    <string name="session_activity_summary_agent_turn_failed">Agent turn failed.</string>
+    <string name="session_activity_summary_agent_provider_failed">Agent provider failed.</string>
+    <string name="session_activity_summary_agent_question_requires_answer">Agent question requires an answer.</string>
+    <string name="session_activity_summary_agent_approval_required">Agent approval required.</string>
+    <string name="session_activity_summary_connection_reconnected">%1$s reconnected.</string>
 </resources>

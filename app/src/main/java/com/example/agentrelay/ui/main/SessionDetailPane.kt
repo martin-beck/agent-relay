@@ -616,7 +616,7 @@ private fun ActivityCard(activity: SessionActivityUiModel) {
                 )
             }
             Text(
-                text = activity.summary,
+                text = activity.summary.resolve(),
                 style = MaterialTheme.typography.bodyMedium,
                 maxLines = 12,
                 overflow = TextOverflow.Ellipsis,

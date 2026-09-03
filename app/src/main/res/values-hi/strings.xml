@@ -355,4 +355,13 @@
     <string name="speech_error_stop">वॉइस इनपुट ठीक से रोका नहीं जा सका।</string>
     <string name="speech_error_previous_session_cancel">पिछले सत्र का वॉइस इनपुट ठीक से रद्द नहीं किया जा सका।</string>
     <string name="speech_error_cancel">वॉइस इनपुट ठीक से रद्द नहीं किया जा सका।</string>
+    <string name="session_activity_summary_new_agent_output">नया एजेंट आउटपुट</string>
+    <string name="session_activity_summary_tool_failed">टूल विफल रहा।</string>
+    <string name="session_activity_summary_named_tool_failed">%1$s विफल रहा।</string>
+    <string name="session_activity_summary_agent_turn_completed">एजेंट चरण पूरा हुआ।</string>
+    <string name="session_activity_summary_agent_turn_failed">एजेंट चरण विफल रहा।</string>
+    <string name="session_activity_summary_agent_provider_failed">एजेंट प्रदाता विफल रहा।</string>
+    <string name="session_activity_summary_agent_question_requires_answer">एजेंट के प्रश्न का उत्तर देना आवश्यक है।</string>
+    <string name="session_activity_summary_agent_approval_required">एजेंट की स्वीकृति आवश्यक है।</string>
+    <string name="session_activity_summary_connection_reconnected">%1$s फिर से कनेक्ट हुआ।</string>
 </resources>

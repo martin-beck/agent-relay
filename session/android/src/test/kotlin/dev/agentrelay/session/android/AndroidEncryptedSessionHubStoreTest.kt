@@ -12,6 +12,8 @@ import dev.agentrelay.provider.api.AgentSessionState
 import dev.agentrelay.provider.api.AgentTranscriptRole
 import dev.agentrelay.session.api.CachedTranscriptEntry
 import dev.agentrelay.session.api.SessionActivity
+import dev.agentrelay.session.api.SessionActivitySummary
+import dev.agentrelay.session.api.SessionActivitySummaryKind
 import dev.agentrelay.session.api.SessionActivityType
 import dev.agentrelay.session.api.SessionActionRequest
 import dev.agentrelay.session.api.SessionActionRisk
@@ -32,6 +34,7 @@ import dev.agentrelay.storage.android.SecureStoreCorruptException
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonArray
@@ -81,7 +84,7 @@ class AndroidEncryptedSessionHubStoreTest {
         val valid = Json.parseToJsonElement(documents.storedText()).jsonObject
 
         documents.replace(
-            JsonObject(valid + ("formatVersion" to JsonPrimitive(2))).toString().encodeToByteArray(),
+            JsonObject(valid + ("formatVersion" to JsonPrimitive(3))).toString().encodeToByteArray(),
         )
         assertFailsWith<SecureStoreCorruptException> {
             store.load()
@@ -106,11 +109,16 @@ class AndroidEncryptedSessionHubStoreTest {
         val valid = Json.parseToJsonElement(documents.storedText()).jsonObject
         val legacyActivities = JsonArray(
             valid.getValue("activities").jsonArray.map { element ->
-                JsonObject(element.jsonObject - "actionRequestId")
+                JsonObject(
+                    element.jsonObject -
+                        setOf("actionRequestId", "summaryKind", "summaryArgument"),
+                )
             },
         )
         val legacy = JsonObject(
-            (valid - "actionRequests" - "artifacts") + ("activities" to legacyActivities),
+            (valid - "actionRequests" - "artifacts") +
+                ("formatVersion" to JsonPrimitive(1)) +
+                ("activities" to legacyActivities),
         )
         documents.replace(legacy.toString().encodeToByteArray())
 
@@ -118,7 +126,63 @@ class AndroidEncryptedSessionHubStoreTest {
 
         assertTrue(restored.actionRequests.isEmpty())
         assertTrue(restored.artifacts.isEmpty())
-        assertEquals(null, restored.activities.single().actionRequestId)
+        val activity = restored.activities.single()
+        assertEquals(null, activity.actionRequestId)
+        assertEquals(
+            SessionActivitySummary.Verbatim("Command approval required"),
+            activity.summary,
+        )
+    }
+
+    @Test
+    fun generatedSummaryRoundTripsWithoutPersistingFallbackCopy() = runTest {
+        val documents = InMemoryDocuments()
+        val store = AndroidEncryptedSessionHubStore(documents)
+        val generated = SessionActivity(
+            id = "reconnected:workstation",
+            locator = ssh,
+            type = SessionActivityType.RECONNECTED,
+            summary = SessionActivitySummary.Generated(
+                SessionActivitySummaryKind.CONNECTION_RECONNECTED,
+                "Workstation",
+            ),
+            eventAnchorId = "reconnect-event",
+            occurredAtEpochMillis = 40,
+        )
+        val expected = completeSnapshot().copy(activities = listOf(generated))
+
+        store.save(expected)
+
+        val document = Json.parseToJsonElement(documents.storedText()).jsonObject
+        assertEquals(JsonPrimitive(2), document.getValue("formatVersion"))
+        val storedActivity = document.getValue("activities").jsonArray.single().jsonObject
+        assertEquals(JsonNull, storedActivity.getValue("summary"))
+        assertEquals(
+            JsonPrimitive("CONNECTION_RECONNECTED"),
+            storedActivity.getValue("summaryKind"),
+        )
+        assertEquals(JsonPrimitive("Workstation"), storedActivity.getValue("summaryArgument"))
+        assertEquals(expected, store.load())
+    }
+
+    @Test
+    fun contradictoryActivitySummaryShapeFailsClosed() = runTest {
+        val documents = InMemoryDocuments()
+        val store = AndroidEncryptedSessionHubStore(documents)
+        store.save(completeSnapshot())
+        val valid = Json.parseToJsonElement(documents.storedText()).jsonObject
+        val invalidActivities = JsonArray(
+            valid.getValue("activities").jsonArray.map { element ->
+                JsonObject(element.jsonObject + ("summaryArgument" to JsonPrimitive("unexpected")))
+            },
+        )
+        documents.replace(
+            JsonObject(valid + ("activities" to invalidActivities)).toString().encodeToByteArray(),
+        )
+
+        assertFailsWith<SecureStoreCorruptException> {
+            store.load()
+        }
     }
 
     private class InMemoryDocuments(initial: ByteArray? = null) : SecureDocumentStore {
@@ -204,7 +268,7 @@ class AndroidEncryptedSessionHubStoreTest {
                     id = "approval:remote-thread:one",
                     locator = ssh,
                     type = SessionActivityType.APPROVAL_REQUIRED,
-                    summary = "Command approval required",
+                    summary = SessionActivitySummary.Verbatim("Command approval required"),
                     eventAnchorId = "event-one",
                     actionRequestId = "action-one",
                     occurredAtEpochMillis = 30L,
