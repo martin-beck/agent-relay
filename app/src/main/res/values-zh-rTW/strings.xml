@@ -138,4 +138,15 @@
     <string name="session_activity_failure">失敗</string>
     <string name="session_activity_reconnected">已重新連線</string>
     <string name="session_activity_turn_completed">回合已完成</string>
+    <string name="profile_editor_loading">正在載入連線設定檔</string>
+    <string name="profile_editor_save">儲存</string>
+    <string name="profile_editor_working">處理中…</string>
+    <string name="action_delete">刪除</string>
+    <string name="action_close">關閉</string>
+    <string name="profile_editor_operations_title">金鑰設定與驗證</string>
+    <string name="profile_editor_save_before_operation">請先儲存設定檔變更，再執行此操作。</string>
+    <string name="profile_editor_stored_secret">已儲存密鑰。留空即可保留。</string>
+    <string name="profile_editor_required">%1$s（必填）</string>
+    <string name="profile_editor_delete_title">刪除連線設定檔？</string>
+    <string name="profile_editor_delete_message">這會移除設定檔、其已儲存的認證資料，以及未與其他設定檔共用的所有已儲存主機身分。</string>
 </resources>

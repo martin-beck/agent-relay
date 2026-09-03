@@ -25,6 +25,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.liveRegion
@@ -34,6 +35,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.agentrelay.R
 import com.example.agentrelay.theme.AgentRelayTheme
 import dev.agentrelay.connection.api.ConnectionProfileFieldType
 
@@ -45,7 +47,7 @@ internal fun ConnectionProfileEditorDialog(
     when (state) {
         ConnectionProfileEditorUiState.Loading -> AlertDialog(
             onDismissRequest = actions.dismissProfileEditor,
-            title = { Text("Loading connection profile") },
+            title = { Text(stringResource(R.string.profile_editor_loading)) },
             text = {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -57,7 +59,7 @@ internal fun ConnectionProfileEditorDialog(
             confirmButton = {},
             dismissButton = {
                 TextButton(onClick = actions.dismissProfileEditor) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.action_cancel))
                 }
             },
         )
@@ -142,7 +144,11 @@ private fun ProfileEditor(
                     )
                 }
                 Text(
-                    text = if (editor.activeOperationId == null) "Save" else "Working…",
+                    text = if (editor.activeOperationId == null) {
+                        stringResource(R.string.profile_editor_save)
+                    } else {
+                        stringResource(R.string.profile_editor_working)
+                    },
                     modifier = if (editor.isBusy && editor.activeOperationId == null) {
                         Modifier.padding(start = 8.dp)
                     } else {
@@ -158,14 +164,14 @@ private fun ProfileEditor(
                         onClick = actions.requestProfileDeletion,
                         enabled = !editor.isBusy,
                     ) {
-                        Text("Delete")
+                        Text(stringResource(R.string.action_delete))
                     }
                 }
                 TextButton(
                     onClick = actions.dismissProfileEditor,
                     enabled = !editor.isBusy,
                 ) {
-                    Text("Close")
+                    Text(stringResource(R.string.action_close))
                 }
             }
         },
@@ -182,7 +188,7 @@ private fun ProfileOperations(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
-            text = "Key setup and verification",
+            text = stringResource(R.string.profile_editor_operations_title),
             style = MaterialTheme.typography.titleSmall,
         )
         editor.operations.forEach { operation ->
@@ -212,7 +218,7 @@ private fun ProfileOperations(
                 }
                 Text(
                     text = if (editor.hasUnsavedChanges) {
-                        "Save profile changes before running this action."
+                        stringResource(R.string.profile_editor_save_before_operation)
                     } else {
                         operation.supportingText
                     },
@@ -254,7 +260,7 @@ private fun ProfileField(
         else -> {
             val support = error
                 ?: if (field.hasStoredSecret && field.value.isEmpty()) {
-                    "A secret is stored. Leave this blank to keep it."
+                    stringResource(R.string.profile_editor_stored_secret)
                 } else {
                     field.supportingText
                 }
@@ -264,7 +270,13 @@ private fun ProfileField(
                 modifier = Modifier.fillMaxWidth(),
                 enabled = enabled,
                 label = {
-                    Text(if (field.required) "${field.label} (required)" else field.label)
+                    Text(
+                        if (field.required) {
+                            stringResource(R.string.profile_editor_required, field.label)
+                        } else {
+                            field.label
+                        },
+                    )
                 },
                 supportingText = support?.let { message -> { Text(message) } },
                 isError = error != null,
@@ -301,7 +313,11 @@ private fun ChoiceField(
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         Text(
-            text = if (field.required) "${field.label} (required)" else field.label,
+            text = if (field.required) {
+                stringResource(R.string.profile_editor_required, field.label)
+            } else {
+                field.label
+            },
             color = if (error == null) {
                 MaterialTheme.colorScheme.onSurface
             } else {
@@ -372,7 +388,7 @@ private fun ProfileOperationConfirmation(
                 onClick = actions.cancelProfileOperation,
                 enabled = !editor.isBusy,
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
     )
@@ -385,12 +401,9 @@ private fun DeleteProfileConfirmation(
 ) {
     AlertDialog(
         onDismissRequest = actions.cancelProfileDeletion,
-        title = { Text("Delete connection profile?") },
+        title = { Text(stringResource(R.string.profile_editor_delete_title)) },
         text = {
-            Text(
-                "This removes the profile, its stored credentials, and any saved " +
-                    "host identity that is not shared by another profile.",
-            )
+            Text(stringResource(R.string.profile_editor_delete_message))
         },
         confirmButton = {
             Button(
@@ -401,7 +414,7 @@ private fun DeleteProfileConfirmation(
                     contentColor = MaterialTheme.colorScheme.onError,
                 ),
             ) {
-                Text("Delete")
+                Text(stringResource(R.string.action_delete))
             }
         },
         dismissButton = {
@@ -409,7 +422,7 @@ private fun DeleteProfileConfirmation(
                 onClick = actions.cancelProfileDeletion,
                 enabled = !editor.isBusy,
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
     )

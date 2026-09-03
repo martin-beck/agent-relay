@@ -140,4 +140,15 @@
     <string name="session_activity_failure">विफलता</string>
     <string name="session_activity_reconnected">फिर से कनेक्ट हुआ</string>
     <string name="session_activity_turn_completed">टर्न पूरा हुआ</string>
+    <string name="profile_editor_loading">कनेक्शन प्रोफ़ाइल लोड हो रही है</string>
+    <string name="profile_editor_save">सहेजें</string>
+    <string name="profile_editor_working">काम जारी है…</string>
+    <string name="action_delete">हटाएँ</string>
+    <string name="action_close">बंद करें</string>
+    <string name="profile_editor_operations_title">कुंजी सेटअप और सत्यापन</string>
+    <string name="profile_editor_save_before_operation">यह कार्रवाई चलाने से पहले प्रोफ़ाइल में किए बदलाव सहेजें।</string>
+    <string name="profile_editor_stored_secret">एक सीक्रेट संग्रहीत है। इसे बनाए रखने के लिए यह फ़ील्ड खाली छोड़ें।</string>
+    <string name="profile_editor_required">%1$s (आवश्यक)</string>
+    <string name="profile_editor_delete_title">कनेक्शन प्रोफ़ाइल हटाएँ?</string>
+    <string name="profile_editor_delete_message">इससे प्रोफ़ाइल, उसके संग्रहीत क्रेडेंशियल और ऐसी सहेजी गई होस्ट पहचान हट जाएगी जो किसी अन्य प्रोफ़ाइल के साथ साझा नहीं है।</string>
 </resources>

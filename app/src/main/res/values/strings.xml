@@ -170,4 +170,15 @@
     <string name="session_activity_failure">Failure</string>
     <string name="session_activity_reconnected">Reconnected</string>
     <string name="session_activity_turn_completed">Turn completed</string>
+    <string name="profile_editor_loading">Loading connection profile</string>
+    <string name="profile_editor_save">Save</string>
+    <string name="profile_editor_working">Working…</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_close">Close</string>
+    <string name="profile_editor_operations_title">Key setup and verification</string>
+    <string name="profile_editor_save_before_operation">Save profile changes before running this action.</string>
+    <string name="profile_editor_stored_secret">A secret is stored. Leave this blank to keep it.</string>
+    <string name="profile_editor_required">%1$s (required)</string>
+    <string name="profile_editor_delete_title">Delete connection profile?</string>
+    <string name="profile_editor_delete_message">This removes the profile, its stored credentials, and any saved host identity that is not shared by another profile.</string>
 </resources>

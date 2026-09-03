@@ -138,4 +138,15 @@
     <string name="session_activity_failure">失敗</string>
     <string name="session_activity_reconnected">再接続済み</string>
     <string name="session_activity_turn_completed">ターン完了</string>
+    <string name="profile_editor_loading">接続プロファイルを読み込んでいます</string>
+    <string name="profile_editor_save">保存</string>
+    <string name="profile_editor_working">処理中…</string>
+    <string name="action_delete">削除</string>
+    <string name="action_close">閉じる</string>
+    <string name="profile_editor_operations_title">鍵の設定と確認</string>
+    <string name="profile_editor_save_before_operation">この操作を実行する前に、プロファイルの変更を保存してください。</string>
+    <string name="profile_editor_stored_secret">シークレットが保存されています。維持するには、この欄を空のままにしてください。</string>
+    <string name="profile_editor_required">%1$s（必須）</string>
+    <string name="profile_editor_delete_title">接続プロファイルを削除しますか？</string>
+    <string name="profile_editor_delete_message">プロファイル、保存された認証情報、および他のプロファイルと共有されていない保存済みホスト ID が削除されます。</string>
 </resources>

@@ -142,4 +142,15 @@
     <string name="session_activity_failure">Falha</string>
     <string name="session_activity_reconnected">Reconectado</string>
     <string name="session_activity_turn_completed">Turno concluído</string>
+    <string name="profile_editor_loading">Carregando perfil de conexão</string>
+    <string name="profile_editor_save">Salvar</string>
+    <string name="profile_editor_working">Processando…</string>
+    <string name="action_delete">Excluir</string>
+    <string name="action_close">Fechar</string>
+    <string name="profile_editor_operations_title">Configuração e verificação de chave</string>
+    <string name="profile_editor_save_before_operation">Salve as alterações do perfil antes de executar esta ação.</string>
+    <string name="profile_editor_stored_secret">Há um segredo armazenado. Deixe este campo vazio para mantê-lo.</string>
+    <string name="profile_editor_required">%1$s (obrigatório)</string>
+    <string name="profile_editor_delete_title">Excluir perfil de conexão?</string>
+    <string name="profile_editor_delete_message">Isso remove o perfil, as credenciais armazenadas e qualquer identidade de host salva que não seja compartilhada por outro perfil.</string>
 </resources>

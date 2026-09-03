@@ -140,4 +140,15 @@
     <string name="session_activity_failure">Fehler</string>
     <string name="session_activity_reconnected">Wieder verbunden</string>
     <string name="session_activity_turn_completed">Durchlauf abgeschlossen</string>
+    <string name="profile_editor_loading">Verbindungsprofil wird geladen</string>
+    <string name="profile_editor_save">Speichern</string>
+    <string name="profile_editor_working">Wird ausgeführt…</string>
+    <string name="action_delete">Löschen</string>
+    <string name="action_close">Schließen</string>
+    <string name="profile_editor_operations_title">Schlüsseleinrichtung und -prüfung</string>
+    <string name="profile_editor_save_before_operation">Speichern Sie die Profiländerungen, bevor Sie diese Aktion ausführen.</string>
+    <string name="profile_editor_stored_secret">Ein Geheimnis ist gespeichert. Lassen Sie dieses Feld leer, um es beizubehalten.</string>
+    <string name="profile_editor_required">%1$s (erforderlich)</string>
+    <string name="profile_editor_delete_title">Verbindungsprofil löschen?</string>
+    <string name="profile_editor_delete_message">Dadurch werden das Profil, seine gespeicherten Anmeldedaten und jede gespeicherte Hostidentität entfernt, die nicht von einem anderen Profil verwendet wird.</string>
 </resources>

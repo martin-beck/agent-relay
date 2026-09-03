@@ -138,4 +138,15 @@
     <string name="session_activity_failure">失败</string>
     <string name="session_activity_reconnected">已重新连接</string>
     <string name="session_activity_turn_completed">轮次已完成</string>
+    <string name="profile_editor_loading">正在加载连接配置</string>
+    <string name="profile_editor_save">保存</string>
+    <string name="profile_editor_working">处理中…</string>
+    <string name="action_delete">删除</string>
+    <string name="action_close">关闭</string>
+    <string name="profile_editor_operations_title">密钥设置和验证</string>
+    <string name="profile_editor_save_before_operation">请先保存配置更改，再执行此操作。</string>
+    <string name="profile_editor_stored_secret">已存储密钥。留空即可保留。</string>
+    <string name="profile_editor_required">%1$s（必填）</string>
+    <string name="profile_editor_delete_title">删除连接配置？</string>
+    <string name="profile_editor_delete_message">这将删除该配置、其已存储的凭据，以及未被其他配置共享的所有已保存主机身份。</string>
 </resources>

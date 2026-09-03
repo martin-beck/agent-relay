@@ -144,4 +144,15 @@
     <string name="session_activity_failure">Сбой</string>
     <string name="session_activity_reconnected">Подключение восстановлено</string>
     <string name="session_activity_turn_completed">Ход завершён</string>
+    <string name="profile_editor_loading">Загрузка профиля подключения</string>
+    <string name="profile_editor_save">Сохранить</string>
+    <string name="profile_editor_working">Выполняется…</string>
+    <string name="action_delete">Удалить</string>
+    <string name="action_close">Закрыть</string>
+    <string name="profile_editor_operations_title">Настройка и проверка ключа</string>
+    <string name="profile_editor_save_before_operation">Сохраните изменения профиля перед выполнением этого действия.</string>
+    <string name="profile_editor_stored_secret">Секрет сохранён. Оставьте поле пустым, чтобы сохранить его.</string>
+    <string name="profile_editor_required">%1$s (обязательно)</string>
+    <string name="profile_editor_delete_title">Удалить профиль подключения?</string>
+    <string name="profile_editor_delete_message">Будут удалены профиль, сохранённые учётные данные и сохранённые идентификаторы хоста, которые не используются другим профилем.</string>
 </resources>

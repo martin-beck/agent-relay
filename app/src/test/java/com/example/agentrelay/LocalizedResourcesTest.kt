@@ -114,6 +114,10 @@ class LocalizedResourcesTest {
                 3,
             )
             val downloadProgress = context.getString(R.string.speech_download_progress, 42)
+            val requiredField = context.getString(
+                R.string.profile_editor_required,
+                opaqueValues[1],
+            )
 
             opaqueValues.forEach { value ->
                 assertTrue(languageTag, sessionContext.contains(value))
@@ -147,6 +151,8 @@ class LocalizedResourcesTest {
             assertFalse(languageTag, risk.contains("%1\$"))
             assertFalse(languageTag, addProfile.contains("%1\$"))
             assertFalse(languageTag, startOnConnection.contains("%1\$"))
+            assertTrue(languageTag, requiredField.contains(opaqueValues[1]))
+            assertFalse(languageTag, requiredField.contains("%1\$"))
             val localizedNumber = NumberFormat
                 .getIntegerInstance(Locale.forLanguageTag(languageTag))
                 .format(42)

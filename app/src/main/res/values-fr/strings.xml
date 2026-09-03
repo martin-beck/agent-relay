@@ -142,4 +142,15 @@
     <string name="session_activity_failure">Échec</string>
     <string name="session_activity_reconnected">Reconnecté</string>
     <string name="session_activity_turn_completed">Tour terminé</string>
+    <string name="profile_editor_loading">Chargement du profil de connexion</string>
+    <string name="profile_editor_save">Enregistrer</string>
+    <string name="profile_editor_working">Traitement…</string>
+    <string name="action_delete">Supprimer</string>
+    <string name="action_close">Fermer</string>
+    <string name="profile_editor_operations_title">Configuration et vérification de la clé</string>
+    <string name="profile_editor_save_before_operation">Enregistrez les modifications du profil avant d’exécuter cette action.</string>
+    <string name="profile_editor_stored_secret">Un secret est enregistré. Laissez ce champ vide pour le conserver.</string>
+    <string name="profile_editor_required">%1$s (obligatoire)</string>
+    <string name="profile_editor_delete_title">Supprimer le profil de connexion ?</string>
+    <string name="profile_editor_delete_message">Cette action supprime le profil, ses identifiants enregistrés et toute identité d’hôte enregistrée qui n’est pas partagée par un autre profil.</string>
 </resources>

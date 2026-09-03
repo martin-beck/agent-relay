@@ -138,4 +138,15 @@
     <string name="session_activity_failure">Kegagalan</string>
     <string name="session_activity_reconnected">Terhubung kembali</string>
     <string name="session_activity_turn_completed">Giliran selesai</string>
+    <string name="profile_editor_loading">Memuat profil koneksi</string>
+    <string name="profile_editor_save">Simpan</string>
+    <string name="profile_editor_working">Sedang bekerja…</string>
+    <string name="action_delete">Hapus</string>
+    <string name="action_close">Tutup</string>
+    <string name="profile_editor_operations_title">Penyiapan dan verifikasi kunci</string>
+    <string name="profile_editor_save_before_operation">Simpan perubahan profil sebelum menjalankan tindakan ini.</string>
+    <string name="profile_editor_stored_secret">Rahasia telah disimpan. Biarkan kolom ini kosong untuk mempertahankannya.</string>
+    <string name="profile_editor_required">%1$s (wajib)</string>
+    <string name="profile_editor_delete_title">Hapus profil koneksi?</string>
+    <string name="profile_editor_delete_message">Tindakan ini menghapus profil, kredensial tersimpan, dan identitas host tersimpan yang tidak digunakan bersama oleh profil lain.</string>
 </resources>

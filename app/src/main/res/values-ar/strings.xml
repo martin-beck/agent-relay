@@ -148,4 +148,15 @@
     <string name="session_activity_failure">فشل</string>
     <string name="session_activity_reconnected">تمت إعادة الاتصال</string>
     <string name="session_activity_turn_completed">اكتمل الدور</string>
+    <string name="profile_editor_loading">جارٍ تحميل ملف تعريف الاتصال</string>
+    <string name="profile_editor_save">حفظ</string>
+    <string name="profile_editor_working">جارٍ العمل…</string>
+    <string name="action_delete">حذف</string>
+    <string name="action_close">إغلاق</string>
+    <string name="profile_editor_operations_title">إعداد المفتاح والتحقق منه</string>
+    <string name="profile_editor_save_before_operation">احفظ تغييرات ملف التعريف قبل تنفيذ هذا الإجراء.</string>
+    <string name="profile_editor_stored_secret">تم تخزين سر. اترك هذا الحقل فارغًا للاحتفاظ به.</string>
+    <string name="profile_editor_required">%1$s (مطلوب)</string>
+    <string name="profile_editor_delete_title">حذف ملف تعريف الاتصال؟</string>
+    <string name="profile_editor_delete_message">يؤدي ذلك إلى حذف ملف التعريف وبيانات الاعتماد المخزنة وأي هوية مضيف محفوظة لا يشاركها ملف تعريف آخر.</string>
 </resources>

@@ -140,4 +140,15 @@
     <string name="session_activity_failure">ব্যর্থতা</string>
     <string name="session_activity_reconnected">পুনরায় সংযুক্ত</string>
     <string name="session_activity_turn_completed">টার্ন সম্পন্ন</string>
+    <string name="profile_editor_loading">সংযোগ প্রোফাইল লোড হচ্ছে</string>
+    <string name="profile_editor_save">সংরক্ষণ করুন</string>
+    <string name="profile_editor_working">কাজ চলছে…</string>
+    <string name="action_delete">মুছুন</string>
+    <string name="action_close">বন্ধ করুন</string>
+    <string name="profile_editor_operations_title">কী সেটআপ ও যাচাই</string>
+    <string name="profile_editor_save_before_operation">এই কাজটি চালানোর আগে প্রোফাইলের পরিবর্তন সংরক্ষণ করুন।</string>
+    <string name="profile_editor_stored_secret">একটি গোপন তথ্য সংরক্ষিত আছে। এটি রাখতে ঘরটি খালি রাখুন।</string>
+    <string name="profile_editor_required">%1$s (আবশ্যক)</string>
+    <string name="profile_editor_delete_title">সংযোগ প্রোফাইল মুছবেন?</string>
+    <string name="profile_editor_delete_message">এতে প্রোফাইল, সংরক্ষিত শংসাপত্র এবং অন্য কোনো প্রোফাইলের সঙ্গে ভাগ না করা সংরক্ষিত হোস্ট পরিচয় মুছে যাবে।</string>
 </resources>
