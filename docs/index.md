@@ -34,6 +34,7 @@ Current verified journeys cover:
 - [Review connection providers](CONNECTION_PROVIDERS.md)
 - [Read the product roadmap](PRODUCT_ROADMAP.md)
 - [Inspect quality and verification gates](QUALITY.md)
+- [Follow the AI-assisted development process](DEVELOPMENT.md)
 
 ## Evidence boundary
 
