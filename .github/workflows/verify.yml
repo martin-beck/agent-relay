@@ -111,7 +111,7 @@ jobs:
         run: ./gradlew spotlessCheck detekt buildHealth --stacktrace
 
       - name: Run tests and verify coverage
-        run: ./gradlew test koverXmlReport koverHtmlReport koverVerify --stacktrace
+        run: ./gradlew test koverXmlReport koverHtmlReport koverVerify checkKotlinAbi --stacktrace
 
       - name: Run Android lint
         run: ./gradlew lintDebug --stacktrace

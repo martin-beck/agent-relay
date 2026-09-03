@@ -94,9 +94,30 @@ val dependencyUpdateLintChecks = setOf(
     "NewerVersionAvailable",
 )
 
+val criticalModuleCoverageFloors = mapOf(
+    ":connection:api" to 70,
+    ":provider:api" to 25,
+    ":session:api" to 89,
+    ":session:runtime" to 83,
+    ":speech:api" to 74,
+    ":ssh:api" to 86,
+)
+
 subprojects {
     pluginManager.apply("com.autonomousapps.dependency-analysis")
     pluginManager.apply("org.jetbrains.kotlinx.kover")
+
+    criticalModuleCoverageFloors[path]?.let { coverageFloor ->
+        extensions.configure<kotlinx.kover.gradle.plugin.dsl.KoverProjectExtension> {
+            reports {
+                verify {
+                    rule {
+                        minBound(coverageFloor)
+                    }
+                }
+            }
+        }
+    }
 
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().configureEach {
         compilerOptions.allWarningsAsErrors.set(true)
