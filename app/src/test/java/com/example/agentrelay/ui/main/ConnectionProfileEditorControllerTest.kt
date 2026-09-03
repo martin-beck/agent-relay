@@ -32,10 +32,12 @@ import dev.agentrelay.session.runtime.AgentEndpointKey
 import dev.agentrelay.session.runtime.SessionConnectionKey
 import dev.agentrelay.session.runtime.SessionCoordinatorSnapshot
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withTimeout
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -341,6 +343,41 @@ class ConnectionProfileEditorControllerTest {
     }
 
     @Test
+    fun internalOperationTimeoutRestoresTheEditorAndAllowsRetry() = runTest {
+        val runtime = FakeProfileRuntime(existingProfile = true)
+        val controller = ConnectionProfileEditorController(
+            scope = this,
+            runtime = { runtime },
+            reportError = {},
+        )
+        val key = SessionConnectionKey(PROVIDER_ID, PROFILE_ID).stableUiKey
+        controller.edit(key)
+        advanceUntilIdle()
+        runtime.operationBlock = {
+            withTimeout(1) { awaitCancellation() }
+        }
+
+        controller.requestOperation(VERIFY_OPERATION.value)
+        advanceUntilIdle()
+
+        val timedOut = assertInstance<ConnectionProfileEditorUiState.Editing>(controller.state.value)
+        assertFalse(timedOut.isBusy)
+        assertNull(timedOut.activeOperationId)
+        assertEquals(
+            "The connection profile operation timed out. Check the connection and retry.",
+            timedOut.error,
+        )
+
+        runtime.operationBlock = null
+        controller.requestOperation(VERIFY_OPERATION.value)
+        advanceUntilIdle()
+
+        val retried = assertInstance<ConnectionProfileEditorUiState.Editing>(controller.state.value)
+        assertFalse(retried.isBusy)
+        assertEquals("Profile operation completed.", retried.notice)
+    }
+
+    @Test
     fun actionableDeleteFailureExplainsJumpHostDependency() = runTest {
         val runtime = FakeProfileRuntime(existingProfile = true)
         val controller = ConnectionProfileEditorController(
@@ -397,6 +434,7 @@ private class FakeProfileRuntime(
     var editorFailure: Throwable? = null
     var deleteFailure: Throwable? = null
     var operationFailure: Throwable? = null
+    var operationBlock: (suspend () -> Unit)? = null
     val performedOperations = mutableListOf<Triple<ConnectionProviderId, ConnectionProfileId, ConnectionProfileOperationId>>()
 
     override suspend fun refreshProfiles() = Unit
@@ -441,6 +479,7 @@ private class FakeProfileRuntime(
         profileId: ConnectionProfileId,
         operationId: ConnectionProfileOperationId,
     ): ConnectionProfileOperationResult {
+        operationBlock?.invoke()
         operationFailure?.let { throw it }
         performedOperations += Triple(providerId, profileId, operationId)
         return ConnectionProfileOperationResult("Profile operation completed.")

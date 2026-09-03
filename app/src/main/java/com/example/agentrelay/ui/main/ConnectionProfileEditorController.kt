@@ -16,6 +16,9 @@ import java.util.Arrays
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -172,6 +175,17 @@ internal class ConnectionProfileEditorController(
                     profileId = profileId,
                     operationId = ConnectionProfileOperationId(operation.id),
                 )
+            } catch (_: TimeoutCancellationException) {
+                currentCoroutineContext().ensureActive()
+                replaceIfCurrent(
+                    currentGeneration,
+                    busy,
+                    editor.copy(
+                        confirmOperationId = null,
+                        error = "The connection profile operation timed out. Check the connection and retry.",
+                    ),
+                )
+                return@replaceJob
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (failure: ConnectionProfileOperationException) {
