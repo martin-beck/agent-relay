@@ -314,8 +314,8 @@
         <item quantity="many">%1$d إجراءً ينتظر المراجعة</item>
         <item quantity="other">%1$d إجراء ينتظر المراجعة</item>
     </plurals>
-    <string name="ssh_profile_title_add">إضافة ملف تعريف Secure Shell</string>
-    <string name="ssh_profile_title_edit">تعديل ملف تعريف Secure Shell</string>
+    <string name="ssh_profile_title_add">إضافة ملف تعريف &#x2066;Secure Shell&#x2069;</string>
+    <string name="ssh_profile_title_edit">تعديل ملف تعريف &#x2066;Secure Shell&#x2069;</string>
     <string name="ssh_profile_field_name">اسم ملف التعريف</string>
     <string name="ssh_profile_field_host">المضيف</string>
     <string name="ssh_profile_field_port">المنفذ</string>

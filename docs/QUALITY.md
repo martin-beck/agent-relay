@@ -351,12 +351,20 @@ Compose screenshot tests by Now in Android. Paparazzi's current 2.0 release is
 still an alpha, while Element X Android's mature Paparazzi/Showkase pattern
 remains a useful reference for preview coverage.
 
-The committed baselines under `app/src/test/screenshots` include eight adaptive
-state captures plus 16 independently reported locale captures: every bundled
-locale and both Android pseudo-locales render the session hub at 360 x 800 dp
-and 1.3x font scale. The locale tests assert that critical localized content is
-displayed and reject horizontally out-of-bounds or ellipsized text layouts. A
-review of the initial baselines found a narrow-width French clipping defect;
+The 62 committed baselines under `app/src/test/screenshots` include eight
+adaptive state captures, 16 independently reported session-hub locale captures,
+and 38 profile-editor captures. Every bundled locale and both Android
+pseudo-locales render the session hub, endpoint validation, and managed-key
+operations at 360 x 800 dp and 1.3x font scale. Both pseudo-locales additionally
+exercise password, imported-key, and passphrase-replacement branches. The
+profile tests cover wrapping required labels, editable-control descriptions,
+field and global errors, radio roles and selection, selectable groups, and
+physical RTL Save/Close/Delete ordering. They reject off-viewport, height-
+overflowing, or ellipsized visible text. Robolectric's paused main looper is
+idled directly before the multi-window snapshot so dialog semantics are
+published without entering the indefinite TextField-idling path.
+
+A review of the initial baselines found a narrow-width French clipping defect;
 compact header and recovery actions now stack vertically so long labels receive
 the full content width. The wider baseline set still covers loading, fatal
 error, empty, normal content, approval-required, compact/medium/expanded,

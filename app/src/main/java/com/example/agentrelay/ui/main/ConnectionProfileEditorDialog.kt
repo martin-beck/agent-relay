@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.AlertDialog
@@ -28,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
@@ -268,39 +270,51 @@ private fun ProfileField(
                 } else {
                     field.supportingText
                 }
-            OutlinedTextField(
-                value = field.value,
-                onValueChange = onValueChange,
+            val accessibleLabel = if (field.required) {
+                stringResource(R.string.profile_editor_required, field.label)
+            } else {
+                field.label
+            }
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                enabled = enabled,
-                label = {
-                    Text(
-                        if (field.required) {
-                            stringResource(R.string.profile_editor_required, field.label)
-                        } else {
-                            field.label
-                        },
-                    )
-                },
-                supportingText = support?.let { message -> { Text(message) } },
-                isError = error != null,
-                singleLine = field.type != ConnectionProfileFieldType.MULTILINE_SECRET,
-                minLines = if (field.type == ConnectionProfileFieldType.MULTILINE_SECRET) 5 else 1,
-                visualTransformation = if (field.isSecret) {
-                    PasswordVisualTransformation()
-                } else {
-                    VisualTransformation.None
-                },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = when (field.type) {
-                        ConnectionProfileFieldType.PORT -> KeyboardType.Number
-                        ConnectionProfileFieldType.PASSWORD,
-                        ConnectionProfileFieldType.MULTILINE_SECRET,
-                        -> KeyboardType.Password
-                        else -> KeyboardType.Text
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                Text(
+                    text = accessibleLabel,
+                    color = if (error == null) {
+                        MaterialTheme.colorScheme.onSurface
+                    } else {
+                        MaterialTheme.colorScheme.error
                     },
-                ),
-            )
+                    style = MaterialTheme.typography.labelLarge,
+                )
+                OutlinedTextField(
+                    value = field.value,
+                    onValueChange = onValueChange,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .semantics { contentDescription = accessibleLabel },
+                    enabled = enabled,
+                    supportingText = support?.let { message -> { Text(message) } },
+                    isError = error != null,
+                    singleLine = field.type != ConnectionProfileFieldType.MULTILINE_SECRET,
+                    minLines = if (field.type == ConnectionProfileFieldType.MULTILINE_SECRET) 5 else 1,
+                    visualTransformation = if (field.isSecret) {
+                        PasswordVisualTransformation()
+                    } else {
+                        VisualTransformation.None
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = when (field.type) {
+                            ConnectionProfileFieldType.PORT -> KeyboardType.Number
+                            ConnectionProfileFieldType.PASSWORD,
+                            ConnectionProfileFieldType.MULTILINE_SECRET,
+                            -> KeyboardType.Password
+                            else -> KeyboardType.Text
+                        },
+                    ),
+                )
+            }
         }
     }
 }
@@ -313,7 +327,9 @@ private fun ChoiceField(
     onValueChange: (String) -> Unit,
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .selectableGroup(),
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         Text(
