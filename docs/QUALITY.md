@@ -351,19 +351,20 @@ Compose screenshot tests by Now in Android. Paparazzi's current 2.0 release is
 still an alpha, while Element X Android's mature Paparazzi/Showkase pattern
 remains a useful reference for preview coverage.
 
-The 158 committed baselines under `app/src/test/screenshots` include eight
+The 190 committed baselines under `app/src/test/screenshots` include eight
 adaptive state captures, 16 independently reported session-hub locale captures,
 38 profile-editor captures, 32 session-detail captures, 32 changed-file
-artifact captures, and 32 offline speech-install captures. Every bundled locale
-and both Android pseudo-locales render the session hub, endpoint validation, and
-managed-key operations at 360 x 800 dp and 1.3x font scale. Both pseudo-locales
-additionally exercise password, imported-key, and passphrase-replacement
-branches. The profile tests cover wrapping required labels, editable-control
-descriptions, field and global errors, radio roles and selection, selectable
-groups, and physical RTL Save/Close/Delete ordering. They reject off-viewport,
-height-overflowing, or ellipsized visible text. Robolectric's paused main looper
-is idled directly before the multi-window snapshot so dialog semantics are
-published without entering the indefinite TextField-idling path.
+artifact captures, 32 offline speech-install captures, and 32
+notification-permission captures. Every bundled locale and both Android
+pseudo-locales render the session hub, endpoint validation, and managed-key
+operations at 360 x 800 dp and 1.3x font scale. Both pseudo-locales additionally
+exercise password, imported-key, and passphrase-replacement branches. The profile tests cover
+wrapping required labels, editable-control descriptions, field and global
+errors, radio roles and selection, selectable groups, and physical RTL
+Save/Close/Delete ordering. They reject off-viewport, height-overflowing, or
+ellipsized visible text. Robolectric's paused main looper is idled directly
+before the multi-window snapshot so dialog semantics are published without
+entering the indefinite TextField-idling path.
 
 Each locale also renders one compact session-detail question state and its
 sensitive-action confirmation at 360 x 800 dp and 1.3x font scale. Those tests
@@ -385,6 +386,13 @@ and selection, selectable groups, locale direction, and raw four-edge
 containment while rejecting text overflow and ellipsis. The production UI does
 not yet expose model size, license terms, or a separate confirmation surface;
 the matrix therefore does not claim coverage for them.
+
+The notification-permission matrix renders the first request and the
+settings-recovery state, using the request callback and production permission
+resolver for the transition. It keeps both permission and blocked background
+controls visible at 360 x 800 dp and 1.3x font scale, and verifies button roles,
+enabled state, touch targets, RTL end alignment, four-edge containment, and
+non-ellipsized localized text.
 
 A review of the initial baselines found a narrow-width French clipping defect;
 compact header and recovery actions now stack vertically so long labels receive
