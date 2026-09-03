@@ -5,7 +5,9 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.example.agentrelay.background.AndroidBackgroundTransportStarter
+import com.example.agentrelay.background.BackgroundConnectionLease
 import com.example.agentrelay.background.BackgroundTransportController
+import com.example.agentrelay.background.configuredBackgroundRecoveryConnections
 import com.example.agentrelay.data.CoordinatorSessionHubRuntime
 import com.example.agentrelay.data.BackgroundAwareSessionHubRuntime
 import com.example.agentrelay.data.SessionHubRuntime
@@ -65,7 +67,11 @@ class AgentRelayApplication : Application() {
             return
         }
         lifecycleScope.launch {
-            graph.disableBackgroundTransportIfInitialized()
+            try {
+                graph.disableBackgroundTransportIfInitialized()
+            } catch (_: Throwable) {
+                Log.e(LOG_TAG, "Background connection cleanup failed")
+            }
         }
     }
 
@@ -84,6 +90,7 @@ internal class AgentRelayGraph(
         sink = AndroidSessionNotificationSink(context),
         onFailure = { Log.e(LOG_TAG, "Notification state transition failed") },
     )
+    private val backgroundConnectionLease = BackgroundConnectionLease(context)
 
     @Volatile
     private var sessionRuntime: SessionHubRuntime? = null
@@ -133,11 +140,27 @@ internal class AgentRelayGraph(
         }
     }
 
-    suspend fun enableBackgroundTransport() {
+    suspend fun enableBackgroundTransport(recoverAfterProcessDeath: Boolean) {
+        val recoveryConnections = if (recoverAfterProcessDeath) {
+            backgroundConnectionLease.restore()
+        } else {
+            null
+        }
         initializationMutex.withLock {
             backgroundTransportActive = true
         }
-        sessionHubRuntime()
+        val runtime = sessionHubRuntime()
+        if (recoveryConnections == null) {
+            backgroundConnectionLease.enable()
+            return
+        }
+
+        runtime.refreshProfiles()
+        configuredBackgroundRecoveryConnections(
+            desiredConnections = recoveryConnections,
+            profiles = runtime.coordinatorSnapshot.value.profiles,
+        )
+            .forEach { runtime.connect(it) }
     }
 
     suspend fun disableBackgroundTransportIfInitialized() {
@@ -147,6 +170,7 @@ internal class AgentRelayGraph(
                 applyConnectionLifetime(active)
             }
         }
+        backgroundConnectionLease.disable()
     }
 
     suspend fun retryNotificationsIfInitialized() {
@@ -217,6 +241,8 @@ internal class AgentRelayGraph(
                 coordinator = coordinator,
                 connections = connections,
                 connectionProviders = connections.descriptors(),
+                onConnectRequested = backgroundConnectionLease::recordConnect,
+                onDisconnectRequested = backgroundConnectionLease::recordDisconnect,
             )
         } catch (failure: Throwable) {
             connections.close()

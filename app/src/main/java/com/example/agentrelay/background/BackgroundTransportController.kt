@@ -74,13 +74,24 @@ internal class BackgroundTransportController(
     }
 
     @Synchronized
+    fun serviceRestarting() {
+        if (mutableState.value == BackgroundTransportState.STOPPED ||
+            mutableState.value == BackgroundTransportState.START_FAILED
+        ) {
+            mutableState.value = BackgroundTransportState.STARTING
+        }
+    }
+
+    @Synchronized
     fun serviceStopped() {
         mutableState.value = BackgroundTransportState.STOPPED
     }
 
     @Synchronized
     fun serviceFailed() {
-        if (mutableState.value == BackgroundTransportState.STARTING) {
+        if (mutableState.value == BackgroundTransportState.STARTING ||
+            mutableState.value == BackgroundTransportState.ACTIVE
+        ) {
             mutableState.value = BackgroundTransportState.START_FAILED
         }
     }

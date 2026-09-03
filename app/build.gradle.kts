@@ -84,6 +84,8 @@ dependencies {
     implementation(project(":session:runtime"))
     implementation(project(":speech:api"))
     implementation(project(":ssh:android"))
+    implementation(project(":storage:android"))
+    implementation(libs.kotlinx.serialization.json)
 
     // Compose
     implementation(libs.androidx.compose.ui)
