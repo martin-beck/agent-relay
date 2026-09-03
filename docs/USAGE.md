@@ -177,9 +177,23 @@ To enable and verify passwordless login:
 2. Reopen **Edit profile** and select **Install public key**. Review the
    confirmation explaining that the remote account will be changed.
 3. Confirm the action. Agent Relay uses the saved authentication and jump route,
-   rejects symbolic-link SSH files, creates the SSH directory with restrictive
-   permissions, and adds only the normalized public key when it is not already
-   present. It never sends or exports the private key.
+   rejects unsafe SSH-directory and authorized-key path types, creates missing
+   files with restrictive permissions, and serializes cooperating Agent Relay
+   installers with a PID-owned lock. It recovers a lock when its owner has exited
+   or when an ownerless or malformed lock remains unchanged across a bounded wait.
+   It recognizes the normalized algorithm and key blob only in legal key
+   positions, including after recognized restrictive options. Existing matching
+   restrictions, comments, and CRLF line endings are left unchanged. A
+   cert-authority entry trusts the key as a certificate authority; it does not
+   prevent Agent Relay from adding the same public key in a form that authorizes
+   plain-key login. A
+   principals option without cert-authority, an ambiguous options prefix, or a
+   failing POSIX awk stops the operation. The app reports inspection,
+   interruption, and busy-lock failures separately without exposing host data.
+   The normalized key is added only when absent, and an existing file is not
+   touched unconditionally. Portable shell cannot exclude malicious hard-link or
+   path-replacement races by another process with the same account authority.
+   Agent Relay never sends or exports the private key.
 4. Select **Test key-only login**. This makes a new connection whose destination
    uses only the app-managed key, while jump hosts continue using their own
    saved authentication, then executes a real heartbeat.

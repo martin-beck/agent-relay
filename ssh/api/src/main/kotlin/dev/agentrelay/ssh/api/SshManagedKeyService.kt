@@ -66,21 +66,13 @@ class SshManagedKeyService(
             connection.runtime.execute(
                 command = RemoteCommand(
                     program = "sh",
-                    arguments = listOf("-c", installScript(authorizedKey)),
+                    arguments = listOf("-c", SshAuthorizedKeysInstallScript.build(authorizedKey)),
                 ),
                 timeout = operationTimeout,
             )
         }
         if (!result.successful) {
-            throw SshConnectionException(
-                SshFailure(
-                    category = SshFailureCategory.REMOTE_PROCESS_EXIT,
-                    code = "SSH_PUBLIC_KEY_INSTALL_FAILED",
-                    actionableMessage =
-                    "The public key could not be installed. Check the remote account's SSH directory permissions.",
-                    recoverable = true,
-                ),
-            )
+            throw SshConnectionException(publicKeyInstallFailure(result.exitCode))
         }
         return SshManagedKeyOperationResult(
             publicKey = publicKey,
@@ -100,6 +92,29 @@ class SshManagedKeyService(
         return SshManagedKeyOperationResult(
             publicKey = publicKey,
             notice = "Passwordless app-managed key login succeeded.",
+        )
+    }
+
+    private fun publicKeyInstallFailure(exitCode: Int): SshFailure {
+        val (code, message) = when (exitCode) {
+            69, 70 ->
+                "SSH_PUBLIC_KEY_INSTALL_INSPECTION_FAILED" to
+                    "The remote shell could not safely inspect authorized keys. Check its POSIX tools and key file."
+            74 ->
+                "SSH_PUBLIC_KEY_INSTALL_INTERRUPTED" to
+                    "The public-key installation was interrupted before it completed. Retry the operation."
+            75 ->
+                "SSH_PUBLIC_KEY_INSTALL_BUSY" to
+                    "Another public-key installation is active or its lock is unsafe. Wait, then retry."
+            else ->
+                "SSH_PUBLIC_KEY_INSTALL_FAILED" to
+                    "The public key could not be installed. Check the remote account's SSH directory permissions."
+        }
+        return SshFailure(
+            category = SshFailureCategory.REMOTE_PROCESS_EXIT,
+            code = code,
+            actionableMessage = message,
+            recoverable = true,
         )
     }
 
@@ -176,24 +191,6 @@ class SshManagedKeyService(
         requireEmbeddedAlgorithm(decoded, parts[0])
         return "${parts[0]} ${parts[1]}"
     }
-
-    private fun installScript(authorizedKey: String): String = """
-        set -eu
-        umask 077
-        ssh_dir=${'$'}HOME/.ssh
-        authorized_keys=${'$'}ssh_dir/authorized_keys
-        if [ -L "${'$'}ssh_dir" ] || [ -L "${'$'}authorized_keys" ]; then
-          exit 73
-        fi
-        mkdir -p "${'$'}ssh_dir"
-        touch "${'$'}authorized_keys"
-        chmod 700 "${'$'}ssh_dir"
-        chmod 600 "${'$'}authorized_keys"
-        key='$authorizedKey'
-        if ! grep -qxF "${'$'}key" "${'$'}authorized_keys"; then
-          printf '\n%s\n' "${'$'}key" >> "${'$'}authorized_keys"
-        fi
-    """.trimIndent()
 
     private fun requireEmbeddedAlgorithm(
         blob: ByteArray,
