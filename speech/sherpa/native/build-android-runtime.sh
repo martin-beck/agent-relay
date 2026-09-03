@@ -33,8 +33,8 @@ ndk_version=
 cmake_version=
 ninja_version=
 
-while (( $# > 0 )); do
-  (( $# >= 2 )) || fail "missing value for $1"
+while (($# > 0)); do
+  (($# >= 2)) || fail "missing value for $1"
   case "$1" in
     --source-dir) source_dir=$2 ;;
     --onnx-dir) onnx_dir=$2 ;;
@@ -100,6 +100,16 @@ done
 [[ "$onnx_archive_sha256" =~ ^[0-9a-f]{64}$ ]] || fail "invalid ONNX archive digest"
 [[ "$source_date_epoch" =~ ^[0-9]{10}$ ]] || fail "invalid source date epoch"
 
+[[ -d "$source_dir" && ! -L "$source_dir" ]] || fail "invalid sherpa source directory"
+source_dir_without_symlinks=$(realpath --canonicalize-missing --no-symlinks -- "$source_dir")
+source_dir_resolved=$(realpath --canonicalize-existing -- "$source_dir")
+[[ "$source_dir_without_symlinks" == "$source_dir_resolved" ]] ||
+  fail "invalid sherpa source directory"
+[[ -d "$onnx_dir" && ! -L "$onnx_dir" ]] || fail "invalid ONNX Runtime directory"
+[[ -d "$ndk_dir" && ! -L "$ndk_dir" ]] || fail "invalid Android NDK directory"
+for input_file in "$metadata_patch" "$onnx_license" "$onnx_notices"; do
+  [[ -f "$input_file" && ! -L "$input_file" ]] || fail "invalid input file"
+done
 source_dir=$(realpath -e -- "$source_dir")
 onnx_dir=$(realpath -e -- "$onnx_dir")
 metadata_patch=$(realpath -e -- "$metadata_patch")
@@ -108,6 +118,7 @@ onnx_notices=$(realpath -e -- "$onnx_notices")
 ndk_dir=$(realpath -e -- "$ndk_dir")
 [[ -d "$source_dir" && ! -L "$source_dir" ]] || fail "invalid sherpa source directory"
 [[ -d "$onnx_dir" && ! -L "$onnx_dir" ]] || fail "invalid ONNX Runtime directory"
+[[ -d "$ndk_dir" && ! -L "$ndk_dir" ]] || fail "invalid Android NDK directory"
 for input_file in "$metadata_patch" "$onnx_license" "$onnx_notices"; do
   [[ -f "$input_file" && ! -L "$input_file" ]] || fail "invalid input file"
 done
@@ -155,7 +166,7 @@ for tool in "$readelf" "$nm" "$strings" "$strip"; do
   [[ -x "$tool" ]] || fail "required NDK validation tool was missing"
 done
 for tool in patch sha256sum grep sed awk find sort cp mv touch; do
-  command -v "$tool" >/dev/null || fail "required host tool was missing: $tool"
+  command -v "$tool" > /dev/null || fail "required host tool was missing: $tool"
 done
 
 verify_sha256() {
@@ -190,14 +201,14 @@ grep -Fq 'if(NOT DEFINED SHERPA_ONNX_GIT_SHA1)' \
   fail "reproducible metadata patch was not applied"
 
 export SOURCE_DATE_EPOCH="$source_date_epoch"
-jobs=$(getconf _NPROCESSORS_ONLN 2>/dev/null || printf '2\n')
-(( jobs > 4 )) && jobs=4
-(( jobs > 0 )) || jobs=1
+jobs=$(getconf _NPROCESSORS_ONLN 2> /dev/null || printf '2\n')
+((jobs > 4)) && jobs=4
+((jobs > 0)) || jobs=1
 
 abis=(arm64-v8a armeabi-v7a x86 x86_64)
 declare -A expected_onnx_sha=(
-  [arm64-v8a]=994848008526a934dfb579ac773b00e5867929234852b061005d45aacaee9533
-  [armeabi-v7a]=d3699d357f763d31829e4b4bbb4fcb70ee4893f798e5b7f6070fb6ca9543eda9
+  ["arm64-v8a"]=994848008526a934dfb579ac773b00e5867929234852b061005d45aacaee9533
+  ["armeabi-v7a"]=d3699d357f763d31829e4b4bbb4fcb70ee4893f798e5b7f6070fb6ca9543eda9
   [x86]=eb674341f058a40b99173c32af13811c2d7cb212a33fa29cb24b2fe7217b02e6
   [x86_64]=7144a2015ce495677420b287cef908eb3d379e09913b5e715aa48826b2080f2d
 )
@@ -241,8 +252,8 @@ validate_elf() {
 
   while IFS= read -r dependency; do
     case "$kind:$dependency" in
-      jni:libandroid.so|jni:libc.so|jni:libdl.so|jni:liblog.so|jni:libm.so|jni:libonnxruntime.so) ;;
-      onnx:libc.so|onnx:libdl.so|onnx:liblog.so|onnx:libm.so) ;;
+      jni:libandroid.so | jni:libc.so | jni:libdl.so | jni:liblog.so | jni:libm.so | jni:libonnxruntime.so) ;;
+      onnx:libc.so | onnx:libdl.so | onnx:liblog.so | onnx:libm.so) ;;
       *) fail "$kind had an unexpected dynamic dependency for $abi: $dependency" ;;
     esac
   done < <(
@@ -251,23 +262,23 @@ validate_elf() {
       sort -u
   )
   if [[ "$kind" == jni ]]; then
-    "$readelf" -dW "$library" | grep -F '[libonnxruntime.so]' >/dev/null ||
+    "$readelf" -dW "$library" | grep -F '[libonnxruntime.so]' > /dev/null ||
       fail "sherpa JNI did not depend on ONNX Runtime for $abi"
   fi
 
-  "$readelf" -lW "$library" | grep -F GNU_RELRO >/dev/null ||
+  "$readelf" -lW "$library" | grep -F GNU_RELRO > /dev/null ||
     fail "$kind lacked GNU_RELRO for $abi"
-  "$readelf" -dW "$library" | grep -E 'BIND_NOW|FLAGS.*NOW' >/dev/null ||
+  "$readelf" -dW "$library" | grep -E 'BIND_NOW|FLAGS.*NOW' > /dev/null ||
     fail "$kind lacked immediate binding for $abi"
-  if "$readelf" -dW "$library" | grep -F TEXTREL >/dev/null; then
+  if "$readelf" -dW "$library" | grep -F TEXTREL > /dev/null; then
     fail "$kind contained text relocations for $abi"
   fi
-  if "$readelf" -lW "$library" | grep -E 'GNU_STACK.*RWE' >/dev/null; then
+  if "$readelf" -lW "$library" | grep -E 'GNU_STACK.*RWE' > /dev/null; then
     fail "$kind requested an executable stack for $abi"
   fi
 
   while IFS= read -r align; do
-    (( align >= 0x4000 )) || fail "$kind had sub-16-KiB LOAD alignment for $abi"
+    ((align >= 0x4000)) || fail "$kind had sub-16-KiB LOAD alignment for $abi"
   done < <("$readelf" -lW "$library" | awk '$1 == "LOAD" {print $NF}')
 
   if [[ "$kind" == jni ]]; then
@@ -276,15 +287,15 @@ validate_elf() {
       "$nm" -D --defined-only "$library" |
         grep -Ec 'Java_com_k2fsa_sherpa_onnx_Online(Recognizer|Stream)'
     )
-    (( online_symbols >= 10 )) || fail "sherpa JNI online API was incomplete for $abi"
+    ((online_symbols >= 10)) || fail "sherpa JNI online API was incomplete for $abi"
     if "$strings" -a "$library" |
-      grep -Ei 'OfflineTts|PiperPhonem|piper[-_]phonem|(^|[^[:alnum:]])espeak[-_]|libespeak|OfflineTtsVits|VitsModel' >/dev/null; then
+      grep -Ei 'OfflineTts|PiperPhonem|piper[-_]phonem|(^|[^[:alnum:]])espeak[-_]|libespeak|OfflineTtsVits|VitsModel' > /dev/null; then
       fail "sherpa JNI contained a forbidden TTS marker for $abi"
     fi
-    if "$strings" -a "$library" | grep -F "$source_dir" >/dev/null; then
+    if "$strings" -a "$library" | grep -F "$source_dir" > /dev/null; then
       fail "sherpa JNI leaked the source build path for $abi"
     fi
-    if "$strings" -a "$library" | grep -F "$runtime_root" >/dev/null; then
+    if "$strings" -a "$library" | grep -F "$runtime_root" > /dev/null; then
       fail "sherpa JNI leaked the temporary build path for $abi"
     fi
   fi
@@ -359,9 +370,9 @@ for abi in "${abis[@]}"; do
 
   jni_size=$(stat -c %s "$staged_jni/$abi/libsherpa-onnx-jni.so")
   onnx_size=$(stat -c %s "$staged_jni/$abi/libonnxruntime.so")
-  (( jni_size >= 1000000 && jni_size <= 15000000 )) ||
+  ((jni_size >= 1000000 && jni_size <= 15000000)) ||
     fail "sherpa JNI size was outside its safety bounds for $abi"
-  (( onnx_size >= 10000000 && onnx_size <= 40000000 )) ||
+  ((onnx_size >= 10000000 && onnx_size <= 40000000)) ||
     fail "ONNX Runtime size was outside its safety bounds for $abi"
 
   validate_elf jni "$abi" "$staged_jni/$abi/libsherpa-onnx-jni.so"
@@ -456,7 +467,7 @@ provenance="$staged_resources/META-INF/sherpa-onnx/runtime-provenance.json"
   for index in "${!abis[@]}"; do
     abi=${abis[$index]}
     comma=,
-    (( index == ${#abis[@]} - 1 )) && comma=
+    ((index == ${#abis[@]} - 1)) && comma=
     printf '    "%s": {"libsherpa-onnx-jni.so": "%s", "libonnxruntime.so": "%s"}%s\n' \
       "$abi" "${jni_sha[$abi]}" "${onnx_sha[$abi]}" "$comma"
   done
@@ -473,8 +484,8 @@ provenance="$staged_resources/META-INF/sherpa-onnx/runtime-provenance.json"
 
 find "$staged_jni" "$staged_resources" -exec touch -h -d "@$source_date_epoch" {} +
 actual_libraries=$(find "$staged_jni" -type f -name '*.so' | wc -l)
-(( actual_libraries == 8 )) || fail "native runtime contained an unexpected library count"
-if find "$staged_jni" -type f ! -name '*.so' -print -quit | grep . >/dev/null; then
+((actual_libraries == 8)) || fail "native runtime contained an unexpected library count"
+if find "$staged_jni" -type f ! -name '*.so' -print -quit | grep . > /dev/null; then
   fail "native runtime contained an unexpected file"
 fi
 

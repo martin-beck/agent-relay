@@ -135,6 +135,27 @@ repos:
 
   - repo: local
     hooks:
+      - id: shellcheck
+        name: Check first-party shell scripts with pinned ShellCheck
+        entry: scripts/ci/run_shell_quality.sh shellcheck
+        language: system
+        pass_filenames: false
+        files: ^(scripts/.*\.(bash|sh)|speech/sherpa/native/.*\.(bash|sh))$
+      - id: shfmt
+        name: Check first-party shell formatting with pinned shfmt
+        entry: scripts/ci/run_shell_quality.sh shfmt
+        language: system
+        pass_filenames: false
+        files: ^(scripts/.*\.(bash|sh)|speech/sherpa/native/.*\.(bash|sh))$
+      - id: bats-shell-tests
+        name: Test shell support scripts with pinned Bats
+        entry: scripts/ci/run_shell_quality.sh test
+        language: system
+        pass_filenames: false
+        files: >-
+          ^(scripts/.*\.(bash|sh)|
+          speech/sherpa/native/.*\.(bash|sh)|
+          tests/shell/.*\.bats)$
       - id: vale
         name: Check terminology and report prose readability with Vale
         entry: vale

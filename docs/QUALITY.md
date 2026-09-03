@@ -96,6 +96,7 @@ Run the full local gate:
 ```bash
 uv sync --locked --only-group quality --only-group docs
 uv run pytest
+scripts/ci/install_shell_quality_tools.sh
 uv run pre-commit run --all-files --show-diff-on-failure
 ./gradlew spotlessCheck detekt buildHealth test koverXmlReport koverVerify checkKotlinAbi lintDebug assembleDebug --stacktrace
 ```
@@ -110,7 +111,14 @@ The checked-in `uv.lock` pins the pre-commit runner and every hook revision is
 frozen to an immutable commit. It also pins Pytest, Hypothesis, Coverage.py,
 Radon, and Lizard. CI installs Vale 3.19.0 from its official release archive
 only after verifying the pinned SHA-256 checksum; developers install that same
-version locally. Dependabot proposes uv and pre-commit updates;
+version locally. The repository shell-tool installer pins ShellCheck 0.11.0 and
+shfmt 3.14.0 release assets by SHA-256 and pins Bats 1.14.0 to its exact source
+revision and archive digest. The shell tools live under the build cache or
+runner temporary directory; no machine-global installation is required. Each
+invocation verifies extracted ShellCheck content and Bats regular-file paths and
+contents instead of trusting their reported versions, then restores altered
+files from the authenticated archives. Dependabot proposes uv and pre-commit
+updates;
 review the upstream release notes and the generated configuration diff before
 accepting them.
 
