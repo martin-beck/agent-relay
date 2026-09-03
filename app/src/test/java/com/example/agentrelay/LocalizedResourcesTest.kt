@@ -118,6 +118,11 @@ class LocalizedResourcesTest {
                 32_000,
                 32_000,
             )
+            val sessionDraftTooLong = context.resources.getQuantityString(
+                R.plurals.main_error_session_draft_too_long,
+                32_000,
+                32_000,
+            )
             val downloadProgress = context.getString(R.string.speech_download_progress, 42)
             val requiredField = context.getString(
                 R.string.profile_editor_required,
@@ -193,6 +198,9 @@ class LocalizedResourcesTest {
             SSH_PROFILE_RESOURCES.forEach { resource ->
                 assertTrue(languageTag, context.getString(resource).isNotBlank())
             }
+            MAIN_ERROR_RESOURCES.forEach { resource ->
+                assertTrue(languageTag, context.getString(resource).isNotBlank())
+            }
             ARTIFACT_RESOURCES.forEach { resource ->
                 assertTrue(languageTag, context.getString(resource).isNotBlank())
             }
@@ -216,6 +224,8 @@ class LocalizedResourcesTest {
             assertFalse(languageTag, artifactProgress.contains("%1\$"))
             assertFalse(languageTag, speechTranscriptTooLong.contains("%1\$"))
             assertFalse(languageTag, speechTranscriptTooLong.contains("%d"))
+            assertFalse(languageTag, sessionDraftTooLong.contains("%1\$"))
+            assertFalse(languageTag, sessionDraftTooLong.contains("%d"))
             assertFalse(languageTag, artifactProgress.contains("%2\$"))
 
             assertTrue(languageTag, downloadProgress.contains(localizedNumber))
@@ -326,11 +336,23 @@ class LocalizedResourcesTest {
             R.string.profile_error_operation_refresh,
             R.string.profile_error_delete,
             R.string.profile_error_open,
+        )
+
+        val MAIN_ERROR_RESOURCES = listOf(
             R.string.main_error_profiles_refresh,
             R.string.main_error_connection_open,
             R.string.main_error_connection_close,
             R.string.main_error_identity_decision,
             R.string.main_error_secure_state_open,
+            R.string.main_error_session_unavailable,
+            R.string.main_error_session_read_save,
+            R.string.main_error_session_draft_save,
+            R.string.main_error_session_message_required,
+            R.string.main_error_session_steer,
+            R.string.main_error_session_send,
+            R.string.main_error_session_draft_clear,
+            R.string.main_error_session_resume,
+            R.string.main_error_session_interrupt,
         )
 
         val ARTIFACT_RESOURCES = listOf(

@@ -177,7 +177,7 @@ internal class MainScreenViewModel(
             ?.firstOrNull { it.locator.stableUiKey == sessionKey }
             ?.locator
         if (locator == null) {
-            operationError.setVerbatim("That session is no longer available.")
+            operationError.value = UiMessage.Localized(R.string.main_error_session_unavailable)
             return
         }
         selectedSessionKey.value = sessionKey
@@ -188,7 +188,7 @@ internal class MainScreenViewModel(
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Throwable) {
-                operationError.setVerbatim("The session read state could not be saved.")
+                operationError.value = UiMessage.Localized(R.string.main_error_session_read_save)
             }
         }
     }
@@ -211,11 +211,15 @@ internal class MainScreenViewModel(
         val active = runtime ?: return
         val locator = active.findSessionLocator(sessionKey)
         if (locator == null) {
-            operationError.setVerbatim("That session is no longer available.")
+            operationError.value = UiMessage.Localized(R.string.main_error_session_unavailable)
             return
         }
         if (text.length > MAX_SESSION_DRAFT_CHARS) {
-            operationError.setVerbatim("Session drafts are limited to $MAX_SESSION_DRAFT_CHARS characters.")
+            operationError.value = UiMessage.Plural(
+                resourceId = R.plurals.main_error_session_draft_too_long,
+                quantity = MAX_SESSION_DRAFT_CHARS,
+                formatArguments = listOf(MAX_SESSION_DRAFT_CHARS),
+            )
             return
         }
         val boundedStart = selectionStart.coerceIn(0, text.length)
@@ -244,7 +248,7 @@ internal class MainScreenViewModel(
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Throwable) {
-                operationError.setVerbatim("The session draft could not be saved securely.")
+                operationError.value = UiMessage.Localized(R.string.main_error_session_draft_save)
             }
         }
         draftSaveJobs[sessionKey] = saveJob
@@ -260,24 +264,26 @@ internal class MainScreenViewModel(
         val record = active.sessionSnapshot.value.sessions
             .firstOrNull { it.locator.stableUiKey == sessionKey }
         if (record == null) {
-            operationError.setVerbatim("That session is no longer available.")
+            operationError.value = UiMessage.Localized(R.string.main_error_session_unavailable)
             return
         }
         val draft = sessionInteractions.value.draftOverrides[sessionKey]
             ?: active.sessionSnapshot.value.drafts[record.locator]
         if (draft == null || draft.text.isBlank()) {
-            operationError.setVerbatim("Enter a message before sending.")
+            operationError.value = UiMessage.Localized(R.string.main_error_session_message_required)
             return
         }
         val state = record.observation.agentState
         draftSaveJobs.remove(sessionKey)?.cancel()
         performSession(
             sessionKey = sessionKey,
-            failureMessage = if (state == AgentSessionState.RUNNING) {
-                "The active turn could not be steered."
-            } else {
-                "The session input could not be sent."
-            },
+            failureMessage = UiMessage.Localized(
+                if (state == AgentSessionState.RUNNING) {
+                    R.string.main_error_session_steer
+                } else {
+                    R.string.main_error_session_send
+                },
+            ),
         ) { opened, locator ->
             opened.updateDraft(locator, draft)
             when (state) {
@@ -294,9 +300,7 @@ internal class MainScreenViewModel(
                 } catch (cancelled: CancellationException) {
                     throw cancelled
                 } catch (_: Throwable) {
-                    operationError.setVerbatim(
-                        "The message was delivered, but its saved draft could not be cleared securely.",
-                    )
+                    operationError.value = UiMessage.Localized(R.string.main_error_session_draft_clear)
                     return@performSession
                 }
                 sessionInteractions.update { current ->
@@ -308,12 +312,12 @@ internal class MainScreenViewModel(
 
     fun resumeSession(sessionKey: String) = performSession(
         sessionKey = sessionKey,
-        failureMessage = "The saved session could not be resumed.",
+        failureMessage = UiMessage.Localized(R.string.main_error_session_resume),
     ) { active, locator -> active.resumeSession(locator) }
 
     fun interruptSession(sessionKey: String) = performSession(
         sessionKey = sessionKey,
-        failureMessage = "The active turn could not be interrupted.",
+        failureMessage = UiMessage.Localized(R.string.main_error_session_interrupt),
     ) { active, locator -> active.interrupt(locator) }
 
     fun openSessionCreator(launcherKey: String) {
@@ -556,13 +560,13 @@ internal class MainScreenViewModel(
 
     private fun performSession(
         sessionKey: String,
-        failureMessage: String,
+        failureMessage: UiMessage,
         operation: suspend (SessionHubRuntime, SessionLocator) -> Unit,
     ) {
         val active = runtime ?: return
         val locator = active.findSessionLocator(sessionKey)
         if (locator == null) {
-            operationError.setVerbatim("That session is no longer available.")
+            operationError.value = UiMessage.Localized(R.string.main_error_session_unavailable)
             return
         }
         if (sessionKey in sessionInteractions.value.busySessionKeys) {
@@ -578,7 +582,7 @@ internal class MainScreenViewModel(
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Throwable) {
-                operationError.setVerbatim(failureMessage)
+                operationError.value = failureMessage
             } finally {
                 sessionInteractions.update { current ->
                     current.copy(busySessionKeys = current.busySessionKeys - sessionKey)

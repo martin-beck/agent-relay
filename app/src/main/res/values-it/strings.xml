@@ -167,6 +167,20 @@
     <string name="main_error_connection_close">Impossibile chiudere correttamente la connessione.</string>
     <string name="main_error_identity_decision">Impossibile applicare la decisione sull’identità del server.</string>
     <string name="main_error_secure_state_open">Impossibile aprire lo stato sicuro della sessione. Riprova dopo aver sbloccato il dispositivo.</string>
+    <string name="main_error_session_unavailable">Questa sessione non è più disponibile.</string>
+    <string name="main_error_session_read_save">Non è stato possibile salvare lo stato di lettura della sessione.</string>
+    <string name="main_error_session_draft_save">Non è stato possibile salvare in modo sicuro la bozza della sessione.</string>
+    <string name="main_error_session_message_required">Inserisci un messaggio prima di inviarlo.</string>
+    <string name="main_error_session_steer">Non è stato possibile guidare il turno attivo.</string>
+    <string name="main_error_session_send">Non è stato possibile inviare l’input della sessione.</string>
+    <string name="main_error_session_draft_clear">Il messaggio è stato consegnato, ma non è stato possibile cancellare in modo sicuro la bozza salvata.</string>
+    <string name="main_error_session_resume">Non è stato possibile riprendere la sessione salvata.</string>
+    <string name="main_error_session_interrupt">Non è stato possibile interrompere il turno attivo.</string>
+    <plurals name="main_error_session_draft_too_long">
+        <item quantity="one">Le bozze di sessione sono limitate a %1$d carattere.</item>
+        <item quantity="many">Le bozze di sessione sono limitate a %1$d caratteri.</item>
+        <item quantity="other">Le bozze di sessione sono limitate a %1$d caratteri.</item>
+    </plurals>
     <string name="session_action_type_command">Approvazione comando</string>
     <string name="session_action_type_file_change">Approvazione modifica file</string>
     <string name="session_action_type_question">Domanda</string>

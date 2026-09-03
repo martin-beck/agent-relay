@@ -173,6 +173,23 @@
     <string name="main_error_connection_close">تعذّر إغلاق الاتصال بشكل سليم.</string>
     <string name="main_error_identity_decision">تعذّر تطبيق قرار هوية الخادم.</string>
     <string name="main_error_secure_state_open">تعذّر فتح حالة الجلسة الآمنة. أعد المحاولة بعد إلغاء قفل الجهاز.</string>
+    <string name="main_error_session_unavailable">لم تعد هذه الجلسة متاحة.</string>
+    <string name="main_error_session_read_save">تعذّر حفظ حالة قراءة الجلسة.</string>
+    <string name="main_error_session_draft_save">تعذّر حفظ مسودة الجلسة بأمان.</string>
+    <string name="main_error_session_message_required">أدخل رسالة قبل الإرسال.</string>
+    <string name="main_error_session_steer">تعذّر توجيه الدور النشط.</string>
+    <string name="main_error_session_send">تعذّر إرسال إدخال الجلسة.</string>
+    <string name="main_error_session_draft_clear">تم تسليم الرسالة، ولكن تعذّر مسح مسودتها المحفوظة بأمان.</string>
+    <string name="main_error_session_resume">تعذّر استئناف الجلسة المحفوظة.</string>
+    <string name="main_error_session_interrupt">تعذّر مقاطعة الدور النشط.</string>
+    <plurals name="main_error_session_draft_too_long">
+        <item quantity="zero">تقتصر مسودات الجلسات على %1$d حرفًا.</item>
+        <item quantity="one">تقتصر مسودات الجلسات على %1$d حرفًا.</item>
+        <item quantity="two">تقتصر مسودات الجلسات على %1$d حرفًا.</item>
+        <item quantity="few">تقتصر مسودات الجلسات على %1$d حرفًا.</item>
+        <item quantity="many">تقتصر مسودات الجلسات على %1$d حرفًا.</item>
+        <item quantity="other">تقتصر مسودات الجلسات على %1$d حرفًا.</item>
+    </plurals>
     <string name="session_action_type_command">الموافقة على الأمر</string>
     <string name="session_action_type_file_change">الموافقة على تغيير الملف</string>
     <string name="session_action_type_question">سؤال</string>

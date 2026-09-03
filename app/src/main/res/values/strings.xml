@@ -195,6 +195,19 @@
     <string name="main_error_connection_close">The connection could not be closed cleanly.</string>
     <string name="main_error_identity_decision">The server identity decision could not be applied.</string>
     <string name="main_error_secure_state_open">Secure session state could not be opened. Retry after unlocking the device.</string>
+    <string name="main_error_session_unavailable">That session is no longer available.</string>
+    <string name="main_error_session_read_save">The session read state could not be saved.</string>
+    <string name="main_error_session_draft_save">The session draft could not be saved securely.</string>
+    <string name="main_error_session_message_required">Enter a message before sending.</string>
+    <string name="main_error_session_steer">The active turn could not be steered.</string>
+    <string name="main_error_session_send">The session input could not be sent.</string>
+    <string name="main_error_session_draft_clear">The message was delivered, but its saved draft could not be cleared securely.</string>
+    <string name="main_error_session_resume">The saved session could not be resumed.</string>
+    <string name="main_error_session_interrupt">The active turn could not be interrupted.</string>
+    <plurals name="main_error_session_draft_too_long">
+        <item quantity="one">Session drafts are limited to %1$d character.</item>
+        <item quantity="other">Session drafts are limited to %1$d characters.</item>
+    </plurals>
     <string name="session_action_type_command">Command approval</string>
     <string name="session_action_type_file_change">File change approval</string>
     <string name="session_action_type_question">Question</string>

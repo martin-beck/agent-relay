@@ -165,6 +165,19 @@
     <string name="main_error_connection_close">Die Verbindung konnte nicht ordnungsgemäß geschlossen werden.</string>
     <string name="main_error_identity_decision">Die Entscheidung zur Serveridentität konnte nicht angewendet werden.</string>
     <string name="main_error_secure_state_open">Der sichere Sitzungsstatus konnte nicht geöffnet werden. Versuchen Sie es nach dem Entsperren des Geräts erneut.</string>
+    <string name="main_error_session_unavailable">Diese Sitzung ist nicht mehr verfügbar.</string>
+    <string name="main_error_session_read_save">Der Lesestatus der Sitzung konnte nicht gespeichert werden.</string>
+    <string name="main_error_session_draft_save">Der Sitzungsentwurf konnte nicht sicher gespeichert werden.</string>
+    <string name="main_error_session_message_required">Geben Sie vor dem Senden eine Nachricht ein.</string>
+    <string name="main_error_session_steer">Der aktive Vorgang konnte nicht gesteuert werden.</string>
+    <string name="main_error_session_send">Die Sitzungseingabe konnte nicht gesendet werden.</string>
+    <string name="main_error_session_draft_clear">Die Nachricht wurde zugestellt, aber ihr gespeicherter Entwurf konnte nicht sicher gelöscht werden.</string>
+    <string name="main_error_session_resume">Die gespeicherte Sitzung konnte nicht fortgesetzt werden.</string>
+    <string name="main_error_session_interrupt">Der aktive Vorgang konnte nicht unterbrochen werden.</string>
+    <plurals name="main_error_session_draft_too_long">
+        <item quantity="one">Sitzungsentwürfe sind auf %1$d Zeichen begrenzt.</item>
+        <item quantity="other">Sitzungsentwürfe sind auf %1$d Zeichen begrenzt.</item>
+    </plurals>
     <string name="session_action_type_command">Befehlsfreigabe</string>
     <string name="session_action_type_file_change">Freigabe von Dateiänderungen</string>
     <string name="session_action_type_question">Frage</string>

@@ -222,7 +222,7 @@ class MainScreenViewModelTest {
         viewModel.selectSession(stableSessionKey)
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
         assertEquals(
-            UiMessage.Verbatim("The session read state could not be saved."),
+            UiMessage.Localized(R.string.main_error_session_read_save),
             (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
         )
         viewModel.clearSelection()
@@ -235,7 +235,7 @@ class MainScreenViewModelTest {
         viewModel.selectSession("missing-session")
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
         assertEquals(
-            UiMessage.Verbatim("That session is no longer available."),
+            UiMessage.Localized(R.string.main_error_session_unavailable),
             (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
         )
 
@@ -243,14 +243,14 @@ class MainScreenViewModelTest {
         viewModel.submitSessionDraft("missing-session")
         mainDispatcherRule.dispatcher.scheduler.runCurrent()
         assertEquals(
-            UiMessage.Verbatim("That session is no longer available."),
+            UiMessage.Localized(R.string.main_error_session_unavailable),
             (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
         )
         viewModel.clearOperationError()
         viewModel.updateSessionDraft("missing-session", "Keep this", 0, 9)
         mainDispatcherRule.dispatcher.scheduler.runCurrent()
         assertEquals(
-            UiMessage.Verbatim("That session is no longer available."),
+            UiMessage.Localized(R.string.main_error_session_unavailable),
             (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
         )
 
@@ -258,7 +258,7 @@ class MainScreenViewModelTest {
         viewModel.resumeSession("missing-session")
         mainDispatcherRule.dispatcher.scheduler.runCurrent()
         assertEquals(
-            UiMessage.Verbatim("That session is no longer available."),
+            UiMessage.Localized(R.string.main_error_session_unavailable),
             (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
         )
 
@@ -295,7 +295,7 @@ class MainScreenViewModelTest {
         viewModel.submitSessionDraft(sessionKey)
         scheduler.runCurrent()
         assertEquals(
-            UiMessage.Verbatim("Enter a message before sending."),
+            UiMessage.Localized(R.string.main_error_session_message_required),
             (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
         )
 
@@ -303,7 +303,11 @@ class MainScreenViewModelTest {
         viewModel.updateSessionDraft(sessionKey, "x".repeat(32_001), 0, 0)
         scheduler.runCurrent()
         assertEquals(
-            UiMessage.Verbatim("Session drafts are limited to 32000 characters."),
+            UiMessage.Plural(
+                R.plurals.main_error_session_draft_too_long,
+                32_000,
+                listOf(32_000),
+            ),
             (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
         )
 
@@ -318,7 +322,7 @@ class MainScreenViewModelTest {
         scheduler.advanceTimeBy(300L)
         scheduler.runCurrent()
         val failedSave = viewModel.uiState.value as MainScreenUiState.Ready
-        assertEquals(UiMessage.Verbatim("The session draft could not be saved securely."), failedSave.hub.operationError)
+        assertEquals(UiMessage.Localized(R.string.main_error_session_draft_save), failedSave.hub.operationError)
         assertEquals("Keep this saved", failedSave.hub.selectedSession?.composer?.draftText)
         assertTrue(runtime.savedDrafts.isEmpty())
 
@@ -326,7 +330,7 @@ class MainScreenViewModelTest {
         viewModel.submitSessionDraft(sessionKey)
         scheduler.advanceUntilIdle()
         assertEquals(
-            UiMessage.Verbatim("The session input could not be sent."),
+            UiMessage.Localized(R.string.main_error_session_send),
             (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
         )
         assertTrue(runtime.sent.isEmpty())
@@ -429,7 +433,7 @@ class MainScreenViewModelTest {
         assertEquals("Preserve this input", runtime.savedDrafts.single().second.text)
         val ready = viewModel.uiState.value as MainScreenUiState.Ready
         assertEquals("Preserve this input", ready.hub.selectedSession?.composer?.draftText)
-        assertEquals(UiMessage.Verbatim("The session input could not be sent."), ready.hub.operationError)
+        assertEquals(UiMessage.Localized(R.string.main_error_session_send), ready.hub.operationError)
         assertTrue(runtime.sent.isEmpty())
 
         viewModel.viewModelScope.cancel()
@@ -470,7 +474,7 @@ class MainScreenViewModelTest {
         assertEquals("Deliver once", runtime.savedDrafts.single().second.text)
         assertEquals("Deliver once", ready.hub.selectedSession?.composer?.draftText)
         assertEquals(
-            UiMessage.Verbatim("The message was delivered, but its saved draft could not be cleared securely."),
+            UiMessage.Localized(R.string.main_error_session_draft_clear),
             ready.hub.operationError,
         )
 
@@ -761,6 +765,66 @@ class MainScreenConnectionErrorTest {
     }
 }
 
+class MainScreenSessionErrorTest {
+
+    @get:Rule
+    val mainDispatcherRule = MainDispatcherRule()
+
+    @Test
+    fun sessionOperationsUseLocalizedErrorsWithoutExposingRuntimeDetails() = runTest {
+        val providerId = ConnectionProviderId("ssh.secure-shell")
+        val key = SessionConnectionKey(providerId, ConnectionProfileId("private-profile"))
+        val locator = SessionLocator(
+            connectionProviderId = providerId,
+            connectionProfileId = key.profileId,
+            agentProviderId = AgentProviderId("agent.codex"),
+            agentSessionId = AgentSessionId("private-session"),
+        )
+        val draft = SessionDraft("Keep going", 10, 10, 1L)
+        val runtime = FakeSessionHubRuntime(
+            providers = listOf(descriptor(providerId, "Secure Shell")),
+            coordinator = SessionCoordinatorSnapshot(
+                profiles = listOf(profile(key, "Private host")),
+            ),
+            sessions = SessionHubSnapshot(
+                sessions = listOf(session(locator, AgentSessionState.RUNNING)),
+                drafts = mapOf(locator to draft),
+            ),
+        )
+        val viewModel = MainScreenViewModel { runtime }
+        val scheduler = mainDispatcherRule.dispatcher.scheduler
+        scheduler.advanceUntilIdle()
+        val sessionKey = (viewModel.uiState.value as MainScreenUiState.Ready)
+            .hub.sessions.single().stableKey
+
+        runtime.failSteer = true
+        viewModel.submitSessionDraft(sessionKey)
+        scheduler.advanceUntilIdle()
+        assertEquals(
+            UiMessage.Localized(R.string.main_error_session_steer),
+            (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
+        )
+
+        runtime.failInterrupt = true
+        viewModel.interruptSession(sessionKey)
+        scheduler.advanceUntilIdle()
+        assertEquals(
+            UiMessage.Localized(R.string.main_error_session_interrupt),
+            (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
+        )
+
+        runtime.failResume = true
+        viewModel.resumeSession(sessionKey)
+        scheduler.advanceUntilIdle()
+        assertEquals(
+            UiMessage.Localized(R.string.main_error_session_resume),
+            (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
+        )
+
+        viewModel.viewModelScope.cancel()
+    }
+}
+
 internal class FakeSessionHubRuntime(
     providers: List<ConnectionProviderDescriptor>,
     coordinator: SessionCoordinatorSnapshot,
@@ -779,6 +843,9 @@ internal class FakeSessionHubRuntime(
     var failDraftSave = false
     var failDraftClear = false
     var failSend = false
+    var failSteer = false
+    var failResume = false
+    var failInterrupt = false
     var refreshCount = 0
     val connected = mutableListOf<SessionConnectionKey>()
     val markedRead = mutableListOf<SessionLocator>()
@@ -838,13 +905,13 @@ internal class FakeSessionHubRuntime(
     }
 
     override suspend fun markSessionRead(locator: SessionLocator) {
-        check(!failMarkRead)
+        if (failMarkRead) error("private.example.test could not persist read state")
         markedRead += locator
     }
 
     override suspend fun updateDraft(locator: SessionLocator, draft: SessionDraft) {
-        check(!failDraftSave)
-        check(!failDraftClear || draft.text.isNotEmpty())
+        if (failDraftSave) error("private draft persistence detail")
+        if (failDraftClear && draft.text.isEmpty()) error("private draft cleanup detail")
         savedDrafts += locator to draft
         mutableSessionSnapshot.value = mutableSessionSnapshot.value.copy(
             drafts = mutableSessionSnapshot.value.drafts + (locator to draft),
@@ -852,19 +919,22 @@ internal class FakeSessionHubRuntime(
     }
 
     override suspend fun resumeSession(locator: SessionLocator) {
+        if (failResume) error("private resume detail")
         resumed += locator
     }
 
     override suspend fun sendInput(locator: SessionLocator, text: String) {
-        check(!failSend)
+        if (failSend) error("private send detail")
         sent += locator to text
     }
 
     override suspend fun steerActiveTurn(locator: SessionLocator, text: String) {
+        if (failSteer) error("private steering detail")
         steered += locator to text
     }
 
     override suspend fun interrupt(locator: SessionLocator) {
+        if (failInterrupt) error("private interrupt detail")
         interrupted += locator
     }
 

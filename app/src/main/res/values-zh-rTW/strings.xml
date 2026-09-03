@@ -163,6 +163,18 @@
     <string name="main_error_connection_close">無法正常關閉連線。</string>
     <string name="main_error_identity_decision">無法套用伺服器身分決定。</string>
     <string name="main_error_secure_state_open">無法開啟安全工作階段狀態。請在解除裝置鎖定後重試。</string>
+    <string name="main_error_session_unavailable">該工作階段已無法使用。</string>
+    <string name="main_error_session_read_save">無法儲存工作階段的已讀狀態。</string>
+    <string name="main_error_session_draft_save">無法安全儲存工作階段草稿。</string>
+    <string name="main_error_session_message_required">請先輸入訊息再傳送。</string>
+    <string name="main_error_session_steer">無法引導目前輪次。</string>
+    <string name="main_error_session_send">無法傳送工作階段輸入。</string>
+    <string name="main_error_session_draft_clear">訊息已送達，但無法安全清除其已儲存的草稿。</string>
+    <string name="main_error_session_resume">無法繼續已儲存的工作階段。</string>
+    <string name="main_error_session_interrupt">無法中斷目前輪次。</string>
+    <plurals name="main_error_session_draft_too_long">
+        <item quantity="other">工作階段草稿最多可包含 %1$d 個字元。</item>
+    </plurals>
     <string name="session_action_type_command">命令核准</string>
     <string name="session_action_type_file_change">檔案變更核准</string>
     <string name="session_action_type_question">問題</string>

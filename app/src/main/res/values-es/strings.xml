@@ -167,6 +167,20 @@
     <string name="main_error_connection_close">No se pudo cerrar la conexión correctamente.</string>
     <string name="main_error_identity_decision">No se pudo aplicar la decisión sobre la identidad del servidor.</string>
     <string name="main_error_secure_state_open">No se pudo abrir el estado seguro de la sesión. Vuelve a intentarlo después de desbloquear el dispositivo.</string>
+    <string name="main_error_session_unavailable">Esa sesión ya no está disponible.</string>
+    <string name="main_error_session_read_save">No se pudo guardar el estado de lectura de la sesión.</string>
+    <string name="main_error_session_draft_save">No se pudo guardar de forma segura el borrador de la sesión.</string>
+    <string name="main_error_session_message_required">Escribe un mensaje antes de enviarlo.</string>
+    <string name="main_error_session_steer">No se pudo redirigir el turno activo.</string>
+    <string name="main_error_session_send">No se pudo enviar la entrada de la sesión.</string>
+    <string name="main_error_session_draft_clear">El mensaje se entregó, pero no se pudo borrar de forma segura su borrador guardado.</string>
+    <string name="main_error_session_resume">No se pudo reanudar la sesión guardada.</string>
+    <string name="main_error_session_interrupt">No se pudo interrumpir el turno activo.</string>
+    <plurals name="main_error_session_draft_too_long">
+        <item quantity="one">Los borradores de sesión tienen un límite de %1$d carácter.</item>
+        <item quantity="many">Los borradores de sesión tienen un límite de %1$d caracteres.</item>
+        <item quantity="other">Los borradores de sesión tienen un límite de %1$d caracteres.</item>
+    </plurals>
     <string name="session_action_type_command">Aprobación de comando</string>
     <string name="session_action_type_file_change">Aprobación de cambio de archivo</string>
     <string name="session_action_type_question">Pregunta</string>

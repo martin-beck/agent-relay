@@ -169,6 +169,21 @@
     <string name="main_error_connection_close">Не удалось корректно закрыть подключение.</string>
     <string name="main_error_identity_decision">Не удалось применить решение о подлинности сервера.</string>
     <string name="main_error_secure_state_open">Не удалось открыть защищенное состояние сеанса. Повторите попытку после разблокировки устройства.</string>
+    <string name="main_error_session_unavailable">Этот сеанс больше недоступен.</string>
+    <string name="main_error_session_read_save">Не удалось сохранить статус прочтения сеанса.</string>
+    <string name="main_error_session_draft_save">Не удалось безопасно сохранить черновик сеанса.</string>
+    <string name="main_error_session_message_required">Введите сообщение перед отправкой.</string>
+    <string name="main_error_session_steer">Не удалось скорректировать активный ход.</string>
+    <string name="main_error_session_send">Не удалось отправить ввод в сеанс.</string>
+    <string name="main_error_session_draft_clear">Сообщение доставлено, но не удалось безопасно удалить его сохранённый черновик.</string>
+    <string name="main_error_session_resume">Не удалось возобновить сохранённый сеанс.</string>
+    <string name="main_error_session_interrupt">Не удалось прервать активный ход.</string>
+    <plurals name="main_error_session_draft_too_long">
+        <item quantity="one">Черновики сеансов ограничены %1$d символом.</item>
+        <item quantity="few">Черновики сеансов ограничены %1$d символами.</item>
+        <item quantity="many">Черновики сеансов ограничены %1$d символами.</item>
+        <item quantity="other">Черновики сеансов ограничены %1$d символами.</item>
+    </plurals>
     <string name="session_action_type_command">Подтверждение команды</string>
     <string name="session_action_type_file_change">Подтверждение изменения файла</string>
     <string name="session_action_type_question">Вопрос</string>

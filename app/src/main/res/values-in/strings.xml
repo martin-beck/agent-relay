@@ -163,6 +163,18 @@
     <string name="main_error_connection_close">Koneksi tidak dapat ditutup dengan benar.</string>
     <string name="main_error_identity_decision">Keputusan identitas server tidak dapat diterapkan.</string>
     <string name="main_error_secure_state_open">Status sesi aman tidak dapat dibuka. Coba lagi setelah perangkat dibuka kuncinya.</string>
+    <string name="main_error_session_unavailable">Sesi tersebut sudah tidak tersedia.</string>
+    <string name="main_error_session_read_save">Status sudah dibaca pada sesi tidak dapat disimpan.</string>
+    <string name="main_error_session_draft_save">Draf sesi tidak dapat disimpan dengan aman.</string>
+    <string name="main_error_session_message_required">Masukkan pesan sebelum mengirim.</string>
+    <string name="main_error_session_steer">Giliran aktif tidak dapat diarahkan.</string>
+    <string name="main_error_session_send">Input sesi tidak dapat dikirim.</string>
+    <string name="main_error_session_draft_clear">Pesan telah terkirim, tetapi draf tersimpannya tidak dapat dihapus dengan aman.</string>
+    <string name="main_error_session_resume">Sesi tersimpan tidak dapat dilanjutkan.</string>
+    <string name="main_error_session_interrupt">Giliran aktif tidak dapat dihentikan.</string>
+    <plurals name="main_error_session_draft_too_long">
+        <item quantity="other">Draf sesi dibatasi hingga %1$d karakter.</item>
+    </plurals>
     <string name="session_action_type_command">Persetujuan perintah</string>
     <string name="session_action_type_file_change">Persetujuan perubahan file</string>
     <string name="session_action_type_question">Pertanyaan</string>

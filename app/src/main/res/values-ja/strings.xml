@@ -163,6 +163,18 @@
     <string name="main_error_connection_close">接続を正常に閉じられませんでした。</string>
     <string name="main_error_identity_decision">サーバー ID に関する判断を適用できませんでした。</string>
     <string name="main_error_secure_state_open">安全なセッション状態を開けませんでした。デバイスのロックを解除してからもう一度お試しください。</string>
+    <string name="main_error_session_unavailable">そのセッションは利用できなくなりました。</string>
+    <string name="main_error_session_read_save">セッションの既読状態を保存できませんでした。</string>
+    <string name="main_error_session_draft_save">セッションの下書きを安全に保存できませんでした。</string>
+    <string name="main_error_session_message_required">送信する前にメッセージを入力してください。</string>
+    <string name="main_error_session_steer">進行中のターンを誘導できませんでした。</string>
+    <string name="main_error_session_send">セッションへの入力を送信できませんでした。</string>
+    <string name="main_error_session_draft_clear">メッセージは配信されましたが、保存済みの下書きを安全に消去できませんでした。</string>
+    <string name="main_error_session_resume">保存済みのセッションを再開できませんでした。</string>
+    <string name="main_error_session_interrupt">進行中のターンを中断できませんでした。</string>
+    <plurals name="main_error_session_draft_too_long">
+        <item quantity="other">セッションの下書きは %1$d 文字までです。</item>
+    </plurals>
     <string name="session_action_type_command">コマンドの承認</string>
     <string name="session_action_type_file_change">ファイル変更の承認</string>
     <string name="session_action_type_question">質問</string>

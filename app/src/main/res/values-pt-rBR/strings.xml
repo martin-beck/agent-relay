@@ -167,6 +167,20 @@
     <string name="main_error_connection_close">Não foi possível fechar a conexão corretamente.</string>
     <string name="main_error_identity_decision">Não foi possível aplicar a decisão de identidade do servidor.</string>
     <string name="main_error_secure_state_open">Não foi possível abrir o estado seguro da sessão. Tente novamente após desbloquear o dispositivo.</string>
+    <string name="main_error_session_unavailable">Essa sessão não está mais disponível.</string>
+    <string name="main_error_session_read_save">Não foi possível salvar o estado de leitura da sessão.</string>
+    <string name="main_error_session_draft_save">Não foi possível salvar com segurança o rascunho da sessão.</string>
+    <string name="main_error_session_message_required">Digite uma mensagem antes de enviar.</string>
+    <string name="main_error_session_steer">Não foi possível orientar o turno ativo.</string>
+    <string name="main_error_session_send">Não foi possível enviar a entrada da sessão.</string>
+    <string name="main_error_session_draft_clear">A mensagem foi entregue, mas não foi possível apagar com segurança o rascunho salvo.</string>
+    <string name="main_error_session_resume">Não foi possível retomar a sessão salva.</string>
+    <string name="main_error_session_interrupt">Não foi possível interromper o turno ativo.</string>
+    <plurals name="main_error_session_draft_too_long">
+        <item quantity="one">Os rascunhos de sessão têm limite de %1$d caractere.</item>
+        <item quantity="many">Os rascunhos de sessão têm limite de %1$d caracteres.</item>
+        <item quantity="other">Os rascunhos de sessão têm limite de %1$d caracteres.</item>
+    </plurals>
     <string name="session_action_type_command">Aprovação de comando</string>
     <string name="session_action_type_file_change">Aprovação de alteração de arquivo</string>
     <string name="session_action_type_question">Pergunta</string>

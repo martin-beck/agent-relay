@@ -167,6 +167,20 @@
     <string name="main_error_connection_close">Impossible de fermer correctement la connexion.</string>
     <string name="main_error_identity_decision">Impossible d’appliquer la décision concernant l’identité du serveur.</string>
     <string name="main_error_secure_state_open">Impossible d’ouvrir l’état sécurisé de la session. Réessayez après avoir déverrouillé l’appareil.</string>
+    <string name="main_error_session_unavailable">Cette session n’est plus disponible.</string>
+    <string name="main_error_session_read_save">L’état de lecture de la session n’a pas pu être enregistré.</string>
+    <string name="main_error_session_draft_save">Le brouillon de la session n’a pas pu être enregistré de manière sécurisée.</string>
+    <string name="main_error_session_message_required">Saisissez un message avant de l’envoyer.</string>
+    <string name="main_error_session_steer">Le tour actif n’a pas pu être orienté.</string>
+    <string name="main_error_session_send">L’entrée de session n’a pas pu être envoyée.</string>
+    <string name="main_error_session_draft_clear">Le message a été transmis, mais son brouillon enregistré n’a pas pu être effacé de manière sécurisée.</string>
+    <string name="main_error_session_resume">La session enregistrée n’a pas pu être reprise.</string>
+    <string name="main_error_session_interrupt">Le tour actif n’a pas pu être interrompu.</string>
+    <plurals name="main_error_session_draft_too_long">
+        <item quantity="one">Les brouillons de session sont limités à %1$d caractère.</item>
+        <item quantity="many">Les brouillons de session sont limités à %1$d caractères.</item>
+        <item quantity="other">Les brouillons de session sont limités à %1$d caractères.</item>
+    </plurals>
     <string name="session_action_type_command">Approbation de commande</string>
     <string name="session_action_type_file_change">Approbation de modification de fichier</string>
     <string name="session_action_type_question">Question</string>
