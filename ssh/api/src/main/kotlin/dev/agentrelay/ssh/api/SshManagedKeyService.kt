@@ -4,6 +4,9 @@ import dev.agentrelay.provider.api.RemoteCommand
 import java.util.Base64
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -123,6 +126,18 @@ class SshManagedKeyService(
             } finally {
                 connection.close()
             }
+        } catch (timeout: TimeoutCancellationException) {
+            currentCoroutineContext().ensureActive()
+            throw SshConnectionException(
+                SshFailure(
+                    category = SshFailureCategory.NETWORK,
+                    code = "SSH_KEY_OPERATION_TIMEOUT",
+                    actionableMessage =
+                    "The SSH key operation timed out. Check the network connection and retry.",
+                    recoverable = true,
+                ),
+                timeout,
+            )
         } finally {
             route.close()
         }
