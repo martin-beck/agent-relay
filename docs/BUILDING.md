@@ -135,6 +135,14 @@ confirmation matrix:
 ./gradlew :app:verifyRoborazziDebug --tests '*SessionDetailScreenshotTest'
 ```
 
+Use the artifact class filter for the compact changed-file progress, cancel,
+verified-copy, and unavailable-file matrix:
+
+```bash
+./gradlew :app:recordRoborazziDebug --tests '*ArtifactScreenshotTest'
+./gradlew :app:verifyRoborazziDebug --tests '*ArtifactScreenshotTest'
+```
+
 Review every changed PNG under `app/src/test/screenshots` before committing it.
 Do not combine record and verify in one Gradle invocation because both
 Roborazzi modes use the same Android unit-test task.

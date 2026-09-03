@@ -351,19 +351,19 @@ Compose screenshot tests by Now in Android. Paparazzi's current 2.0 release is
 still an alpha, while Element X Android's mature Paparazzi/Showkase pattern
 remains a useful reference for preview coverage.
 
-The 94 committed baselines under `app/src/test/screenshots` include eight
+The 126 committed baselines under `app/src/test/screenshots` include eight
 adaptive state captures, 16 independently reported session-hub locale captures,
-38 profile-editor captures, and 32 session-detail captures. Every bundled locale
-and both Android pseudo-locales render the session hub, endpoint validation, and
-managed-key
-operations at 360 x 800 dp and 1.3x font scale. Both pseudo-locales additionally
-exercise password, imported-key, and passphrase-replacement branches. The
-profile tests cover wrapping required labels, editable-control descriptions,
-field and global errors, radio roles and selection, selectable groups, and
-physical RTL Save/Close/Delete ordering. They reject off-viewport, height-
-overflowing, or ellipsized visible text. Robolectric's paused main looper is
-idled directly before the multi-window snapshot so dialog semantics are
-published without entering the indefinite TextField-idling path.
+38 profile-editor captures, 32 session-detail captures, and 32 changed-file
+artifact captures. Every bundled locale and both Android pseudo-locales render
+the session hub, endpoint validation, and managed-key operations at 360 x 800 dp
+and 1.3x font scale. Both pseudo-locales additionally exercise password,
+imported-key, and passphrase-replacement branches. The profile tests cover
+wrapping required labels, editable-control descriptions, field and global
+errors, radio roles and selection, selectable groups, and physical RTL
+Save/Close/Delete ordering. They reject off-viewport, height-overflowing, or
+ellipsized visible text. Robolectric's paused main looper is idled directly
+before the multi-window snapshot so dialog semantics are published without
+entering the indefinite TextField-idling path.
 
 Each locale also renders one compact session-detail question state and its
 sensitive-action confirmation at 360 x 800 dp and 1.3x font scale. Those tests
@@ -371,6 +371,12 @@ require Question/Other/Submit/Cancel and dialog actions to remain fully inside
 their window, reject text overflow and ellipsis, exercise radio/selectable-group
 and checkbox semantics, and verify pseudo-locale keyboard behavior plus RTL
 action mirroring.
+
+The changed-file matrix renders an active checked-copy transfer with its
+localized progress and cancel action, followed by verified-copy success and a
+deleted-source unavailable state. It asserts live-region, progress-indicator,
+button-role, enabled-action, locale-direction, and four-edge containment
+semantics while rejecting horizontal text overflow and ellipsis.
 
 A review of the initial baselines found a narrow-width French clipping defect;
 compact header and recovery actions now stack vertically so long labels receive
