@@ -40,17 +40,18 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.res.stringResource
 import com.example.agentrelay.R
+import dev.agentrelay.provider.api.AgentFileChangeKind
 import dev.agentrelay.session.api.SessionActivityType
 import java.text.DateFormat
 import java.text.NumberFormat
@@ -229,6 +230,30 @@ internal fun SessionDetailPane(
 }
 
 @get:StringRes
+private val AgentFileChangeKind.labelResource: Int
+    get() = when (this) {
+        AgentFileChangeKind.ADDED -> R.string.session_artifact_change_added
+        AgentFileChangeKind.MODIFIED -> R.string.session_artifact_change_modified
+        AgentFileChangeKind.DELETED -> R.string.session_artifact_change_deleted
+        AgentFileChangeKind.RENAMED -> R.string.session_artifact_change_renamed
+        AgentFileChangeKind.UNKNOWN -> R.string.session_artifact_change_unknown
+    }
+
+@get:StringRes
+private val SessionArtifactAvailabilityStatus.pathFallbackResource: Int?
+    get() = when (this) {
+        SessionArtifactAvailabilityStatus.DELETED -> R.string.session_artifact_path_deleted
+        SessionArtifactAvailabilityStatus.OUTSIDE_WORKSPACE ->
+            R.string.session_artifact_path_outside_workspace
+        SessionArtifactAvailabilityStatus.WORKSPACE_UNKNOWN ->
+            R.string.session_artifact_path_workspace_unknown
+        SessionArtifactAvailabilityStatus.RECONNECT,
+        SessionArtifactAvailabilityStatus.UNSUPPORTED,
+        SessionArtifactAvailabilityStatus.READY,
+        -> null
+    }
+
+@get:StringRes
 private val SessionArtifactAvailabilityStatus.labelResource: Int
     get() = when (this) {
         SessionArtifactAvailabilityStatus.RECONNECT -> R.string.session_artifact_availability_reconnect
@@ -248,6 +273,9 @@ private fun ArtifactCard(
     onCancelArtifact: (String) -> Unit,
 ) {
     val numberFormat = NumberFormat.getIntegerInstance(LocalConfiguration.current.locales[0])
+    val displayPath = artifact.displayPath ?: stringResource(
+        checkNotNull(artifact.availabilityStatus.pathFallbackResource),
+    )
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -266,7 +294,7 @@ private fun ArtifactCard(
             ) {
                 SelectionContainer(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = artifact.displayPath,
+                        text = displayPath,
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Medium,
                         maxLines = 4,
@@ -274,7 +302,7 @@ private fun ArtifactCard(
                     )
                 }
                 Text(
-                    text = artifact.changeLabel,
+                    text = stringResource(artifact.changeKind.labelResource),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.primary,
                 )

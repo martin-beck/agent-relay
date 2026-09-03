@@ -66,6 +66,7 @@ dependencies {
 
     // Core Android dependencies
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.annotation)
     implementation(libs.androidx.core.base)
     implementation(libs.androidx.core.ktx)
 
@@ -90,6 +91,7 @@ dependencies {
     implementation(project(":session:runtime"))
     implementation(project(":speech:api"))
     implementation(project(":ssh:android"))
+    implementation(project(":ssh:api"))
     implementation(project(":storage:android"))
     implementation(libs.kotlinx.serialization.json)
 

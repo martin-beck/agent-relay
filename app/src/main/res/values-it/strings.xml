@@ -249,4 +249,12 @@
     <string name="session_artifact_availability_deleted">Eliminato nel provider; non è disponibile alcuna copia.</string>
     <string name="session_artifact_availability_outside_workspace">Fuori dallo spazio di lavoro della sessione; il salvataggio è bloccato.</string>
     <string name="session_artifact_availability_workspace_unknown">Lo spazio di lavoro della sessione non è disponibile; il salvataggio è bloccato.</string>
+    <string name="session_artifact_change_added">Aggiunto</string>
+    <string name="session_artifact_change_modified">Modificato</string>
+    <string name="session_artifact_change_deleted">Eliminato</string>
+    <string name="session_artifact_change_renamed">Rinominato</string>
+    <string name="session_artifact_change_unknown">Modificato</string>
+    <string name="session_artifact_path_deleted">File eliminato</string>
+    <string name="session_artifact_path_outside_workspace">File fuori dallo spazio di lavoro</string>
+    <string name="session_artifact_path_workspace_unknown">File con spazio di lavoro sconosciuto</string>
 </resources>

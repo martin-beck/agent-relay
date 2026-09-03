@@ -8,6 +8,7 @@ import dev.agentrelay.connection.api.ConnectionState
 import dev.agentrelay.provider.api.AgentApprovalDecision
 import dev.agentrelay.provider.api.AgentApprovalType
 import dev.agentrelay.provider.api.AgentCapability
+import dev.agentrelay.provider.api.AgentFileChangeKind
 import dev.agentrelay.provider.api.AgentMessageChannel
 import dev.agentrelay.provider.api.AgentSessionState
 import dev.agentrelay.provider.api.AgentTranscriptRole
@@ -145,8 +146,8 @@ internal enum class SessionArtifactAvailabilityStatus {
 internal data class SessionArtifactUiModel(
     val stableKey: String,
     val sessionKey: String,
-    val displayPath: String,
-    val changeLabel: String,
+    val displayPath: String?,
+    val changeKind: AgentFileChangeKind,
     val availabilityStatus: SessionArtifactAvailabilityStatus,
     val suggestedFileName: String,
     val isDownloadable: Boolean,

@@ -34,6 +34,7 @@ import com.example.agentrelay.theme.AgentRelayTheme
 import dev.agentrelay.connection.api.ConnectionProfileFieldType
 import dev.agentrelay.provider.api.AgentApprovalDecision
 import dev.agentrelay.provider.api.AgentApprovalType
+import dev.agentrelay.provider.api.AgentFileChangeKind
 import dev.agentrelay.provider.api.AgentSessionState
 import dev.agentrelay.session.api.SessionActionRisk
 import dev.agentrelay.session.api.SessionActionState
@@ -916,7 +917,7 @@ internal fun testHub(): SessionHubUiModel {
                     stableKey = "artifact-key",
                     sessionKey = "session-key",
                     displayPath = "reports/result.txt",
-                    changeLabel = "Modified",
+                    changeKind = AgentFileChangeKind.MODIFIED,
                     availabilityStatus = SessionArtifactAvailabilityStatus.READY,
                     suggestedFileName = "result.txt",
                     isDownloadable = true,

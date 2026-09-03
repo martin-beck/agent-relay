@@ -249,4 +249,12 @@
     <string name="session_artifact_availability_deleted">Supprimé chez le fournisseur ; aucune copie n’est disponible.</string>
     <string name="session_artifact_availability_outside_workspace">Hors de l’espace de travail de la session ; l’enregistrement est bloqué.</string>
     <string name="session_artifact_availability_workspace_unknown">L’espace de travail de la session est indisponible ; l’enregistrement est bloqué.</string>
+    <string name="session_artifact_change_added">Ajouté</string>
+    <string name="session_artifact_change_modified">Modifié</string>
+    <string name="session_artifact_change_deleted">Supprimé</string>
+    <string name="session_artifact_change_renamed">Renommé</string>
+    <string name="session_artifact_change_unknown">Modifié</string>
+    <string name="session_artifact_path_deleted">Fichier supprimé</string>
+    <string name="session_artifact_path_outside_workspace">Fichier hors de l’espace de travail</string>
+    <string name="session_artifact_path_workspace_unknown">Fichier dont l’espace de travail est inconnu</string>
 </resources>

@@ -10,6 +10,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.agentrelay.theme.AgentRelayTheme
 import dev.agentrelay.provider.api.AgentApprovalDecision
 import dev.agentrelay.provider.api.AgentApprovalType
+import dev.agentrelay.provider.api.AgentFileChangeKind
 import dev.agentrelay.provider.api.AgentSessionState
 import dev.agentrelay.session.api.SessionActionRisk
 import dev.agentrelay.session.api.SessionActionState
@@ -331,7 +332,7 @@ private fun previewDetail(
             stableKey = "preview-artifact",
             sessionKey = session.stableKey,
             displayPath = "reports/ui-check.txt",
-            changeLabel = "Modified",
+            changeKind = AgentFileChangeKind.MODIFIED,
             availabilityStatus = SessionArtifactAvailabilityStatus.READY,
             suggestedFileName = "ui-check.txt",
             isDownloadable = true,

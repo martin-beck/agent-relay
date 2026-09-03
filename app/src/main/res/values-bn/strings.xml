@@ -245,4 +245,12 @@
     <string name="session_artifact_availability_deleted">প্রদানকারীর কাছে মুছে ফেলা হয়েছে; কোনো কপি উপলভ্য নেই।</string>
     <string name="session_artifact_availability_outside_workspace">সেশনের ওয়ার্কস্পেসের বাইরে; সংরক্ষণ বন্ধ আছে।</string>
     <string name="session_artifact_availability_workspace_unknown">সেশনের ওয়ার্কস্পেস উপলভ্য নয়; সংরক্ষণ বন্ধ আছে।</string>
+    <string name="session_artifact_change_added">যোগ করা হয়েছে</string>
+    <string name="session_artifact_change_modified">পরিবর্তন করা হয়েছে</string>
+    <string name="session_artifact_change_deleted">মুছে ফেলা হয়েছে</string>
+    <string name="session_artifact_change_renamed">নাম পরিবর্তন করা হয়েছে</string>
+    <string name="session_artifact_change_unknown">পরিবর্তিত</string>
+    <string name="session_artifact_path_deleted">মুছে ফেলা ফাইল</string>
+    <string name="session_artifact_path_outside_workspace">ওয়ার্কস্পেসের বাইরের ফাইল</string>
+    <string name="session_artifact_path_workspace_unknown">অজানা ওয়ার্কস্পেসের ফাইল</string>
 </resources>

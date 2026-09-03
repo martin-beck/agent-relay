@@ -241,4 +241,12 @@
     <string name="session_artifact_availability_deleted">Dihapus pada penyedia; tidak ada salinan yang tersedia.</string>
     <string name="session_artifact_availability_outside_workspace">Di luar ruang kerja sesi; penyimpanan diblokir.</string>
     <string name="session_artifact_availability_workspace_unknown">Ruang kerja sesi tidak tersedia; penyimpanan diblokir.</string>
+    <string name="session_artifact_change_added">Ditambahkan</string>
+    <string name="session_artifact_change_modified">Diubah</string>
+    <string name="session_artifact_change_deleted">Dihapus</string>
+    <string name="session_artifact_change_renamed">Diubah namanya</string>
+    <string name="session_artifact_change_unknown">Berubah</string>
+    <string name="session_artifact_path_deleted">File yang dihapus</string>
+    <string name="session_artifact_path_outside_workspace">File di luar ruang kerja</string>
+    <string name="session_artifact_path_workspace_unknown">File dengan ruang kerja yang tidak diketahui</string>
 </resources>

@@ -245,4 +245,12 @@
     <string name="session_artifact_availability_deleted">प्रदाता पर हटा दिया गया; कोई कॉपी उपलब्ध नहीं है।</string>
     <string name="session_artifact_availability_outside_workspace">सत्र के कार्यस्थान से बाहर; सहेजना अवरुद्ध है।</string>
     <string name="session_artifact_availability_workspace_unknown">सत्र का कार्यस्थान उपलब्ध नहीं है; सहेजना अवरुद्ध है।</string>
+    <string name="session_artifact_change_added">जोड़ा गया</string>
+    <string name="session_artifact_change_modified">बदला गया</string>
+    <string name="session_artifact_change_deleted">हटाया गया</string>
+    <string name="session_artifact_change_renamed">नाम बदला गया</string>
+    <string name="session_artifact_change_unknown">परिवर्तित</string>
+    <string name="session_artifact_path_deleted">हटाई गई फ़ाइल</string>
+    <string name="session_artifact_path_outside_workspace">कार्यस्थान के बाहर की फ़ाइल</string>
+    <string name="session_artifact_path_workspace_unknown">अज्ञात कार्यस्थान वाली फ़ाइल</string>
 </resources>

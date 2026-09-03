@@ -1,6 +1,5 @@
 package com.example.agentrelay.ui.main
 
-import dev.agentrelay.provider.api.AgentFileChangeKind
 import dev.agentrelay.session.api.SessionArtifact
 import dev.agentrelay.session.api.SessionArtifactAvailability
 
@@ -14,7 +13,7 @@ internal object SessionArtifactUiMapper {
         stableKey = artifact.stableUiKey,
         sessionKey = artifact.locator.stableUiKey,
         displayPath = artifact.safeDisplayPath(),
-        changeLabel = artifact.kind.uiLabel,
+        changeKind = artifact.kind,
         availabilityStatus =
         artifact.availability.uiStatus(providerReady, fileAccessAvailable),
         suggestedFileName = artifact.suggestedFileName(),
@@ -31,14 +30,12 @@ internal object SessionArtifactUiMapper {
         isExportComplete = transfer?.isComplete == true,
     )
 
-    private fun SessionArtifact.safeDisplayPath(): String =
-        relativePath ?: when (availability) {
-            SessionArtifactAvailability.DELETED -> "Deleted file"
-            SessionArtifactAvailability.OUTSIDE_WORKSPACE -> "File outside workspace"
-            SessionArtifactAvailability.WORKSPACE_UNKNOWN -> "File with unknown workspace"
-            SessionArtifactAvailability.DOWNLOADABLE ->
-                error("Downloadable artifact lacks a path")
-        }
+    private fun SessionArtifact.safeDisplayPath(): String? = when {
+        relativePath != null -> relativePath
+        availability == SessionArtifactAvailability.DOWNLOADABLE ->
+            error("Downloadable artifact lacks a path")
+        else -> null
+    }
 
     private fun SessionArtifact.suggestedFileName(): String =
         relativePath
@@ -47,15 +44,6 @@ internal object SessionArtifactUiMapper {
             ?.take(MAX_SAF_FILE_NAME_CHARS)
             ?.takeIf(String::isNotBlank)
             ?: "session-artifact"
-
-    private val AgentFileChangeKind.uiLabel: String
-        get() = when (this) {
-            AgentFileChangeKind.ADDED -> "Added"
-            AgentFileChangeKind.MODIFIED -> "Modified"
-            AgentFileChangeKind.DELETED -> "Deleted"
-            AgentFileChangeKind.RENAMED -> "Renamed"
-            AgentFileChangeKind.UNKNOWN -> "Changed"
-        }
 
     private fun SessionArtifactAvailability.uiStatus(
         providerReady: Boolean,

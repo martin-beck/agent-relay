@@ -632,8 +632,12 @@ class SessionHubUiMapperTest {
 
         val artifacts = checkNotNull(mapped.selectedSession).artifacts
         assertEquals(
-            listOf("reports/result.txt", "File outside workspace"),
+            listOf("reports/result.txt", null),
             artifacts.map(SessionArtifactUiModel::displayPath),
+        )
+        assertEquals(
+            listOf(AgentFileChangeKind.MODIFIED, AgentFileChangeKind.ADDED),
+            artifacts.map(SessionArtifactUiModel::changeKind),
         )
         assertEquals(
             listOf(
@@ -644,7 +648,7 @@ class SessionHubUiMapperTest {
         )
         assertTrue(artifacts.first().canSave)
         assertFalse(artifacts.last().isDownloadable)
-        assertFalse(artifacts.any { it.displayPath.contains("private") })
+        assertFalse(artifacts.any { it.displayPath.orEmpty().contains("private") })
         assertTrue(checkNotNull(mapped.selectedSession).canRefreshArtifacts)
 
         val withoutFileAccess = SessionArtifactUiMapper.map(

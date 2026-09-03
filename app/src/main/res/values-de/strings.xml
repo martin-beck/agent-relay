@@ -245,4 +245,12 @@
     <string name="session_artifact_availability_deleted">Beim Anbieter gelöscht; es ist keine Kopie verfügbar.</string>
     <string name="session_artifact_availability_outside_workspace">Außerhalb des Sitzungsarbeitsbereichs; Speichern ist blockiert.</string>
     <string name="session_artifact_availability_workspace_unknown">Der Sitzungsarbeitsbereich ist nicht verfügbar; Speichern ist blockiert.</string>
+    <string name="session_artifact_change_added">Hinzugefügt</string>
+    <string name="session_artifact_change_modified">Geändert</string>
+    <string name="session_artifact_change_deleted">Gelöscht</string>
+    <string name="session_artifact_change_renamed">Umbenannt</string>
+    <string name="session_artifact_change_unknown">Geändert</string>
+    <string name="session_artifact_path_deleted">Gelöschte Datei</string>
+    <string name="session_artifact_path_outside_workspace">Datei außerhalb des Arbeitsbereichs</string>
+    <string name="session_artifact_path_workspace_unknown">Datei mit unbekanntem Arbeitsbereich</string>
 </resources>

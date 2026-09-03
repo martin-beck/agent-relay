@@ -261,4 +261,12 @@
     <string name="session_artifact_availability_deleted">حُذف لدى المزوّد؛ لا تتوفر أي نسخة.</string>
     <string name="session_artifact_availability_outside_workspace">خارج مساحة عمل الجلسة؛ الحفظ محظور.</string>
     <string name="session_artifact_availability_workspace_unknown">مساحة عمل الجلسة غير متاحة؛ الحفظ محظور.</string>
+    <string name="session_artifact_change_added">تمت الإضافة</string>
+    <string name="session_artifact_change_modified">تم التعديل</string>
+    <string name="session_artifact_change_deleted">تم الحذف</string>
+    <string name="session_artifact_change_renamed">تمت إعادة التسمية</string>
+    <string name="session_artifact_change_unknown">تم التغيير</string>
+    <string name="session_artifact_path_deleted">ملف محذوف</string>
+    <string name="session_artifact_path_outside_workspace">ملف خارج مساحة العمل</string>
+    <string name="session_artifact_path_workspace_unknown">ملف بمساحة عمل غير معروفة</string>
 </resources>

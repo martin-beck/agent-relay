@@ -241,4 +241,12 @@
     <string name="session_artifact_availability_deleted">プロバイダー側で削除されているため、コピーは利用できません。</string>
     <string name="session_artifact_availability_outside_workspace">セッションのワークスペース外にあるため、保存できません。</string>
     <string name="session_artifact_availability_workspace_unknown">セッションのワークスペースを利用できないため、保存できません。</string>
+    <string name="session_artifact_change_added">追加</string>
+    <string name="session_artifact_change_modified">変更</string>
+    <string name="session_artifact_change_deleted">削除</string>
+    <string name="session_artifact_change_renamed">名前を変更</string>
+    <string name="session_artifact_change_unknown">変更</string>
+    <string name="session_artifact_path_deleted">削除されたファイル</string>
+    <string name="session_artifact_path_outside_workspace">ワークスペース外のファイル</string>
+    <string name="session_artifact_path_workspace_unknown">ワークスペースが不明なファイル</string>
 </resources>

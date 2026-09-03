@@ -253,4 +253,12 @@
     <string name="session_artifact_availability_deleted">Удалено у поставщика; копия недоступна.</string>
     <string name="session_artifact_availability_outside_workspace">За пределами рабочей области сеанса; сохранение заблокировано.</string>
     <string name="session_artifact_availability_workspace_unknown">Рабочая область сеанса недоступна; сохранение заблокировано.</string>
+    <string name="session_artifact_change_added">Добавлено</string>
+    <string name="session_artifact_change_modified">Изменено</string>
+    <string name="session_artifact_change_deleted">Удалено</string>
+    <string name="session_artifact_change_renamed">Переименовано</string>
+    <string name="session_artifact_change_unknown">Изменено</string>
+    <string name="session_artifact_path_deleted">Удалённый файл</string>
+    <string name="session_artifact_path_outside_workspace">Файл вне рабочей области</string>
+    <string name="session_artifact_path_workspace_unknown">Файл с неизвестной рабочей областью</string>
 </resources>

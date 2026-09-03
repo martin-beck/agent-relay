@@ -241,4 +241,12 @@
     <string name="session_artifact_availability_deleted">已在提供程序上删除；没有可用副本。</string>
     <string name="session_artifact_availability_outside_workspace">位于会话工作区之外；已阻止保存。</string>
     <string name="session_artifact_availability_workspace_unknown">会话工作区不可用；已阻止保存。</string>
+    <string name="session_artifact_change_added">已添加</string>
+    <string name="session_artifact_change_modified">已修改</string>
+    <string name="session_artifact_change_deleted">已删除</string>
+    <string name="session_artifact_change_renamed">已重命名</string>
+    <string name="session_artifact_change_unknown">已更改</string>
+    <string name="session_artifact_path_deleted">已删除的文件</string>
+    <string name="session_artifact_path_outside_workspace">工作区之外的文件</string>
+    <string name="session_artifact_path_workspace_unknown">工作区未知的文件</string>
 </resources>

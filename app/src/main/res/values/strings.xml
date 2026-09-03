@@ -275,4 +275,12 @@
     <string name="session_artifact_availability_deleted">Deleted on the provider; no copy is available.</string>
     <string name="session_artifact_availability_outside_workspace">Outside the session workspace; saving is blocked.</string>
     <string name="session_artifact_availability_workspace_unknown">Session workspace is unavailable; saving is blocked.</string>
+    <string name="session_artifact_change_added">Added</string>
+    <string name="session_artifact_change_modified">Modified</string>
+    <string name="session_artifact_change_deleted">Deleted</string>
+    <string name="session_artifact_change_renamed">Renamed</string>
+    <string name="session_artifact_change_unknown">Changed</string>
+    <string name="session_artifact_path_deleted">Deleted file</string>
+    <string name="session_artifact_path_outside_workspace">File outside workspace</string>
+    <string name="session_artifact_path_workspace_unknown">File with unknown workspace</string>
 </resources>

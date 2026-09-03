@@ -241,4 +241,12 @@
     <string name="session_artifact_availability_deleted">已在提供者端刪除；沒有可用副本。</string>
     <string name="session_artifact_availability_outside_workspace">位於工作階段工作區之外；已封鎖儲存。</string>
     <string name="session_artifact_availability_workspace_unknown">工作階段工作區無法使用；已封鎖儲存。</string>
+    <string name="session_artifact_change_added">已新增</string>
+    <string name="session_artifact_change_modified">已修改</string>
+    <string name="session_artifact_change_deleted">已刪除</string>
+    <string name="session_artifact_change_renamed">已重新命名</string>
+    <string name="session_artifact_change_unknown">已變更</string>
+    <string name="session_artifact_path_deleted">已刪除的檔案</string>
+    <string name="session_artifact_path_outside_workspace">工作區之外的檔案</string>
+    <string name="session_artifact_path_workspace_unknown">工作區未知的檔案</string>
 </resources>
