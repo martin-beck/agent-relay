@@ -309,7 +309,7 @@ private fun AttentionActionCard(
                 fontWeight = FontWeight.Bold,
             )
             Text(
-                text = action.title,
+                text = action.title.resolve(),
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold,
             )

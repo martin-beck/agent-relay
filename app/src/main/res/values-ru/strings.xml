@@ -380,4 +380,6 @@
     <string name="session_activity_summary_agent_question_requires_answer">На вопрос агента требуется ответ.</string>
     <string name="session_activity_summary_agent_approval_required">Требуется одобрение действия агента.</string>
     <string name="session_activity_summary_connection_reconnected">Подключение %1$s восстановлено.</string>
+    <string name="session_action_title_review_required">Действие агента требует проверки.</string>
+    <string name="session_question_prompt_fallback">Вопрос агента</string>
 </resources>

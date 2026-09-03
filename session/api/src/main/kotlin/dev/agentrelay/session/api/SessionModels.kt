@@ -180,6 +180,21 @@ enum class SessionActionRisk {
     EXTERNAL_TOOL,
 }
 
+enum class SessionPresentationTextKind {
+    ACTION_REVIEW_REQUIRED,
+    AGENT_QUESTION,
+}
+
+sealed interface SessionPresentationText {
+    data class Generated(val kind: SessionPresentationTextKind) : SessionPresentationText
+
+    data class Verbatim(val text: String) : SessionPresentationText {
+        init {
+            requireBounded(text, "Presentation text", MAX_DESCRIPTION_CHARS)
+        }
+    }
+}
+
 data class SessionQuestionOption(
     val label: String,
     val description: String? = null,
@@ -194,7 +209,7 @@ data class SessionQuestion(
     val id: String,
     val providerQuestionId: String,
     val header: String?,
-    val prompt: String,
+    val prompt: SessionPresentationText,
     val options: List<SessionQuestionOption> = emptyList(),
     val allowsOther: Boolean = true,
     val allowsMultiple: Boolean = false,
@@ -203,7 +218,12 @@ data class SessionQuestion(
         requireBounded(id, "Question id", MAX_ID_CHARS)
         requireBounded(providerQuestionId, "Provider question id", MAX_PROVIDER_REQUEST_ID_CHARS)
         header?.let { requireBounded(it, "Question header", MAX_LABEL_CHARS) }
-        requireBounded(prompt, "Question prompt", MAX_DESCRIPTION_CHARS)
+        requirePresentationText(
+            prompt,
+            "Question prompt",
+            MAX_DESCRIPTION_CHARS,
+            SessionPresentationTextKind.AGENT_QUESTION,
+        )
         require(options.size <= MAX_QUESTION_OPTIONS) { "Question has too many options" }
         require(options.distinctBy { it.label }.size == options.size) {
             "Question contains duplicate options"
@@ -220,7 +240,7 @@ data class SessionActionRequest(
     val locator: SessionLocator,
     val turnId: String?,
     val type: AgentApprovalType,
-    val title: String,
+    val title: SessionPresentationText,
     val description: String?,
     val command: String?,
     val workingDirectory: String?,
@@ -238,7 +258,12 @@ data class SessionActionRequest(
         requireBounded(id, "Action request id", MAX_ID_CHARS)
         requireBounded(providerApprovalId, "Provider approval id", MAX_PROVIDER_REQUEST_ID_CHARS)
         turnId?.let { requireBounded(it, "Action turn id", MAX_ID_CHARS) }
-        requireBounded(title, "Action title", MAX_TITLE_CHARS)
+        requirePresentationText(
+            title,
+            "Action title",
+            MAX_TITLE_CHARS,
+            SessionPresentationTextKind.ACTION_REVIEW_REQUIRED,
+        )
         description?.let { requireBounded(it, "Action description", MAX_DESCRIPTION_CHARS) }
         command?.let { requireBounded(it, "Action command", MAX_COMMAND_CHARS) }
         workingDirectory?.let { requireBounded(it, "Action working directory", MAX_PATH_CHARS) }
@@ -524,6 +549,20 @@ internal fun SessionHubSnapshot.normalized(policy: SessionRetentionPolicy): Sess
 private fun requireBounded(value: String, label: String, maximum: Int) {
     require(value.isNotBlank()) { "$label must not be blank" }
     require(value.length <= maximum) { "$label is too large" }
+}
+
+private fun requirePresentationText(
+    value: SessionPresentationText,
+    label: String,
+    maximum: Int,
+    generatedKind: SessionPresentationTextKind,
+) {
+    when (value) {
+        is SessionPresentationText.Verbatim -> requireBounded(value.text, label, maximum)
+        is SessionPresentationText.Generated -> require(value.kind == generatedKind) {
+            "$label has the wrong generated kind"
+        }
+    }
 }
 
 private fun requireArtifactRelativePath(value: String, label: String) {

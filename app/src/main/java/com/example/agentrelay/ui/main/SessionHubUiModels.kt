@@ -25,6 +25,8 @@ import dev.agentrelay.session.api.SessionArtifact
 import dev.agentrelay.session.api.SessionDraft
 import dev.agentrelay.session.api.SessionHubSnapshot
 import dev.agentrelay.session.api.SessionLocator
+import dev.agentrelay.session.api.SessionPresentationText
+import dev.agentrelay.session.api.SessionPresentationTextKind
 import dev.agentrelay.session.api.SessionRecord
 import dev.agentrelay.session.runtime.AgentEndpointKey
 import dev.agentrelay.session.runtime.AgentEndpointStatus
@@ -166,7 +168,7 @@ internal data class SessionArtifactUiModel(
 internal data class SessionActionUiModel(
     val stableKey: String,
     val sessionKey: String,
-    val title: String,
+    val title: UiMessage,
     val type: AgentApprovalType,
     val description: String?,
     val command: String?,
@@ -188,7 +190,7 @@ internal data class SessionActionUiModel(
 internal data class SessionQuestionUiModel(
     val stableKey: String,
     val header: String?,
-    val prompt: String,
+    val prompt: UiMessage,
     val options: List<SessionQuestionOptionUiModel>,
     val allowsOther: Boolean,
     val allowsMultiple: Boolean,
@@ -559,7 +561,7 @@ internal object SessionHubUiMapper {
     ) = SessionActionUiModel(
         stableKey = id,
         sessionKey = locator.stableUiKey,
-        title = title,
+        title = title.toUiMessage(),
         type = type,
         description = description,
         command = command,
@@ -573,7 +575,7 @@ internal object SessionHubUiMapper {
             SessionQuestionUiModel(
                 stableKey = question.id,
                 header = question.header,
-                prompt = question.prompt,
+                prompt = question.prompt.toUiMessage(),
                 options = question.options.map { option ->
                     SessionQuestionOptionUiModel(option.label, option.description)
                 },
@@ -828,6 +830,17 @@ internal object SessionHubUiMapper {
     )
 
     private const val MAX_RENDERED_TRANSCRIPT_CHARS = 32_000
+}
+
+private fun SessionPresentationText.toUiMessage(): UiMessage = when (this) {
+    is SessionPresentationText.Verbatim -> UiMessage.Verbatim(text)
+    is SessionPresentationText.Generated -> UiMessage.Localized(
+        when (kind) {
+            SessionPresentationTextKind.ACTION_REVIEW_REQUIRED ->
+                R.string.session_action_title_review_required
+            SessionPresentationTextKind.AGENT_QUESTION -> R.string.session_question_prompt_fallback
+        },
+    )
 }
 
 private fun SessionActivitySummary.toUiMessage(): UiMessage = when (this) {

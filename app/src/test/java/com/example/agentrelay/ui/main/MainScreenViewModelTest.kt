@@ -36,6 +36,7 @@ import dev.agentrelay.session.api.SessionArtifactAvailability
 import dev.agentrelay.session.api.SessionHubSnapshot
 import dev.agentrelay.session.api.SessionLocator
 import dev.agentrelay.session.api.SessionObservation
+import dev.agentrelay.session.api.SessionPresentationText
 import dev.agentrelay.session.api.SessionQuestion
 import dev.agentrelay.session.api.SessionQuestionOption
 import dev.agentrelay.session.api.SessionRecord
@@ -541,7 +542,7 @@ class MainScreenViewModelTest {
             locator = existingLocator,
             turnId = "turn-1",
             type = AgentApprovalType.USER_INPUT,
-            title = "Choose validation scope",
+            title = SessionPresentationText.Verbatim("Choose validation scope"),
             description = "The provider needs a scope before continuing.",
             command = null,
             workingDirectory = "/workspace/project",
@@ -550,7 +551,7 @@ class MainScreenViewModelTest {
                     id = "stable-question-key",
                     providerQuestionId = "provider-private-question-id",
                     header = "Scope",
-                    prompt = "Which tests should run?",
+                    prompt = SessionPresentationText.Verbatim("Which tests should run?"),
                     options = listOf(
                         SessionQuestionOption("Focused tests"),
                     ),
@@ -980,7 +981,7 @@ class MainScreenCreatorActionErrorTest {
         locator = locator,
         turnId = "private-turn",
         type = AgentApprovalType.PERMISSION,
-        title = "Permission",
+        title = SessionPresentationText.Verbatim("Permission"),
         description = "Continue?",
         command = null,
         workingDirectory = null,

@@ -364,4 +364,6 @@
     <string name="session_activity_summary_agent_question_requires_answer">Eine Agentenfrage muss beantwortet werden.</string>
     <string name="session_activity_summary_agent_approval_required">Agentengenehmigung erforderlich.</string>
     <string name="session_activity_summary_connection_reconnected">%1$s wurde wieder verbunden.</string>
+    <string name="session_action_title_review_required">Agentenaktion muss überprüft werden.</string>
+    <string name="session_question_prompt_fallback">Agentenfrage</string>
 </resources>

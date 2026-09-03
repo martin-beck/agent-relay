@@ -7,12 +7,15 @@ import dev.agentrelay.provider.api.AgentApprovalId
 import dev.agentrelay.provider.api.AgentApprovalType
 import dev.agentrelay.provider.api.AgentEvent
 import dev.agentrelay.provider.api.AgentMessageChannel
+import dev.agentrelay.provider.api.AgentQuestion
 import dev.agentrelay.provider.api.AgentProviderId
 import dev.agentrelay.provider.api.AgentSessionId
 import dev.agentrelay.provider.api.AgentToolStatus
 import dev.agentrelay.session.api.SessionActivitySummary
 import dev.agentrelay.session.api.SessionActivitySummaryKind
 import dev.agentrelay.session.api.SessionLocator
+import dev.agentrelay.session.api.SessionPresentationText
+import dev.agentrelay.session.api.SessionPresentationTextKind
 import kotlin.test.assertEquals
 import org.junit.Test
 
@@ -130,10 +133,57 @@ class SessionDataMapperTest {
         }
     }
 
+    @Test
+    fun actionAndQuestionFallbacksStayTypedWhileProviderCopyStaysVerbatim() {
+        val questions = listOf(
+            AgentQuestion(
+                id = "generated",
+                header = null,
+                prompt = "",
+            ),
+            AgentQuestion(
+                id = "header",
+                header = "  Provider header  ",
+                prompt = "",
+            ),
+            AgentQuestion(
+                id = "prompt",
+                header = null,
+                prompt = "  Provider prompt  ",
+            ),
+        )
+        val generated = SessionDataMapper.event(
+            approvalEvent(AgentApprovalType.USER_INPUT, "generated", "", questions),
+            locator,
+            now = 42,
+        ).actionRequest
+
+        assertEquals(
+            SessionPresentationText.Generated(SessionPresentationTextKind.ACTION_REVIEW_REQUIRED),
+            generated?.title,
+        )
+        assertEquals(
+            listOf(
+                SessionPresentationText.Generated(SessionPresentationTextKind.AGENT_QUESTION),
+                SessionPresentationText.Verbatim("Provider header"),
+                SessionPresentationText.Verbatim("Provider prompt"),
+            ),
+            generated?.questions?.map { it.prompt },
+        )
+
+        val provider = SessionDataMapper.event(
+            approvalEvent(AgentApprovalType.COMMAND, "provider", "  Provider action  "),
+            locator,
+            now = 43,
+        ).actionRequest
+        assertEquals(SessionPresentationText.Verbatim("Provider action"), provider?.title)
+    }
+
     private fun approvalEvent(
         type: AgentApprovalType,
         id: String,
         title: String,
+        questions: List<AgentQuestion> = emptyList(),
     ) = AgentEvent.ApprovalRequested(
         sessionId,
         AgentApproval(
@@ -143,6 +193,7 @@ class SessionDataMapperTest {
             type = type,
             title = title,
             description = null,
+            questions = questions,
         ),
     )
 

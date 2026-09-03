@@ -949,7 +949,7 @@ internal fun actionHub(): SessionHubUiModel {
     val action = SessionActionUiModel(
         stableKey = "action-key",
         sessionKey = "session-key",
-        title = "Choose validation scope",
+        title = UiMessage.Verbatim("Choose validation scope"),
         type = AgentApprovalType.COMMAND,
         description = "The provider needs a scope before continuing.",
         command = "remove generated output",
@@ -963,7 +963,7 @@ internal fun actionHub(): SessionHubUiModel {
             SessionQuestionUiModel(
                 stableKey = "question-key",
                 header = "Scope",
-                prompt = "Which tests should run?",
+                prompt = UiMessage.Verbatim("Which tests should run?"),
                 options = listOf(
                     SessionQuestionOptionUiModel(
                         label = "Focused tests",

@@ -372,4 +372,6 @@
     <string name="session_activity_summary_agent_question_requires_answer">La question de l’agent nécessite une réponse.</string>
     <string name="session_activity_summary_agent_approval_required">Approbation de l’agent requise.</string>
     <string name="session_activity_summary_connection_reconnected">%1$s reconnecté.</string>
+    <string name="session_action_title_review_required">L’action de l’agent doit être examinée.</string>
+    <string name="session_question_prompt_fallback">Question de l’agent</string>
 </resources>

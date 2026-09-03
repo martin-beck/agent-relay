@@ -36,6 +36,7 @@ import dev.agentrelay.session.api.SessionArtifactAvailability
 import dev.agentrelay.session.api.SessionHubSnapshot
 import dev.agentrelay.session.api.SessionLocator
 import dev.agentrelay.session.api.SessionObservation
+import dev.agentrelay.session.api.SessionPresentationText
 import dev.agentrelay.session.api.SessionQuestion
 import dev.agentrelay.session.api.SessionQuestionOption
 import dev.agentrelay.session.api.SessionRecord
@@ -152,7 +153,7 @@ class SessionHubUiMapperTest {
             locator = sessionLocator,
             turnId = "turn-1",
             type = AgentApprovalType.COMMAND,
-            title = "Review workspace cleanup",
+            title = SessionPresentationText.Verbatim("Review workspace cleanup"),
             description = "The provider wants to remove generated files.",
             command = "remove generated output",
             workingDirectory = "/workspace",
@@ -161,7 +162,7 @@ class SessionHubUiMapperTest {
                     id = "stable-question-key",
                     providerQuestionId = "raw-private-provider-question-id",
                     header = "Scope",
-                    prompt = "Which output should be removed?",
+                    prompt = SessionPresentationText.Verbatim("Which output should be removed?"),
                     options = listOf(
                         SessionQuestionOption(
                             label = "Generated output",
@@ -184,7 +185,7 @@ class SessionHubUiMapperTest {
         val resolved = pending.copy(
             id = "resolved-action-key",
             providerApprovalId = "raw-resolved-provider-id",
-            title = "Previous request",
+            title = SessionPresentationText.Verbatim("Previous request"),
             questions = emptyList(),
             availableDecisions = setOf(AgentApprovalDecision.DECLINE),
             riskReasons = emptySet(),
@@ -233,6 +234,7 @@ class SessionHubUiMapperTest {
 
         val attention = mapped.attentionActions.single()
         assertEquals(pending.id, attention.stableKey)
+        assertEquals(UiMessage.Verbatim("Review workspace cleanup"), attention.title)
         assertEquals("/workspace", attention.scope)
         assertEquals("remove generated output", attention.command)
         assertEquals(
@@ -249,6 +251,10 @@ class SessionHubUiMapperTest {
             attention.risks,
         )
         assertEquals("stable-question-key", attention.questions.single().stableKey)
+        assertEquals(
+            UiMessage.Verbatim("Which output should be removed?"),
+            attention.questions.single().prompt,
+        )
         assertEquals(2, mapped.selectedSession?.actions?.size)
         assertEquals(
             SessionActionState.RESOLVED,

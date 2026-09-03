@@ -153,7 +153,7 @@ private fun ActionHeader(action: SessionActionUiModel) {
                 color = MaterialTheme.colorScheme.primary,
             )
             Text(
-                text = action.title,
+                text = action.title.resolve(),
                 modifier = Modifier.semantics { heading() },
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
@@ -422,7 +422,7 @@ private fun QuestionInput(
                 fontWeight = FontWeight.SemiBold,
             )
         }
-        Text(question.prompt, style = MaterialTheme.typography.bodyMedium)
+        Text(question.prompt.resolve(), style = MaterialTheme.typography.bodyMedium)
         if (question.options.isNotEmpty()) {
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),

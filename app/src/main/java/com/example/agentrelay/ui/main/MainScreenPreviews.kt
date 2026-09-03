@@ -357,7 +357,7 @@ private fun previewDetail(
 private fun previewApproval(session: SessionUiModel) = SessionActionUiModel(
     stableKey = "preview-approval",
     sessionKey = session.stableKey,
-    title = "Run the focused validation suite?",
+    title = UiMessage.Verbatim("Run the focused validation suite?"),
     type = AgentApprovalType.COMMAND,
     description = "Review the exact command and working directory before allowing it.",
     command = "./gradlew test lintDebug",

@@ -98,11 +98,12 @@ document layer. Serialized plaintext byte arrays are zeroed after both reads
 and writes. Kotlin strings created during JSON decoding cannot be reliably
 zeroed, so session persistence must not be treated as a general secret vault.
 
-Version 2 stores generated activity summaries as a typed kind plus a bounded
-opaque label when needed. Android resolves that data in the active app locale;
-provider-owned activity text remains explicitly verbatim. Version 1 documents
-still load, and their summary strings migrate as verbatim because the store
-cannot safely infer whether old persisted text came from the app or a provider.
+Version 2 stores generated activity summaries, approval titles, and question
+prompts as typed kinds, plus a bounded opaque label when an activity needs one.
+Android resolves that data in the active app locale; provider-owned presentation
+text remains explicitly verbatim. Version 1 documents still load, and their
+stored strings migrate as verbatim because the store cannot safely infer whether
+old persisted text came from the app or a provider.
 
 Malformed JSON, an unsupported format version, invalid identifiers, invalid
 enum values, duplicate sessions, activities, or action requests, duplicate

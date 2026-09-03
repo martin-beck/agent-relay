@@ -6,6 +6,8 @@ import dev.agentrelay.connection.api.ConnectionProfileId
 import dev.agentrelay.connection.api.ConnectionProfileSummary
 import dev.agentrelay.connection.api.ConnectionProviderDescriptor
 import dev.agentrelay.connection.api.ConnectionProviderId
+import dev.agentrelay.provider.api.AgentApprovalDecision
+import dev.agentrelay.provider.api.AgentApprovalType
 import dev.agentrelay.provider.api.AgentCapability
 import dev.agentrelay.provider.api.AgentMessageChannel
 import dev.agentrelay.provider.api.AgentProviderDescriptor
@@ -18,10 +20,14 @@ import dev.agentrelay.session.api.SessionActivity
 import dev.agentrelay.session.api.SessionActivitySummary
 import dev.agentrelay.session.api.SessionActivitySummaryKind
 import dev.agentrelay.session.api.SessionActivityType
+import dev.agentrelay.session.api.SessionActionRequest
 import dev.agentrelay.session.api.SessionDraft
 import dev.agentrelay.session.api.SessionHubSnapshot
 import dev.agentrelay.session.api.SessionLocator
 import dev.agentrelay.session.api.SessionObservation
+import dev.agentrelay.session.api.SessionPresentationText
+import dev.agentrelay.session.api.SessionPresentationTextKind
+import dev.agentrelay.session.api.SessionQuestion
 import dev.agentrelay.session.api.SessionRecord
 import dev.agentrelay.session.runtime.AgentEndpointKey
 import dev.agentrelay.session.runtime.AgentEndpointPhase
@@ -270,6 +276,73 @@ class SessionHubLocalizedMessagesTest {
         assertEquals(
             cases.map { it.second }.asReversed(),
             mapped.selectedSession?.activities?.map { it.summary },
+        )
+    }
+
+    @Test
+    fun generatedActionAndQuestionPresentationMapsToLocalizedMessages() {
+        val connectionProviderId = ConnectionProviderId("local.device")
+        val profileId = ConnectionProfileId("this-device")
+        val sessionLocator = localizedLocator(connectionProviderId, profileId)
+        val action = SessionActionRequest(
+            id = "generated-action",
+            providerApprovalId = "provider-action",
+            locator = sessionLocator,
+            turnId = null,
+            type = AgentApprovalType.USER_INPUT,
+            title = SessionPresentationText.Generated(
+                SessionPresentationTextKind.ACTION_REVIEW_REQUIRED,
+            ),
+            description = null,
+            command = null,
+            workingDirectory = null,
+            questions = listOf(
+                SessionQuestion(
+                    id = "generated-question",
+                    providerQuestionId = "provider-generated",
+                    header = null,
+                    prompt = SessionPresentationText.Generated(
+                        SessionPresentationTextKind.AGENT_QUESTION,
+                    ),
+                ),
+                SessionQuestion(
+                    id = "verbatim-question",
+                    providerQuestionId = "provider-verbatim",
+                    header = "Provider header",
+                    prompt = SessionPresentationText.Verbatim("Provider-owned prompt"),
+                ),
+            ),
+            availableDecisions = setOf(AgentApprovalDecision.SUBMIT),
+            riskReasons = emptySet(),
+            receivedAtEpochMillis = 3,
+        )
+
+        val mapped = SessionHubUiMapper.map(
+            coordinator = SessionCoordinatorSnapshot(
+                profiles = listOf(localizedProfile(connectionProviderId, profileId, "This device")),
+            ),
+            sessions = SessionHubSnapshot(
+                sessions = listOf(localizedRecord(sessionLocator, "Generated copy", "This device")),
+                actionRequests = listOf(action),
+            ),
+            connectionProviders = listOf(localizedDescriptor(connectionProviderId, "Local")),
+            selectedSessionKey = sessionLocator.stableUiKey,
+            operationError = null,
+            busyConnectionKeys = emptySet(),
+        )
+
+        val actionUi = mapped.attentionActions.single()
+        assertEquals(
+            UiMessage.Localized(R.string.session_action_title_review_required),
+            actionUi.title,
+        )
+        assertEquals(
+            UiMessage.Localized(R.string.session_question_prompt_fallback),
+            actionUi.questions.first().prompt,
+        )
+        assertEquals(
+            UiMessage.Verbatim("Provider-owned prompt"),
+            actionUi.questions.last().prompt,
         )
     }
 

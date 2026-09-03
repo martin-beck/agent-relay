@@ -19,6 +19,8 @@ import dev.agentrelay.session.api.SessionActionRequest
 import dev.agentrelay.session.api.SessionActionRisk
 import dev.agentrelay.session.api.SessionArtifact
 import dev.agentrelay.session.api.SessionLocator
+import dev.agentrelay.session.api.SessionPresentationText
+import dev.agentrelay.session.api.SessionPresentationTextKind
 import dev.agentrelay.session.api.SessionObservation
 import dev.agentrelay.session.api.SessionQuestion
 import dev.agentrelay.session.api.SessionQuestionOption
@@ -276,17 +278,19 @@ internal object SessionDataMapper {
         }
         val questions = approval.questions.mapIndexed { index, question ->
             val providerQuestionId = providerQuestionIds[index]
+            val header = question.header?.let { boundedNullable(it, MAX_LABEL_CHARS) }
             require(question.options.size <= MAX_QUESTION_OPTIONS) {
                 "Approval question contains too many options"
             }
             SessionQuestion(
                 id = "question:" + digest(requestId + "\u0000" + providerQuestionId),
                 providerQuestionId = providerQuestionId,
-                header = question.header?.let { boundedNullable(it, MAX_LABEL_CHARS) },
-                prompt = boundedRequired(
-                    question.prompt,
-                    question.header ?: "Agent question",
-                    MAX_DESCRIPTION_CHARS,
+                header = header,
+                prompt = providerPresentationText(
+                    value = question.prompt,
+                    providerFallback = header,
+                    generatedKind = SessionPresentationTextKind.AGENT_QUESTION,
+                    maximum = MAX_DESCRIPTION_CHARS,
                 ),
                 options = question.options.map { option ->
                     SessionQuestionOption(
@@ -309,7 +313,12 @@ internal object SessionDataMapper {
                 boundedIdentifier("turn", it)
             },
             type = approval.type,
-            title = boundedRequired(approval.title, "Agent action requires review", MAX_TITLE_CHARS),
+            title = providerPresentationText(
+                value = approval.title,
+                providerFallback = null,
+                generatedKind = SessionPresentationTextKind.ACTION_REVIEW_REQUIRED,
+                maximum = MAX_TITLE_CHARS,
+            ),
             description = approval.description?.let { boundedNullable(it, MAX_DESCRIPTION_CHARS) },
             command = approval.command?.let { boundedNullable(it, MAX_COMMAND_CHARS) },
             workingDirectory = approval.workingDirectory?.let { boundedNullable(it, MAX_PATH_CHARS) },
@@ -446,6 +455,16 @@ internal object SessionDataMapper {
     )
     private val BROAD_PATHS = setOf("", "/", "/home", "/root", "~", "\$home", "c:", "c:\\", "c:\\users")
 }
+
+private fun providerPresentationText(
+    value: String,
+    providerFallback: String?,
+    generatedKind: SessionPresentationTextKind,
+    maximum: Int,
+): SessionPresentationText = (value.trim().takeIf(String::isNotEmpty) ?: providerFallback)
+    ?.take(maximum)
+    ?.let(SessionPresentationText::Verbatim)
+    ?: SessionPresentationText.Generated(generatedKind)
 
 private fun generatedActivitySummary(
     providerSummary: String?,

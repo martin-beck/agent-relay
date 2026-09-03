@@ -356,4 +356,6 @@
     <string name="session_activity_summary_agent_question_requires_answer">代理問題需要回答。</string>
     <string name="session_activity_summary_agent_approval_required">需要核准代理操作。</string>
     <string name="session_activity_summary_connection_reconnected">%1$s 已重新連線。</string>
+    <string name="session_action_title_review_required">需要檢閱代理操作。</string>
+    <string name="session_question_prompt_fallback">代理問題</string>
 </resources>

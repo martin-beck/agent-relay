@@ -215,7 +215,7 @@ class LocalizedResourcesTest {
             assertFalse(languageTag, actionDecision.contains("%1\$"))
             assertTrue(languageTag, actionScope.contains("/workspace/test"))
             assertFalse(languageTag, actionScope.contains("%1\$"))
-            ACTION_LABEL_RESOURCES.forEach { resource ->
+            (ACTION_LABEL_RESOURCES + PRESENTATION_FALLBACK_RESOURCES).forEach { resource ->
                 assertTrue(languageTag, context.getString(resource).isNotBlank())
             }
             (COORDINATOR_ISSUE_RESOURCES + ACTIVITY_SUMMARY_RESOURCES).forEach {
@@ -325,6 +325,11 @@ class LocalizedResourcesTest {
             R.string.session_action_risk_credential_access,
             R.string.session_action_risk_network_expansion,
             R.string.session_action_risk_external_tool,
+        )
+
+        val PRESENTATION_FALLBACK_RESOURCES = listOf(
+            R.string.session_action_title_review_required,
+            R.string.session_question_prompt_fallback,
         )
 
         val COORDINATOR_ISSUE_RESOURCES = mapOf(

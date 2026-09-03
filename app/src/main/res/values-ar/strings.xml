@@ -396,4 +396,6 @@
     <string name="session_activity_summary_agent_question_requires_answer">يتطلب سؤال الوكيل إجابة.</string>
     <string name="session_activity_summary_agent_approval_required">موافقة الوكيل مطلوبة.</string>
     <string name="session_activity_summary_connection_reconnected">تمت إعادة اتصال %1$s.</string>
+    <string name="session_action_title_review_required">يتطلب إجراء الوكيل مراجعة.</string>
+    <string name="session_question_prompt_fallback">سؤال الوكيل</string>
 </resources>
