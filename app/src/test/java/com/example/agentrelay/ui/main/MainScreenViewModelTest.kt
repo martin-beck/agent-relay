@@ -2,6 +2,7 @@ package com.example.agentrelay.ui.main
 
 import androidx.lifecycle.viewModelScope
 import com.example.agentrelay.MainDispatcherRule
+import com.example.agentrelay.R
 import com.example.agentrelay.data.ArtifactExportDestination
 import com.example.agentrelay.data.SessionHubRuntime
 import dev.agentrelay.connection.api.ConnectionCapability
@@ -155,7 +156,7 @@ class MainScreenViewModelTest {
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
 
         assertEquals(
-            UiMessage.Verbatim("Connection profiles could not be refreshed."),
+            UiMessage.Localized(R.string.main_error_profiles_refresh),
             (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
         )
 
@@ -172,7 +173,7 @@ class MainScreenViewModelTest {
         viewModel.refreshProfiles()
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
         assertEquals(
-            UiMessage.Verbatim("Connection profiles could not be refreshed."),
+            UiMessage.Localized(R.string.main_error_profiles_refresh),
             (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
         )
         runtime.failRefresh = false
@@ -199,7 +200,7 @@ class MainScreenViewModelTest {
         viewModel.disconnect(stableConnectionKey)
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
         assertEquals(
-            UiMessage.Verbatim("The connection could not be closed cleanly."),
+            UiMessage.Localized(R.string.main_error_connection_close),
             (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
         )
         assertFalse(
@@ -210,7 +211,7 @@ class MainScreenViewModelTest {
         viewModel.connect("missing-connection")
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
         assertEquals(
-            UiMessage.Verbatim("That connection profile is no longer available."),
+            UiMessage.Localized(R.string.profile_error_profile_unavailable),
             (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
         )
         viewModel.clearOperationError()
@@ -698,9 +699,63 @@ class MainScreenViewModelTest {
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
 
         val failed = viewModel.uiState.value as MainScreenUiState.FatalError
-        assertTrue(failed.message.contains("Secure session state"))
-        assertFalse(failed.message.contains("private-host"))
-        assertFalse(failed.message.contains("credential failed"))
+        assertEquals(
+            UiMessage.Localized(R.string.main_error_secure_state_open),
+            failed.message,
+        )
+        assertFalse(failed.message.toString().contains("private-host"))
+        assertFalse(failed.message.toString().contains("credential failed"))
+
+        viewModel.viewModelScope.cancel()
+    }
+}
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class MainScreenConnectionErrorTest {
+    @get:Rule
+    val mainDispatcherRule = MainDispatcherRule()
+
+    @Test
+    fun connectionFailuresExposeLocalizedDescriptors() = runTest {
+        val providerId = ConnectionProviderId("ssh.secure-shell")
+        val key = SessionConnectionKey(providerId, ConnectionProfileId("profile"))
+        val challenge = ConnectionIdentityChallenge(
+            id = ConnectionChallengeId("challenge"),
+            endpoint = "Test endpoint",
+            algorithm = "ssh-ed25519",
+            sha256Fingerprint = "SHA256:test-fingerprint",
+            disposition = ConnectionIdentityDisposition.UNKNOWN,
+            previouslyTrustedFingerprints = emptyList(),
+        )
+        val runtime = FakeSessionHubRuntime(
+            providers = listOf(descriptor(providerId, "Secure Shell")),
+            coordinator = SessionCoordinatorSnapshot(
+                profiles = listOf(profile(key, "Test profile")),
+                connectionStates = mapOf(
+                    key to ConnectionState.AwaitingIdentityTrust(challenge, 1L),
+                ),
+            ),
+            sessions = SessionHubSnapshot(),
+        )
+        val viewModel = MainScreenViewModel { runtime }
+        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+
+        runtime.failIdentity = true
+        viewModel.trustIdentity(key.stableUiKey, replaceChangedIdentity = false)
+        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+        assertEquals(
+            UiMessage.Localized(R.string.main_error_identity_decision),
+            (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
+        )
+
+        runtime.failIdentity = false
+        runtime.failConnect = true
+        viewModel.connect(key.stableUiKey)
+        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+        assertEquals(
+            UiMessage.Localized(R.string.main_error_connection_open),
+            (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
+        )
 
         viewModel.viewModelScope.cancel()
     }
@@ -717,7 +772,9 @@ internal class FakeSessionHubRuntime(
     private val mutableSessionSnapshot = MutableStateFlow(sessions)
     override val sessionSnapshot: StateFlow<SessionHubSnapshot> = mutableSessionSnapshot
     var failRefresh = false
+    var failConnect = false
     var failDisconnect = false
+    var failIdentity = false
     var failMarkRead = false
     var failDraftSave = false
     var failDraftClear = false
@@ -762,6 +819,7 @@ internal class FakeSessionHubRuntime(
     }
 
     override suspend fun connect(key: SessionConnectionKey) {
+        check(!failConnect)
         connected += key
     }
 
@@ -774,6 +832,7 @@ internal class FakeSessionHubRuntime(
         challengeId: ConnectionChallengeId,
         decision: ConnectionIdentityDecision,
     ): Boolean {
+        check(!failIdentity)
         identityDecisions += decision
         return true
     }

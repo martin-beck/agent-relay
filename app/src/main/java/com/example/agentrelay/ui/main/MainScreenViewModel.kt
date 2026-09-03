@@ -2,6 +2,7 @@ package com.example.agentrelay.ui.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.agentrelay.R
 import com.example.agentrelay.data.SessionHubRuntime
 import dev.agentrelay.connection.api.ConnectionIdentityDecision
 import dev.agentrelay.connection.api.ConnectionState
@@ -89,7 +90,7 @@ internal class MainScreenViewModel(
 
     fun refreshProfiles() {
         perform(
-            failureMessage = "Connection profiles could not be refreshed.",
+            failureMessage = UiMessage.Localized(R.string.main_error_profiles_refresh),
         ) {
             it.refreshProfiles()
         }
@@ -110,7 +111,7 @@ internal class MainScreenViewModel(
     fun connect(connectionKey: String) {
         performConnection(
             connectionKey = connectionKey,
-            failureMessage = "The connection could not be opened.",
+            failureMessage = UiMessage.Localized(R.string.main_error_connection_open),
         ) { active, key ->
             active.connect(key)
         }
@@ -119,7 +120,7 @@ internal class MainScreenViewModel(
     fun disconnect(connectionKey: String) {
         performConnection(
             connectionKey = connectionKey,
-            failureMessage = "The connection could not be closed cleanly.",
+            failureMessage = UiMessage.Localized(R.string.main_error_connection_close),
         ) { active, key ->
             active.disconnect(key)
         }
@@ -131,7 +132,7 @@ internal class MainScreenViewModel(
     ) {
         performConnection(
             connectionKey = connectionKey,
-            failureMessage = "The server identity decision could not be applied.",
+            failureMessage = UiMessage.Localized(R.string.main_error_identity_decision),
         ) { active, key ->
             val challenge = (
                 active.coordinatorSnapshot.value.connectionStates[key] as?
@@ -151,7 +152,7 @@ internal class MainScreenViewModel(
     fun rejectIdentity(connectionKey: String) {
         performConnection(
             connectionKey = connectionKey,
-            failureMessage = "The server identity decision could not be applied.",
+            failureMessage = UiMessage.Localized(R.string.main_error_identity_decision),
         ) { active, key ->
             val challenge = (
                 active.coordinatorSnapshot.value.connectionStates[key] as?
@@ -494,21 +495,21 @@ internal class MainScreenViewModel(
                 } catch (cancelled: CancellationException) {
                     throw cancelled
                 } catch (_: Throwable) {
-                    operationError.setVerbatim("Connection profiles could not be refreshed.")
+                    operationError.value = UiMessage.Localized(R.string.main_error_profiles_refresh)
                 }
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Throwable) {
                 runtime = null
                 mutableUiState.value = MainScreenUiState.FatalError(
-                    "Secure session state could not be opened. Retry after unlocking the device.",
+                    UiMessage.Localized(R.string.main_error_secure_state_open),
                 )
             }
         }
     }
 
     private fun perform(
-        failureMessage: String,
+        failureMessage: UiMessage,
         operation: suspend (SessionHubRuntime) -> Unit,
     ) {
         val active = runtime ?: return
@@ -519,14 +520,14 @@ internal class MainScreenViewModel(
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Throwable) {
-                operationError.setVerbatim(failureMessage)
+                operationError.value = failureMessage
             }
         }
     }
 
     private fun performConnection(
         connectionKey: String,
-        failureMessage: String,
+        failureMessage: UiMessage,
         operation: suspend (SessionHubRuntime, SessionConnectionKey) -> Unit,
     ) {
         val active = runtime ?: return
@@ -535,7 +536,7 @@ internal class MainScreenViewModel(
             .map { SessionConnectionKey(it.providerId, it.id) }
             .firstOrNull { it.stableUiKey == connectionKey }
         if (key == null) {
-            operationError.setVerbatim("That connection profile is no longer available.")
+            operationError.value = UiMessage.Localized(R.string.profile_error_profile_unavailable)
             return
         }
         operationError.value = null
@@ -546,7 +547,7 @@ internal class MainScreenViewModel(
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Throwable) {
-                operationError.setVerbatim(failureMessage)
+                operationError.value = failureMessage
             } finally {
                 busyConnectionKeys.value -= connectionKey
             }
@@ -617,7 +618,7 @@ private data class UiOperations(
 internal sealed interface MainScreenUiState {
     data object Loading : MainScreenUiState
 
-    data class FatalError(val message: String) : MainScreenUiState
+    data class FatalError(val message: UiMessage) : MainScreenUiState
 
     data class Ready(
         val hub: SessionHubUiModel,

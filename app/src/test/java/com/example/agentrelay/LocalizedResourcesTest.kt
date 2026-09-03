@@ -326,6 +326,11 @@ class LocalizedResourcesTest {
             R.string.profile_error_operation_refresh,
             R.string.profile_error_delete,
             R.string.profile_error_open,
+            R.string.main_error_profiles_refresh,
+            R.string.main_error_connection_open,
+            R.string.main_error_connection_close,
+            R.string.main_error_identity_decision,
+            R.string.main_error_secure_state_open,
         )
 
         val ARTIFACT_RESOURCES = listOf(

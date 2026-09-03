@@ -160,6 +160,11 @@
     <string name="profile_error_operation_refresh">অপারেশনটি সফল হয়েছে, কিন্তু প্রোফাইল এডিটর রিফ্রেশ করা যায়নি।</string>
     <string name="profile_error_delete">সংযোগ প্রোফাইলটি নিরাপদভাবে মুছে ফেলা যায়নি।</string>
     <string name="profile_error_open">সংযোগ প্রোফাইল এডিটর খোলা যায়নি।</string>
+    <string name="main_error_profiles_refresh">সংযোগ প্রোফাইলগুলি রিফ্রেশ করা যায়নি।</string>
+    <string name="main_error_connection_open">সংযোগ খোলা যায়নি।</string>
+    <string name="main_error_connection_close">সংযোগটি সঠিকভাবে বন্ধ করা যায়নি।</string>
+    <string name="main_error_identity_decision">সার্ভারের পরিচয় সংক্রান্ত সিদ্ধান্তটি প্রয়োগ করা যায়নি।</string>
+    <string name="main_error_secure_state_open">নিরাপদ সেশন অবস্থা খোলা যায়নি। ডিভাইস আনলক করার পরে আবার চেষ্টা করুন।</string>
     <string name="session_action_type_command">কমান্ড অনুমোদন</string>
     <string name="session_action_type_file_change">ফাইল পরিবর্তন অনুমোদন</string>
     <string name="session_action_type_question">প্রশ্ন</string>

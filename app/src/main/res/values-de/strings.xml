@@ -160,6 +160,11 @@
     <string name="profile_error_operation_refresh">Der Vorgang war erfolgreich, aber der Profileditor konnte nicht aktualisiert werden.</string>
     <string name="profile_error_delete">Das Verbindungsprofil konnte nicht sicher gelöscht werden.</string>
     <string name="profile_error_open">Der Verbindungsprofil-Editor konnte nicht geöffnet werden.</string>
+    <string name="main_error_profiles_refresh">Verbindungsprofile konnten nicht aktualisiert werden.</string>
+    <string name="main_error_connection_open">Die Verbindung konnte nicht geöffnet werden.</string>
+    <string name="main_error_connection_close">Die Verbindung konnte nicht ordnungsgemäß geschlossen werden.</string>
+    <string name="main_error_identity_decision">Die Entscheidung zur Serveridentität konnte nicht angewendet werden.</string>
+    <string name="main_error_secure_state_open">Der sichere Sitzungsstatus konnte nicht geöffnet werden. Versuchen Sie es nach dem Entsperren des Geräts erneut.</string>
     <string name="session_action_type_command">Befehlsfreigabe</string>
     <string name="session_action_type_file_change">Freigabe von Dateiänderungen</string>
     <string name="session_action_type_question">Frage</string>

@@ -59,7 +59,7 @@ class MainScreenTest {
     @Test
     fun fatalError_explainsRecoveryAndRetries() {
         val recorder = ActionRecorder()
-        setContent(MainScreenUiState.FatalError("Session storage is unavailable."), recorder)
+        setContent(MainScreenUiState.FatalError(UiMessage.Verbatim("Session storage is unavailable.")), recorder)
 
         composeTestRule.onNodeWithTag(MAIN_FATAL_ERROR_TEST_TAG).assertIsDisplayed()
         composeTestRule.onNodeWithText("Session storage is unavailable.").assertIsDisplayed()

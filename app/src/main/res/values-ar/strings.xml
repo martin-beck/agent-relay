@@ -168,6 +168,11 @@
     <string name="profile_error_operation_refresh">نجحت العملية، ولكن تعذّر تحديث محرّر ملف التعريف.</string>
     <string name="profile_error_delete">تعذّر حذف ملف تعريف الاتصال بأمان.</string>
     <string name="profile_error_open">تعذّر فتح محرّر ملف تعريف الاتصال.</string>
+    <string name="main_error_profiles_refresh">تعذّر تحديث ملفات تعريف الاتصال.</string>
+    <string name="main_error_connection_open">تعذّر فتح الاتصال.</string>
+    <string name="main_error_connection_close">تعذّر إغلاق الاتصال بشكل سليم.</string>
+    <string name="main_error_identity_decision">تعذّر تطبيق قرار هوية الخادم.</string>
+    <string name="main_error_secure_state_open">تعذّر فتح حالة الجلسة الآمنة. أعد المحاولة بعد إلغاء قفل الجهاز.</string>
     <string name="session_action_type_command">الموافقة على الأمر</string>
     <string name="session_action_type_file_change">الموافقة على تغيير الملف</string>
     <string name="session_action_type_question">سؤال</string>

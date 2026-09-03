@@ -164,6 +164,11 @@
     <string name="profile_error_operation_refresh">Операция выполнена, но не удалось обновить редактор профиля.</string>
     <string name="profile_error_delete">Не удалось безопасно удалить профиль подключения.</string>
     <string name="profile_error_open">Не удалось открыть редактор профиля подключения.</string>
+    <string name="main_error_profiles_refresh">Не удалось обновить профили подключения.</string>
+    <string name="main_error_connection_open">Не удалось открыть подключение.</string>
+    <string name="main_error_connection_close">Не удалось корректно закрыть подключение.</string>
+    <string name="main_error_identity_decision">Не удалось применить решение о подлинности сервера.</string>
+    <string name="main_error_secure_state_open">Не удалось открыть защищенное состояние сеанса. Повторите попытку после разблокировки устройства.</string>
     <string name="session_action_type_command">Подтверждение команды</string>
     <string name="session_action_type_file_change">Подтверждение изменения файла</string>
     <string name="session_action_type_question">Вопрос</string>

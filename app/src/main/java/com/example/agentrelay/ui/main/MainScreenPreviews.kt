@@ -41,7 +41,9 @@ private fun MainScreenLoadingPreview() {
 private fun MainScreenFatalErrorPreview() {
     PreviewMainScreen(
         state = MainScreenUiState.FatalError(
-            "The encrypted session store could not be opened. Retry after the device is unlocked.",
+            UiMessage.Verbatim(
+                "The encrypted session store could not be opened. Retry after the device is unlocked.",
+            ),
         ),
         darkTheme = true,
     )

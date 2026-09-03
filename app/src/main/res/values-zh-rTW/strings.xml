@@ -158,6 +158,11 @@
     <string name="profile_error_operation_refresh">操作成功，但無法重新整理設定檔編輯器。</string>
     <string name="profile_error_delete">無法安全地刪除連線設定檔。</string>
     <string name="profile_error_open">無法開啟連線設定檔編輯器。</string>
+    <string name="main_error_profiles_refresh">無法重新整理連線設定檔。</string>
+    <string name="main_error_connection_open">無法開啟連線。</string>
+    <string name="main_error_connection_close">無法正常關閉連線。</string>
+    <string name="main_error_identity_decision">無法套用伺服器身分決定。</string>
+    <string name="main_error_secure_state_open">無法開啟安全工作階段狀態。請在解除裝置鎖定後重試。</string>
     <string name="session_action_type_command">命令核准</string>
     <string name="session_action_type_file_change">檔案變更核准</string>
     <string name="session_action_type_question">問題</string>

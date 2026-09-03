@@ -158,6 +158,11 @@
     <string name="profile_error_operation_refresh">Operasi berhasil, tetapi editor profil tidak dapat dimuat ulang.</string>
     <string name="profile_error_delete">Profil koneksi tidak dapat dihapus dengan aman.</string>
     <string name="profile_error_open">Editor profil koneksi tidak dapat dibuka.</string>
+    <string name="main_error_profiles_refresh">Profil koneksi tidak dapat dimuat ulang.</string>
+    <string name="main_error_connection_open">Koneksi tidak dapat dibuka.</string>
+    <string name="main_error_connection_close">Koneksi tidak dapat ditutup dengan benar.</string>
+    <string name="main_error_identity_decision">Keputusan identitas server tidak dapat diterapkan.</string>
+    <string name="main_error_secure_state_open">Status sesi aman tidak dapat dibuka. Coba lagi setelah perangkat dibuka kuncinya.</string>
     <string name="session_action_type_command">Persetujuan perintah</string>
     <string name="session_action_type_file_change">Persetujuan perubahan file</string>
     <string name="session_action_type_question">Pertanyaan</string>

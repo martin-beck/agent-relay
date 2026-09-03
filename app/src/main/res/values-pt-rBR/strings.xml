@@ -162,6 +162,11 @@
     <string name="profile_error_operation_refresh">A operação foi concluída, mas não foi possível atualizar o editor de perfil.</string>
     <string name="profile_error_delete">Não foi possível excluir o perfil de conexão com segurança.</string>
     <string name="profile_error_open">Não foi possível abrir o editor de perfil de conexão.</string>
+    <string name="main_error_profiles_refresh">Não foi possível atualizar os perfis de conexão.</string>
+    <string name="main_error_connection_open">Não foi possível abrir a conexão.</string>
+    <string name="main_error_connection_close">Não foi possível fechar a conexão corretamente.</string>
+    <string name="main_error_identity_decision">Não foi possível aplicar a decisão de identidade do servidor.</string>
+    <string name="main_error_secure_state_open">Não foi possível abrir o estado seguro da sessão. Tente novamente após desbloquear o dispositivo.</string>
     <string name="session_action_type_command">Aprovação de comando</string>
     <string name="session_action_type_file_change">Aprovação de alteração de arquivo</string>
     <string name="session_action_type_question">Pergunta</string>

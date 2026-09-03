@@ -147,7 +147,7 @@ internal fun MainScreenContent(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 Text(
-                    text = state.message,
+                    text = state.message.resolve(),
                     style = MaterialTheme.typography.bodyLarge,
                     textAlign = TextAlign.Center,
                 )

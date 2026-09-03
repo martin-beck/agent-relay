@@ -190,6 +190,11 @@
     <string name="profile_error_operation_refresh">The operation succeeded, but the profile editor could not be refreshed.</string>
     <string name="profile_error_delete">The connection profile could not be deleted securely.</string>
     <string name="profile_error_open">The connection profile editor could not be opened.</string>
+    <string name="main_error_profiles_refresh">Connection profiles could not be refreshed.</string>
+    <string name="main_error_connection_open">The connection could not be opened.</string>
+    <string name="main_error_connection_close">The connection could not be closed cleanly.</string>
+    <string name="main_error_identity_decision">The server identity decision could not be applied.</string>
+    <string name="main_error_secure_state_open">Secure session state could not be opened. Retry after unlocking the device.</string>
     <string name="session_action_type_command">Command approval</string>
     <string name="session_action_type_file_change">File change approval</string>
     <string name="session_action_type_question">Question</string>

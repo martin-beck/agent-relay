@@ -162,6 +162,11 @@
     <string name="profile_error_operation_refresh">L’opération a réussi, mais l’éditeur de profil n’a pas pu être actualisé.</string>
     <string name="profile_error_delete">Le profil de connexion n’a pas pu être supprimé de manière sécurisée.</string>
     <string name="profile_error_open">L’éditeur de profil de connexion n’a pas pu être ouvert.</string>
+    <string name="main_error_profiles_refresh">Impossible d’actualiser les profils de connexion.</string>
+    <string name="main_error_connection_open">Impossible d’ouvrir la connexion.</string>
+    <string name="main_error_connection_close">Impossible de fermer correctement la connexion.</string>
+    <string name="main_error_identity_decision">Impossible d’appliquer la décision concernant l’identité du serveur.</string>
+    <string name="main_error_secure_state_open">Impossible d’ouvrir l’état sécurisé de la session. Réessayez après avoir déverrouillé l’appareil.</string>
     <string name="session_action_type_command">Approbation de commande</string>
     <string name="session_action_type_file_change">Approbation de modification de fichier</string>
     <string name="session_action_type_question">Question</string>

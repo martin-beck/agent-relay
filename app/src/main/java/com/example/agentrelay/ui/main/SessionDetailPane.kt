@@ -81,7 +81,7 @@ internal fun SessionDetailRoute(
         }
         when (state) {
             MainScreenUiState.Loading -> DetailPlaceholder(stringResource(R.string.session_detail_opening))
-            is MainScreenUiState.FatalError -> DetailPlaceholder(state.message)
+            is MainScreenUiState.FatalError -> DetailPlaceholder(state.message.resolve())
             is MainScreenUiState.Ready -> SessionDetailPane(
                 detail = state.hub.selectedSession,
                 speechInput = state.speechInput,
