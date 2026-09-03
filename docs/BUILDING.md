@@ -45,6 +45,7 @@ uv sync --locked --only-group quality --only-group docs
 uv run pytest
 scripts/ci/install_shell_quality_tools.sh
 uv run pre-commit run --all-files --show-diff-on-failure
+./gradlew -p buildSrc check --stacktrace
 ./gradlew spotlessCheck detekt buildHealth test koverXmlReport koverVerify checkKotlinAbi lintDebug assembleDebug --stacktrace
 ```
 
@@ -52,6 +53,7 @@ On Windows, run the complete repository and shell gates inside x86_64 or arm64
 WSL. You can run the Gradle portion from PowerShell:
 
 ```powershell
+.\gradlew.bat -p buildSrc check --stacktrace
 .\gradlew.bat spotlessCheck detekt buildHealth test koverXmlReport koverVerify checkKotlinAbi lintDebug assembleDebug --stacktrace
 ```
 
@@ -60,7 +62,10 @@ properties, GitHub metadata, spelling, links, secrets, and generic repository
 hygiene. Its shell slice runs pinned ShellCheck, checks canonical formatting
 with `shfmt --diff`, and runs focused Bats regressions. The generated Gradle
 wrapper remains governed by wrapper validation instead of being reformatted or
-patched locally. The Gradle tasks cover Kotlin formatting, Detekt, strict
+patched locally. The dedicated build-logic gate covers deterministic Java
+formatting, strict compiler diagnostics, PMD, SpotBugs, Gradle plugin
+validation, JUnit 5 and TestKit tests, and ratcheted JaCoCo line and branch
+thresholds. The application Gradle tasks cover Kotlin formatting, Detekt, strict
 dependency declarations, JVM unit and contract tests, aggregate coverage,
 Android lint, and debug APK assembly. The APK is written to:
 
