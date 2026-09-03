@@ -203,6 +203,9 @@ class LocalizedResourcesTest {
             SPEECH_ERROR_RESOURCES.forEach { resource ->
                 assertTrue(languageTag, context.getString(resource).isNotBlank())
             }
+            SPEECH_STATUS_RESOURCES.forEach { resource ->
+                assertTrue(languageTag, context.getString(resource).isNotBlank())
+            }
             assertFalse(languageTag, risk.contains("%1\$"))
             assertFalse(languageTag, addProfile.contains("%1\$"))
             assertFalse(languageTag, startOnConnection.contains("%1\$"))
@@ -418,6 +421,19 @@ class LocalizedResourcesTest {
             R.string.speech_error_stop,
             R.string.speech_error_previous_session_cancel,
             R.string.speech_error_cancel,
+        )
+
+        val SPEECH_STATUS_RESOURCES = listOf(
+            R.string.speech_status_waiting,
+            R.string.speech_status_starting,
+            R.string.speech_status_listening,
+            R.string.speech_status_transcribing,
+            R.string.speech_status_review_transcript,
+            R.string.speech_status_no_model,
+            R.string.speech_status_install_model,
+            R.string.speech_status_downloading_model,
+            R.string.speech_status_ready_private,
+            R.string.speech_status_unavailable_build,
         )
 
         val EXPECTED_GENERATED_LOCALES = setOf(

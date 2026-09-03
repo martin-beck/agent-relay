@@ -39,11 +39,32 @@ class SpeechInputControllerTest {
         assertEquals(SpeechInputPhase.UNAVAILABLE, controller.state.value.phase)
         assertFalse(controller.state.value.canStart)
         assertTrue(controller.state.value.models.isEmpty())
+        assertEquals(
+            UiMessage.Localized(R.string.speech_status_unavailable_build),
+            controller.state.value.statusMessage,
+        )
 
         controller.startListening("session-a")
         runCurrent()
 
         assertTrue(errors.isEmpty())
+        controller.close()
+    }
+
+    @Test
+    fun emptyCatalogReportsLocalizedNoModelState() = runTest {
+        val controller = SpeechInputController(
+            scope = this,
+            service = FakeOfflineSpeechService(emptyList()),
+            reportError = {},
+        )
+
+        assertEquals(SpeechInputPhase.UNAVAILABLE, controller.state.value.phase)
+        assertEquals(
+            UiMessage.Localized(R.string.speech_status_no_model),
+            controller.state.value.statusMessage,
+        )
+
         controller.close()
     }
 
@@ -62,6 +83,10 @@ class SpeechInputControllerTest {
 
         assertEquals(SpeechInputPhase.MODEL_REQUIRED, controller.state.value.phase)
         assertEquals(listOf("voice.test"), controller.state.value.models.map { it.id })
+        assertEquals(
+            UiMessage.Localized(R.string.speech_status_install_model),
+            controller.state.value.statusMessage,
+        )
         assertTrue(controller.state.value.canInstall)
 
         controller.installSelectedModel()
@@ -78,6 +103,10 @@ class SpeechInputControllerTest {
         runCurrent()
         assertEquals(SpeechInputPhase.INSTALLING, controller.state.value.phase)
         assertEquals(25, controller.state.value.progressPercent)
+        assertEquals(
+            UiMessage.Localized(R.string.speech_status_downloading_model),
+            controller.state.value.statusMessage,
+        )
         assertTrue(controller.state.value.canCancelInstall)
 
         controller.cancelSelectedModelInstall()
@@ -90,6 +119,10 @@ class SpeechInputControllerTest {
         runCurrent()
         assertEquals(SpeechInputPhase.READY, controller.state.value.phase)
         assertTrue(controller.state.value.canStart)
+        assertEquals(
+            UiMessage.Localized(R.string.speech_status_ready_private),
+            controller.state.value.statusMessage,
+        )
         assertTrue(errors.isEmpty())
         controller.close()
     }
@@ -165,6 +198,11 @@ class SpeechInputControllerTest {
         val controller = SpeechInputController(this, service) {}
 
         controller.startListening("session-a")
+        assertEquals(SpeechInputPhase.STARTING, controller.state.value.phase)
+        assertEquals(
+            UiMessage.Localized(R.string.speech_status_starting),
+            controller.state.value.statusMessage,
+        )
         runCurrent()
 
         val operationId = SpeechOperationId(1L)
@@ -173,6 +211,10 @@ class SpeechInputControllerTest {
             service.recognition.value,
         )
         assertEquals(SpeechInputPhase.LISTENING, controller.state.value.phase)
+        assertEquals(
+            UiMessage.Localized(R.string.speech_status_listening),
+            controller.state.value.statusMessage,
+        )
         assertEquals("session-a", controller.state.value.targetSessionKey)
 
         service.recognitionState.value = SpeechRecognitionState.Result(
@@ -182,6 +224,10 @@ class SpeechInputControllerTest {
         )
         runCurrent()
         assertEquals(SpeechInputPhase.STARTING, controller.state.value.phase)
+        assertEquals(
+            UiMessage.Localized(R.string.speech_status_waiting),
+            controller.state.value.statusMessage,
+        )
         assertNull(controller.consumeTranscript("session-a"))
 
         service.recognitionState.value = SpeechRecognitionState.Result(
@@ -192,10 +238,43 @@ class SpeechInputControllerTest {
         runCurrent()
         assertEquals(SpeechInputPhase.RESULT, controller.state.value.phase)
         assertEquals("reviewed transcript", controller.state.value.transcript)
+        assertEquals(
+            UiMessage.Localized(R.string.speech_status_review_transcript),
+            controller.state.value.statusMessage,
+        )
         assertNull(controller.consumeTranscript("session-b"))
         assertEquals("reviewed transcript", controller.consumeTranscript("session-a"))
         assertNull(controller.consumeTranscript("session-a"))
         assertEquals(SpeechInputPhase.READY, controller.state.value.phase)
+        assertEquals(
+            UiMessage.Localized(R.string.speech_status_ready_private),
+            controller.state.value.statusMessage,
+        )
+        controller.close()
+    }
+
+    @Test
+    fun recognitionFailureKeepsEngineGuidanceVerbatim() = runTest {
+        val service = readyService()
+        val controller = SpeechInputController(this, service) {}
+
+        controller.startListening("session-a")
+        runCurrent()
+        service.recognitionState.value = SpeechRecognitionState.Failed(
+            operationId = SpeechOperationId(1L),
+            modelId = SpeechModelId("voice.test"),
+            failure = SpeechFailure(
+                code = "AUDIO_INPUT",
+                actionableMessage = "Reconnect the microphone and retry.",
+            ),
+        )
+        runCurrent()
+
+        assertEquals(SpeechInputPhase.FAILED, controller.state.value.phase)
+        assertEquals(
+            UiMessage.Verbatim("Reconnect the microphone and retry."),
+            controller.state.value.statusMessage,
+        )
         controller.close()
     }
 
@@ -211,12 +290,20 @@ class SpeechInputControllerTest {
 
         assertEquals(listOf(SpeechOperationId(1L)), service.stopCalls)
         assertEquals(SpeechInputPhase.TRANSCRIBING, controller.state.value.phase)
+        assertEquals(
+            UiMessage.Localized(R.string.speech_status_transcribing),
+            controller.state.value.statusMessage,
+        )
 
         controller.cancelForSessionChange("session-b")
         runCurrent()
 
         assertEquals(listOf(SpeechOperationId(1L)), service.cancelCalls)
         assertEquals(SpeechInputPhase.READY, controller.state.value.phase)
+        assertEquals(
+            UiMessage.Localized(R.string.speech_status_ready_private),
+            controller.state.value.statusMessage,
+        )
         controller.close()
     }
 
@@ -302,7 +389,10 @@ class SpeechInputControllerTest {
         val controller = SpeechInputController(this, service) {}
 
         assertEquals(SpeechInputPhase.FAILED, controller.state.value.phase)
-        assertEquals("Free app storage and retry.", controller.state.value.statusMessage)
+        assertEquals(
+            UiMessage.Verbatim("Free app storage and retry."),
+            controller.state.value.statusMessage,
+        )
         assertTrue(controller.state.value.canInstall)
         assertFalse(controller.state.value.canDismiss)
         controller.close()

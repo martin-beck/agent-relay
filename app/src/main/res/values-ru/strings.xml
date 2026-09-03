@@ -46,6 +46,16 @@
     <string name="session_creator_model_support">Укажите точный идентификатор модели, поддерживаемый этим поставщиком агента.</string>
     <string name="session_creator_start">Начать сеанс</string>
     <string name="action_cancel">Отмена</string>
+    <string name="speech_status_waiting">Ожидание текущего состояния голосового ввода…</string>
+    <string name="speech_status_starting">Запуск приватного голосового ввода на устройстве…</string>
+    <string name="speech_status_listening">Прослушивание на устройстве. Остановите запись, когда закончите говорить.</string>
+    <string name="speech_status_transcribing">Завершение приватной расшифровки на устройстве…</string>
+    <string name="speech_status_review_transcript">Проверьте расшифровку перед вставкой в черновик сеанса.</string>
+    <string name="speech_status_no_model">Нет доступной проверенной модели автономного распознавания речи.</string>
+    <string name="speech_status_install_model">Установите проверенную автономную модель перед использованием голосового ввода.</string>
+    <string name="speech_status_downloading_model">Загрузка автономной речевой модели…</string>
+    <string name="speech_status_ready_private">Голосовой ввод остается на этом устройстве.</string>
+    <string name="speech_status_unavailable_build">Автономный голосовой ввод недоступен в этой сборке.</string>
     <string name="speech_input_title">Голосовой ввод</string>
     <string name="speech_selected_model">Автономная модель: %1$s</string>
     <string name="speech_install_model">Установить автономную модель</string>

@@ -46,6 +46,16 @@
     <string name="session_creator_model_support">Use un identificador de modelo exacto compatible con este proveedor de agente.</string>
     <string name="session_creator_start">Iniciar sesión</string>
     <string name="action_cancel">Cancelar</string>
+    <string name="speech_status_waiting">Esperando el estado actual de la entrada de voz…</string>
+    <string name="speech_status_starting">Iniciando la entrada de voz privada en el dispositivo…</string>
+    <string name="speech_status_listening">Escuchando en el dispositivo. Detén la grabación cuando termines de hablar.</string>
+    <string name="speech_status_transcribing">Finalizando la transcripción privada en el dispositivo…</string>
+    <string name="speech_status_review_transcript">Revisa la transcripción antes de insertarla en el borrador de la sesión.</string>
+    <string name="speech_status_no_model">No hay ningún modelo verificado de transcripción sin conexión disponible.</string>
+    <string name="speech_status_install_model">Instala el modelo verificado sin conexión antes de usar la entrada de voz.</string>
+    <string name="speech_status_downloading_model">Descargando el modelo de voz sin conexión…</string>
+    <string name="speech_status_ready_private">La entrada de voz permanece en este dispositivo.</string>
+    <string name="speech_status_unavailable_build">La entrada de voz sin conexión no está disponible en esta compilación.</string>
     <string name="speech_input_title">Entrada de voz</string>
     <string name="speech_selected_model">Modelo sin conexión: %1$s</string>
     <string name="speech_install_model">Instalar modelo sin conexión</string>

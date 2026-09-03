@@ -46,6 +46,16 @@
     <string name="session_creator_model_support">استخدم معرّف نموذج دقيقًا يدعمه مزوّد الوكيل هذا.</string>
     <string name="session_creator_start">بدء الجلسة</string>
     <string name="action_cancel">إلغاء</string>
+    <string name="speech_status_waiting">في انتظار حالة الإدخال الصوتي الحالية…</string>
+    <string name="speech_status_starting">جارٍ بدء إدخال صوتي خاص على الجهاز…</string>
+    <string name="speech_status_listening">جارٍ الاستماع على الجهاز. أوقف التسجيل عند الانتهاء من التحدث.</string>
+    <string name="speech_status_transcribing">جارٍ إنهاء النص الخاص على الجهاز…</string>
+    <string name="speech_status_review_transcript">راجع النص قبل إدراجه في مسودة الجلسة.</string>
+    <string name="speech_status_no_model">لا يتوفر نموذج موثّق للنسخ دون اتصال.</string>
+    <string name="speech_status_install_model">ثبّت النموذج الموثّق دون اتصال قبل استخدام الإدخال الصوتي.</string>
+    <string name="speech_status_downloading_model">جارٍ تنزيل نموذج الكلام دون اتصال…</string>
+    <string name="speech_status_ready_private">يبقى الإدخال الصوتي على هذا الجهاز.</string>
+    <string name="speech_status_unavailable_build">الإدخال الصوتي دون اتصال غير متاح في هذا الإصدار.</string>
     <string name="speech_input_title">إدخال صوتي</string>
     <string name="speech_selected_model">النموذج بلا اتصال: %1$s</string>
     <string name="speech_install_model">تثبيت نموذج بلا اتصال</string>

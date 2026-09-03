@@ -46,6 +46,16 @@
     <string name="session_creator_model_support">請輸入此代理提供者支援的正確模型識別碼。</string>
     <string name="session_creator_start">啟動工作階段</string>
     <string name="action_cancel">取消</string>
+    <string name="speech_status_waiting">正在等候目前的語音輸入狀態…</string>
+    <string name="speech_status_starting">正在啟動裝置端私密語音輸入…</string>
+    <string name="speech_status_listening">正在裝置上聆聽。說完後請停止。</string>
+    <string name="speech_status_transcribing">正在裝置上完成私密轉錄…</string>
+    <string name="speech_status_review_transcript">將轉錄文字插入工作階段草稿前請先檢查。</string>
+    <string name="speech_status_no_model">沒有可用的已驗證離線轉錄模型。</string>
+    <string name="speech_status_install_model">使用語音輸入前，請先安裝已驗證的離線模型。</string>
+    <string name="speech_status_downloading_model">正在下載離線語音模型…</string>
+    <string name="speech_status_ready_private">語音輸入只會保留在此裝置上。</string>
+    <string name="speech_status_unavailable_build">此版本不支援離線語音輸入。</string>
     <string name="speech_input_title">語音輸入</string>
     <string name="speech_selected_model">離線模型：%1$s</string>
     <string name="speech_install_model">安裝離線模型</string>

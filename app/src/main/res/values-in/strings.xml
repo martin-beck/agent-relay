@@ -46,6 +46,16 @@
     <string name="session_creator_model_support">Gunakan pengenal model yang tepat dan didukung oleh penyedia agen ini.</string>
     <string name="session_creator_start">Mulai sesi</string>
     <string name="action_cancel">Batal</string>
+    <string name="speech_status_waiting">Menunggu status input suara saat ini…</string>
+    <string name="speech_status_starting">Memulai input suara privat di perangkat…</string>
+    <string name="speech_status_listening">Mendengarkan di perangkat. Hentikan setelah Anda selesai berbicara.</string>
+    <string name="speech_status_transcribing">Menyelesaikan transkrip privat di perangkat…</string>
+    <string name="speech_status_review_transcript">Tinjau transkrip sebelum memasukkannya ke draf sesi.</string>
+    <string name="speech_status_no_model">Tidak ada model transkripsi offline terverifikasi yang tersedia.</string>
+    <string name="speech_status_install_model">Instal model offline terverifikasi sebelum menggunakan input suara.</string>
+    <string name="speech_status_downloading_model">Mengunduh model ucapan offline…</string>
+    <string name="speech_status_ready_private">Input suara tetap berada di perangkat ini.</string>
+    <string name="speech_status_unavailable_build">Input suara offline tidak tersedia dalam build ini.</string>
     <string name="speech_input_title">Input suara</string>
     <string name="speech_selected_model">Model offline: %1$s</string>
     <string name="speech_install_model">Instal model offline</string>

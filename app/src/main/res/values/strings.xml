@@ -76,6 +76,16 @@
     <string name="session_creator_model_support">Use an exact model identifier supported by this agent provider.</string>
     <string name="session_creator_start">Start session</string>
     <string name="action_cancel">Cancel</string>
+    <string name="speech_status_waiting">Waiting for the current voice input state…</string>
+    <string name="speech_status_starting">Starting private on-device voice input…</string>
+    <string name="speech_status_listening">Listening on device. Stop when you finish speaking.</string>
+    <string name="speech_status_transcribing">Finishing the private on-device transcript…</string>
+    <string name="speech_status_review_transcript">Review the transcript before inserting it into the session draft.</string>
+    <string name="speech_status_no_model">No verified offline transcription model is available.</string>
+    <string name="speech_status_install_model">Install the verified offline model before using voice input.</string>
+    <string name="speech_status_downloading_model">Downloading the offline speech model…</string>
+    <string name="speech_status_ready_private">Voice input stays on this device.</string>
+    <string name="speech_status_unavailable_build">Offline voice input is unavailable in this build.</string>
     <string name="speech_input_title">Voice input</string>
     <string name="speech_selected_model">Offline model: %1$s</string>
     <string name="speech_install_model">Install offline model</string>

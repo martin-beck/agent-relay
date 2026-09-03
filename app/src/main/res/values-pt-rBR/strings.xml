@@ -46,6 +46,16 @@
     <string name="session_creator_model_support">Use um identificador de modelo exato compatível com este provedor de agente.</string>
     <string name="session_creator_start">Iniciar sessão</string>
     <string name="action_cancel">Cancelar</string>
+    <string name="speech_status_waiting">Aguardando o estado atual da entrada de voz…</string>
+    <string name="speech_status_starting">Iniciando a entrada de voz privada no dispositivo…</string>
+    <string name="speech_status_listening">Ouvindo no dispositivo. Pare quando terminar de falar.</string>
+    <string name="speech_status_transcribing">Finalizando a transcrição privada no dispositivo…</string>
+    <string name="speech_status_review_transcript">Revise a transcrição antes de inseri-la no rascunho da sessão.</string>
+    <string name="speech_status_no_model">Nenhum modelo verificado de transcrição offline está disponível.</string>
+    <string name="speech_status_install_model">Instale o modelo offline verificado antes de usar a entrada de voz.</string>
+    <string name="speech_status_downloading_model">Baixando o modelo de voz offline…</string>
+    <string name="speech_status_ready_private">A entrada de voz permanece neste dispositivo.</string>
+    <string name="speech_status_unavailable_build">A entrada de voz offline não está disponível nesta compilação.</string>
     <string name="speech_input_title">Entrada de voz</string>
     <string name="speech_selected_model">Modelo off-line: %1$s</string>
     <string name="speech_install_model">Instalar modelo off-line</string>

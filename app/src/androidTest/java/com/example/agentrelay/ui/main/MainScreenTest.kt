@@ -457,7 +457,7 @@ class MainScreenTest {
                 models = listOf(SpeechModelOptionUiModel("compact", "English compact", true)),
                 selectedModelId = "compact",
                 selectedModelName = "English compact",
-                statusMessage = "Voice input stays on this device.",
+                statusMessage = UiMessage.Localized(R.string.speech_status_ready_private),
             ),
             recorder = recorder,
         )
@@ -482,7 +482,7 @@ class MainScreenTest {
                 ),
                 selectedModelId = "compact",
                 selectedModelName = "English compact",
-                statusMessage = "Install the verified offline model before using voice input.",
+                statusMessage = UiMessage.Localized(R.string.speech_status_install_model),
             ),
             recorder = recorder,
         )
@@ -510,7 +510,7 @@ class MainScreenTest {
                 selectedModelId = "compact",
                 selectedModelName = "English compact",
                 progressPercent = 42,
-                statusMessage = "Downloading the offline speech model...",
+                statusMessage = UiMessage.Localized(R.string.speech_status_downloading_model),
             ),
             recorder = recorder,
         )
@@ -534,7 +534,7 @@ class MainScreenTest {
                 selectedModelName = "English compact",
                 targetSessionKey = "session-key",
                 operationId = 7,
-                statusMessage = "Listening on device. Stop when you finish speaking.",
+                statusMessage = UiMessage.Localized(R.string.speech_status_listening),
             ),
             recorder = recorder,
         )
@@ -557,7 +557,7 @@ class MainScreenTest {
                 targetSessionKey = "session-key",
                 operationId = 8,
                 transcript = "Run the focused checks.",
-                statusMessage = "Review the transcript before inserting it into the session draft.",
+                statusMessage = UiMessage.Localized(R.string.speech_status_review_transcript),
             ),
             recorder = recorder,
         )
@@ -596,7 +596,7 @@ class MainScreenTest {
                 models = listOf(SpeechModelOptionUiModel("compact", "English compact", true)),
                 selectedModelId = "compact",
                 selectedModelName = "English compact",
-                statusMessage = "Voice input stays on this device.",
+                statusMessage = UiMessage.Localized(R.string.speech_status_ready_private),
             ),
             recorder = recorder,
         )

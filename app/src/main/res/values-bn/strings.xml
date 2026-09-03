@@ -46,6 +46,16 @@
     <string name="session_creator_model_support">এই এজেন্ট প্রদানকারী সমর্থিত সঠিক মডেল শনাক্তকারী ব্যবহার করুন।</string>
     <string name="session_creator_start">সেশন শুরু করুন</string>
     <string name="action_cancel">বাতিল</string>
+    <string name="speech_status_waiting">বর্তমান ভয়েস ইনপুট অবস্থার জন্য অপেক্ষা করা হচ্ছে…</string>
+    <string name="speech_status_starting">ডিভাইসে ব্যক্তিগত ভয়েস ইনপুট শুরু করা হচ্ছে…</string>
+    <string name="speech_status_listening">ডিভাইসে শোনা হচ্ছে। কথা বলা শেষ হলে থামান।</string>
+    <string name="speech_status_transcribing">ডিভাইসে ব্যক্তিগত ট্রান্সক্রিপ্ট সম্পন্ন করা হচ্ছে…</string>
+    <string name="speech_status_review_transcript">সেশনের খসড়ায় যোগ করার আগে ট্রান্সক্রিপ্টটি পর্যালোচনা করুন।</string>
+    <string name="speech_status_no_model">কোনো যাচাইকৃত অফলাইন ট্রান্সক্রিপশন মডেল উপলভ্য নেই।</string>
+    <string name="speech_status_install_model">ভয়েস ইনপুট ব্যবহারের আগে যাচাইকৃত অফলাইন মডেল ইনস্টল করুন।</string>
+    <string name="speech_status_downloading_model">অফলাইন স্পিচ মডেল ডাউনলোড করা হচ্ছে…</string>
+    <string name="speech_status_ready_private">ভয়েস ইনপুট এই ডিভাইসেই থাকে।</string>
+    <string name="speech_status_unavailable_build">এই বিল্ডে অফলাইন ভয়েস ইনপুট উপলভ্য নয়।</string>
     <string name="speech_input_title">ভয়েস ইনপুট</string>
     <string name="speech_selected_model">অফলাইন মডেল: %1$s</string>
     <string name="speech_install_model">অফলাইন মডেল ইনস্টল করুন</string>

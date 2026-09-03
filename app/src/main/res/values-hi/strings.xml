@@ -46,6 +46,16 @@
     <string name="session_creator_model_support">इस एजेंट प्रदाता द्वारा समर्थित सटीक मॉडल पहचानकर्ता का उपयोग करें।</string>
     <string name="session_creator_start">सत्र शुरू करें</string>
     <string name="action_cancel">रद्द करें</string>
+    <string name="speech_status_waiting">वर्तमान वॉइस इनपुट स्थिति की प्रतीक्षा की जा रही है…</string>
+    <string name="speech_status_starting">डिवाइस पर निजी वॉइस इनपुट शुरू किया जा रहा है…</string>
+    <string name="speech_status_listening">डिवाइस पर सुना जा रहा है। बोलना पूरा होने पर रोकें।</string>
+    <string name="speech_status_transcribing">डिवाइस पर निजी ट्रांसक्रिप्ट पूरी की जा रही है…</string>
+    <string name="speech_status_review_transcript">सत्र के ड्राफ़्ट में जोड़ने से पहले ट्रांसक्रिप्ट की समीक्षा करें।</string>
+    <string name="speech_status_no_model">कोई सत्यापित ऑफ़लाइन ट्रांसक्रिप्शन मॉडल उपलब्ध नहीं है।</string>
+    <string name="speech_status_install_model">वॉइस इनपुट का उपयोग करने से पहले सत्यापित ऑफ़लाइन मॉडल इंस्टॉल करें।</string>
+    <string name="speech_status_downloading_model">ऑफ़लाइन स्पीच मॉडल डाउनलोड किया जा रहा है…</string>
+    <string name="speech_status_ready_private">वॉइस इनपुट इसी डिवाइस पर रहता है।</string>
+    <string name="speech_status_unavailable_build">इस बिल्ड में ऑफ़लाइन वॉइस इनपुट उपलब्ध नहीं है।</string>
     <string name="speech_input_title">वॉइस इनपुट</string>
     <string name="speech_selected_model">ऑफ़लाइन मॉडल: %1$s</string>
     <string name="speech_install_model">ऑफ़लाइन मॉडल इंस्टॉल करें</string>

@@ -46,6 +46,16 @@
     <string name="session_creator_model_support">このエージェントプロバイダーが対応する正確なモデル識別子を入力してください。</string>
     <string name="session_creator_start">セッションを開始</string>
     <string name="action_cancel">キャンセル</string>
+    <string name="speech_status_waiting">現在の音声入力状態を待っています…</string>
+    <string name="speech_status_starting">デバイス上でプライベート音声入力を開始しています…</string>
+    <string name="speech_status_listening">デバイス上で聞き取っています。話し終えたら停止してください。</string>
+    <string name="speech_status_transcribing">デバイス上でプライベート文字起こしを完了しています…</string>
+    <string name="speech_status_review_transcript">セッションの下書きに挿入する前に、文字起こしを確認してください。</string>
+    <string name="speech_status_no_model">検証済みのオフライン文字起こしモデルを利用できません。</string>
+    <string name="speech_status_install_model">音声入力を使用する前に、検証済みオフラインモデルをインストールしてください。</string>
+    <string name="speech_status_downloading_model">オフライン音声モデルをダウンロードしています…</string>
+    <string name="speech_status_ready_private">音声入力はこのデバイス内に留まります。</string>
+    <string name="speech_status_unavailable_build">このビルドではオフライン音声入力を利用できません。</string>
     <string name="speech_input_title">音声入力</string>
     <string name="speech_selected_model">オフラインモデル：%1$s</string>
     <string name="speech_install_model">オフラインモデルをインストール</string>

@@ -46,6 +46,16 @@
     <string name="session_creator_model_support">Utilisez un identifiant de modèle exact pris en charge par ce fournisseur d’agent.</string>
     <string name="session_creator_start">Démarrer la session</string>
     <string name="action_cancel">Annuler</string>
+    <string name="speech_status_waiting">En attente de l’état actuel de la saisie vocale…</string>
+    <string name="speech_status_starting">Démarrage de la saisie vocale privée sur l’appareil…</string>
+    <string name="speech_status_listening">Écoute sur l’appareil. Arrêtez lorsque vous avez fini de parler.</string>
+    <string name="speech_status_transcribing">Finalisation de la transcription privée sur l’appareil…</string>
+    <string name="speech_status_review_transcript">Vérifiez la transcription avant de l’insérer dans le brouillon de session.</string>
+    <string name="speech_status_no_model">Aucun modèle vérifié de transcription hors ligne n’est disponible.</string>
+    <string name="speech_status_install_model">Installez le modèle hors ligne vérifié avant d’utiliser la saisie vocale.</string>
+    <string name="speech_status_downloading_model">Téléchargement du modèle vocal hors ligne…</string>
+    <string name="speech_status_ready_private">La saisie vocale reste sur cet appareil.</string>
+    <string name="speech_status_unavailable_build">La saisie vocale hors ligne n’est pas disponible dans cette version.</string>
     <string name="speech_input_title">Saisie vocale</string>
     <string name="speech_selected_model">Modèle hors ligne : %1$s</string>
     <string name="speech_install_model">Installer le modèle hors ligne</string>

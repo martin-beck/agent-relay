@@ -61,7 +61,7 @@ internal fun SpeechInputControls(
             }
         }
         Text(
-            text = state.statusMessage,
+            text = state.statusMessage.resolve(),
             modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,

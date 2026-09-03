@@ -46,6 +46,16 @@
     <string name="session_creator_model_support">请输入此代理提供程序支持的准确模型标识符。</string>
     <string name="session_creator_start">启动会话</string>
     <string name="action_cancel">取消</string>
+    <string name="speech_status_waiting">正在等待当前语音输入状态…</string>
+    <string name="speech_status_starting">正在启动设备端私密语音输入…</string>
+    <string name="speech_status_listening">正在设备上聆听。说完后请停止。</string>
+    <string name="speech_status_transcribing">正在设备上完成私密转写…</string>
+    <string name="speech_status_review_transcript">将转写文本插入会话草稿前请先检查。</string>
+    <string name="speech_status_no_model">没有可用的已验证离线转写模型。</string>
+    <string name="speech_status_install_model">使用语音输入前，请先安装已验证的离线模型。</string>
+    <string name="speech_status_downloading_model">正在下载离线语音模型…</string>
+    <string name="speech_status_ready_private">语音输入仅保留在此设备上。</string>
+    <string name="speech_status_unavailable_build">此版本不支持离线语音输入。</string>
     <string name="speech_input_title">语音输入</string>
     <string name="speech_selected_model">离线模型：%1$s</string>
     <string name="speech_install_model">安装离线模型</string>

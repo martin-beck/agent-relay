@@ -46,7 +46,7 @@ internal data class SpeechInputUiState(
     val operationId: Long? = null,
     val transcript: String? = null,
     val progressPercent: Int? = null,
-    val statusMessage: String,
+    val statusMessage: UiMessage,
 ) {
     val canSelectModel: Boolean
         get() = phase in MODEL_SELECTION_PHASES && models.size > 1
@@ -370,7 +370,7 @@ internal class SpeechInputController(
                 selected = selected,
                 targetSessionKey = target.sessionKey,
                 operationId = target.operationId.value,
-                statusMessage = "Waiting for the current voice input state...",
+                statusMessage = UiMessage.Localized(R.string.speech_status_waiting),
             )
         }
         return startingSessionKey?.let { sessionKey ->
@@ -379,7 +379,7 @@ internal class SpeechInputController(
                 options = options,
                 selected = selected,
                 targetSessionKey = sessionKey,
-                statusMessage = "Starting private on-device voice input...",
+                statusMessage = UiMessage.Localized(R.string.speech_status_starting),
             )
         } ?: idleState(options, selected)
     }
@@ -392,32 +392,32 @@ internal class SpeechInputController(
     ): SpeechInputUiState {
         val phase: SpeechInputPhase
         val transcript: String?
-        val message: String
+        val message: UiMessage
         when (recognition) {
             is SpeechRecognitionState.Listening -> {
                 phase = SpeechInputPhase.LISTENING
                 transcript = null
-                message = "Listening on device. Stop when you finish speaking."
+                message = UiMessage.Localized(R.string.speech_status_listening)
             }
             is SpeechRecognitionState.Transcribing -> {
                 phase = SpeechInputPhase.TRANSCRIBING
                 transcript = null
-                message = "Finishing the private on-device transcript..."
+                message = UiMessage.Localized(R.string.speech_status_transcribing)
             }
             is SpeechRecognitionState.Result -> {
                 phase = SpeechInputPhase.RESULT
                 transcript = recognition.text
-                message = "Review the transcript before inserting it into the session draft."
+                message = UiMessage.Localized(R.string.speech_status_review_transcript)
             }
             is SpeechRecognitionState.Failed -> {
                 phase = SpeechInputPhase.FAILED
                 transcript = null
-                message = recognition.failure.actionableMessage
+                message = UiMessage.Verbatim(recognition.failure.actionableMessage)
             }
             SpeechRecognitionState.Idle -> {
                 phase = SpeechInputPhase.STARTING
                 transcript = null
-                message = "Starting private on-device voice input..."
+                message = UiMessage.Localized(R.string.speech_status_starting)
             }
         }
         return baseState(
@@ -439,7 +439,7 @@ internal class SpeechInputController(
             return SpeechInputUiState(
                 phase = SpeechInputPhase.UNAVAILABLE,
                 models = options,
-                statusMessage = "No verified offline transcription model is available.",
+                statusMessage = UiMessage.Localized(R.string.speech_status_no_model),
             )
         }
         return when (val availability = selected.availability) {
@@ -447,7 +447,7 @@ internal class SpeechInputController(
                 SpeechInputPhase.MODEL_REQUIRED,
                 options,
                 selected,
-                statusMessage = "Install the verified offline model before using voice input.",
+                statusMessage = UiMessage.Localized(R.string.speech_status_install_model),
             )
             is SpeechModelAvailability.Downloading -> baseState(
                 SpeechInputPhase.INSTALLING,
@@ -458,19 +458,19 @@ internal class SpeechInputController(
                     availability.downloadedBytes.toDouble() /
                         availability.totalBytes.toDouble() * 100.0
                     ).toInt().coerceIn(0, 100),
-                statusMessage = "Downloading the offline speech model...",
+                statusMessage = UiMessage.Localized(R.string.speech_status_downloading_model),
             )
             SpeechModelAvailability.Ready -> baseState(
                 SpeechInputPhase.READY,
                 options,
                 selected,
-                statusMessage = "Voice input stays on this device.",
+                statusMessage = UiMessage.Localized(R.string.speech_status_ready_private),
             )
             is SpeechModelAvailability.Failed -> baseState(
                 SpeechInputPhase.FAILED,
                 options,
                 selected,
-                statusMessage = availability.failure.actionableMessage,
+                statusMessage = UiMessage.Verbatim(availability.failure.actionableMessage),
             )
         }
     }
@@ -483,7 +483,7 @@ internal class SpeechInputController(
         operationId: Long? = null,
         transcript: String? = null,
         progressPercent: Int? = null,
-        statusMessage: String,
+        statusMessage: UiMessage,
     ) = SpeechInputUiState(
         phase = phase,
         models = options,
@@ -504,7 +504,7 @@ internal class SpeechInputController(
 
 internal fun unavailableSpeechInputState() = SpeechInputUiState(
     phase = SpeechInputPhase.UNAVAILABLE,
-    statusMessage = "Offline voice input is unavailable in this build.",
+    statusMessage = UiMessage.Localized(R.string.speech_status_unavailable_build),
 )
 
 private fun SpeechRecognitionState?.operationIdOrNull(): SpeechOperationId? = when (this) {

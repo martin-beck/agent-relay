@@ -46,6 +46,16 @@
     <string name="session_creator_model_support">Usa un identificatore di modello esatto supportato da questo provider dell’agente.</string>
     <string name="session_creator_start">Avvia sessione</string>
     <string name="action_cancel">Annulla</string>
+    <string name="speech_status_waiting">In attesa dello stato corrente dell’input vocale…</string>
+    <string name="speech_status_starting">Avvio dell’input vocale privato sul dispositivo…</string>
+    <string name="speech_status_listening">Ascolto sul dispositivo. Interrompi quando hai finito di parlare.</string>
+    <string name="speech_status_transcribing">Completamento della trascrizione privata sul dispositivo…</string>
+    <string name="speech_status_review_transcript">Controlla la trascrizione prima di inserirla nella bozza della sessione.</string>
+    <string name="speech_status_no_model">Non è disponibile alcun modello verificato di trascrizione offline.</string>
+    <string name="speech_status_install_model">Installa il modello offline verificato prima di usare l’input vocale.</string>
+    <string name="speech_status_downloading_model">Download del modello vocale offline…</string>
+    <string name="speech_status_ready_private">L’input vocale rimane su questo dispositivo.</string>
+    <string name="speech_status_unavailable_build">L’input vocale offline non è disponibile in questa build.</string>
     <string name="speech_input_title">Input vocale</string>
     <string name="speech_selected_model">Modello offline: %1$s</string>
     <string name="speech_install_model">Installa modello offline</string>

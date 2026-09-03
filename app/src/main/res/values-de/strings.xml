@@ -46,6 +46,16 @@
     <string name="session_creator_model_support">Verwenden Sie eine exakte Modellkennung, die dieser Agent-Anbieter unterstützt.</string>
     <string name="session_creator_start">Sitzung starten</string>
     <string name="action_cancel">Abbrechen</string>
+    <string name="speech_status_waiting">Warten auf den aktuellen Spracheingabestatus…</string>
+    <string name="speech_status_starting">Private Spracheingabe auf diesem Gerät wird gestartet…</string>
+    <string name="speech_status_listening">Das Gerät hört zu. Stoppe die Aufnahme, wenn du fertig gesprochen hast.</string>
+    <string name="speech_status_transcribing">Das private Transkript wird auf diesem Gerät fertiggestellt…</string>
+    <string name="speech_status_review_transcript">Prüfe das Transkript, bevor du es in den Sitzungsentwurf einfügst.</string>
+    <string name="speech_status_no_model">Kein verifiziertes Offline-Transkriptionsmodell ist verfügbar.</string>
+    <string name="speech_status_install_model">Installiere das verifizierte Offline-Modell, bevor du die Spracheingabe verwendest.</string>
+    <string name="speech_status_downloading_model">Offline-Sprachmodell wird heruntergeladen…</string>
+    <string name="speech_status_ready_private">Die Spracheingabe bleibt auf diesem Gerät.</string>
+    <string name="speech_status_unavailable_build">Offline-Spracheingabe ist in diesem Build nicht verfügbar.</string>
     <string name="speech_input_title">Spracheingabe</string>
     <string name="speech_selected_model">Offline-Modell: %1$s</string>
     <string name="speech_install_model">Offline-Modell installieren</string>
