@@ -72,6 +72,10 @@
     <string name="speech_model_installed">%1$s - 已安裝</string>
     <string name="action_retry">重試</string>
     <string name="action_refresh">重新整理</string>
+    <string name="session_issue_profile_discovery">無法載入 %1$s 設定檔。</string>
+    <string name="session_issue_connection_setup">無法準備連線 %1$s。</string>
+    <string name="session_issue_provider_synchronization">無法在 %2$s 上同步 %1$s。</string>
+    <string name="session_issue_session_persistence">無法儲存 %1$s 的工作階段狀態。</string>
     <string name="action_dismiss">關閉</string>
     <string name="session_hub_add_profile">新增 %1$s 設定檔</string>
     <string name="session_hub_start_on_connection">在 %2$s 上啟動 %1$s</string>

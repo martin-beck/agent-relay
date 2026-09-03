@@ -546,7 +546,7 @@ private fun issue(
     kind = SessionCoordinatorIssueKind.CONNECTION_SETUP,
     connection = null,
     agentProviderId = null,
-    actionableMessage = message,
+    connectionLabel = message,
     recoverable = true,
     occurredAtEpochMillis = occurredAtEpochMillis,
 )

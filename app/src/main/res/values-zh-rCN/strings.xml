@@ -72,6 +72,10 @@
     <string name="speech_model_installed">%1$s - 已安装</string>
     <string name="action_retry">重试</string>
     <string name="action_refresh">刷新</string>
+    <string name="session_issue_profile_discovery">无法加载 %1$s 配置。</string>
+    <string name="session_issue_connection_setup">无法准备连接 %1$s。</string>
+    <string name="session_issue_provider_synchronization">无法在 %2$s 上同步 %1$s。</string>
+    <string name="session_issue_session_persistence">无法保存 %1$s 的会话状态。</string>
     <string name="action_dismiss">关闭</string>
     <string name="session_hub_add_profile">添加 %1$s 配置</string>
     <string name="session_hub_start_on_connection">在 %2$s 上启动 %1$s</string>

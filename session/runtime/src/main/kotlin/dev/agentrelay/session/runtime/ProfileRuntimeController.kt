@@ -477,7 +477,10 @@ internal class ProfileRuntimeController(
                 kind = SessionCoordinatorIssueKind.PROVIDER_SYNCHRONIZATION,
                 connection = key,
                 agentProviderId = descriptor.id,
-                actionableMessage = descriptor.displayName + " could not be synchronized on " + profile.label.take(256),
+                connectionLabel = profile.label.take(256),
+                agentProviderLabel = descriptor.displayName
+                    .takeIf(String::isNotBlank)?.take(256)
+                    ?: descriptor.id.value.take(256),
                 recoverable = true,
                 occurredAtEpochMillis = now(),
             ),
@@ -497,7 +500,9 @@ internal class ProfileRuntimeController(
                 kind = SessionCoordinatorIssueKind.SESSION_PERSISTENCE,
                 connection = key,
                 agentProviderId = descriptor.id,
-                actionableMessage = "Session state could not be saved for " + descriptor.displayName,
+                agentProviderLabel = descriptor.displayName
+                    .takeIf(String::isNotBlank)?.take(256)
+                    ?: descriptor.id.value.take(256),
                 recoverable = true,
                 occurredAtEpochMillis = now(),
             ),

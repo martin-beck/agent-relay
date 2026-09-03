@@ -102,6 +102,10 @@
     <string name="speech_model_installed">%1$s - installed</string>
     <string name="action_retry">Retry</string>
     <string name="action_refresh">Refresh</string>
+    <string name="session_issue_profile_discovery">%1$s profiles could not be loaded.</string>
+    <string name="session_issue_connection_setup">Connection %1$s could not be prepared.</string>
+    <string name="session_issue_provider_synchronization">%1$s could not be synchronized on %2$s.</string>
+    <string name="session_issue_session_persistence">Session state could not be saved for %1$s.</string>
     <string name="action_dismiss">Dismiss</string>
     <string name="session_hub_add_profile">Add %1$s profile</string>
     <string name="session_hub_start_on_connection">Start %1$s on %2$s</string>

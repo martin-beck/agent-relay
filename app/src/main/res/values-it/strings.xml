@@ -72,6 +72,10 @@
     <string name="speech_model_installed">%1$s - installato</string>
     <string name="action_retry">Riprova</string>
     <string name="action_refresh">Aggiorna</string>
+    <string name="session_issue_profile_discovery">Impossibile caricare i profili di %1$s.</string>
+    <string name="session_issue_connection_setup">Impossibile preparare la connessione %1$s.</string>
+    <string name="session_issue_provider_synchronization">Impossibile sincronizzare %1$s su %2$s.</string>
+    <string name="session_issue_session_persistence">Impossibile salvare lo stato della sessione per %1$s.</string>
     <string name="action_dismiss">Chiudi</string>
     <string name="session_hub_add_profile">Aggiungi profilo %1$s</string>
     <string name="session_hub_start_on_connection">Avvia %1$s su %2$s</string>

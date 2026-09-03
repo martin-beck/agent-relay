@@ -57,7 +57,7 @@ internal fun SessionHubList(
         }
         items(hub.issues, key = { "issue:" + it.id }) { issue ->
             MessageCard(
-                message = issue.message,
+                message = issue.message.resolve(),
                 isError = !issue.recoverable,
                 actionLabel = if (issue.recoverable) {
                     stringResource(R.string.action_refresh)

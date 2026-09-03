@@ -179,7 +179,8 @@ internal fun previewHub(
         issues = listOf(
             CoordinatorIssueUiModel(
                 id = "preview-issue",
-                message = "One provider needs attention before it can reconnect.",
+                message =
+                UiMessage.Verbatim("One provider needs attention before it can reconnect."),
                 recoverable = true,
             ),
         ),

@@ -72,6 +72,10 @@
     <string name="speech_model_installed">%1$s - インストール済み</string>
     <string name="action_retry">再試行</string>
     <string name="action_refresh">更新</string>
+    <string name="session_issue_profile_discovery">%1$s のプロファイルを読み込めませんでした。</string>
+    <string name="session_issue_connection_setup">接続 %1$s を準備できませんでした。</string>
+    <string name="session_issue_provider_synchronization">%2$s で %1$s を同期できませんでした。</string>
+    <string name="session_issue_session_persistence">%1$s のセッション状態を保存できませんでした。</string>
     <string name="action_dismiss">閉じる</string>
     <string name="session_hub_add_profile">%1$s プロファイルを追加</string>
     <string name="session_hub_start_on_connection">%2$s で %1$s を開始</string>

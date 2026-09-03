@@ -23,6 +23,8 @@ import dev.agentrelay.session.runtime.AgentEndpointKey
 import dev.agentrelay.session.runtime.AgentEndpointPhase
 import dev.agentrelay.session.runtime.AgentEndpointStatus
 import dev.agentrelay.session.runtime.SessionConnectionKey
+import dev.agentrelay.session.runtime.SessionCoordinatorIssue
+import dev.agentrelay.session.runtime.SessionCoordinatorIssueKind
 import dev.agentrelay.session.runtime.SessionCoordinatorSnapshot
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -116,6 +118,84 @@ class SessionHubLocalizedMessagesTest {
             cases.map { it.third },
             mapped.selectedSession?.transcript?.map { it.kind to it.roleLabel },
         )
+    }
+
+    @Test
+    fun coordinatorIssuesMapTypedContextToLocalizedMessages() {
+        val issues = listOf(
+            SessionCoordinatorIssue(
+                id = "profile-discovery",
+                kind = SessionCoordinatorIssueKind.PROFILE_DISCOVERY,
+                connection = null,
+                agentProviderId = null,
+                connectionProviderLabel = "Local",
+                recoverable = true,
+                occurredAtEpochMillis = 1,
+            ),
+            SessionCoordinatorIssue(
+                id = "connection-setup",
+                kind = SessionCoordinatorIssueKind.CONNECTION_SETUP,
+                connection = null,
+                agentProviderId = null,
+                connectionLabel = "Workstation 42",
+                recoverable = true,
+                occurredAtEpochMillis = 2,
+            ),
+            SessionCoordinatorIssue(
+                id = "provider-synchronization",
+                kind = SessionCoordinatorIssueKind.PROVIDER_SYNCHRONIZATION,
+                connection = null,
+                agentProviderId = null,
+                connectionLabel = "Workstation 42",
+                agentProviderLabel = "Codex",
+                recoverable = true,
+                occurredAtEpochMillis = 3,
+            ),
+            SessionCoordinatorIssue(
+                id = "session-persistence",
+                kind = SessionCoordinatorIssueKind.SESSION_PERSISTENCE,
+                connection = null,
+                agentProviderId = null,
+                agentProviderLabel = "Codex",
+                recoverable = false,
+                occurredAtEpochMillis = 4,
+            ),
+        )
+
+        val mapped = SessionHubUiMapper.map(
+            coordinator = SessionCoordinatorSnapshot(
+                issues = issues.associateBy(SessionCoordinatorIssue::id),
+            ),
+            sessions = SessionHubSnapshot(),
+            connectionProviders = emptyList(),
+            selectedSessionKey = null,
+            operationError = null,
+            busyConnectionKeys = emptySet(),
+        )
+
+        assertEquals(
+            listOf(
+                UiMessage.Localized(
+                    R.string.session_issue_session_persistence,
+                    listOf("Codex"),
+                ),
+                UiMessage.Localized(
+                    R.string.session_issue_provider_synchronization,
+                    listOf("Codex", "Workstation 42"),
+                ),
+                UiMessage.Localized(
+                    R.string.session_issue_connection_setup,
+                    listOf("Workstation 42"),
+                ),
+                UiMessage.Localized(
+                    R.string.session_issue_profile_discovery,
+                    listOf("Local"),
+                ),
+            ),
+            mapped.issues.map(CoordinatorIssueUiModel::message),
+        )
+        assertFalse(mapped.issues.first().recoverable)
+        assertTrue(mapped.issues.drop(1).all(CoordinatorIssueUiModel::recoverable))
     }
 
     @Test

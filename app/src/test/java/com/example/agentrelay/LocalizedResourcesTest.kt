@@ -218,6 +218,14 @@ class LocalizedResourcesTest {
             ACTION_LABEL_RESOURCES.forEach { resource ->
                 assertTrue(languageTag, context.getString(resource).isNotBlank())
             }
+            COORDINATOR_ISSUE_RESOURCES.forEach { (resource, arguments) ->
+                val rendered = context.getString(resource, *arguments.toTypedArray())
+                arguments.forEach { argument ->
+                    assertTrue(languageTag, rendered.contains(argument))
+                }
+                assertFalse(languageTag, rendered.contains("%1\$"))
+                assertFalse(languageTag, rendered.contains("%2\$"))
+            }
             SSH_PROFILE_RESOURCES.forEach { resource ->
                 assertTrue(languageTag, context.getString(resource).isNotBlank())
             }
@@ -315,6 +323,14 @@ class LocalizedResourcesTest {
             R.string.session_action_risk_credential_access,
             R.string.session_action_risk_network_expansion,
             R.string.session_action_risk_external_tool,
+        )
+
+        val COORDINATOR_ISSUE_RESOURCES = mapOf(
+            R.string.session_issue_profile_discovery to listOf("Provider 42"),
+            R.string.session_issue_connection_setup to listOf("Connection 42"),
+            R.string.session_issue_provider_synchronization to
+                listOf("Agent 42", "Connection 42"),
+            R.string.session_issue_session_persistence to listOf("Agent 42"),
         )
 
         val SSH_PROFILE_RESOURCES = listOf(

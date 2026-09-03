@@ -28,6 +28,8 @@ import dev.agentrelay.session.runtime.AgentEndpointKey
 import dev.agentrelay.session.runtime.AgentEndpointStatus
 import dev.agentrelay.session.runtime.AgentEndpointPhase
 import dev.agentrelay.session.runtime.SessionConnectionKey
+import dev.agentrelay.session.runtime.SessionCoordinatorIssue
+import dev.agentrelay.session.runtime.SessionCoordinatorIssueKind
 import dev.agentrelay.session.runtime.SessionCoordinatorSnapshot
 import java.security.MessageDigest
 
@@ -249,7 +251,7 @@ internal enum class TimelineEntryKind {
 
 internal data class CoordinatorIssueUiModel(
     val id: String,
-    val message: String,
+    val message: UiMessage,
     val recoverable: Boolean,
 )
 
@@ -304,7 +306,7 @@ internal object SessionHubUiMapper {
             sessions = sessionModels(sessions, providerNames),
             issues = coordinator.issues.values
                 .sortedByDescending { it.occurredAtEpochMillis }
-                .map { CoordinatorIssueUiModel(it.id, it.actionableMessage, it.recoverable) },
+                .map { it.toUiModel() },
             selectedSession = selectedDetail(
                 selectedSessionKey,
                 coordinator,
@@ -326,6 +328,36 @@ internal object SessionHubUiMapper {
             attentionActions = actions.filter { it.state != SessionActionState.RESOLVED },
         )
     }
+
+    private fun SessionCoordinatorIssue.toUiModel() = CoordinatorIssueUiModel(
+        id = id,
+        message = when (kind) {
+            SessionCoordinatorIssueKind.PROFILE_DISCOVERY ->
+                UiMessage.Localized(
+                    R.string.session_issue_profile_discovery,
+                    listOf(requireNotNull(connectionProviderLabel)),
+                )
+            SessionCoordinatorIssueKind.CONNECTION_SETUP ->
+                UiMessage.Localized(
+                    R.string.session_issue_connection_setup,
+                    listOf(requireNotNull(connectionLabel)),
+                )
+            SessionCoordinatorIssueKind.PROVIDER_SYNCHRONIZATION ->
+                UiMessage.Localized(
+                    R.string.session_issue_provider_synchronization,
+                    listOf(
+                        requireNotNull(agentProviderLabel),
+                        requireNotNull(connectionLabel),
+                    ),
+                )
+            SessionCoordinatorIssueKind.SESSION_PERSISTENCE ->
+                UiMessage.Localized(
+                    R.string.session_issue_session_persistence,
+                    listOf(requireNotNull(agentProviderLabel)),
+                )
+        },
+        recoverable = recoverable,
+    )
 
     private fun connectionModels(
         coordinator: SessionCoordinatorSnapshot,

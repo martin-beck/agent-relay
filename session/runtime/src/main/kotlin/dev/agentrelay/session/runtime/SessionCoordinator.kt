@@ -80,7 +80,7 @@ class SessionCoordinator(
                             kind = SessionCoordinatorIssueKind.PROFILE_DISCOVERY,
                             connection = null,
                             agentProviderId = null,
-                            actionableMessage = descriptor.displayName + " profiles could not be loaded",
+                            connectionProviderLabel = descriptor.displayName.take(256),
                             recoverable = true,
                             occurredAtEpochMillis = now(),
                         )
@@ -415,7 +415,7 @@ class SessionCoordinator(
                         kind = SessionCoordinatorIssueKind.CONNECTION_SETUP,
                         connection = key,
                         agentProviderId = null,
-                        actionableMessage = "Connection " + profile.label.take(256) + " could not be prepared",
+                        connectionLabel = profile.label.take(256),
                         recoverable = true,
                         occurredAtEpochMillis = now(),
                     )

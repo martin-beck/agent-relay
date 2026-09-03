@@ -72,6 +72,10 @@
     <string name="speech_model_installed">%1$s - مثبّت</string>
     <string name="action_retry">إعادة المحاولة</string>
     <string name="action_refresh">تحديث</string>
+    <string name="session_issue_profile_discovery">تعذر تحميل ملفات تعريف %1$s.</string>
+    <string name="session_issue_connection_setup">تعذر إعداد الاتصال %1$s.</string>
+    <string name="session_issue_provider_synchronization">تعذرت مزامنة %1$s على %2$s.</string>
+    <string name="session_issue_session_persistence">تعذر حفظ حالة الجلسة لـ %1$s.</string>
     <string name="action_dismiss">إغلاق</string>
     <string name="session_hub_add_profile">إضافة ملف تعريف %1$s</string>
     <string name="session_hub_start_on_connection">بدء %1$s على %2$s</string>
