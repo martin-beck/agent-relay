@@ -76,9 +76,11 @@ rendered text lines that leave the viewport or use ellipsis. Reviewed Roborazzi
 baselines make the same failures visible in pull requests.
 
 This is still bounded evidence, not full locale qualification. Profile editing
-and compact session-detail questions plus sensitive confirmations now have
-equivalent per-locale matrices. Artifact progress, speech installation, and
-notification permission still require that coverage.
+and compact session-detail questions plus sensitive confirmations, as well as
+changed-file progress/cancel/result states, now have equivalent per-locale
+matrices. Speech installation and notification permission still require that
+coverage.
+
 Representative API 36 device tests supplement deterministic JVM screenshots;
 they do not replace them.
 
