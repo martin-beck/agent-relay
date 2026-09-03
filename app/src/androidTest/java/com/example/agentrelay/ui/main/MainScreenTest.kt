@@ -897,7 +897,7 @@ internal fun testHub(): SessionHubUiModel {
             transcript = listOf(
                 TranscriptEntryUiModel(
                     id = "transcript",
-                    roleLabel = "Agent",
+                    roleLabel = UiMessage.Verbatim("Agent"),
                     kind = TimelineEntryKind.AGENT_COMMENTARY,
                     text = "Cached agent output",
                     wasTruncated = false,
@@ -911,7 +911,8 @@ internal fun testHub(): SessionHubUiModel {
                 submitMode = SessionSubmitMode.SEND,
                 canSubmit = false,
                 canInterrupt = true,
-                statusMessage = "Resolve the pending approval or question before sending more input.",
+                statusMessage =
+                UiMessage.Localized(R.string.session_composer_status_pending_action),
             ),
             artifacts = listOf(
                 SessionArtifactUiModel(

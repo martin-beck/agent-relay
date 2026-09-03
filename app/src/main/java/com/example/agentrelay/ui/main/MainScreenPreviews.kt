@@ -7,6 +7,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.agentrelay.R
 import com.example.agentrelay.theme.AgentRelayTheme
 import dev.agentrelay.provider.api.AgentApprovalDecision
 import dev.agentrelay.provider.api.AgentApprovalType
@@ -309,7 +310,7 @@ private fun previewDetail(
     transcript = listOf(
         TranscriptEntryUiModel(
             id = "preview-transcript",
-            roleLabel = "Agent",
+            roleLabel = UiMessage.Verbatim("Agent"),
             kind = TimelineEntryKind.AGENT_COMMENTARY,
             text = "The deterministic preview fixture contains no live connection data.",
             wasTruncated = false,
@@ -323,7 +324,7 @@ private fun previewDetail(
         canSubmit = !approvalRequired,
         canInterrupt = true,
         statusMessage = if (approvalRequired) {
-            "Resolve the pending approval before sending more input."
+            UiMessage.Localized(R.string.session_composer_status_pending_action)
         } else {
             null
         },

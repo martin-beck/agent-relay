@@ -1,5 +1,6 @@
 package com.example.agentrelay.ui.main
 
+import com.example.agentrelay.R
 import dev.agentrelay.connection.api.ConnectionCapability
 import dev.agentrelay.connection.api.ConnectionDisconnectReason
 import dev.agentrelay.connection.api.ConnectionIdentityDisposition
@@ -214,7 +215,8 @@ internal data class SessionComposerUiModel(
     val canResume: Boolean = false,
     val canInterrupt: Boolean = false,
     val isBusy: Boolean = false,
-    val statusMessage: String? = "Connect this session to send input.",
+    val statusMessage: UiMessage? =
+        UiMessage.Localized(R.string.session_composer_status_connect),
 )
 
 internal data class SessionActivityUiModel(
@@ -228,7 +230,7 @@ internal data class SessionActivityUiModel(
 
 internal data class TranscriptEntryUiModel(
     val id: String,
-    val roleLabel: String,
+    val roleLabel: UiMessage,
     val kind: TimelineEntryKind,
     val text: String,
     val wasTruncated: Boolean,
@@ -653,21 +655,25 @@ internal object SessionHubUiMapper {
         capabilities: Set<AgentCapability>,
         canResume: Boolean,
         isBusy: Boolean,
-    ): String? = when {
-        isBusy -> "Applying session action..."
-        !endpointReady -> "Connect ${observation.connectionLabel} to send this saved draft."
+    ): UiMessage? = when {
+        isBusy -> UiMessage.Localized(R.string.session_composer_status_applying)
+        !endpointReady ->
+            UiMessage.Localized(
+                R.string.session_composer_status_connect_draft,
+                listOf(observation.connectionLabel),
+            )
         observation.agentState == AgentSessionState.WAITING_FOR_APPROVAL ->
-            "Resolve the pending approval or question before sending more input."
+            UiMessage.Localized(R.string.session_composer_status_pending_action)
         observation.agentState in RESUMABLE_SESSION_STATES ->
             if (canResume) {
-                "Resume this saved session before sending input."
+                UiMessage.Localized(R.string.session_composer_status_resume)
             } else {
-                "This provider cannot safely resume the saved session."
+                UiMessage.Localized(R.string.session_composer_status_resume_unsupported)
             }
         observation.agentState == AgentSessionState.RUNNING &&
             AgentCapability.ACTIVE_TURN_STEERING !in capabilities ->
-            "This provider cannot steer an active turn. Wait for it to finish or interrupt it."
-        !canAcceptInput -> "The provider exposed this session as read-only."
+            UiMessage.Localized(R.string.session_composer_status_steering_unsupported)
+        !canAcceptInput -> UiMessage.Localized(R.string.session_composer_status_read_only)
         else -> null
     }
 
@@ -696,16 +702,20 @@ internal object SessionHubUiMapper {
             }
         }
 
-    private val TimelineEntryKind.label: String
-        get() = when (this) {
-            TimelineEntryKind.USER_MESSAGE -> "You"
-            TimelineEntryKind.AGENT_COMMENTARY -> "Agent commentary"
-            TimelineEntryKind.AGENT_FINAL -> "Final answer"
-            TimelineEntryKind.PLAN -> "Plan"
-            TimelineEntryKind.REASONING_SUMMARY -> "Reasoning summary"
-            TimelineEntryKind.TOOL -> "Tool"
-            TimelineEntryKind.SYSTEM -> "System"
-        }
+    private val TimelineEntryKind.label: UiMessage
+        get() = UiMessage.Localized(
+            when (this) {
+                TimelineEntryKind.USER_MESSAGE -> R.string.session_timeline_role_user
+                TimelineEntryKind.AGENT_COMMENTARY ->
+                    R.string.session_timeline_role_agent_commentary
+                TimelineEntryKind.AGENT_FINAL -> R.string.session_timeline_role_agent_final
+                TimelineEntryKind.PLAN -> R.string.session_timeline_role_plan
+                TimelineEntryKind.REASONING_SUMMARY ->
+                    R.string.session_timeline_role_reasoning_summary
+                TimelineEntryKind.TOOL -> R.string.session_timeline_role_tool
+                TimelineEntryKind.SYSTEM -> R.string.session_timeline_role_system
+            },
+        )
 
     private fun ConnectionState?.toUiStatus(): ConnectionStatus = when (this) {
         null,

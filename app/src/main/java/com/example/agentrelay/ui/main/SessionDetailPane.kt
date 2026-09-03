@@ -427,7 +427,7 @@ private fun SessionComposer(
             enabled = !composer.isBusy,
             supportingText = {
                 Text(
-                    text = composer.statusMessage
+                    text = composer.statusMessage?.resolve()
                         ?: stringResource(R.string.session_composer_draft_saved),
                     modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                 )
@@ -557,7 +557,7 @@ private fun TranscriptCard(entry: TranscriptEntryUiModel) {
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = entry.roleLabel,
+                    text = entry.roleLabel.resolve(),
                     modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.primary,
