@@ -131,4 +131,10 @@
     <string name="session_composer_interrupt">Прервать ход</string>
     <string name="session_composer_steer">Направить активный ход</string>
     <string name="session_composer_send">Отправить</string>
+    <string name="session_artifact_save_progress_total">Сохранено байт: %1$s из %2$s</string>
+    <string name="session_artifact_save_progress">Сохранено байт: %1$s</string>
+    <string name="session_artifact_cancel_saving">Отменить сохранение</string>
+    <string name="session_artifact_copy_saved_verified">Копия сохранена, контрольная сумма источника проверена.</string>
+    <string name="session_artifact_save_another_copy">Сохранить ещё одну копию</string>
+    <string name="session_artifact_save_copy">Сохранить копию</string>
 </resources>

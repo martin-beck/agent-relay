@@ -129,4 +129,10 @@
     <string name="session_composer_interrupt">Interrompi turno</string>
     <string name="session_composer_steer">Guida turno attivo</string>
     <string name="session_composer_send">Invia</string>
+    <string name="session_artifact_save_progress_total">Byte salvati: %1$s di %2$s</string>
+    <string name="session_artifact_save_progress">Byte salvati: %1$s</string>
+    <string name="session_artifact_cancel_saving">Annulla salvataggio</string>
+    <string name="session_artifact_copy_saved_verified">Copia salvata e checksum dell’origine verificato.</string>
+    <string name="session_artifact_save_another_copy">Salva un’altra copia</string>
+    <string name="session_artifact_save_copy">Salva copia</string>
 </resources>

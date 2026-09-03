@@ -125,4 +125,10 @@
     <string name="session_composer_interrupt">中断轮次</string>
     <string name="session_composer_steer">引导当前轮次</string>
     <string name="session_composer_send">发送</string>
+    <string name="session_artifact_save_progress_total">已保存 %1$s/%2$s 字节</string>
+    <string name="session_artifact_save_progress">已保存 %1$s 字节</string>
+    <string name="session_artifact_cancel_saving">取消保存</string>
+    <string name="session_artifact_copy_saved_verified">副本已保存，且源文件校验和已验证。</string>
+    <string name="session_artifact_save_another_copy">再保存一个副本</string>
+    <string name="session_artifact_save_copy">保存副本</string>
 </resources>

@@ -125,4 +125,10 @@
     <string name="session_composer_interrupt">中斷回合</string>
     <string name="session_composer_steer">引導進行中的回合</string>
     <string name="session_composer_send">傳送</string>
+    <string name="session_artifact_save_progress_total">已儲存 %1$s/%2$s 位元組</string>
+    <string name="session_artifact_save_progress">已儲存 %1$s 位元組</string>
+    <string name="session_artifact_cancel_saving">取消儲存</string>
+    <string name="session_artifact_copy_saved_verified">副本已儲存，且來源檔案總和檢查碼已驗證。</string>
+    <string name="session_artifact_save_another_copy">再儲存一個副本</string>
+    <string name="session_artifact_save_copy">儲存副本</string>
 </resources>

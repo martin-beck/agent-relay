@@ -125,4 +125,10 @@
     <string name="session_composer_interrupt">Hentikan giliran</string>
     <string name="session_composer_steer">Arahkan giliran aktif</string>
     <string name="session_composer_send">Kirim</string>
+    <string name="session_artifact_save_progress_total">%1$s dari %2$s byte disimpan</string>
+    <string name="session_artifact_save_progress">%1$s byte disimpan</string>
+    <string name="session_artifact_cancel_saving">Batalkan penyimpanan</string>
+    <string name="session_artifact_copy_saved_verified">Salinan disimpan dan checksum sumber diverifikasi.</string>
+    <string name="session_artifact_save_another_copy">Simpan salinan lain</string>
+    <string name="session_artifact_save_copy">Simpan salinan</string>
 </resources>

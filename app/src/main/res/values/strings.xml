@@ -157,4 +157,10 @@
     <string name="session_composer_interrupt">Interrupt turn</string>
     <string name="session_composer_steer">Steer active turn</string>
     <string name="session_composer_send">Send</string>
+    <string name="session_artifact_save_progress_total">Bytes saved: %1$s of %2$s</string>
+    <string name="session_artifact_save_progress">Bytes saved: %1$s</string>
+    <string name="session_artifact_cancel_saving">Cancel saving</string>
+    <string name="session_artifact_copy_saved_verified">Copy saved and source checksum verified.</string>
+    <string name="session_artifact_save_another_copy">Save another copy</string>
+    <string name="session_artifact_save_copy">Save copy</string>
 </resources>

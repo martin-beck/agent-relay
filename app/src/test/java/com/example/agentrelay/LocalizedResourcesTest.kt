@@ -76,6 +76,15 @@ class LocalizedResourcesTest {
                 R.string.session_composer_message_to,
                 opaqueValues[2],
             )
+            val artifactProgress = context.getString(
+                R.string.session_artifact_save_progress_total,
+                NumberFormat
+                    .getIntegerInstance(Locale.forLanguageTag(languageTag))
+                    .format(42),
+                NumberFormat
+                    .getIntegerInstance(Locale.forLanguageTag(languageTag))
+                    .format(84),
+            )
             val risk = context.getString(
                 R.string.session_hub_risk,
                 opaqueValues[0],
@@ -141,6 +150,14 @@ class LocalizedResourcesTest {
             val localizedNumber = NumberFormat
                 .getIntegerInstance(Locale.forLanguageTag(languageTag))
                 .format(42)
+            val localizedTotal = NumberFormat
+                .getIntegerInstance(Locale.forLanguageTag(languageTag))
+                .format(84)
+            assertTrue(languageTag, artifactProgress.contains(localizedNumber))
+            assertTrue(languageTag, artifactProgress.contains(localizedTotal))
+            assertFalse(languageTag, artifactProgress.contains("%1\$"))
+            assertFalse(languageTag, artifactProgress.contains("%2\$"))
+
             assertTrue(languageTag, downloadProgress.contains(localizedNumber))
             assertTrue(languageTag, downloadProgress.contains("%"))
             assertFalse(languageTag, sessionContext.contains("%1\$"))

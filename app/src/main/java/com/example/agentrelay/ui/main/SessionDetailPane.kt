@@ -36,6 +36,7 @@ import androidx.compose.ui.input.key.isShiftPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -51,6 +52,7 @@ import androidx.compose.ui.res.stringResource
 import com.example.agentrelay.R
 import dev.agentrelay.session.api.SessionActivityType
 import java.text.DateFormat
+import java.text.NumberFormat
 import java.util.Date
 
 @Composable
@@ -231,6 +233,8 @@ private fun ArtifactCard(
     onSaveArtifact: (String, String, String) -> Unit,
     onCancelArtifact: (String) -> Unit,
 ) {
+    val numberFormat = NumberFormat.getIntegerInstance(LocalConfiguration.current.locales[0])
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -270,18 +274,25 @@ private fun ArtifactCard(
                 CircularProgressIndicator()
                 Text(
                     text = artifact.totalBytes?.let { totalBytes ->
-                        "${artifact.bytesWritten} of $totalBytes bytes saved"
-                    } ?: "${artifact.bytesWritten} bytes saved",
+                        stringResource(
+                            R.string.session_artifact_save_progress_total,
+                            numberFormat.format(artifact.bytesWritten),
+                            numberFormat.format(totalBytes),
+                        )
+                    } ?: stringResource(
+                        R.string.session_artifact_save_progress,
+                        numberFormat.format(artifact.bytesWritten),
+                    ),
                     modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                     style = MaterialTheme.typography.labelMedium,
                 )
                 OutlinedButton(onClick = { onCancelArtifact(artifact.stableKey) }) {
-                    Text("Cancel saving")
+                    Text(stringResource(R.string.session_artifact_cancel_saving))
                 }
             } else {
                 if (artifact.isExportComplete) {
                     Text(
-                        text = "Copy saved and source checksum verified.",
+                        text = stringResource(R.string.session_artifact_copy_saved_verified),
                         modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary,
@@ -298,7 +309,13 @@ private fun ArtifactCard(
                         },
                         enabled = artifact.canSave,
                     ) {
-                        Text(if (artifact.isExportComplete) "Save another copy" else "Save copy")
+                        Text(
+                            if (artifact.isExportComplete) {
+                                stringResource(R.string.session_artifact_save_another_copy)
+                            } else {
+                                stringResource(R.string.session_artifact_save_copy)
+                            },
+                        )
                     }
                 }
             }

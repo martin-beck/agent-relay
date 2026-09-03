@@ -135,4 +135,10 @@
     <string name="session_composer_interrupt">مقاطعة الدور</string>
     <string name="session_composer_steer">توجيه الدور النشط</string>
     <string name="session_composer_send">إرسال</string>
+    <string name="session_artifact_save_progress_total">تم حفظ %1$s من %2$s بايت</string>
+    <string name="session_artifact_save_progress">تم حفظ %1$s بايت</string>
+    <string name="session_artifact_cancel_saving">إلغاء الحفظ</string>
+    <string name="session_artifact_copy_saved_verified">تم حفظ النسخة والتحقق من المجموع الاختباري للمصدر.</string>
+    <string name="session_artifact_save_another_copy">حفظ نسخة أخرى</string>
+    <string name="session_artifact_save_copy">حفظ نسخة</string>
 </resources>

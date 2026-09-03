@@ -125,4 +125,10 @@
     <string name="session_composer_interrupt">ターンを中断</string>
     <string name="session_composer_steer">進行中のターンを誘導</string>
     <string name="session_composer_send">送信</string>
+    <string name="session_artifact_save_progress_total">%2$s バイト中 %1$s バイトを保存しました</string>
+    <string name="session_artifact_save_progress">%1$s バイトを保存しました</string>
+    <string name="session_artifact_cancel_saving">保存をキャンセル</string>
+    <string name="session_artifact_copy_saved_verified">コピーを保存し、ソースのチェックサムを確認しました。</string>
+    <string name="session_artifact_save_another_copy">別のコピーを保存</string>
+    <string name="session_artifact_save_copy">コピーを保存</string>
 </resources>

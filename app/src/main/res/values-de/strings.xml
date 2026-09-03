@@ -127,4 +127,10 @@
     <string name="session_composer_interrupt">Vorgang unterbrechen</string>
     <string name="session_composer_steer">Aktiven Vorgang steuern</string>
     <string name="session_composer_send">Senden</string>
+    <string name="session_artifact_save_progress_total">%1$s von %2$s Bytes gespeichert</string>
+    <string name="session_artifact_save_progress">%1$s Bytes gespeichert</string>
+    <string name="session_artifact_cancel_saving">Speichern abbrechen</string>
+    <string name="session_artifact_copy_saved_verified">Kopie gespeichert und Prüfsumme der Quelle verifiziert.</string>
+    <string name="session_artifact_save_another_copy">Weitere Kopie speichern</string>
+    <string name="session_artifact_save_copy">Kopie speichern</string>
 </resources>

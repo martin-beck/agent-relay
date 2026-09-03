@@ -127,4 +127,10 @@
     <string name="session_composer_interrupt">टर्न रोकें</string>
     <string name="session_composer_steer">सक्रिय टर्न को निर्देशित करें</string>
     <string name="session_composer_send">भेजें</string>
+    <string name="session_artifact_save_progress_total">कुल %2$s में से %1$s बाइट सहेजे गए</string>
+    <string name="session_artifact_save_progress">%1$s बाइट सहेजे गए</string>
+    <string name="session_artifact_cancel_saving">सहेजना रद्द करें</string>
+    <string name="session_artifact_copy_saved_verified">कॉपी सहेजी गई और स्रोत चेकसम सत्यापित किया गया।</string>
+    <string name="session_artifact_save_another_copy">एक और कॉपी सहेजें</string>
+    <string name="session_artifact_save_copy">कॉपी सहेजें</string>
 </resources>

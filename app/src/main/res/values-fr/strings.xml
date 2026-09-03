@@ -129,4 +129,10 @@
     <string name="session_composer_interrupt">Interrompre le tour</string>
     <string name="session_composer_steer">Guider le tour actif</string>
     <string name="session_composer_send">Envoyer</string>
+    <string name="session_artifact_save_progress_total">Octets enregistrés : %1$s sur %2$s</string>
+    <string name="session_artifact_save_progress">Octets enregistrés : %1$s</string>
+    <string name="session_artifact_cancel_saving">Annuler l’enregistrement</string>
+    <string name="session_artifact_copy_saved_verified">Copie enregistrée et somme de contrôle de la source vérifiée.</string>
+    <string name="session_artifact_save_another_copy">Enregistrer une autre copie</string>
+    <string name="session_artifact_save_copy">Enregistrer la copie</string>
 </resources>

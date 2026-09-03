@@ -127,4 +127,10 @@
     <string name="session_composer_interrupt">পালা বাধা দিন</string>
     <string name="session_composer_steer">সক্রিয় পালা পরিচালনা করুন</string>
     <string name="session_composer_send">পাঠান</string>
+    <string name="session_artifact_save_progress_total">মোট %2$s বাইটের মধ্যে %1$s বাইট সংরক্ষিত</string>
+    <string name="session_artifact_save_progress">%1$s বাইট সংরক্ষিত</string>
+    <string name="session_artifact_cancel_saving">সংরক্ষণ বাতিল করুন</string>
+    <string name="session_artifact_copy_saved_verified">কপি সংরক্ষিত হয়েছে এবং উৎসের চেকসম যাচাই করা হয়েছে।</string>
+    <string name="session_artifact_save_another_copy">আরেকটি কপি সংরক্ষণ করুন</string>
+    <string name="session_artifact_save_copy">কপি সংরক্ষণ করুন</string>
 </resources>
