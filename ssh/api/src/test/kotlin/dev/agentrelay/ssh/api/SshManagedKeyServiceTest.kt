@@ -47,8 +47,9 @@ class SshManagedKeyServiceTest {
         assertEquals("sh", command.program)
         assertEquals("-c", command.arguments.first())
         val script = command.arguments.last()
-        assertTrue(script.contains("ecdsa-sha2-nistp256 AAAA"))
-        assertTrue(script.contains("grep -qxF"))
+        assertTrue(script.contains("target_algorithm='ecdsa-sha2-nistp256'"))
+        assertTrue(script.contains("target_blob='AAAA"))
+        assertTrue(script.contains("command -v awk"))
         assertTrue(script.contains("chmod 700"))
         assertTrue(script.contains("chmod 600"))
         assertTrue(script.contains("[ -L"))
@@ -170,6 +171,29 @@ class SshManagedKeyServiceTest {
         }
 
         assertTrue(fixture.connection.closed)
+    }
+
+    @Test
+    fun installerControlFailuresReturnStableActionableRedactedCodes() = runTest {
+        val cases = listOf(
+            Triple(70, "SSH_PUBLIC_KEY_INSTALL_INSPECTION_FAILED", "POSIX"),
+            Triple(74, "SSH_PUBLIC_KEY_INSTALL_INTERRUPTED", "interrupted"),
+            Triple(75, "SSH_PUBLIC_KEY_INSTALL_BUSY", "active"),
+        )
+
+        cases.forEach { (exitCode, expectedCode, expectedMessage) ->
+            val fixture = Fixture(exitCode = exitCode)
+
+            val failure = assertFailsWith<SshConnectionException> {
+                fixture.service.installPublicKey(PROFILE.id)
+            }
+
+            assertEquals(SshFailureCategory.REMOTE_PROCESS_EXIT, failure.failure.category)
+            assertEquals(expectedCode, failure.failure.code)
+            assertTrue(failure.failure.actionableMessage.contains(expectedMessage))
+            assertFalse(failure.failure.actionableMessage.contains(PROFILE.endpoint.host))
+            assertTrue(fixture.connection.closed)
+        }
     }
 
     @Test
