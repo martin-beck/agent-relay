@@ -197,6 +197,7 @@
     <string name="profile_error_save">無法安全地儲存連線設定檔。</string>
     <string name="profile_error_save_refresh">設定檔已儲存，但無法重新整理其編輯器。</string>
     <string name="profile_error_operation">無法安全地完成連線設定檔操作。</string>
+    <string name="profile_error_operation_timeout">連線設定檔操作逾時。請檢查連線並重試。</string>
     <string name="profile_error_operation_refresh">操作成功，但無法重新整理設定檔編輯器。</string>
     <string name="profile_error_delete">無法安全地刪除連線設定檔。</string>
     <string name="profile_error_open">無法開啟連線設定檔編輯器。</string>

@@ -197,6 +197,7 @@
     <string name="profile_error_save">Profil koneksi tidak dapat disimpan dengan aman.</string>
     <string name="profile_error_save_refresh">Profil telah disimpan, tetapi editornya tidak dapat dimuat ulang.</string>
     <string name="profile_error_operation">Operasi profil koneksi tidak dapat diselesaikan dengan aman.</string>
+    <string name="profile_error_operation_timeout">Waktu operasi profil koneksi habis. Periksa koneksi, lalu coba lagi.</string>
     <string name="profile_error_operation_refresh">Operasi berhasil, tetapi editor profil tidak dapat dimuat ulang.</string>
     <string name="profile_error_delete">Profil koneksi tidak dapat dihapus dengan aman.</string>
     <string name="profile_error_open">Editor profil koneksi tidak dapat dibuka.</string>

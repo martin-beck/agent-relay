@@ -201,6 +201,7 @@
     <string name="profile_error_save">Le profil de connexion n’a pas pu être enregistré de manière sécurisée.</string>
     <string name="profile_error_save_refresh">Le profil a été enregistré, mais son éditeur n’a pas pu être actualisé.</string>
     <string name="profile_error_operation">L’opération sur le profil de connexion n’a pas pu être effectuée de manière sécurisée.</string>
+    <string name="profile_error_operation_timeout">Le délai de l’opération sur le profil de connexion a expiré. Vérifiez la connexion et réessayez.</string>
     <string name="profile_error_operation_refresh">L’opération a réussi, mais l’éditeur de profil n’a pas pu être actualisé.</string>
     <string name="profile_error_delete">Le profil de connexion n’a pas pu être supprimé de manière sécurisée.</string>
     <string name="profile_error_open">L’éditeur de profil de connexion n’a pas pu être ouvert.</string>

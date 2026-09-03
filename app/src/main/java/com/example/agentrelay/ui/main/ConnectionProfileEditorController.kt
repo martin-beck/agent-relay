@@ -187,7 +187,7 @@ internal class ConnectionProfileEditorController(
                     busy,
                     editor.copy(
                         confirmOperationId = null,
-                        error = "The connection profile operation timed out. Check the connection and retry.",
+                        error = UiMessage.Localized(R.string.profile_error_operation_timeout),
                     ),
                 )
                 return@replaceJob

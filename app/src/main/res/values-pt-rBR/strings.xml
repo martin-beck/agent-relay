@@ -201,6 +201,7 @@
     <string name="profile_error_save">Não foi possível salvar o perfil de conexão com segurança.</string>
     <string name="profile_error_save_refresh">O perfil foi salvo, mas não foi possível atualizar o editor.</string>
     <string name="profile_error_operation">Não foi possível concluir a operação do perfil de conexão com segurança.</string>
+    <string name="profile_error_operation_timeout">A operação do perfil de conexão excedeu o tempo limite. Verifique a conexão e tente novamente.</string>
     <string name="profile_error_operation_refresh">A operação foi concluída, mas não foi possível atualizar o editor de perfil.</string>
     <string name="profile_error_delete">Não foi possível excluir o perfil de conexão com segurança.</string>
     <string name="profile_error_open">Não foi possível abrir o editor de perfil de conexão.</string>

@@ -207,6 +207,7 @@
     <string name="profile_error_save">تعذّر حفظ ملف تعريف الاتصال بأمان.</string>
     <string name="profile_error_save_refresh">تم حفظ ملف التعريف، ولكن تعذّر تحديث محرّره.</string>
     <string name="profile_error_operation">تعذّر إكمال عملية ملف تعريف الاتصال بأمان.</string>
+    <string name="profile_error_operation_timeout">انتهت مهلة عملية ملف تعريف الاتصال. تحقّق من الاتصال وحاول مرة أخرى.</string>
     <string name="profile_error_operation_refresh">نجحت العملية، ولكن تعذّر تحديث محرّر ملف التعريف.</string>
     <string name="profile_error_delete">تعذّر حذف ملف تعريف الاتصال بأمان.</string>
     <string name="profile_error_open">تعذّر فتح محرّر ملف تعريف الاتصال.</string>

@@ -201,6 +201,7 @@
     <string name="profile_error_save">No se pudo guardar el perfil de conexión de forma segura.</string>
     <string name="profile_error_save_refresh">El perfil se guardó, pero no se pudo actualizar su editor.</string>
     <string name="profile_error_operation">No se pudo completar de forma segura la operación del perfil de conexión.</string>
+    <string name="profile_error_operation_timeout">Se agotó el tiempo de espera de la operación del perfil de conexión. Comprueba la conexión e inténtalo de nuevo.</string>
     <string name="profile_error_operation_refresh">La operación se completó, pero no se pudo actualizar el editor de perfiles.</string>
     <string name="profile_error_delete">No se pudo eliminar el perfil de conexión de forma segura.</string>
     <string name="profile_error_open">No se pudo abrir el editor de perfiles de conexión.</string>

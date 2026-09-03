@@ -394,7 +394,7 @@ class ConnectionProfileEditorControllerTest {
         assertFalse(timedOut.isBusy)
         assertNull(timedOut.activeOperationId)
         assertEquals(
-            "The connection profile operation timed out. Check the connection and retry.",
+            UiMessage.Localized(R.string.profile_error_operation_timeout),
             timedOut.error,
         )
 
@@ -404,7 +404,7 @@ class ConnectionProfileEditorControllerTest {
 
         val retried = assertInstance<ConnectionProfileEditorUiState.Editing>(controller.state.value)
         assertFalse(retried.isBusy)
-        assertEquals("Profile operation completed.", retried.notice)
+        assertEquals(UiMessage.Verbatim("Profile operation completed."), retried.notice)
     }
 
     @Test

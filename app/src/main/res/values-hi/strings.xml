@@ -199,6 +199,7 @@
     <string name="profile_error_save">कनेक्शन प्रोफ़ाइल को सुरक्षित रूप से सेव नहीं किया जा सका।</string>
     <string name="profile_error_save_refresh">प्रोफ़ाइल सेव हो गई, लेकिन इसके एडिटर को रीफ़्रेश नहीं किया जा सका।</string>
     <string name="profile_error_operation">कनेक्शन प्रोफ़ाइल का ऑपरेशन सुरक्षित रूप से पूरा नहीं किया जा सका।</string>
+    <string name="profile_error_operation_timeout">कनेक्शन प्रोफ़ाइल कार्रवाई का समय समाप्त हो गया। कनेक्शन जाँचें और फिर से कोशिश करें।</string>
     <string name="profile_error_operation_refresh">ऑपरेशन सफल रहा, लेकिन प्रोफ़ाइल एडिटर को रीफ़्रेश नहीं किया जा सका।</string>
     <string name="profile_error_delete">कनेक्शन प्रोफ़ाइल को सुरक्षित रूप से डिलीट नहीं किया जा सका।</string>
     <string name="profile_error_open">कनेक्शन प्रोफ़ाइल एडिटर को खोला नहीं जा सका।</string>

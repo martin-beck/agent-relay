@@ -201,6 +201,7 @@
     <string name="profile_error_save">Non è stato possibile salvare in modo sicuro il profilo di connessione.</string>
     <string name="profile_error_save_refresh">Il profilo è stato salvato, ma non è stato possibile aggiornare il relativo editor.</string>
     <string name="profile_error_operation">Non è stato possibile completare in modo sicuro l’operazione sul profilo di connessione.</string>
+    <string name="profile_error_operation_timeout">L’operazione sul profilo di connessione è scaduta. Controlla la connessione e riprova.</string>
     <string name="profile_error_operation_refresh">L’operazione è riuscita, ma non è stato possibile aggiornare l’editor del profilo.</string>
     <string name="profile_error_delete">Non è stato possibile eliminare in modo sicuro il profilo di connessione.</string>
     <string name="profile_error_open">Non è stato possibile aprire l’editor del profilo di connessione.</string>

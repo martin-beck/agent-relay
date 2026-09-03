@@ -199,6 +199,7 @@
     <string name="profile_error_save">Das Verbindungsprofil konnte nicht sicher gespeichert werden.</string>
     <string name="profile_error_save_refresh">Das Profil wurde gespeichert, aber der Editor konnte nicht aktualisiert werden.</string>
     <string name="profile_error_operation">Der Vorgang für das Verbindungsprofil konnte nicht sicher abgeschlossen werden.</string>
+    <string name="profile_error_operation_timeout">Der Vorgang für das Verbindungsprofil hat das Zeitlimit überschritten. Prüfe die Verbindung und versuche es erneut.</string>
     <string name="profile_error_operation_refresh">Der Vorgang war erfolgreich, aber der Profileditor konnte nicht aktualisiert werden.</string>
     <string name="profile_error_delete">Das Verbindungsprofil konnte nicht sicher gelöscht werden.</string>
     <string name="profile_error_open">Der Verbindungsprofil-Editor konnte nicht geöffnet werden.</string>

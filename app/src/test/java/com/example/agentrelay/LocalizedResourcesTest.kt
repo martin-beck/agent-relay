@@ -396,6 +396,7 @@ class LocalizedResourcesTest {
             R.string.profile_error_save,
             R.string.profile_error_save_refresh,
             R.string.profile_error_operation,
+            R.string.profile_error_operation_timeout,
             R.string.profile_error_operation_refresh,
             R.string.profile_error_delete,
             R.string.profile_error_open,

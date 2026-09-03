@@ -199,6 +199,7 @@
     <string name="profile_error_save">সংযোগ প্রোফাইলটি নিরাপদভাবে সংরক্ষণ করা যায়নি।</string>
     <string name="profile_error_save_refresh">প্রোফাইলটি সংরক্ষিত হয়েছে, কিন্তু এর এডিটর রিফ্রেশ করা যায়নি।</string>
     <string name="profile_error_operation">সংযোগ প্রোফাইল অপারেশনটি নিরাপদভাবে সম্পন্ন করা যায়নি।</string>
+    <string name="profile_error_operation_timeout">সংযোগ প্রোফাইল অপারেশনের সময়সীমা শেষ হয়েছে। সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।</string>
     <string name="profile_error_operation_refresh">অপারেশনটি সফল হয়েছে, কিন্তু প্রোফাইল এডিটর রিফ্রেশ করা যায়নি।</string>
     <string name="profile_error_delete">সংযোগ প্রোফাইলটি নিরাপদভাবে মুছে ফেলা যায়নি।</string>
     <string name="profile_error_open">সংযোগ প্রোফাইল এডিটর খোলা যায়নি।</string>

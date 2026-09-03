@@ -197,6 +197,7 @@
     <string name="profile_error_save">接続プロファイルを安全に保存できませんでした。</string>
     <string name="profile_error_save_refresh">プロファイルは保存されましたが、エディターを更新できませんでした。</string>
     <string name="profile_error_operation">接続プロファイルの操作を安全に完了できませんでした。</string>
+    <string name="profile_error_operation_timeout">接続プロファイル操作がタイムアウトしました。接続を確認して、もう一度お試しください。</string>
     <string name="profile_error_operation_refresh">操作は成功しましたが、プロファイルエディターを更新できませんでした。</string>
     <string name="profile_error_delete">接続プロファイルを安全に削除できませんでした。</string>
     <string name="profile_error_open">接続プロファイルエディターを開けませんでした。</string>

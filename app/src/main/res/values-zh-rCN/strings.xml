@@ -197,6 +197,7 @@
     <string name="profile_error_save">无法安全保存连接配置文件。</string>
     <string name="profile_error_save_refresh">配置文件已保存，但无法刷新其编辑器。</string>
     <string name="profile_error_operation">无法安全完成连接配置文件操作。</string>
+    <string name="profile_error_operation_timeout">连接配置文件操作超时。请检查连接并重试。</string>
     <string name="profile_error_operation_refresh">操作成功，但无法刷新配置文件编辑器。</string>
     <string name="profile_error_delete">无法安全删除连接配置文件。</string>
     <string name="profile_error_open">无法打开连接配置文件编辑器。</string>

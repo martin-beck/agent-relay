@@ -203,6 +203,7 @@
     <string name="profile_error_save">Не удалось безопасно сохранить профиль подключения.</string>
     <string name="profile_error_save_refresh">Профиль сохранен, но не удалось обновить его редактор.</string>
     <string name="profile_error_operation">Не удалось безопасно завершить операцию с профилем подключения.</string>
+    <string name="profile_error_operation_timeout">Время ожидания операции с профилем подключения истекло. Проверьте подключение и повторите попытку.</string>
     <string name="profile_error_operation_refresh">Операция выполнена, но не удалось обновить редактор профиля.</string>
     <string name="profile_error_delete">Не удалось безопасно удалить профиль подключения.</string>
     <string name="profile_error_open">Не удалось открыть редактор профиля подключения.</string>
