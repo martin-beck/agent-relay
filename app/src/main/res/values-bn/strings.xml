@@ -107,4 +107,17 @@
         <item quantity="one">%1$dটি এজেন্ট প্রদানকারী পরীক্ষা করা হচ্ছে</item>
         <item quantity="other">%1$dটি এজেন্ট প্রদানকারী পরীক্ষা করা হচ্ছে</item>
     </plurals>
+    <string name="session_detail_back_to_sessions">সেশনে ফিরে যান</string>
+    <string name="session_detail_opening">সেশনের অবস্থা খোলা হচ্ছে…</string>
+    <string name="session_detail_select_session">ট্রান্সক্রিপ্ট ও কার্যকলাপ দেখতে একটি সেশন নির্বাচন করুন।</string>
+    <string name="session_detail_approvals_and_questions">অনুমোদন ও প্রশ্ন</string>
+    <string name="session_detail_changed_files">পরিবর্তিত ফাইল</string>
+    <string name="session_detail_refresh_changed_files">পরিবর্তিত ফাইল রিফ্রেশ করুন</string>
+    <string name="session_detail_no_changed_files">কোনো পরিবর্তিত ফাইল রেকর্ড করা নেই। সংযুক্ত প্রদানকারীকে জিজ্ঞাসা করতে রিফ্রেশ করুন।</string>
+    <string name="session_detail_changed_files_unsupported">এই প্রদানকারী এই সেশনের পরিবর্তিত ফাইল প্রকাশ করে না।</string>
+    <string name="session_detail_timeline">টাইমলাইন</string>
+    <string name="session_detail_timeline_empty">কোনো টাইমলাইন এন্ট্রি ক্যাশে নেই। সেশনটি রিফ্রেশ করতে পুনরায় সংযোগ করুন।</string>
+    <string name="session_detail_activity">কার্যকলাপ</string>
+    <string name="session_detail_activity_empty">এই সেশনের কোনো সাম্প্রতিক কার্যকলাপ রেকর্ড করা নেই।</string>
+    <string name="session_detail_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
 </resources>

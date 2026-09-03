@@ -105,4 +105,17 @@
     <plurals name="connection_agent_checking">
         <item quantity="other">Memeriksa %1$d penyedia agen</item>
     </plurals>
+    <string name="session_detail_back_to_sessions">Kembali ke sesi</string>
+    <string name="session_detail_opening">Membuka status sesi…</string>
+    <string name="session_detail_select_session">Pilih sesi untuk memeriksa transkrip dan aktivitasnya.</string>
+    <string name="session_detail_approvals_and_questions">Persetujuan dan pertanyaan</string>
+    <string name="session_detail_changed_files">File yang diubah</string>
+    <string name="session_detail_refresh_changed_files">Segarkan file yang diubah</string>
+    <string name="session_detail_no_changed_files">Tidak ada file yang diubah yang tercatat. Segarkan untuk meminta penyedia yang tersambung.</string>
+    <string name="session_detail_changed_files_unsupported">Penyedia ini tidak menampilkan file yang diubah untuk sesi ini.</string>
+    <string name="session_detail_timeline">Linimasa</string>
+    <string name="session_detail_timeline_empty">Tidak ada entri linimasa dalam cache. Sambungkan kembali untuk menyegarkan sesi ini.</string>
+    <string name="session_detail_activity">Aktivitas</string>
+    <string name="session_detail_activity_empty">Tidak ada aktivitas terbaru yang tercatat untuk sesi ini.</string>
+    <string name="session_detail_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
 </resources>

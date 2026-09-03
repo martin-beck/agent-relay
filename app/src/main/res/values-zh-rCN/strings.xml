@@ -105,4 +105,17 @@
     <plurals name="connection_agent_checking">
         <item quantity="other">正在检查 %1$d 个智能体提供程序</item>
     </plurals>
+    <string name="session_detail_back_to_sessions">返回会话</string>
+    <string name="session_detail_opening">正在打开会话状态…</string>
+    <string name="session_detail_select_session">选择一个会话以查看其转录和活动。</string>
+    <string name="session_detail_approvals_and_questions">审批和问题</string>
+    <string name="session_detail_changed_files">已更改的文件</string>
+    <string name="session_detail_refresh_changed_files">刷新已更改的文件</string>
+    <string name="session_detail_no_changed_files">没有记录已更改的文件。请刷新以查询已连接的提供程序。</string>
+    <string name="session_detail_changed_files_unsupported">此提供程序不公开此会话的已更改文件。</string>
+    <string name="session_detail_timeline">时间线</string>
+    <string name="session_detail_timeline_empty">未缓存时间线条目。请重新连接以刷新此会话。</string>
+    <string name="session_detail_activity">活动</string>
+    <string name="session_detail_activity_empty">没有记录此会话的近期活动。</string>
+    <string name="session_detail_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
 </resources>

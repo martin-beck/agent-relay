@@ -115,4 +115,17 @@
         <item quantity="many">جارٍ التحقق من موفري الوكلاء: %1$d</item>
         <item quantity="other">جارٍ التحقق من موفري الوكلاء: %1$d</item>
     </plurals>
+    <string name="session_detail_back_to_sessions">العودة إلى الجلسات</string>
+    <string name="session_detail_opening">جارٍ فتح حالة الجلسة…</string>
+    <string name="session_detail_select_session">اختر جلسة لفحص النص والنشاط.</string>
+    <string name="session_detail_approvals_and_questions">الموافقات والأسئلة</string>
+    <string name="session_detail_changed_files">الملفات المتغيرة</string>
+    <string name="session_detail_refresh_changed_files">تحديث الملفات المتغيرة</string>
+    <string name="session_detail_no_changed_files">لم يتم تسجيل ملفات متغيرة. حدّث للاستعلام من الموفر المتصل.</string>
+    <string name="session_detail_changed_files_unsupported">لا يعرض هذا الموفر الملفات المتغيرة لهذه الجلسة.</string>
+    <string name="session_detail_timeline">الخط الزمني</string>
+    <string name="session_detail_timeline_empty">لا توجد إدخالات مخزنة مؤقتًا في الخط الزمني. أعد الاتصال لتحديث هذه الجلسة.</string>
+    <string name="session_detail_activity">النشاط</string>
+    <string name="session_detail_activity_empty">لم يتم تسجيل نشاط حديث لهذه الجلسة.</string>
+    <string name="session_detail_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
 </resources>

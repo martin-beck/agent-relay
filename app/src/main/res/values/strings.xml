@@ -137,4 +137,17 @@
         <item quantity="one">Checking %1$d agent provider</item>
         <item quantity="other">Checking %1$d agent providers</item>
     </plurals>
+    <string name="session_detail_back_to_sessions">Back to sessions</string>
+    <string name="session_detail_opening">Opening session state…</string>
+    <string name="session_detail_select_session">Select a session to inspect its transcript and activity.</string>
+    <string name="session_detail_approvals_and_questions">Approvals and questions</string>
+    <string name="session_detail_changed_files">Changed files</string>
+    <string name="session_detail_refresh_changed_files">Refresh changed files</string>
+    <string name="session_detail_no_changed_files">No changed files are recorded. Refresh to ask the connected provider.</string>
+    <string name="session_detail_changed_files_unsupported">This provider does not expose changed files for this session.</string>
+    <string name="session_detail_timeline">Timeline</string>
+    <string name="session_detail_timeline_empty">No timeline entries have been cached. Reconnect to refresh this session.</string>
+    <string name="session_detail_activity">Activity</string>
+    <string name="session_detail_activity_empty">No recent activity is recorded for this session.</string>
+    <string name="session_detail_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
 </resources>

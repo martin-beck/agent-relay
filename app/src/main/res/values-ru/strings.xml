@@ -111,4 +111,17 @@
         <item quantity="many">Проверяются %1$d поставщиков агентов</item>
         <item quantity="other">Проверяются %1$d поставщиков агентов</item>
     </plurals>
+    <string name="session_detail_back_to_sessions">Назад к сеансам</string>
+    <string name="session_detail_opening">Открытие состояния сеанса…</string>
+    <string name="session_detail_select_session">Выберите сеанс, чтобы просмотреть его расшифровку и активность.</string>
+    <string name="session_detail_approvals_and_questions">Подтверждения и вопросы</string>
+    <string name="session_detail_changed_files">Изменённые файлы</string>
+    <string name="session_detail_refresh_changed_files">Обновить изменённые файлы</string>
+    <string name="session_detail_no_changed_files">Изменённые файлы не зарегистрированы. Обновите, чтобы запросить подключённого поставщика.</string>
+    <string name="session_detail_changed_files_unsupported">Этот поставщик не предоставляет изменённые файлы для этого сеанса.</string>
+    <string name="session_detail_timeline">Хронология</string>
+    <string name="session_detail_timeline_empty">Записи хронологии не кэшированы. Подключитесь снова, чтобы обновить этот сеанс.</string>
+    <string name="session_detail_activity">Активность</string>
+    <string name="session_detail_activity_empty">Для этого сеанса нет недавней активности.</string>
+    <string name="session_detail_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
 </resources>

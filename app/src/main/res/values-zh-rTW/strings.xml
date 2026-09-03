@@ -105,4 +105,17 @@
     <plurals name="connection_agent_checking">
         <item quantity="other">正在檢查 %1$d 個代理程式提供者</item>
     </plurals>
+    <string name="session_detail_back_to_sessions">返回工作階段</string>
+    <string name="session_detail_opening">正在開啟工作階段狀態…</string>
+    <string name="session_detail_select_session">選取工作階段以查看其轉錄與活動。</string>
+    <string name="session_detail_approvals_and_questions">核准與問題</string>
+    <string name="session_detail_changed_files">已變更的檔案</string>
+    <string name="session_detail_refresh_changed_files">重新整理已變更的檔案</string>
+    <string name="session_detail_no_changed_files">沒有記錄已變更的檔案。請重新整理以查詢已連線的提供者。</string>
+    <string name="session_detail_changed_files_unsupported">此提供者不公開這個工作階段的已變更檔案。</string>
+    <string name="session_detail_timeline">時間軸</string>
+    <string name="session_detail_timeline_empty">未快取時間軸項目。請重新連線以重新整理這個工作階段。</string>
+    <string name="session_detail_activity">活動</string>
+    <string name="session_detail_activity_empty">沒有記錄這個工作階段的近期活動。</string>
+    <string name="session_detail_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
 </resources>

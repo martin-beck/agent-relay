@@ -109,4 +109,17 @@
         <item quantity="many">Controllo di %1$d provider di agenti</item>
         <item quantity="other">Controllo di %1$d provider di agenti</item>
     </plurals>
+    <string name="session_detail_back_to_sessions">Torna alle sessioni</string>
+    <string name="session_detail_opening">Apertura dello stato della sessione…</string>
+    <string name="session_detail_select_session">Seleziona una sessione per esaminarne trascrizione e attività.</string>
+    <string name="session_detail_approvals_and_questions">Approvazioni e domande</string>
+    <string name="session_detail_changed_files">File modificati</string>
+    <string name="session_detail_refresh_changed_files">Aggiorna file modificati</string>
+    <string name="session_detail_no_changed_files">Non sono registrati file modificati. Aggiorna per interrogare il provider connesso.</string>
+    <string name="session_detail_changed_files_unsupported">Questo provider non espone i file modificati per questa sessione.</string>
+    <string name="session_detail_timeline">Cronologia</string>
+    <string name="session_detail_timeline_empty">Nessuna voce della cronologia è memorizzata nella cache. Riconnettiti per aggiornare questa sessione.</string>
+    <string name="session_detail_activity">Attività</string>
+    <string name="session_detail_activity_empty">Non sono registrate attività recenti per questa sessione.</string>
+    <string name="session_detail_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
 </resources>

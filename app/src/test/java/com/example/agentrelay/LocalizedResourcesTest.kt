@@ -68,6 +68,10 @@ class LocalizedResourcesTest {
                 R.string.session_hub_action_context,
                 *opaqueValues.toTypedArray(),
             )
+            val detailContext = context.getString(
+                R.string.session_detail_context,
+                *opaqueValues.toTypedArray(),
+            )
             val risk = context.getString(
                 R.string.session_hub_risk,
                 opaqueValues[0],
@@ -108,6 +112,7 @@ class LocalizedResourcesTest {
             assertTrue(languageTag, reviewIn.contains(opaqueValues[1]))
             opaqueValues.forEach { value ->
                 assertTrue(languageTag, actionContext.contains(value))
+                assertTrue(languageTag, detailContext.contains(value))
             }
             assertTrue(languageTag, risk.contains(opaqueValues[0]))
             assertTrue(languageTag, authentication.contains("Public key: id_test"))
@@ -123,6 +128,7 @@ class LocalizedResourcesTest {
             assertFalse(languageTag, readyAgents.contains("%2\$"))
             assertFalse(languageTag, checkingAgents.contains("%1\$"))
             assertFalse(languageTag, actionContext.contains("%1\$"))
+            assertFalse(languageTag, detailContext.contains("%1\$"))
             assertFalse(languageTag, risk.contains("%1\$"))
             assertFalse(languageTag, addProfile.contains("%1\$"))
             assertFalse(languageTag, startOnConnection.contains("%1\$"))

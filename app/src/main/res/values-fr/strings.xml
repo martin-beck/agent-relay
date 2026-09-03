@@ -109,4 +109,17 @@
         <item quantity="many">Vérification de %1$d fournisseurs d’agents</item>
         <item quantity="other">Vérification de %1$d fournisseurs d’agents</item>
     </plurals>
+    <string name="session_detail_back_to_sessions">Retour aux sessions</string>
+    <string name="session_detail_opening">Ouverture de l’état de la session…</string>
+    <string name="session_detail_select_session">Sélectionnez une session pour consulter sa transcription et son activité.</string>
+    <string name="session_detail_approvals_and_questions">Approbations et questions</string>
+    <string name="session_detail_changed_files">Fichiers modifiés</string>
+    <string name="session_detail_refresh_changed_files">Actualiser les fichiers modifiés</string>
+    <string name="session_detail_no_changed_files">Aucun fichier modifié n’est enregistré. Actualisez pour interroger le fournisseur connecté.</string>
+    <string name="session_detail_changed_files_unsupported">Ce fournisseur n’expose pas les fichiers modifiés de cette session.</string>
+    <string name="session_detail_timeline">Chronologie</string>
+    <string name="session_detail_timeline_empty">Aucune entrée de chronologie n’est en cache. Reconnectez-vous pour actualiser cette session.</string>
+    <string name="session_detail_activity">Activité</string>
+    <string name="session_detail_activity_empty">Aucune activité récente n’est enregistrée pour cette session.</string>
+    <string name="session_detail_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
 </resources>

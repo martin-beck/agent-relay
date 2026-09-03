@@ -105,4 +105,17 @@
     <plurals name="connection_agent_checking">
         <item quantity="other">%1$d 件のエージェントプロバイダーを確認中</item>
     </plurals>
+    <string name="session_detail_back_to_sessions">セッションに戻る</string>
+    <string name="session_detail_opening">セッションの状態を開いています…</string>
+    <string name="session_detail_select_session">文字起こしとアクティビティを確認するセッションを選択してください。</string>
+    <string name="session_detail_approvals_and_questions">承認と質問</string>
+    <string name="session_detail_changed_files">変更されたファイル</string>
+    <string name="session_detail_refresh_changed_files">変更されたファイルを更新</string>
+    <string name="session_detail_no_changed_files">変更されたファイルは記録されていません。更新して接続済みプロバイダーに問い合わせてください。</string>
+    <string name="session_detail_changed_files_unsupported">このプロバイダーは、このセッションの変更されたファイルを公開していません。</string>
+    <string name="session_detail_timeline">タイムライン</string>
+    <string name="session_detail_timeline_empty">キャッシュされたタイムライン項目はありません。再接続してこのセッションを更新してください。</string>
+    <string name="session_detail_activity">アクティビティ</string>
+    <string name="session_detail_activity_empty">このセッションの最近のアクティビティは記録されていません。</string>
+    <string name="session_detail_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
 </resources>

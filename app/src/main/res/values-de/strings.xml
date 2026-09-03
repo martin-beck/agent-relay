@@ -107,4 +107,17 @@
         <item quantity="one">%1$d Agentenanbieter wird geprüft</item>
         <item quantity="other">%1$d Agentenanbieter werden geprüft</item>
     </plurals>
+    <string name="session_detail_back_to_sessions">Zurück zu den Sitzungen</string>
+    <string name="session_detail_opening">Sitzungsstatus wird geöffnet…</string>
+    <string name="session_detail_select_session">Wählen Sie eine Sitzung aus, um Transkript und Aktivität anzuzeigen.</string>
+    <string name="session_detail_approvals_and_questions">Freigaben und Fragen</string>
+    <string name="session_detail_changed_files">Geänderte Dateien</string>
+    <string name="session_detail_refresh_changed_files">Geänderte Dateien aktualisieren</string>
+    <string name="session_detail_no_changed_files">Es sind keine geänderten Dateien erfasst. Aktualisieren Sie, um den verbundenen Anbieter abzufragen.</string>
+    <string name="session_detail_changed_files_unsupported">Dieser Anbieter stellt für diese Sitzung keine geänderten Dateien bereit.</string>
+    <string name="session_detail_timeline">Zeitleiste</string>
+    <string name="session_detail_timeline_empty">Keine Zeitleisteneinträge zwischengespeichert. Stellen Sie die Verbindung wieder her, um diese Sitzung zu aktualisieren.</string>
+    <string name="session_detail_activity">Aktivität</string>
+    <string name="session_detail_activity_empty">Für diese Sitzung wurden keine aktuellen Aktivitäten erfasst.</string>
+    <string name="session_detail_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
 </resources>

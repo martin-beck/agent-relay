@@ -47,6 +47,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.example.agentrelay.R
 import dev.agentrelay.session.api.SessionActivityType
 import java.text.DateFormat
 import java.util.Date
@@ -71,10 +73,10 @@ internal fun SessionDetailRoute(
             onClick = onBack,
             modifier = Modifier.padding(horizontal = 8.dp),
         ) {
-            Text("Back to sessions")
+            Text(stringResource(R.string.session_detail_back_to_sessions))
         }
         when (state) {
-            MainScreenUiState.Loading -> DetailPlaceholder("Opening session state...")
+            MainScreenUiState.Loading -> DetailPlaceholder(stringResource(R.string.session_detail_opening))
             is MainScreenUiState.FatalError -> DetailPlaceholder(state.message)
             is MainScreenUiState.Ready -> SessionDetailPane(
                 detail = state.hub.selectedSession,
@@ -115,7 +117,7 @@ internal fun SessionDetailPane(
             contentAlignment = Alignment.Center,
         ) {
             Text(
-                text = "Select a session to inspect its transcript and activity.",
+                text = stringResource(R.string.session_detail_select_session),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -132,7 +134,7 @@ internal fun SessionDetailPane(
         }
         if (detail.actions.isNotEmpty()) {
             item(key = "actions-heading") {
-                DetailHeading("Approvals and questions")
+                DetailHeading(stringResource(R.string.session_detail_approvals_and_questions))
             }
             items(
                 detail.actions,
@@ -161,13 +163,13 @@ internal fun SessionDetailPane(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                DetailHeading("Changed files")
+                DetailHeading(stringResource(R.string.session_detail_changed_files))
                 if (detail.canRefreshArtifacts) {
                     OutlinedButton(
                         onClick = { onRefreshArtifacts(detail.session.stableKey) },
                         enabled = !detail.isRefreshingArtifacts,
                     ) {
-                        Text("Refresh changed files")
+                        Text(stringResource(R.string.session_detail_refresh_changed_files))
                     }
                 }
                 if (detail.isRefreshingArtifacts) {
@@ -179,9 +181,9 @@ internal fun SessionDetailPane(
             item(key = "artifacts-empty") {
                 DetailPlaceholder(
                     if (detail.canRefreshArtifacts) {
-                        "No changed files are recorded. Refresh to ask the connected provider."
+                        stringResource(R.string.session_detail_no_changed_files)
                     } else {
-                        "This provider does not expose changed files for this session."
+                        stringResource(R.string.session_detail_changed_files_unsupported)
                     },
                 )
             }
@@ -195,12 +197,12 @@ internal fun SessionDetailPane(
             }
         }
         item(key = "timeline-heading") {
-            DetailHeading("Timeline")
+            DetailHeading(stringResource(R.string.session_detail_timeline))
         }
         if (detail.transcript.isEmpty()) {
             item(key = "timeline-empty") {
                 DetailPlaceholder(
-                    "No timeline entries have been cached. Reconnect to refresh this session.",
+                    stringResource(R.string.session_detail_timeline_empty),
                 )
             }
         } else {
@@ -209,11 +211,11 @@ internal fun SessionDetailPane(
             }
         }
         item(key = "activity-heading") {
-            DetailHeading("Activity")
+            DetailHeading(stringResource(R.string.session_detail_activity))
         }
         if (detail.activities.isEmpty()) {
             item(key = "activity-empty") {
-                DetailPlaceholder("No recent activity is recorded for this session.")
+                DetailPlaceholder(stringResource(R.string.session_detail_activity_empty))
             }
         } else {
             items(detail.activities, key = { "activity:" + it.id }) { activity ->
@@ -423,8 +425,12 @@ private fun SessionDetailHeader(session: SessionUiModel) {
             fontWeight = FontWeight.SemiBold,
         )
         Text(
-            text = session.connectionProviderName + "  -  " +
-                session.connectionLabel + "  -  " + session.agentProviderLabel,
+            text = stringResource(
+                R.string.session_detail_context,
+                session.connectionProviderName,
+                session.connectionLabel,
+                session.agentProviderLabel,
+            ),
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.primary,
         )
