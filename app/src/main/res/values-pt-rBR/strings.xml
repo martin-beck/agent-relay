@@ -243,4 +243,10 @@
     <string name="ssh_profile_operation_install_key_message">O Agent Relay se conectará com a credencial salva e adicionará a chave pública deste perfil a ~/.ssh/authorized_keys. A chave privada nunca sai do Android Keystore.</string>
     <string name="ssh_profile_operation_verify_key">Testar login somente com chave</string>
     <string name="ssh_profile_operation_verify_key_support">Conecte-se usando apenas a chave gerenciada pelo app e confirme que o login sem senha funciona.</string>
+    <string name="session_artifact_availability_reconnect">Reconecte esta sessão para salvar uma cópia verificada.</string>
+    <string name="session_artifact_availability_unsupported">Esta conexão não permite salvar cópias verificadas.</string>
+    <string name="session_artifact_availability_ready">Pronto para salvar uma cópia verificada.</string>
+    <string name="session_artifact_availability_deleted">Excluído no provedor; nenhuma cópia está disponível.</string>
+    <string name="session_artifact_availability_outside_workspace">Fora do espaço de trabalho da sessão; o salvamento está bloqueado.</string>
+    <string name="session_artifact_availability_workspace_unknown">O espaço de trabalho da sessão não está disponível; o salvamento está bloqueado.</string>
 </resources>

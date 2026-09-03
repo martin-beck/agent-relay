@@ -15,8 +15,8 @@ internal object SessionArtifactUiMapper {
         sessionKey = artifact.locator.stableUiKey,
         displayPath = artifact.safeDisplayPath(),
         changeLabel = artifact.kind.uiLabel,
-        availabilityMessage =
-        artifact.availability.uiMessage(providerReady, fileAccessAvailable),
+        availabilityStatus =
+        artifact.availability.uiStatus(providerReady, fileAccessAvailable),
         suggestedFileName = artifact.suggestedFileName(),
         isDownloadable =
         artifact.availability == SessionArtifactAvailability.DOWNLOADABLE,
@@ -57,23 +57,23 @@ internal object SessionArtifactUiMapper {
             AgentFileChangeKind.UNKNOWN -> "Changed"
         }
 
-    private fun SessionArtifactAvailability.uiMessage(
+    private fun SessionArtifactAvailability.uiStatus(
         providerReady: Boolean,
         fileAccessAvailable: Boolean,
-    ): String =
+    ): SessionArtifactAvailabilityStatus =
         when (this) {
             SessionArtifactAvailability.DOWNLOADABLE -> when {
-                !providerReady -> "Reconnect this session to save a checked copy."
+                !providerReady -> SessionArtifactAvailabilityStatus.RECONNECT
                 !fileAccessAvailable ->
-                    "This connection does not support saving checked copies."
-                else -> "Ready to save a checked copy."
+                    SessionArtifactAvailabilityStatus.UNSUPPORTED
+                else -> SessionArtifactAvailabilityStatus.READY
             }
             SessionArtifactAvailability.DELETED ->
-                "Deleted on the provider; no copy is available."
+                SessionArtifactAvailabilityStatus.DELETED
             SessionArtifactAvailability.OUTSIDE_WORKSPACE ->
-                "Outside the session workspace; saving is blocked."
+                SessionArtifactAvailabilityStatus.OUTSIDE_WORKSPACE
             SessionArtifactAvailability.WORKSPACE_UNKNOWN ->
-                "Session workspace is unavailable; saving is blocked."
+                SessionArtifactAvailabilityStatus.WORKSPACE_UNKNOWN
         }
 
     private const val MAX_SAF_FILE_NAME_CHARS = 255

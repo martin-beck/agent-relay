@@ -185,6 +185,9 @@ class LocalizedResourcesTest {
             SSH_PROFILE_RESOURCES.forEach { resource ->
                 assertTrue(languageTag, context.getString(resource).isNotBlank())
             }
+            ARTIFACT_AVAILABILITY_RESOURCES.forEach { resource ->
+                assertTrue(languageTag, context.getString(resource).isNotBlank())
+            }
             opaqueValues.forEach { value ->
                 assertTrue(languageTag, sessionAccessibilityContext.contains(value))
             }
@@ -304,6 +307,15 @@ class LocalizedResourcesTest {
             R.string.ssh_profile_operation_install_key_message,
             R.string.ssh_profile_operation_verify_key,
             R.string.ssh_profile_operation_verify_key_support,
+        )
+
+        val ARTIFACT_AVAILABILITY_RESOURCES = listOf(
+            R.string.session_artifact_availability_reconnect,
+            R.string.session_artifact_availability_unsupported,
+            R.string.session_artifact_availability_ready,
+            R.string.session_artifact_availability_deleted,
+            R.string.session_artifact_availability_outside_workspace,
+            R.string.session_artifact_availability_workspace_unknown,
         )
         val EXPECTED_GENERATED_LOCALES = setOf(
             "en-US",

@@ -239,4 +239,10 @@
     <string name="ssh_profile_operation_install_key_message">Agent Relay सहेजे गए क्रेडेंशियल से कनेक्ट होकर इस प्रोफ़ाइल की सार्वजनिक कुंजी को ~/.ssh/authorized_keys में जोड़ेगा। निजी कुंजी कभी भी Android Keystore से बाहर नहीं जाती।</string>
     <string name="ssh_profile_operation_verify_key">केवल कुंजी से लॉगिन का परीक्षण करें</string>
     <string name="ssh_profile_operation_verify_key_support">केवल ऐप द्वारा प्रबंधित कुंजी से कनेक्ट करें और पुष्टि करें कि बिना पासवर्ड का लॉगिन काम करता है।</string>
+    <string name="session_artifact_availability_reconnect">जाँची गई कॉपी सहेजने के लिए इस सत्र को फिर से कनेक्ट करें।</string>
+    <string name="session_artifact_availability_unsupported">यह कनेक्शन जाँची गई कॉपियाँ सहेजने का समर्थन नहीं करता।</string>
+    <string name="session_artifact_availability_ready">जाँची गई कॉपी सहेजने के लिए तैयार।</string>
+    <string name="session_artifact_availability_deleted">प्रदाता पर हटा दिया गया; कोई कॉपी उपलब्ध नहीं है।</string>
+    <string name="session_artifact_availability_outside_workspace">सत्र के कार्यस्थान से बाहर; सहेजना अवरुद्ध है।</string>
+    <string name="session_artifact_availability_workspace_unknown">सत्र का कार्यस्थान उपलब्ध नहीं है; सहेजना अवरुद्ध है।</string>
 </resources>

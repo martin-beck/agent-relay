@@ -917,7 +917,7 @@ internal fun testHub(): SessionHubUiModel {
                     sessionKey = "session-key",
                     displayPath = "reports/result.txt",
                     changeLabel = "Modified",
-                    availabilityMessage = "Ready to save a checked copy.",
+                    availabilityStatus = SessionArtifactAvailabilityStatus.READY,
                     suggestedFileName = "result.txt",
                     isDownloadable = true,
                     canSave = true,

@@ -133,12 +133,21 @@ internal data class ArtifactTransferUiState(
     }
 }
 
+internal enum class SessionArtifactAvailabilityStatus {
+    RECONNECT,
+    UNSUPPORTED,
+    READY,
+    DELETED,
+    OUTSIDE_WORKSPACE,
+    WORKSPACE_UNKNOWN,
+}
+
 internal data class SessionArtifactUiModel(
     val stableKey: String,
     val sessionKey: String,
     val displayPath: String,
     val changeLabel: String,
-    val availabilityMessage: String,
+    val availabilityStatus: SessionArtifactAvailabilityStatus,
     val suggestedFileName: String,
     val isDownloadable: Boolean,
     val canSave: Boolean,

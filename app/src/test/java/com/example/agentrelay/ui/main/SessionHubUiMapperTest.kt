@@ -635,14 +635,16 @@ class SessionHubUiMapperTest {
             listOf("reports/result.txt", "File outside workspace"),
             artifacts.map(SessionArtifactUiModel::displayPath),
         )
+        assertEquals(
+            listOf(
+                SessionArtifactAvailabilityStatus.READY,
+                SessionArtifactAvailabilityStatus.OUTSIDE_WORKSPACE,
+            ),
+            artifacts.map(SessionArtifactUiModel::availabilityStatus),
+        )
         assertTrue(artifacts.first().canSave)
         assertFalse(artifacts.last().isDownloadable)
-        assertFalse(
-            artifacts.any {
-                it.displayPath.contains("private") ||
-                    it.availabilityMessage.contains("secret")
-            },
-        )
+        assertFalse(artifacts.any { it.displayPath.contains("private") })
         assertTrue(checkNotNull(mapped.selectedSession).canRefreshArtifacts)
 
         val withoutFileAccess = SessionArtifactUiMapper.map(
@@ -653,8 +655,8 @@ class SessionHubUiMapperTest {
         )
         assertFalse(withoutFileAccess.canSave)
         assertEquals(
-            "This connection does not support saving checked copies.",
-            withoutFileAccess.availabilityMessage,
+            SessionArtifactAvailabilityStatus.UNSUPPORTED,
+            withoutFileAccess.availabilityStatus,
         )
     }
 }

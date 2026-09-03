@@ -1,4 +1,5 @@
 package com.example.agentrelay.ui.main
+import androidx.annotation.StringRes
 
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.layout.Arrangement
@@ -227,6 +228,19 @@ internal fun SessionDetailPane(
     }
 }
 
+@get:StringRes
+private val SessionArtifactAvailabilityStatus.labelResource: Int
+    get() = when (this) {
+        SessionArtifactAvailabilityStatus.RECONNECT -> R.string.session_artifact_availability_reconnect
+        SessionArtifactAvailabilityStatus.UNSUPPORTED -> R.string.session_artifact_availability_unsupported
+        SessionArtifactAvailabilityStatus.READY -> R.string.session_artifact_availability_ready
+        SessionArtifactAvailabilityStatus.DELETED -> R.string.session_artifact_availability_deleted
+        SessionArtifactAvailabilityStatus.OUTSIDE_WORKSPACE ->
+            R.string.session_artifact_availability_outside_workspace
+        SessionArtifactAvailabilityStatus.WORKSPACE_UNKNOWN ->
+            R.string.session_artifact_availability_workspace_unknown
+    }
+
 @Composable
 private fun ArtifactCard(
     artifact: SessionArtifactUiModel,
@@ -266,7 +280,7 @@ private fun ArtifactCard(
                 )
             }
             Text(
-                text = artifact.availabilityMessage,
+                text = stringResource(artifact.availabilityStatus.labelResource),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

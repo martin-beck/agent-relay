@@ -126,7 +126,7 @@ internal fun exportCompleteHub(): SessionHubUiModel {
     val hub = testHub()
     val detail = checkNotNull(hub.selectedSession)
     val artifact = detail.artifacts.single().copy(
-        availabilityMessage = "Verified copy saved.",
+        availabilityStatus = SessionArtifactAvailabilityStatus.READY,
         canSave = true,
         bytesWritten = 512,
         totalBytes = 512,

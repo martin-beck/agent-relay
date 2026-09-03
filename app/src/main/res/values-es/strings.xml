@@ -243,4 +243,10 @@
     <string name="ssh_profile_operation_install_key_message">Agent Relay se conectará con la credencial guardada y añadirá la clave pública de este perfil a ~/.ssh/authorized_keys. La clave privada nunca sale de Android Keystore.</string>
     <string name="ssh_profile_operation_verify_key">Probar inicio de sesión solo con clave</string>
     <string name="ssh_profile_operation_verify_key_support">Conéctese usando solo la clave gestionada por la aplicación y confirme que funciona el inicio de sesión sin contraseña.</string>
+    <string name="session_artifact_availability_reconnect">Vuelva a conectar esta sesión para guardar una copia comprobada.</string>
+    <string name="session_artifact_availability_unsupported">Esta conexión no permite guardar copias comprobadas.</string>
+    <string name="session_artifact_availability_ready">Listo para guardar una copia comprobada.</string>
+    <string name="session_artifact_availability_deleted">Eliminado en el proveedor; no hay ninguna copia disponible.</string>
+    <string name="session_artifact_availability_outside_workspace">Fuera del espacio de trabajo de la sesión; no se puede guardar.</string>
+    <string name="session_artifact_availability_workspace_unknown">El espacio de trabajo de la sesión no está disponible; no se puede guardar.</string>
 </resources>

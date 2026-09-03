@@ -235,4 +235,10 @@
     <string name="ssh_profile_operation_install_key_message">Agent Relay 將使用儲存的認證資料連線，並將此設定檔的公開金鑰新增至 ~/.ssh/authorized_keys。私密金鑰絕不會離開 Android Keystore。</string>
     <string name="ssh_profile_operation_verify_key">測試僅使用金鑰登入</string>
     <string name="ssh_profile_operation_verify_key_support">僅使用由應用程式管理的金鑰連線，並確認無密碼登入可正常運作。</string>
+    <string name="session_artifact_availability_reconnect">重新連線此工作階段以儲存已檢查的副本。</string>
+    <string name="session_artifact_availability_unsupported">此連線不支援儲存已檢查的副本。</string>
+    <string name="session_artifact_availability_ready">可以儲存已檢查的副本。</string>
+    <string name="session_artifact_availability_deleted">已在提供者端刪除；沒有可用副本。</string>
+    <string name="session_artifact_availability_outside_workspace">位於工作階段工作區之外；已封鎖儲存。</string>
+    <string name="session_artifact_availability_workspace_unknown">工作階段工作區無法使用；已封鎖儲存。</string>
 </resources>

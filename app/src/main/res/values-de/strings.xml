@@ -239,4 +239,10 @@
     <string name="ssh_profile_operation_install_key_message">Agent Relay stellt mit den gespeicherten Anmeldedaten eine Verbindung her und fügt den öffentlichen Schlüssel dieses Profils zu ~/.ssh/authorized_keys hinzu. Der private Schlüssel verlässt niemals den Android Keystore.</string>
     <string name="ssh_profile_operation_verify_key">Anmeldung nur mit Schlüssel testen</string>
     <string name="ssh_profile_operation_verify_key_support">Nur mit dem app-verwalteten Schlüssel verbinden und bestätigen, dass die Anmeldung ohne Passwort funktioniert.</string>
+    <string name="session_artifact_availability_reconnect">Verbinden Sie diese Sitzung erneut, um eine geprüfte Kopie zu speichern.</string>
+    <string name="session_artifact_availability_unsupported">Diese Verbindung unterstützt das Speichern geprüfter Kopien nicht.</string>
+    <string name="session_artifact_availability_ready">Bereit, eine geprüfte Kopie zu speichern.</string>
+    <string name="session_artifact_availability_deleted">Beim Anbieter gelöscht; es ist keine Kopie verfügbar.</string>
+    <string name="session_artifact_availability_outside_workspace">Außerhalb des Sitzungsarbeitsbereichs; Speichern ist blockiert.</string>
+    <string name="session_artifact_availability_workspace_unknown">Der Sitzungsarbeitsbereich ist nicht verfügbar; Speichern ist blockiert.</string>
 </resources>

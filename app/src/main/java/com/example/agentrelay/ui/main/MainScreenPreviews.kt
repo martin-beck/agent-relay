@@ -332,7 +332,7 @@ private fun previewDetail(
             sessionKey = session.stableKey,
             displayPath = "reports/ui-check.txt",
             changeLabel = "Modified",
-            availabilityMessage = "Ready to save a checked copy.",
+            availabilityStatus = SessionArtifactAvailabilityStatus.READY,
             suggestedFileName = "ui-check.txt",
             isDownloadable = true,
             canSave = true,

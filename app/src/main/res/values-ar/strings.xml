@@ -255,4 +255,10 @@
     <string name="ssh_profile_operation_install_key_message">سيتصل Agent Relay باستخدام بيانات الاعتماد المحفوظة ويضيف المفتاح العام لملف التعريف هذا إلى ~/.ssh/authorized_keys. لا يغادر المفتاح الخاص Android Keystore مطلقًا.</string>
     <string name="ssh_profile_operation_verify_key">اختبار تسجيل الدخول بالمفتاح فقط</string>
     <string name="ssh_profile_operation_verify_key_support">اتصل باستخدام المفتاح المُدار بواسطة التطبيق فقط وتأكد من نجاح تسجيل الدخول بلا كلمة مرور.</string>
+    <string name="session_artifact_availability_reconnect">أعد اتصال هذه الجلسة لحفظ نسخة تم التحقق منها.</string>
+    <string name="session_artifact_availability_unsupported">هذا الاتصال لا يدعم حفظ النسخ التي تم التحقق منها.</string>
+    <string name="session_artifact_availability_ready">جاهز لحفظ نسخة تم التحقق منها.</string>
+    <string name="session_artifact_availability_deleted">حُذف لدى المزوّد؛ لا تتوفر أي نسخة.</string>
+    <string name="session_artifact_availability_outside_workspace">خارج مساحة عمل الجلسة؛ الحفظ محظور.</string>
+    <string name="session_artifact_availability_workspace_unknown">مساحة عمل الجلسة غير متاحة؛ الحفظ محظور.</string>
 </resources>
