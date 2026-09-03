@@ -273,6 +273,10 @@
     <string name="ssh_profile_operation_install_key_message">Agent Relay は保存済みの認証情報で接続し、このプロファイルの公開鍵を ~/.ssh/authorized_keys に追加します。秘密鍵が Android Keystore の外に出ることはありません。</string>
     <string name="ssh_profile_operation_verify_key">鍵のみのログインをテスト</string>
     <string name="ssh_profile_operation_verify_key_support">アプリ管理の鍵のみを使用して接続し、パスワードなしでログインできることを確認します。</string>
+    <string name="artifact_error_refresh">このセッションの変更済みファイルを更新できませんでした。</string>
+    <string name="artifact_error_unavailable">その変更済みファイルは利用できなくなりました。</string>
+    <string name="artifact_error_save_in_progress">その変更済みファイルはすでに保存中です。</string>
+    <string name="artifact_error_save">確認済みのファイルコピーを保存できませんでした。</string>
     <string name="session_artifact_availability_reconnect">確認済みのコピーを保存するには、このセッションを再接続してください。</string>
     <string name="session_artifact_availability_unsupported">この接続では、確認済みのコピーを保存できません。</string>
     <string name="session_artifact_availability_ready">確認済みのコピーを保存できます。</string>

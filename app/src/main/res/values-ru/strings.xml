@@ -294,6 +294,10 @@
     <string name="ssh_profile_operation_install_key_message">Agent Relay подключится с сохранёнными учётными данными и добавит открытый ключ этого профиля в ~/.ssh/authorized_keys. Закрытый ключ никогда не покидает Android Keystore.</string>
     <string name="ssh_profile_operation_verify_key">Проверить вход только по ключу</string>
     <string name="ssh_profile_operation_verify_key_support">Подключитесь только с ключом приложения и убедитесь, что вход без пароля работает.</string>
+    <string name="artifact_error_refresh">Не удалось обновить изменённые файлы для этого сеанса.</string>
+    <string name="artifact_error_unavailable">Этот изменённый файл больше недоступен.</string>
+    <string name="artifact_error_save_in_progress">Этот изменённый файл уже сохраняется.</string>
+    <string name="artifact_error_save">Не удалось сохранить проверенную копию файла.</string>
     <string name="session_artifact_availability_reconnect">Переподключите сеанс, чтобы сохранить проверенную копию.</string>
     <string name="session_artifact_availability_unsupported">Это подключение не поддерживает сохранение проверенных копий.</string>
     <string name="session_artifact_availability_ready">Можно сохранить проверенную копию.</string>

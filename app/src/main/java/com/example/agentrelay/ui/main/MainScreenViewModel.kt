@@ -53,7 +53,7 @@ internal class MainScreenViewModel(
     internal val artifactInteractions = ArtifactInteractionController(
         scope = viewModelScope,
         runtime = { runtime },
-        reportError = operationError::setVerbatim,
+        reportError = { operationError.value = it },
     )
     internal val speechInput = SpeechInputController(
         scope = viewModelScope,
@@ -604,10 +604,6 @@ internal class MainScreenViewModel(
         const val MAX_WORKING_DIRECTORY_CHARS = 4_096
         const val MAX_MODEL_CHARS = 256
     }
-}
-
-private fun MutableStateFlow<UiMessage?>.setVerbatim(message: String?) {
-    value = message?.let(UiMessage::Verbatim)
 }
 
 private fun SessionHubRuntime.findSessionLocator(sessionKey: String): SessionLocator? =

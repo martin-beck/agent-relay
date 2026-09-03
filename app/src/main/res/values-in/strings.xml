@@ -273,6 +273,10 @@
     <string name="ssh_profile_operation_install_key_message">Agent Relay akan terhubung dengan kredensial tersimpan dan menambahkan kunci publik profil ini ke ~/.ssh/authorized_keys. Kunci privat tidak pernah meninggalkan Android Keystore.</string>
     <string name="ssh_profile_operation_verify_key">Uji login hanya dengan kunci</string>
     <string name="ssh_profile_operation_verify_key_support">Hubungkan hanya dengan kunci yang dikelola aplikasi dan pastikan login tanpa kata sandi berfungsi.</string>
+    <string name="artifact_error_refresh">File yang berubah untuk sesi ini tidak dapat dimuat ulang.</string>
+    <string name="artifact_error_unavailable">File yang berubah tersebut sudah tidak tersedia.</string>
+    <string name="artifact_error_save_in_progress">File yang berubah tersebut sedang disimpan.</string>
+    <string name="artifact_error_save">Salinan file yang telah diperiksa tidak dapat disimpan.</string>
     <string name="session_artifact_availability_reconnect">Hubungkan kembali sesi ini untuk menyimpan salinan yang telah diperiksa.</string>
     <string name="session_artifact_availability_unsupported">Koneksi ini tidak mendukung penyimpanan salinan yang telah diperiksa.</string>
     <string name="session_artifact_availability_ready">Siap menyimpan salinan yang telah diperiksa.</string>

@@ -287,6 +287,10 @@
     <string name="ssh_profile_operation_install_key_message">Agent Relay se connectera avec l’identifiant enregistré et ajoutera la clé publique de ce profil à ~/.ssh/authorized_keys. La clé privée ne quitte jamais Android Keystore.</string>
     <string name="ssh_profile_operation_verify_key">Tester la connexion par clé uniquement</string>
     <string name="ssh_profile_operation_verify_key_support">Connectez-vous uniquement avec la clé gérée par l’application et confirmez que la connexion sans mot de passe fonctionne.</string>
+    <string name="artifact_error_refresh">Les fichiers modifiés n’ont pas pu être actualisés pour cette session.</string>
+    <string name="artifact_error_unavailable">Ce fichier modifié n’est plus disponible.</string>
+    <string name="artifact_error_save_in_progress">Ce fichier modifié est déjà en cours d’enregistrement.</string>
+    <string name="artifact_error_save">La copie vérifiée du fichier n’a pas pu être enregistrée.</string>
     <string name="session_artifact_availability_reconnect">Reconnectez cette session pour enregistrer une copie vérifiée.</string>
     <string name="session_artifact_availability_unsupported">Cette connexion ne permet pas d’enregistrer des copies vérifiées.</string>
     <string name="session_artifact_availability_ready">Prêt à enregistrer une copie vérifiée.</string>

@@ -273,6 +273,10 @@
     <string name="ssh_profile_operation_install_key_message">Agent Relay 将使用保存的凭据连接，并将此配置的公钥添加到 ~/.ssh/authorized_keys。私钥绝不会离开 Android Keystore。</string>
     <string name="ssh_profile_operation_verify_key">测试仅使用密钥登录</string>
     <string name="ssh_profile_operation_verify_key_support">仅使用应用管理的密钥连接，并确认无需密码即可登录。</string>
+    <string name="artifact_error_refresh">无法刷新此会话的已更改文件。</string>
+    <string name="artifact_error_unavailable">该已更改文件已不可用。</string>
+    <string name="artifact_error_save_in_progress">该已更改文件正在保存。</string>
+    <string name="artifact_error_save">无法保存经过检查的文件副本。</string>
     <string name="session_artifact_availability_reconnect">重新连接此会话以保存经过检查的副本。</string>
     <string name="session_artifact_availability_unsupported">此连接不支持保存经过检查的副本。</string>
     <string name="session_artifact_availability_ready">可以保存经过检查的副本。</string>

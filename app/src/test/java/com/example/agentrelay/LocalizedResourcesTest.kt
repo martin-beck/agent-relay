@@ -376,6 +376,10 @@ class LocalizedResourcesTest {
         )
 
         val ARTIFACT_RESOURCES = listOf(
+            R.string.artifact_error_refresh,
+            R.string.artifact_error_unavailable,
+            R.string.artifact_error_save_in_progress,
+            R.string.artifact_error_save,
             R.string.session_artifact_availability_reconnect,
             R.string.session_artifact_availability_unsupported,
             R.string.session_artifact_availability_ready,
