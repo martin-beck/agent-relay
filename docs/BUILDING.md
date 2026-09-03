@@ -294,6 +294,10 @@ manual dispatch so bounded mutation fuzzing does not slow every pull request.
 The `.github/workflows/ui.yml` job runs semantic UI, accessibility, SSH
 Android, and encrypted-storage tests, then parses each module's JUnit XML instead
 of treating emulator log text as the result.
+Self-hosted build and device jobs use separate least-privilege runner pools.
+Each pool retains isolated local Gradle, uv, and pre-commit caches, so those jobs
+disable redundant GitHub cache archive restore and save operations while keeping
+the pinned setup actions and Gradle wrapper validation.
 Sonar analysis is present but opt-in because a hosted service receives private
 source. See [Quality and safety](QUALITY.md#optional-centralized-analysis) for
 the required trusted variables, secret, and fail-safe behavior.

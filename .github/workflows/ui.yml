@@ -23,7 +23,7 @@ jobs:
       github.event_name == 'push' ||
       (github.event_name == 'pull_request' &&
       github.event.pull_request.head.repo.full_name == github.repository)
-    runs-on: [self-hosted, linux, x64, agent-relay-ci]
+    runs-on: [self-hosted, linux, x64, agent-relay-device-ci]
     timeout-minutes: 40
 
     steps:
@@ -36,8 +36,7 @@ jobs:
         uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
         with:
           version: "0.12.8"
-          enable-cache: true
-          cache-dependency-glob: uv.lock
+          enable-cache: false
 
       - name: Install usage-guide dependencies
         run: uv sync --locked --only-group docs
@@ -51,7 +50,7 @@ jobs:
       - name: Validate wrapper and set up Gradle
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          cache-provider: basic
+          cache-disabled: true
 
       - name: Install pinned Android native toolchain
         run: bash scripts/ci/install_android_native_toolchain.sh
@@ -179,7 +178,7 @@ jobs:
   extended-matrix:
     name: UI matrix (${{ matrix.name }})
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    runs-on: [self-hosted, linux, x64, agent-relay-ci]
+    runs-on: [self-hosted, linux, x64, agent-relay-device-ci]
     timeout-minutes: 40
     strategy:
       fail-fast: false
@@ -216,7 +215,7 @@ jobs:
       - name: Validate wrapper and set up Gradle
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          cache-provider: basic
+          cache-disabled: true
 
       - name: Install pinned Android native toolchain
         run: bash scripts/ci/install_android_native_toolchain.sh
