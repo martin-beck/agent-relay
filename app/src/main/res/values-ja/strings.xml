@@ -172,6 +172,18 @@
     <string name="main_error_session_draft_clear">メッセージは配信されましたが、保存済みの下書きを安全に消去できませんでした。</string>
     <string name="main_error_session_resume">保存済みのセッションを再開できませんでした。</string>
     <string name="main_error_session_interrupt">進行中のターンを中断できませんでした。</string>
+    <string name="main_error_agent_endpoint_unavailable">そのエージェントエンドポイントは利用できなくなりました。</string>
+    <string name="main_error_session_start">新しいエージェントセッションを開始できませんでした。</string>
+    <string name="main_error_action_unavailable">その承認要求または質問は利用できなくなりました。</string>
+    <string name="main_error_action_delivery_uncertain">プロバイダーの応答を確認できませんでした。この要求を再試行せず、新しく識別されたプロバイダー要求をお待ちください。</string>
+    <string name="main_error_action_audit">プロバイダーは応答を受け入れましたが、ローカル監査状態を確認できませんでした。</string>
+    <string name="main_error_action_response">承認要求または質問への応答を適用できませんでした。</string>
+    <plurals name="main_error_working_directory_too_long">
+        <item quantity="other">作業ディレクトリは %1$d 文字までです。</item>
+    </plurals>
+    <plurals name="main_error_model_name_too_long">
+        <item quantity="other">モデル名は %1$d 文字までです。</item>
+    </plurals>
     <plurals name="main_error_session_draft_too_long">
         <item quantity="other">セッションの下書きは %1$d 文字までです。</item>
     </plurals>

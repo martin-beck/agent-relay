@@ -172,6 +172,18 @@
     <string name="main_error_session_draft_clear">消息已送达，但无法安全清除其已保存的草稿。</string>
     <string name="main_error_session_resume">无法恢复已保存的会话。</string>
     <string name="main_error_session_interrupt">无法中断当前轮次。</string>
+    <string name="main_error_agent_endpoint_unavailable">该代理端点已无法使用。</string>
+    <string name="main_error_session_start">无法启动新的代理会话。</string>
+    <string name="main_error_action_unavailable">该批准请求或问题已不可用。</string>
+    <string name="main_error_action_delivery_uncertain">无法确认提供商响应。请勿重试此请求；请等待新识别出的提供商请求。</string>
+    <string name="main_error_action_audit">提供商已接受响应，但无法确认其本地审计状态。</string>
+    <string name="main_error_action_response">无法应用对批准请求或问题的响应。</string>
+    <plurals name="main_error_working_directory_too_long">
+        <item quantity="other">工作目录最多可包含 %1$d 个字符。</item>
+    </plurals>
+    <plurals name="main_error_model_name_too_long">
+        <item quantity="other">模型名称最多可包含 %1$d 个字符。</item>
+    </plurals>
     <plurals name="main_error_session_draft_too_long">
         <item quantity="other">会话草稿最多可包含 %1$d 个字符。</item>
     </plurals>

@@ -176,6 +176,22 @@
     <string name="main_error_session_draft_clear">A mensagem foi entregue, mas não foi possível apagar com segurança o rascunho salvo.</string>
     <string name="main_error_session_resume">Não foi possível retomar a sessão salva.</string>
     <string name="main_error_session_interrupt">Não foi possível interromper o turno ativo.</string>
+    <string name="main_error_agent_endpoint_unavailable">Esse endpoint do agente não está mais pronto.</string>
+    <string name="main_error_session_start">Não foi possível iniciar a nova sessão do agente.</string>
+    <string name="main_error_action_unavailable">Essa aprovação ou pergunta não está mais disponível.</string>
+    <string name="main_error_action_delivery_uncertain">Não foi possível confirmar a resposta do provedor. Não tente essa solicitação novamente; aguarde uma nova solicitação identificada do provedor.</string>
+    <string name="main_error_action_audit">O provedor aceitou a resposta, mas não foi possível confirmar o estado da auditoria local.</string>
+    <string name="main_error_action_response">Não foi possível aplicar a resposta à aprovação ou pergunta.</string>
+    <plurals name="main_error_working_directory_too_long">
+        <item quantity="one">Os diretórios de trabalho têm limite de %1$d caractere.</item>
+        <item quantity="many">Os diretórios de trabalho têm limite de %1$d caracteres.</item>
+        <item quantity="other">Os diretórios de trabalho têm limite de %1$d caracteres.</item>
+    </plurals>
+    <plurals name="main_error_model_name_too_long">
+        <item quantity="one">Os nomes de modelo têm limite de %1$d caractere.</item>
+        <item quantity="many">Os nomes de modelo têm limite de %1$d caracteres.</item>
+        <item quantity="other">Os nomes de modelo têm limite de %1$d caracteres.</item>
+    </plurals>
     <plurals name="main_error_session_draft_too_long">
         <item quantity="one">Os rascunhos de sessão têm limite de %1$d caractere.</item>
         <item quantity="many">Os rascunhos de sessão têm limite de %1$d caracteres.</item>

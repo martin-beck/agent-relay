@@ -174,6 +174,20 @@
     <string name="main_error_session_draft_clear">संदेश पहुँच गया, लेकिन उसका सहेजा गया ड्राफ़्ट सुरक्षित रूप से हटाया नहीं जा सका।</string>
     <string name="main_error_session_resume">सहेजा गया सत्र फिर से शुरू नहीं किया जा सका।</string>
     <string name="main_error_session_interrupt">सक्रिय टर्न को रोका नहीं जा सका।</string>
+    <string name="main_error_agent_endpoint_unavailable">वह एजेंट एंडपॉइंट अब तैयार नहीं है।</string>
+    <string name="main_error_session_start">नया एजेंट सत्र शुरू नहीं किया जा सका।</string>
+    <string name="main_error_action_unavailable">वह स्वीकृति या प्रश्न अब उपलब्ध नहीं है।</string>
+    <string name="main_error_action_delivery_uncertain">प्रदाता की प्रतिक्रिया की पुष्टि नहीं की जा सकी। इस अनुरोध को दोबारा न भेजें; प्रदाता के नए पहचाने गए अनुरोध की प्रतीक्षा करें।</string>
+    <string name="main_error_action_audit">प्रदाता ने प्रतिक्रिया स्वीकार कर ली, लेकिन उसकी स्थानीय ऑडिट स्थिति की पुष्टि नहीं की जा सकी।</string>
+    <string name="main_error_action_response">स्वीकृति या प्रश्न की प्रतिक्रिया लागू नहीं की जा सकी।</string>
+    <plurals name="main_error_working_directory_too_long">
+        <item quantity="one">कार्यशील डायरेक्टरी %1$d वर्ण तक सीमित हैं।</item>
+        <item quantity="other">कार्यशील डायरेक्टरी %1$d वर्ण तक सीमित हैं।</item>
+    </plurals>
+    <plurals name="main_error_model_name_too_long">
+        <item quantity="one">मॉडल नाम %1$d वर्ण तक सीमित हैं।</item>
+        <item quantity="other">मॉडल नाम %1$d वर्ण तक सीमित हैं।</item>
+    </plurals>
     <plurals name="main_error_session_draft_too_long">
         <item quantity="one">सत्र ड्राफ़्ट %1$d वर्ण तक सीमित हैं।</item>
         <item quantity="other">सत्र ड्राफ़्ट %1$d वर्ण तक सीमित हैं।</item>

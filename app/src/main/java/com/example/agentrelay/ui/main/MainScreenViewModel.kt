@@ -326,7 +326,7 @@ internal class MainScreenViewModel(
             ?.sessionLaunchers
             ?.firstOrNull { it.stableKey == launcherKey }
         if (launcher == null) {
-            operationError.setVerbatim("That agent endpoint is no longer ready.")
+            operationError.value = UiMessage.Localized(R.string.main_error_agent_endpoint_unavailable)
             return
         }
         operationError.value = null
@@ -341,7 +341,11 @@ internal class MainScreenViewModel(
 
     fun updateSessionCreatorWorkingDirectory(value: String) {
         if (value.length > MAX_WORKING_DIRECTORY_CHARS) {
-            operationError.setVerbatim("Working directories are limited to $MAX_WORKING_DIRECTORY_CHARS characters.")
+            operationError.value = UiMessage.Plural(
+                resourceId = R.plurals.main_error_working_directory_too_long,
+                quantity = MAX_WORKING_DIRECTORY_CHARS,
+                formatArguments = listOf(MAX_WORKING_DIRECTORY_CHARS),
+            )
             return
         }
         sessionCreator.update { current ->
@@ -351,7 +355,11 @@ internal class MainScreenViewModel(
 
     fun updateSessionCreatorModel(value: String) {
         if (value.length > MAX_MODEL_CHARS) {
-            operationError.setVerbatim("Model names are limited to $MAX_MODEL_CHARS characters.")
+            operationError.value = UiMessage.Plural(
+                resourceId = R.plurals.main_error_model_name_too_long,
+                quantity = MAX_MODEL_CHARS,
+                formatArguments = listOf(MAX_MODEL_CHARS),
+            )
             return
         }
         sessionCreator.update { current ->
@@ -375,7 +383,7 @@ internal class MainScreenViewModel(
             .firstOrNull { it.stableUiKey == creator.launcherKey }
         if (endpoint == null) {
             sessionCreator.value = null
-            operationError.setVerbatim("That agent endpoint is no longer ready.")
+            operationError.value = UiMessage.Localized(R.string.main_error_agent_endpoint_unavailable)
             return
         }
         operationError.value = null
@@ -395,7 +403,7 @@ internal class MainScreenViewModel(
                 throw cancelled
             } catch (_: Throwable) {
                 sessionCreator.update { it?.copy(isBusy = false) }
-                operationError.setVerbatim("The new agent session could not be started.")
+                operationError.value = UiMessage.Localized(R.string.main_error_session_start)
             }
         }
     }
@@ -412,7 +420,7 @@ internal class MainScreenViewModel(
             it.id == actionKey && it.locator.stableUiKey == sessionKey
         }
         if (request == null) {
-            operationError.setVerbatim("That approval or question is no longer available.")
+            operationError.value = UiMessage.Localized(R.string.main_error_action_unavailable)
             return
         }
         if (actionKey in sessionInteractions.value.busyActionKeys) {
@@ -433,12 +441,12 @@ internal class MainScreenViewModel(
                 )
             } catch (cancelled: CancellationException) {
                 throw cancelled
-            } catch (failure: SessionActionDeliveryUncertainException) {
-                operationError.setVerbatim(failure.message)
-            } catch (failure: SessionActionAuditFailureException) {
-                operationError.setVerbatim(failure.message)
+            } catch (_: SessionActionDeliveryUncertainException) {
+                operationError.value = UiMessage.Localized(R.string.main_error_action_delivery_uncertain)
+            } catch (_: SessionActionAuditFailureException) {
+                operationError.value = UiMessage.Localized(R.string.main_error_action_audit)
             } catch (_: Throwable) {
-                operationError.setVerbatim("The approval or question response could not be applied.")
+                operationError.value = UiMessage.Localized(R.string.main_error_action_response)
             } finally {
                 sessionInteractions.update { current ->
                     current.copy(busyActionKeys = current.busyActionKeys - actionKey)

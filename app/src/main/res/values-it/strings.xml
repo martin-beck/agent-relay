@@ -176,6 +176,22 @@
     <string name="main_error_session_draft_clear">Il messaggio è stato consegnato, ma non è stato possibile cancellare in modo sicuro la bozza salvata.</string>
     <string name="main_error_session_resume">Non è stato possibile riprendere la sessione salvata.</string>
     <string name="main_error_session_interrupt">Non è stato possibile interrompere il turno attivo.</string>
+    <string name="main_error_agent_endpoint_unavailable">Questo endpoint dell’agente non è più pronto.</string>
+    <string name="main_error_session_start">Non è stato possibile avviare la nuova sessione dell’agente.</string>
+    <string name="main_error_action_unavailable">Questa approvazione o domanda non è più disponibile.</string>
+    <string name="main_error_action_delivery_uncertain">Non è stato possibile confermare la risposta del provider. Non riprovare questa richiesta; attendi una nuova richiesta identificata del provider.</string>
+    <string name="main_error_action_audit">Il provider ha accettato la risposta, ma non è stato possibile confermare lo stato del controllo locale.</string>
+    <string name="main_error_action_response">Non è stato possibile applicare la risposta all’approvazione o alla domanda.</string>
+    <plurals name="main_error_working_directory_too_long">
+        <item quantity="one">Le directory di lavoro sono limitate a %1$d carattere.</item>
+        <item quantity="many">Le directory di lavoro sono limitate a %1$d caratteri.</item>
+        <item quantity="other">Le directory di lavoro sono limitate a %1$d caratteri.</item>
+    </plurals>
+    <plurals name="main_error_model_name_too_long">
+        <item quantity="one">I nomi dei modelli sono limitati a %1$d carattere.</item>
+        <item quantity="many">I nomi dei modelli sono limitati a %1$d caratteri.</item>
+        <item quantity="other">I nomi dei modelli sono limitati a %1$d caratteri.</item>
+    </plurals>
     <plurals name="main_error_session_draft_too_long">
         <item quantity="one">Le bozze di sessione sono limitate a %1$d carattere.</item>
         <item quantity="many">Le bozze di sessione sono limitate a %1$d caratteri.</item>

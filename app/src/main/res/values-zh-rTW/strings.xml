@@ -172,6 +172,18 @@
     <string name="main_error_session_draft_clear">訊息已送達，但無法安全清除其已儲存的草稿。</string>
     <string name="main_error_session_resume">無法繼續已儲存的工作階段。</string>
     <string name="main_error_session_interrupt">無法中斷目前輪次。</string>
+    <string name="main_error_agent_endpoint_unavailable">該代理端點已無法使用。</string>
+    <string name="main_error_session_start">無法啟動新的代理工作階段。</string>
+    <string name="main_error_action_unavailable">該核准要求或問題已無法使用。</string>
+    <string name="main_error_action_delivery_uncertain">無法確認提供者回應。請勿重試此要求；請等待新識別出的提供者要求。</string>
+    <string name="main_error_action_audit">提供者已接受回應，但無法確認其本機稽核狀態。</string>
+    <string name="main_error_action_response">無法套用對核准要求或問題的回應。</string>
+    <plurals name="main_error_working_directory_too_long">
+        <item quantity="other">工作目錄最多可包含 %1$d 個字元。</item>
+    </plurals>
+    <plurals name="main_error_model_name_too_long">
+        <item quantity="other">模型名稱最多可包含 %1$d 個字元。</item>
+    </plurals>
     <plurals name="main_error_session_draft_too_long">
         <item quantity="other">工作階段草稿最多可包含 %1$d 個字元。</item>
     </plurals>

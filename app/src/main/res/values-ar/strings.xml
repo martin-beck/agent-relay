@@ -182,6 +182,28 @@
     <string name="main_error_session_draft_clear">تم تسليم الرسالة، ولكن تعذّر مسح مسودتها المحفوظة بأمان.</string>
     <string name="main_error_session_resume">تعذّر استئناف الجلسة المحفوظة.</string>
     <string name="main_error_session_interrupt">تعذّر مقاطعة الدور النشط.</string>
+    <string name="main_error_agent_endpoint_unavailable">لم تعد نقطة نهاية الوكيل هذه جاهزة.</string>
+    <string name="main_error_session_start">تعذّر بدء جلسة الوكيل الجديدة.</string>
+    <string name="main_error_action_unavailable">لم تعد الموافقة أو السؤال متاحًا.</string>
+    <string name="main_error_action_delivery_uncertain">تعذّر تأكيد استجابة المزوّد. لا تُعِد محاولة هذا الطلب؛ انتظر طلبًا جديدًا تم التعرّف عليه من المزوّد.</string>
+    <string name="main_error_action_audit">قبل المزوّد الاستجابة، ولكن تعذّر تأكيد حالة التدقيق المحلية.</string>
+    <string name="main_error_action_response">تعذّر تطبيق الاستجابة للموافقة أو السؤال.</string>
+    <plurals name="main_error_working_directory_too_long">
+        <item quantity="zero">تقتصر أدلة العمل على %1$d حرفًا.</item>
+        <item quantity="one">تقتصر أدلة العمل على %1$d حرفًا.</item>
+        <item quantity="two">تقتصر أدلة العمل على %1$d حرفًا.</item>
+        <item quantity="few">تقتصر أدلة العمل على %1$d حرفًا.</item>
+        <item quantity="many">تقتصر أدلة العمل على %1$d حرفًا.</item>
+        <item quantity="other">تقتصر أدلة العمل على %1$d حرفًا.</item>
+    </plurals>
+    <plurals name="main_error_model_name_too_long">
+        <item quantity="zero">تقتصر أسماء النماذج على %1$d حرفًا.</item>
+        <item quantity="one">تقتصر أسماء النماذج على %1$d حرفًا.</item>
+        <item quantity="two">تقتصر أسماء النماذج على %1$d حرفًا.</item>
+        <item quantity="few">تقتصر أسماء النماذج على %1$d حرفًا.</item>
+        <item quantity="many">تقتصر أسماء النماذج على %1$d حرفًا.</item>
+        <item quantity="other">تقتصر أسماء النماذج على %1$d حرفًا.</item>
+    </plurals>
     <plurals name="main_error_session_draft_too_long">
         <item quantity="zero">تقتصر مسودات الجلسات على %1$d حرفًا.</item>
         <item quantity="one">تقتصر مسودات الجلسات على %1$d حرفًا.</item>

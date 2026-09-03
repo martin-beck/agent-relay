@@ -174,6 +174,20 @@
     <string name="main_error_session_draft_clear">বার্তাটি পৌঁছেছে, কিন্তু এর সংরক্ষিত ড্রাফ্ট নিরাপদে মুছে ফেলা যায়নি।</string>
     <string name="main_error_session_resume">সংরক্ষিত সেশনটি পুনরায় চালু করা যায়নি।</string>
     <string name="main_error_session_interrupt">সক্রিয় টার্নটি থামানো যায়নি।</string>
+    <string name="main_error_agent_endpoint_unavailable">সেই এজেন্ট এন্ডপয়েন্টটি আর প্রস্তুত নেই।</string>
+    <string name="main_error_session_start">নতুন এজেন্ট সেশন শুরু করা যায়নি।</string>
+    <string name="main_error_action_unavailable">সেই অনুমোদন বা প্রশ্নটি আর পাওয়া যাচ্ছে না।</string>
+    <string name="main_error_action_delivery_uncertain">প্রদানকারীর প্রতিক্রিয়া নিশ্চিত করা যায়নি। এই অনুরোধটি আবার চেষ্টা করবেন না; প্রদানকারীর নতুন শনাক্ত অনুরোধের জন্য অপেক্ষা করুন।</string>
+    <string name="main_error_action_audit">প্রদানকারী প্রতিক্রিয়াটি গ্রহণ করেছে, কিন্তু এর স্থানীয় অডিট অবস্থা নিশ্চিত করা যায়নি।</string>
+    <string name="main_error_action_response">অনুমোদন বা প্রশ্নের প্রতিক্রিয়া প্রয়োগ করা যায়নি।</string>
+    <plurals name="main_error_working_directory_too_long">
+        <item quantity="one">কাজের ডিরেক্টরি %1$d অক্ষরের মধ্যে সীমাবদ্ধ।</item>
+        <item quantity="other">কাজের ডিরেক্টরি %1$d অক্ষরের মধ্যে সীমাবদ্ধ।</item>
+    </plurals>
+    <plurals name="main_error_model_name_too_long">
+        <item quantity="one">মডেলের নাম %1$d অক্ষরের মধ্যে সীমাবদ্ধ।</item>
+        <item quantity="other">মডেলের নাম %1$d অক্ষরের মধ্যে সীমাবদ্ধ।</item>
+    </plurals>
     <plurals name="main_error_session_draft_too_long">
         <item quantity="one">সেশন ড্রাফ্ট %1$d অক্ষরের মধ্যে সীমাবদ্ধ।</item>
         <item quantity="other">সেশন ড্রাফ্ট %1$d অক্ষরের মধ্যে সীমাবদ্ধ।</item>

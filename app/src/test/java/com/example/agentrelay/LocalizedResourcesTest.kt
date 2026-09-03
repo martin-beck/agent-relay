@@ -123,6 +123,16 @@ class LocalizedResourcesTest {
                 32_000,
                 32_000,
             )
+            val workingDirectoryTooLong = context.resources.getQuantityString(
+                R.plurals.main_error_working_directory_too_long,
+                4_096,
+                4_096,
+            )
+            val modelNameTooLong = context.resources.getQuantityString(
+                R.plurals.main_error_model_name_too_long,
+                256,
+                256,
+            )
             val downloadProgress = context.getString(R.string.speech_download_progress, 42)
             val requiredField = context.getString(
                 R.string.profile_editor_required,
@@ -226,6 +236,10 @@ class LocalizedResourcesTest {
             assertFalse(languageTag, speechTranscriptTooLong.contains("%d"))
             assertFalse(languageTag, sessionDraftTooLong.contains("%1\$"))
             assertFalse(languageTag, sessionDraftTooLong.contains("%d"))
+            assertFalse(languageTag, workingDirectoryTooLong.contains("%1\$"))
+            assertFalse(languageTag, workingDirectoryTooLong.contains("%d"))
+            assertFalse(languageTag, modelNameTooLong.contains("%1\$"))
+            assertFalse(languageTag, modelNameTooLong.contains("%d"))
             assertFalse(languageTag, artifactProgress.contains("%2\$"))
 
             assertTrue(languageTag, downloadProgress.contains(localizedNumber))
@@ -353,6 +367,12 @@ class LocalizedResourcesTest {
             R.string.main_error_session_draft_clear,
             R.string.main_error_session_resume,
             R.string.main_error_session_interrupt,
+            R.string.main_error_agent_endpoint_unavailable,
+            R.string.main_error_session_start,
+            R.string.main_error_action_unavailable,
+            R.string.main_error_action_delivery_uncertain,
+            R.string.main_error_action_audit,
+            R.string.main_error_action_response,
         )
 
         val ARTIFACT_RESOURCES = listOf(

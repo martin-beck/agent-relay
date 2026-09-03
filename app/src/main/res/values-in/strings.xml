@@ -172,6 +172,18 @@
     <string name="main_error_session_draft_clear">Pesan telah terkirim, tetapi draf tersimpannya tidak dapat dihapus dengan aman.</string>
     <string name="main_error_session_resume">Sesi tersimpan tidak dapat dilanjutkan.</string>
     <string name="main_error_session_interrupt">Giliran aktif tidak dapat dihentikan.</string>
+    <string name="main_error_agent_endpoint_unavailable">Endpoint agen tersebut sudah tidak siap.</string>
+    <string name="main_error_session_start">Sesi agen baru tidak dapat dimulai.</string>
+    <string name="main_error_action_unavailable">Persetujuan atau pertanyaan tersebut sudah tidak tersedia.</string>
+    <string name="main_error_action_delivery_uncertain">Respons penyedia tidak dapat dikonfirmasi. Jangan coba lagi permintaan ini; tunggu permintaan penyedia yang baru teridentifikasi.</string>
+    <string name="main_error_action_audit">Penyedia menerima respons, tetapi status audit lokalnya tidak dapat dikonfirmasi.</string>
+    <string name="main_error_action_response">Respons persetujuan atau pertanyaan tidak dapat diterapkan.</string>
+    <plurals name="main_error_working_directory_too_long">
+        <item quantity="other">Direktori kerja dibatasi hingga %1$d karakter.</item>
+    </plurals>
+    <plurals name="main_error_model_name_too_long">
+        <item quantity="other">Nama model dibatasi hingga %1$d karakter.</item>
+    </plurals>
     <plurals name="main_error_session_draft_too_long">
         <item quantity="other">Draf sesi dibatasi hingga %1$d karakter.</item>
     </plurals>

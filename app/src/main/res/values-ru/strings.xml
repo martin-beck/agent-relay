@@ -178,6 +178,24 @@
     <string name="main_error_session_draft_clear">Сообщение доставлено, но не удалось безопасно удалить его сохранённый черновик.</string>
     <string name="main_error_session_resume">Не удалось возобновить сохранённый сеанс.</string>
     <string name="main_error_session_interrupt">Не удалось прервать активный ход.</string>
+    <string name="main_error_agent_endpoint_unavailable">Эта конечная точка агента больше не готова.</string>
+    <string name="main_error_session_start">Не удалось запустить новый сеанс агента.</string>
+    <string name="main_error_action_unavailable">Этот запрос на подтверждение или вопрос больше недоступен.</string>
+    <string name="main_error_action_delivery_uncertain">Не удалось подтвердить ответ поставщика. Не повторяйте этот запрос; дождитесь нового идентифицированного запроса поставщика.</string>
+    <string name="main_error_action_audit">Поставщик принял ответ, но не удалось подтвердить состояние локального аудита.</string>
+    <string name="main_error_action_response">Не удалось применить ответ на запрос подтверждения или вопрос.</string>
+    <plurals name="main_error_working_directory_too_long">
+        <item quantity="one">Рабочие каталоги ограничены %1$d символом.</item>
+        <item quantity="few">Рабочие каталоги ограничены %1$d символами.</item>
+        <item quantity="many">Рабочие каталоги ограничены %1$d символами.</item>
+        <item quantity="other">Рабочие каталоги ограничены %1$d символами.</item>
+    </plurals>
+    <plurals name="main_error_model_name_too_long">
+        <item quantity="one">Имена моделей ограничены %1$d символом.</item>
+        <item quantity="few">Имена моделей ограничены %1$d символами.</item>
+        <item quantity="many">Имена моделей ограничены %1$d символами.</item>
+        <item quantity="other">Имена моделей ограничены %1$d символами.</item>
+    </plurals>
     <plurals name="main_error_session_draft_too_long">
         <item quantity="one">Черновики сеансов ограничены %1$d символом.</item>
         <item quantity="few">Черновики сеансов ограничены %1$d символами.</item>

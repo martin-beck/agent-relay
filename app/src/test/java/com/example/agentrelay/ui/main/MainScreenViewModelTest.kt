@@ -43,6 +43,8 @@ import dev.agentrelay.session.runtime.AgentEndpointKey
 import dev.agentrelay.session.runtime.AgentEndpointPhase
 import dev.agentrelay.session.runtime.AgentEndpointStatus
 import dev.agentrelay.session.runtime.PreparedArtifactDownload
+import dev.agentrelay.session.runtime.SessionActionAuditFailureException
+import dev.agentrelay.session.runtime.SessionActionDeliveryUncertainException
 import dev.agentrelay.session.runtime.SessionConnectionKey
 import dev.agentrelay.session.runtime.SessionCoordinatorSnapshot
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -825,6 +827,170 @@ class MainScreenSessionErrorTest {
     }
 }
 
+@OptIn(ExperimentalCoroutinesApi::class)
+class MainScreenCreatorActionErrorTest {
+
+    @get:Rule
+    val mainDispatcherRule = MainDispatcherRule()
+
+    @Test
+    fun creatorValidationAndStartFailuresUseLocalizedDescriptors() = runTest {
+        val providerId = ConnectionProviderId("ssh.secure-shell")
+        val connectionKey = SessionConnectionKey(providerId, ConnectionProfileId("private-profile"))
+        val agentProviderId = AgentProviderId("agent.codex")
+        val endpointKey = AgentEndpointKey(connectionKey, agentProviderId)
+        val runtime = FakeSessionHubRuntime(
+            providers = listOf(descriptor(providerId, "Secure Shell")),
+            coordinator = SessionCoordinatorSnapshot(
+                profiles = listOf(profile(connectionKey, "Private host")),
+                agentEndpoints = mapOf(
+                    endpointKey to AgentEndpointStatus(
+                        key = endpointKey,
+                        descriptor = AgentProviderDescriptor(
+                            id = agentProviderId,
+                            displayName = "Codex",
+                            providerVersion = "1.0",
+                            capabilities = setOf(AgentCapability.SESSION_START),
+                        ),
+                        phase = AgentEndpointPhase.READY,
+                        updatedAtEpochMillis = 1L,
+                    ),
+                ),
+            ),
+            sessions = SessionHubSnapshot(),
+        )
+        val viewModel = MainScreenViewModel { runtime }
+        val scheduler = mainDispatcherRule.dispatcher.scheduler
+        scheduler.advanceUntilIdle()
+
+        viewModel.openSessionCreator("missing-endpoint")
+        scheduler.runCurrent()
+        assertEquals(
+            UiMessage.Localized(R.string.main_error_agent_endpoint_unavailable),
+            (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
+        )
+
+        val launcher = (viewModel.uiState.value as MainScreenUiState.Ready)
+            .hub.sessionLaunchers.single()
+        viewModel.openSessionCreator(launcher.stableKey)
+        viewModel.updateSessionCreatorWorkingDirectory("x".repeat(4_097))
+        scheduler.runCurrent()
+        assertEquals(
+            UiMessage.Plural(
+                R.plurals.main_error_working_directory_too_long,
+                4_096,
+                listOf(4_096),
+            ),
+            (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
+        )
+
+        viewModel.clearOperationError()
+        viewModel.updateSessionCreatorModel("x".repeat(257))
+        scheduler.runCurrent()
+        assertEquals(
+            UiMessage.Plural(
+                R.plurals.main_error_model_name_too_long,
+                256,
+                listOf(256),
+            ),
+            (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
+        )
+
+        runtime.startSessionFailure = IllegalStateException("private.example.test start detail")
+        viewModel.startSession()
+        scheduler.advanceUntilIdle()
+        assertEquals(
+            UiMessage.Localized(R.string.main_error_session_start),
+            (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
+        )
+        assertFalse(
+            checkNotNull((viewModel.uiState.value as MainScreenUiState.Ready).sessionCreator).isBusy,
+        )
+
+        viewModel.viewModelScope.cancel()
+    }
+
+    @Test
+    fun actionFailuresMapEachDurabilityOutcomeWithoutExposingDetails() = runTest {
+        val providerId = ConnectionProviderId("local.device")
+        val connectionKey = SessionConnectionKey(providerId, ConnectionProfileId("this-device"))
+        val locator = SessionLocator(
+            connectionProviderId = providerId,
+            connectionProfileId = connectionKey.profileId,
+            agentProviderId = AgentProviderId("agent.codex"),
+            agentSessionId = AgentSessionId("private-session"),
+        )
+        val request = actionRequest(locator)
+        val runtime = FakeSessionHubRuntime(
+            providers = listOf(descriptor(providerId, "Local")),
+            coordinator = SessionCoordinatorSnapshot(
+                profiles = listOf(profile(connectionKey, "This device")),
+            ),
+            sessions = SessionHubSnapshot(
+                sessions = listOf(session(locator)),
+                actionRequests = listOf(request),
+            ),
+        )
+        val viewModel = MainScreenViewModel { runtime }
+        val scheduler = mainDispatcherRule.dispatcher.scheduler
+        scheduler.advanceUntilIdle()
+
+        viewModel.respondToAction(
+            sessionKey = locator.stableUiKey,
+            actionKey = "missing-action",
+            decision = AgentApprovalDecision.CANCEL,
+            answers = emptyMap(),
+            additionalConfirmationGiven = false,
+        )
+        scheduler.runCurrent()
+        assertEquals(
+            UiMessage.Localized(R.string.main_error_action_unavailable),
+            (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
+        )
+
+        val failures = listOf(
+            SessionActionDeliveryUncertainException() to
+                R.string.main_error_action_delivery_uncertain,
+            SessionActionAuditFailureException() to R.string.main_error_action_audit,
+            IllegalStateException("private provider response detail") to
+                R.string.main_error_action_response,
+        )
+        failures.forEach { (failure, expectedResource) ->
+            runtime.actionResponseFailure = failure
+            viewModel.respondToAction(
+                sessionKey = locator.stableUiKey,
+                actionKey = request.id,
+                decision = AgentApprovalDecision.CANCEL,
+                answers = emptyMap(),
+                additionalConfirmationGiven = false,
+            )
+            scheduler.advanceUntilIdle()
+            assertEquals(
+                UiMessage.Localized(expectedResource),
+                (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
+            )
+        }
+
+        viewModel.viewModelScope.cancel()
+    }
+
+    private fun actionRequest(locator: SessionLocator) = SessionActionRequest(
+        id = "stable-action",
+        providerApprovalId = "private-provider-action",
+        locator = locator,
+        turnId = "private-turn",
+        type = AgentApprovalType.PERMISSION,
+        title = "Permission",
+        description = "Continue?",
+        command = null,
+        workingDirectory = null,
+        questions = emptyList(),
+        availableDecisions = setOf(AgentApprovalDecision.CANCEL),
+        riskReasons = emptySet(),
+        receivedAtEpochMillis = 1L,
+    )
+}
+
 internal class FakeSessionHubRuntime(
     providers: List<ConnectionProviderDescriptor>,
     coordinator: SessionCoordinatorSnapshot,
@@ -846,6 +1012,8 @@ internal class FakeSessionHubRuntime(
     var failSteer = false
     var failResume = false
     var failInterrupt = false
+    var startSessionFailure: Throwable? = null
+    var actionResponseFailure: Throwable? = null
     var refreshCount = 0
     val connected = mutableListOf<SessionConnectionKey>()
     val markedRead = mutableListOf<SessionLocator>()
@@ -964,6 +1132,7 @@ internal class FakeSessionHubRuntime(
         endpoint: AgentEndpointKey,
         options: StartSessionOptions,
     ): SessionLocator {
+        startSessionFailure?.let { throw it }
         startedSessions += endpoint to options
         val locator = SessionLocator(
             connectionProviderId = endpoint.connection.providerId,
@@ -984,6 +1153,7 @@ internal class FakeSessionHubRuntime(
         answers: Map<String, List<String>>,
         additionalConfirmationGiven: Boolean,
     ) {
+        actionResponseFailure?.let { throw it }
         actionResponses += ActionResponse(
             locator,
             requestId,
