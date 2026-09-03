@@ -111,6 +111,7 @@ dependencies {
     // Local tests: jUnit, coroutines, Android runner
     testImplementation(libs.junit)
     testImplementation(libs.androidx.test.core)
+    testImplementation(libs.androidx.compose.ui.geometry)
     testImplementation(libs.androidx.compose.ui.test.junit4)
     testRuntimeOnly(libs.androidx.compose.ui.test.manifest)
     testImplementation(libs.androidx.test.ext.junit)

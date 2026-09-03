@@ -3,7 +3,6 @@ package com.example.agentrelay.ui.main
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -184,36 +183,33 @@ private fun HubHeader(
     hub: SessionHubUiModel,
     onRefresh: () -> Unit,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Text(
+            text = stringResource(R.string.app_name),
+            modifier = Modifier.semantics { heading() },
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.SemiBold,
+        )
+        Text(
+            text = hub.availableConnectionProviders.joinToString(separator = stringResource(R.string.list_separator)),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+        )
+        OutlinedButton(
+            onClick = onRefresh,
+            enabled = !hub.isRefreshingProfiles,
+            modifier = Modifier.align(Alignment.End),
         ) {
-            Column(Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(R.string.app_name),
-                    modifier = Modifier.semantics { heading() },
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.SemiBold,
+            if (hub.isRefreshingProfiles) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(18.dp),
+                    strokeWidth = 2.dp,
                 )
-                Text(
-                    text = hub.availableConnectionProviders.joinToString(separator = stringResource(R.string.list_separator)),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-            }
-            OutlinedButton(
-                onClick = onRefresh,
-                enabled = !hub.isRefreshingProfiles,
-            ) {
-                if (hub.isRefreshingProfiles) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(18.dp),
-                        strokeWidth = 2.dp,
-                    )
-                } else {
-                    Text(stringResource(R.string.action_refresh))
-                }
+            } else {
+                Text(stringResource(R.string.action_refresh))
             }
         }
         Text(
@@ -255,7 +251,7 @@ private fun MessageCard(
     onAction: (() -> Unit)?,
 ) {
     Card(
-        modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+        modifier = Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite },
         colors = CardDefaults.cardColors(
             containerColor = if (isError) {
                 MaterialTheme.colorScheme.errorContainer
@@ -264,13 +260,16 @@ private fun MessageCard(
             },
         ),
     ) {
-        Row(
-            modifier = Modifier.padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            Text(message, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+            Text(message, style = MaterialTheme.typography.bodyMedium)
             if (actionLabel != null && onAction != null) {
-                TextButton(onClick = onAction) {
+                TextButton(
+                    onClick = onAction,
+                    modifier = Modifier.align(Alignment.End),
+                ) {
                     Text(actionLabel)
                 }
             }

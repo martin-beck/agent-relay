@@ -351,13 +351,19 @@ Compose screenshot tests by Now in Android. Paparazzi's current 2.0 release is
 still an alpha, while Element X Android's mature Paparazzi/Showkase pattern
 remains a useful reference for preview coverage.
 
-The committed baselines under `app/src/test/screenshots` cover loading, fatal
-error, empty, offline, changed identity, normal content, long German content,
-and approval-required states across compact, medium, and expanded widths,
-light/dark themes, and large font scales. Dynamic color is disabled so host
-wallpaper state cannot change evidence. Pull requests run
-`:app:verifyRoborazziDebug` in a dedicated Linux CI job and retain Roborazzi
-reports, test XML, and generated actual/diff images.
+The committed baselines under `app/src/test/screenshots` include eight adaptive
+state captures plus 16 independently reported locale captures: every bundled
+locale and both Android pseudo-locales render the session hub at 360 x 800 dp
+and 1.3x font scale. The locale tests assert that critical localized content is
+displayed and reject horizontally out-of-bounds or ellipsized text layouts. A
+review of the initial baselines found a narrow-width French clipping defect;
+compact header and recovery actions now stack vertically so long labels receive
+the full content width. The wider baseline set still covers loading, fatal
+error, empty, normal content, approval-required, compact/medium/expanded,
+light/dark, and large-text states. Dynamic color is disabled so host wallpaper
+state cannot change evidence. Pull requests run `:app:verifyRoborazziDebug` in a
+dedicated Linux CI job and retain Roborazzi reports, test XML, and generated
+actual/diff images.
 
 Record changed baselines only after reviewing the rendered UI:
 

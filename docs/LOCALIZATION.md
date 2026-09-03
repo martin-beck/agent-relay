@@ -67,8 +67,19 @@ tests must cover at least:
 - notification permission and background-service controls.
 
 Tests must fail for clipped controls, horizontally scrolling app copy, missing
-semantics, and inaccessible touch targets. Representative API 36 device tests
-supplement deterministic JVM screenshots; they do not replace them.
+semantics, and inaccessible touch targets. The first committed matrix gives each
+of the 14 bundled locales plus `en-XA` and `ar-XB` an independently reported
+360 x 800 dp session-hub capture at 1.3x font scale. It verifies the background
+connection controls, app header, recovery message, and approval-required state;
+asserts that critical localized text is displayed; and rejects text nodes or
+rendered text lines that leave the viewport or use ellipsis. Reviewed Roborazzi
+baselines make the same failures visible in pull requests.
+
+This is a bounded first slice, not full locale qualification. Profile editing,
+session detail and questions, artifact progress, speech installation, and
+notification permission still require equivalent per-locale matrices.
+Representative API 36 device tests supplement deterministic JVM screenshots;
+they do not replace them.
 
 ## Installable speech languages
 

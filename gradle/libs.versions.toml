@@ -48,6 +48,7 @@ androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime
 androidx-compose-runtime-annotation = { group = "androidx.compose.runtime", name = "runtime-annotation" }
 androidx-compose-runtime-saveable = { group = "androidx.compose.runtime", name = "runtime-saveable" }
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-compose-ui-geometry = { group = "androidx.compose.ui", name = "ui-geometry" }
 androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 androidx-compose-ui-test = { group = "androidx.compose.ui", name = "ui-test" }
 androidx-compose-ui-test-junit4-accessibility = { group = "androidx.compose.ui", name = "ui-test-junit4-accessibility" }
