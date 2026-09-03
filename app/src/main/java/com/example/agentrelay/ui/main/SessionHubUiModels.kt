@@ -59,7 +59,7 @@ internal data class ConnectionUiModel(
     val target: String,
     val authenticationLabel: String?,
     val status: ConnectionStatus,
-    val statusDetail: String?,
+    val statusDetail: UiMessage?,
     val connectedAgentCount: Int,
     val agentCount: Int,
     val unavailableAgentCount: Int,
@@ -89,7 +89,7 @@ internal data class IdentityChallengeUiModel(
 
 internal data class SessionUiModel(
     val stableKey: String,
-    val title: String,
+    val title: UiMessage,
     val preview: String,
     val connectionLabel: String,
     val connectionProviderName: String,
@@ -171,7 +171,7 @@ internal data class SessionActionUiModel(
     val connectionProviderName: String,
     val connectionTarget: String,
     val agentProviderLabel: String,
-    val sessionTitle: String,
+    val sessionTitle: UiMessage,
     val questions: List<SessionQuestionUiModel>,
     val decisions: List<SessionDecisionUiModel>,
     val risks: List<SessionActionRisk>,
@@ -505,8 +505,7 @@ internal object SessionHubUiMapper {
         activities: List<SessionActivity>,
     ) = SessionUiModel(
         stableKey = locator.stableUiKey,
-        title = observation.title?.takeIf(String::isNotBlank)
-            ?: observation.agentProviderLabel + " session",
+        title = titleMessage(),
         preview = observation.preview,
         connectionLabel = observation.connectionLabel,
         connectionProviderName = connectionProviderName,
@@ -535,8 +534,7 @@ internal object SessionHubUiMapper {
         connectionProviderName = connectionProviderName,
         connectionTarget = record.observation.connectionTarget,
         agentProviderLabel = record.observation.agentProviderLabel,
-        sessionTitle = record.observation.title?.takeIf(String::isNotBlank)
-            ?: record.observation.agentProviderLabel + " session",
+        sessionTitle = record.titleMessage(),
         questions = questions.map { question ->
             SessionQuestionUiModel(
                 stableKey = question.id,
@@ -728,29 +726,56 @@ internal object SessionHubUiMapper {
         is ConnectionState.Failed -> ConnectionStatus.FAILED
     }
 
-    private fun ConnectionState?.toStatusDetail(): String? = when (this) {
+    private fun ConnectionState?.toStatusDetail(): UiMessage? = when (this) {
         null -> null
-        is ConnectionState.Disconnected -> when (reason) {
-            ConnectionDisconnectReason.NOT_CONNECTED -> null
-            ConnectionDisconnectReason.USER_REQUESTED -> "Disconnected by you"
-            ConnectionDisconnectReason.AUTHENTICATION_FAILED -> "Authentication failed"
-            ConnectionDisconnectReason.NETWORK_LOST -> "Network connection lost"
-            ConnectionDisconnectReason.SERVER_IDENTITY_REJECTED -> "Server identity rejected"
-            ConnectionDisconnectReason.CREDENTIAL_UNAVAILABLE -> "Credential unavailable"
-            ConnectionDisconnectReason.BACKGROUND_SUSPENDED -> "Paused in the background"
-            ConnectionDisconnectReason.RETRY_LIMIT_REACHED -> "Automatic retry limit reached"
-            ConnectionDisconnectReason.PROVIDER_STOPPED -> "Connection provider stopped"
-        }
+        is ConnectionState.Disconnected -> reason.localizedStatusDetail()
         is ConnectionState.Connecting ->
-            phase.name
-                .lowercase()
-                .replace('_', ' ')
-                .replaceFirstChar { it.titlecase() }
+            UiMessage.Localized(
+                when (phase) {
+                    dev.agentrelay.connection.api.ConnectionPhase.PREPARING ->
+                        R.string.connection_phase_preparing
+                    dev.agentrelay.connection.api.ConnectionPhase.OPENING_TRANSPORT ->
+                        R.string.connection_phase_opening_transport
+                    dev.agentrelay.connection.api.ConnectionPhase.VERIFYING_SERVER_IDENTITY ->
+                        R.string.connection_phase_verifying_server_identity
+                    dev.agentrelay.connection.api.ConnectionPhase.AUTHENTICATING ->
+                        R.string.connection_phase_authenticating
+                },
+            )
         is ConnectionState.Connected -> null
-        is ConnectionState.Reconnecting -> lastFailure.actionableMessage
-        is ConnectionState.AwaitingIdentityTrust -> challenge.endpoint
-        is ConnectionState.Failed -> failure.actionableMessage
+        is ConnectionState.Reconnecting -> UiMessage.Verbatim(lastFailure.actionableMessage)
+        is ConnectionState.AwaitingIdentityTrust -> UiMessage.Verbatim(challenge.endpoint)
+        is ConnectionState.Failed -> UiMessage.Verbatim(failure.actionableMessage)
     }
+
+    private fun ConnectionDisconnectReason.localizedStatusDetail(): UiMessage? = when (this) {
+        ConnectionDisconnectReason.NOT_CONNECTED -> null
+        ConnectionDisconnectReason.USER_REQUESTED ->
+            UiMessage.Localized(R.string.connection_disconnect_user_requested)
+        ConnectionDisconnectReason.AUTHENTICATION_FAILED ->
+            UiMessage.Localized(R.string.connection_disconnect_authentication_failed)
+        ConnectionDisconnectReason.NETWORK_LOST ->
+            UiMessage.Localized(R.string.connection_disconnect_network_lost)
+        ConnectionDisconnectReason.SERVER_IDENTITY_REJECTED ->
+            UiMessage.Localized(R.string.connection_disconnect_server_identity_rejected)
+        ConnectionDisconnectReason.CREDENTIAL_UNAVAILABLE ->
+            UiMessage.Localized(R.string.connection_disconnect_credential_unavailable)
+        ConnectionDisconnectReason.BACKGROUND_SUSPENDED ->
+            UiMessage.Localized(R.string.connection_disconnect_background_suspended)
+        ConnectionDisconnectReason.RETRY_LIMIT_REACHED ->
+            UiMessage.Localized(R.string.connection_disconnect_retry_limit_reached)
+        ConnectionDisconnectReason.PROVIDER_STOPPED ->
+            UiMessage.Localized(R.string.connection_disconnect_provider_stopped)
+    }
+
+    private fun SessionRecord.titleMessage(): UiMessage =
+        observation.title
+            ?.takeIf(String::isNotBlank)
+            ?.let(UiMessage::Verbatim)
+            ?: UiMessage.Localized(
+                R.string.session_title_fallback,
+                listOf(observation.agentProviderLabel),
+            )
 
     private val RESUMABLE_SESSION_STATES = setOf(
         AgentSessionState.NOT_LOADED,

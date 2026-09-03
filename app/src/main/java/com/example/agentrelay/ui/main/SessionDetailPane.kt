@@ -478,7 +478,7 @@ private fun SessionComposer(
 private fun SessionDetailHeader(session: SessionUiModel) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
-            text = session.title,
+            text = session.title.resolve(),
             modifier = Modifier.semantics { heading() },
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.SemiBold,

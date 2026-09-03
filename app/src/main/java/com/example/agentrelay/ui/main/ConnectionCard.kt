@@ -74,7 +74,7 @@ internal fun ConnectionCard(
             }
             connection.statusDetail?.let {
                 Text(
-                    text = it,
+                    text = it.resolve(),
                     style = MaterialTheme.typography.bodyMedium,
                     color = if (connection.status == ConnectionStatus.FAILED) {
                         MaterialTheme.colorScheme.error

@@ -212,11 +212,13 @@ private fun previewSession(
     longContent: Boolean,
 ) = SessionUiModel(
     stableKey = "preview-session",
-    title = if (longContent) {
-        "Android-Sitzungsübersicht auf kleinen Bildschirmen barrierefrei prüfen"
-    } else {
-        "Refine the Android session hub"
-    },
+    title = UiMessage.Verbatim(
+        if (longContent) {
+            "Android-Sitzungsübersicht auf kleinen Bildschirmen barrierefrei prüfen"
+        } else {
+            "Refine the Android session hub"
+        },
+    ),
     preview = if (longContent) {
         "Die providerneutrale Laufzeit wartet auf eine sichere und eindeutig erklärte Entscheidung."
     } else {
@@ -249,7 +251,7 @@ private fun previewConnections() = listOf(
         target = "App-private workspace",
         authenticationLabel = null,
         status = ConnectionStatus.OFFLINE,
-        statusDetail = "Start the local service to discover agents.",
+        statusDetail = UiMessage.Verbatim("Start the local service to discover agents."),
         connectedAgentCount = 0,
         agentCount = 0,
         unavailableAgentCount = 0,
@@ -265,7 +267,7 @@ private fun previewConnections() = listOf(
         target = "Configured endpoint",
         authenticationLabel = "Managed app key",
         status = ConnectionStatus.IDENTITY_REVIEW,
-        statusDetail = "The saved host identity has changed.",
+        statusDetail = UiMessage.Verbatim("The saved host identity has changed."),
         connectedAgentCount = 0,
         agentCount = 1,
         unavailableAgentCount = 1,

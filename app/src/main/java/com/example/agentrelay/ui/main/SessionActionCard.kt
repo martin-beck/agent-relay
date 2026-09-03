@@ -183,7 +183,10 @@ private fun ActionContext(action: SessionActionUiModel) {
         stringResource(R.string.session_action_context_agent_provider),
         action.agentProviderLabel,
     )
-    LabeledValue(stringResource(R.string.session_action_context_session), action.sessionTitle)
+    LabeledValue(
+        stringResource(R.string.session_action_context_session),
+        action.sessionTitle.resolve(),
+    )
     action.scope?.let {
         LabeledValue(stringResource(R.string.session_action_context_scope), it)
     }

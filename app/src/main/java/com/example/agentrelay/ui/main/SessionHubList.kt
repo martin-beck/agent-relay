@@ -333,7 +333,12 @@ private fun AttentionActionCard(
                 onClick = onReview,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text(stringResource(R.string.session_hub_review_in, action.sessionTitle))
+                Text(
+                    stringResource(
+                        R.string.session_hub_review_in,
+                        action.sessionTitle.resolve(),
+                    ),
+                )
             }
         }
     }

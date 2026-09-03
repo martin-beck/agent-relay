@@ -53,7 +53,7 @@ internal fun SessionCard(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = session.title,
+                    text = session.title.resolve(),
                     modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
@@ -157,6 +157,6 @@ private fun sessionAccessibilityLabel(session: SessionUiModel): String {
         null
     }
     val pinned = stringResource(R.string.session_card_pinned).takeIf { session.isPinned }
-    return listOfNotNull(session.title, state, context, unread, awaitingAction, pinned)
+    return listOfNotNull(session.title.resolve(), state, context, unread, awaitingAction, pinned)
         .joinToString(stringResource(R.string.accessibility_separator))
 }

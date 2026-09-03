@@ -117,7 +117,10 @@ class SessionHubUiMapperTest {
         assertEquals(2, mapped.sessions.size)
         assertNotEquals(mapped.sessions[0].stableKey, mapped.sessions[1].stableKey)
         assertEquals(64, mapped.sessions[0].stableKey.length)
-        assertEquals("SSH session", mapped.selectedSession?.session?.title)
+        assertEquals(
+            UiMessage.Verbatim("SSH session"),
+            mapped.selectedSession?.session?.title,
+        )
         assertEquals(1, mapped.selectedSession?.session?.requiresActionCount)
         assertEquals(32_000, mapped.selectedSession?.transcript?.single()?.text?.length)
         assertTrue(mapped.selectedSession?.transcript?.single()?.wasTruncated == true)
@@ -126,7 +129,10 @@ class SessionHubUiMapperTest {
             mapped.selectedSession?.transcript?.single()?.roleLabel,
         )
         assertEquals(TimelineEntryKind.AGENT_FINAL, mapped.selectedSession?.transcript?.single()?.kind)
-        assertFalse(mapped.sessions.single { it.title == "Local session" }.stableKey == sshLocator.stableUiKey)
+        assertFalse(
+            mapped.sessions.single { it.title == UiMessage.Verbatim("Local session") }.stableKey ==
+                sshLocator.stableUiKey,
+        )
         assertEquals(listOf("Secure Shell"), mapped.manageableConnectionProviders.map { it.name })
         assertFalse(mapped.connections.single { it.providerName == "Local" }.canEdit)
         assertTrue(mapped.connections.single { it.providerName == "Secure Shell" }.canEdit)
@@ -285,6 +291,7 @@ class SessionHubUiMapperTest {
 
         val connection = mapped.connections.single()
         assertEquals(ConnectionStatus.IDENTITY_REVIEW, connection.status)
+        assertEquals(UiMessage.Verbatim(challenge.endpoint), connection.statusDetail)
         assertTrue(connection.identityChallenge?.isChangedIdentity == true)
         assertEquals(challenge.previouslyTrustedFingerprints, connection.identityChallenge?.previousFingerprints)
         assertTrue(connection.isBusy)
@@ -302,6 +309,7 @@ class SessionHubUiMapperTest {
             recoverable = true,
         )
         val statesByProfileId = linkedMapOf(
+            "never" to disconnected(ConnectionDisconnectReason.NOT_CONNECTED),
             "user" to disconnected(ConnectionDisconnectReason.USER_REQUESTED),
             "authentication" to disconnected(ConnectionDisconnectReason.AUTHENTICATION_FAILED),
             "network" to disconnected(ConnectionDisconnectReason.NETWORK_LOST),
@@ -310,9 +318,24 @@ class SessionHubUiMapperTest {
             "background" to disconnected(ConnectionDisconnectReason.BACKGROUND_SUSPENDED),
             "retry" to disconnected(ConnectionDisconnectReason.RETRY_LIMIT_REACHED),
             "stopped" to disconnected(ConnectionDisconnectReason.PROVIDER_STOPPED),
+            "preparing" to ConnectionState.Connecting(
+                attempt = 1,
+                phase = ConnectionPhase.PREPARING,
+                startedAtEpochMillis = 1,
+            ),
             "connecting" to ConnectionState.Connecting(
                 attempt = 1,
                 phase = ConnectionPhase.OPENING_TRANSPORT,
+                startedAtEpochMillis = 1,
+            ),
+            "verifying" to ConnectionState.Connecting(
+                attempt = 1,
+                phase = ConnectionPhase.VERIFYING_SERVER_IDENTITY,
+                startedAtEpochMillis = 1,
+            ),
+            "authenticating" to ConnectionState.Connecting(
+                attempt = 1,
+                phase = ConnectionPhase.AUTHENTICATING,
                 startedAtEpochMillis = 1,
             ),
             "connected" to ConnectionState.Connected(
@@ -362,24 +385,53 @@ class SessionHubUiMapperTest {
         )
         val connections = mapped.connections.associateBy(ConnectionUiModel::label)
 
-        assertEquals("Disconnected by you", connections.getValue("user").statusDetail)
-        assertEquals("Authentication failed", connections.getValue("authentication").statusDetail)
-        assertEquals("Network connection lost", connections.getValue("network").statusDetail)
-        assertEquals("Server identity rejected", connections.getValue("identity").statusDetail)
-        assertEquals("Credential unavailable", connections.getValue("credential").statusDetail)
-        assertEquals("Paused in the background", connections.getValue("background").statusDetail)
-        assertEquals("Automatic retry limit reached", connections.getValue("retry").statusDetail)
-        assertEquals("Connection provider stopped", connections.getValue("stopped").statusDetail)
-        assertEquals(ConnectionStatus.CONNECTING, connections.getValue("connecting").status)
-        assertEquals("Opening transport", connections.getValue("connecting").statusDetail)
+        assertEquals(null, connections.getValue("never").statusDetail)
+        val disconnectResources = mapOf(
+            "user" to R.string.connection_disconnect_user_requested,
+            "authentication" to R.string.connection_disconnect_authentication_failed,
+            "network" to R.string.connection_disconnect_network_lost,
+            "identity" to R.string.connection_disconnect_server_identity_rejected,
+            "credential" to R.string.connection_disconnect_credential_unavailable,
+            "background" to R.string.connection_disconnect_background_suspended,
+            "retry" to R.string.connection_disconnect_retry_limit_reached,
+            "stopped" to R.string.connection_disconnect_provider_stopped,
+        )
+        disconnectResources.forEach { (label, resourceId) ->
+            assertEquals(
+                UiMessage.Localized(resourceId),
+                connections.getValue(label).statusDetail,
+            )
+        }
+        val phaseResources = mapOf(
+            "preparing" to R.string.connection_phase_preparing,
+            "connecting" to R.string.connection_phase_opening_transport,
+            "verifying" to R.string.connection_phase_verifying_server_identity,
+            "authenticating" to R.string.connection_phase_authenticating,
+        )
+        phaseResources.forEach { (label, resourceId) ->
+            assertEquals(ConnectionStatus.CONNECTING, connections.getValue(label).status)
+            assertEquals(
+                UiMessage.Localized(resourceId),
+                connections.getValue(label).statusDetail,
+            )
+        }
         assertTrue(connections.getValue("connecting").isBusy)
         assertEquals(ConnectionStatus.ONLINE, connections.getValue("connected").status)
         assertEquals(ConnectionStatus.RECONNECTING, connections.getValue("reconnecting").status)
-        assertEquals("Try the connection again.", connections.getValue("reconnecting").statusDetail)
+        assertEquals(
+            UiMessage.Verbatim("Try the connection again."),
+            connections.getValue("reconnecting").statusDetail,
+        )
         assertEquals(ConnectionStatus.FAILED, connections.getValue("failed").status)
-        assertEquals("Try the connection again.", connections.getValue("failed").statusDetail)
+        assertEquals(
+            UiMessage.Verbatim("Try the connection again."),
+            connections.getValue("failed").statusDetail,
+        )
         assertEquals("test.provider", connections.getValue("connected").providerName)
-        assertEquals("Codex session", mapped.sessions.single().title)
+        assertEquals(
+            UiMessage.Localized(R.string.session_title_fallback, listOf("Codex")),
+            mapped.sessions.single().title,
+        )
         assertEquals("test.provider", mapped.selectedSession?.session?.connectionProviderName)
         assertEquals(listOf("new", "old"), mapped.issues.map(CoordinatorIssueUiModel::id))
         assertEquals(UiMessage.Verbatim("A safe operation failed."), mapped.operationError)

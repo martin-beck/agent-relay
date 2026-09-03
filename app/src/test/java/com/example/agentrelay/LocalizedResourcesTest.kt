@@ -80,6 +80,10 @@ class LocalizedResourcesTest {
                 R.string.session_composer_status_connect_draft,
                 opaqueValues[1],
             )
+            val fallbackSessionTitle = context.getString(
+                R.string.session_title_fallback,
+                opaqueValues[2],
+            )
             val artifactProgress = context.getString(
                 R.string.session_artifact_save_progress_total,
                 NumberFormat
@@ -175,6 +179,7 @@ class LocalizedResourcesTest {
             assertTrue(languageTag, reviewIn.contains(opaqueValues[1]))
             assertTrue(languageTag, messageTo.contains(opaqueValues[2]))
             assertTrue(languageTag, connectDraft.contains(opaqueValues[1]))
+            assertTrue(languageTag, fallbackSessionTitle.contains(opaqueValues[2]))
             opaqueValues.forEach { value ->
                 assertTrue(languageTag, actionContext.contains(value))
                 assertTrue(languageTag, detailContext.contains(value))

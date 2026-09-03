@@ -824,7 +824,7 @@ internal data class RecordedActionResponse(
 internal fun testHub(): SessionHubUiModel {
     val session = SessionUiModel(
         stableKey = "session-key",
-        title = "Investigate flaky build",
+        title = UiMessage.Verbatim("Investigate flaky build"),
         preview = "The test fixture is ready for review.",
         connectionLabel = "This device",
         connectionProviderName = "Local",
@@ -863,7 +863,7 @@ internal fun testHub(): SessionHubUiModel {
                 target = "Test endpoint",
                 authenticationLabel = "Test key",
                 status = ConnectionStatus.IDENTITY_REVIEW,
-                statusDetail = "Test endpoint",
+                statusDetail = UiMessage.Verbatim("Test endpoint"),
                 connectedAgentCount = 0,
                 agentCount = 0,
                 unavailableAgentCount = 0,
@@ -958,7 +958,7 @@ internal fun actionHub(): SessionHubUiModel {
         connectionProviderName = "Secure Shell",
         connectionTarget = "Test endpoint",
         agentProviderLabel = "Codex",
-        sessionTitle = "Investigate flaky build",
+        sessionTitle = UiMessage.Verbatim("Investigate flaky build"),
         questions = listOf(
             SessionQuestionUiModel(
                 stableKey = "question-key",
