@@ -82,6 +82,48 @@ jobs:
             --json --output-file build/reports/quality/radon-maintainability.json
           uv run lizard --CCN 20 --xml --output_file build/reports/quality/lizard.xml .
 
+      - name: Install pinned OSV-Scanner
+        shell: bash
+        run: |
+          osv_version="$(jq --raw-output .version config/osv-scanner-release.json)"
+          osv_url="$(jq --raw-output .linux_amd64_url config/osv-scanner-release.json)"
+          osv_sha256="$(jq --raw-output .linux_amd64_sha256 config/osv-scanner-release.json)"
+          osv_bin="${RUNNER_TEMP}/osv-scanner-${osv_version}"
+          curl --fail --location --retry 3 --show-error --output "${osv_bin}" "${osv_url}"
+          printf '%s  %s\n' "${osv_sha256}" "${osv_bin}" | sha256sum --check --strict
+          chmod 0755 "${osv_bin}"
+          echo "OSV_SCANNER_BIN=${osv_bin}" >> "${GITHUB_ENV}"
+
+      - name: Scan locked dependencies for known vulnerabilities
+        shell: bash
+        run: |
+          lock_args=(--lockfile uv.lock)
+          while IFS= read -r lockfile; do
+            if [[ "${lockfile##*/}" == "gradle.lockfile" ]]; then
+              lock_args+=(--lockfile "${lockfile}")
+            fi
+          done < config/dependency-lockfiles.txt
+          mkdir -p build/reports/quality
+          set +e
+          "${OSV_SCANNER_BIN}" scan source \
+            --no-resolve \
+            --format json \
+            --output-file build/reports/quality/osv-scanner-unfiltered.json \
+            "${lock_args[@]}"
+          unfiltered_status=$?
+          set -e
+          if (( unfiltered_status > 1 )); then
+            exit "${unfiltered_status}"
+          fi
+          uv run python scripts/ci/verify_dependency_integrity.py \
+            --osv-results build/reports/quality/osv-scanner-unfiltered.json
+          "${OSV_SCANNER_BIN}" scan source \
+            --config config/osv-scanner.toml \
+            --no-resolve \
+            --format sarif \
+            --output-file build/reports/quality/osv-scanner.sarif \
+            "${lock_args[@]}"
+
       - name: Set up JDK 17
         uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
         with:

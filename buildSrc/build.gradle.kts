@@ -15,3 +15,8 @@ java {
         languageVersion = JavaLanguageVersion.of(17)
     }
 }
+
+dependencyLocking {
+    lockAllConfigurations()
+    lockMode.set(LockMode.STRICT)
+}

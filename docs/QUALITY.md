@@ -32,6 +32,7 @@ representative physical-device release evidence.
 | Detekt | Kotlin correctness plus cyclomatic, cognitive, nesting, length, parameter, and size limits | Any configured finding fails; cognitive complexity is ratcheted below 34 and no baseline is used |
 | Android lint | Android and dependency lint checks | Errors and warnings fail; HTML, XML, and SARIF reports |
 | Dependency analysis | Unused, transitive, and incorrectly scoped dependencies | Any advice fails, except one documented public-API edge |
+| Dependency integrity | Gradle SHA-256 verification, configuration locks, and pinned OSV-Scanner over Gradle and uv locks | Missing or changed integrity state and unreviewed vulnerabilities fail; broad, expired, or production-reaching exceptions fail |
 | Native speech runtime | Pinned source/toolchain, four-ABI ELF hardening, contents, licenses, provenance, and deterministic rebuilds | Any input, build, validation, or packaging drift fails |
 | JVM tests | Unit, contract, concurrency, process-lifecycle, and persistence behavior | Any failure fails |
 | Device UI tests | Semantic flows and API 34+ accessibility checks | API 36 phone fails pull requests; minimum API and tablet run weekly |
@@ -504,10 +505,24 @@ SARIF as a downloadable artifact. Uploading SARIF or running CodeQL through
 GitHub code scanning requires the repository's GitHub Code Security entitlement;
 the current workflow does not claim that unavailable check.
 
-Dependabot covers Gradle and GitHub Actions update proposals. Dependency analysis
-guards declaration quality, but neither tool proves that a dependency is free of
-vulnerabilities. Review dependency release notes and security advisories before
-merging an update.
+Dependabot covers Gradle and GitHub Actions update proposals. Dependency
+analysis guards declaration quality. Gradle verifies resolved bytes against
+reviewed SHA-256 metadata and locks resolved versions, while pinned OSV-Scanner
+checks the committed Gradle and uv locks against the current OSV database.
+OSV results are time-dependent advisory data, not proof that a dependency is
+safe. CI retains an unfiltered report and accepts only reviewed combinations of
+vulnerability ID, ecosystem, package, and version. ID-specific, expiring
+scanner exceptions then produce the filtered report. The accepted combinations
+cover only non-shipped test, lint, and AGP-internal transitive tools; the
+repository verifier rejects new or stale findings, a reviewed ID on another
+coordinate, or any accepted coordinate that enters a production configuration.
+An ID-specific exception also covers aliases that OSV associates with that ID,
+so any policy or database change still requires human advisory review. Review
+release notes and security advisories before merging any update.
+
+GitHub Dependabot vulnerability alerts are repository-account state and are not
+configured or asserted by this source-only gate. An authorized administrator
+must inspect or enable them separately.
 
 The current hosted workflow does not run:
 

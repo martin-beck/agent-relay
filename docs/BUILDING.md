@@ -81,6 +81,38 @@ extracted ShellCheck binary and the Bats tree's regular-file paths and contents
 against pinned payload digests, repairs drift from the authenticated archives,
 and atomically replaces the executable entry points.
 
+## Dependency integrity
+
+Gradle verifies every resolved artifact and metadata file against the committed
+SHA-256 values in `gradle/verification-metadata.xml`. Strict dependency locking covers
+the configurations exercised by the complete verification build in each
+project and in `buildSrc`. Regenerate both sets only while intentionally
+updating dependencies:
+
+```bash
+./gradlew --write-verification-metadata sha256 --write-locks \
+  spotlessCheck detekt buildHealth test koverXmlReport koverVerify checkKotlinAbi \
+  lintDebug assembleDebug compileDebugAndroidTestKotlin verifyRoborazziDebug
+python scripts/ci/verify_dependency_integrity.py
+```
+
+Review every checksum and lock change before committing it. Never use lenient
+dependency verification or delete an unexpected checksum to make resolution
+pass. CI installs the exact OSV-Scanner release declared in
+`config/osv-scanner-release.json`, verifies its binary checksum, and scans
+`uv.lock` plus every supported Gradle lockfile. The settings lock remains under
+the offline integrity check because OSV-Scanner does not parse that filename.
+
+OSV-Scanner first writes unfiltered JSON, and the repository verifier compares
+every vulnerability ID, ecosystem, package, and version with the exact tuples in
+`config/osv-accepted-vulnerabilities.json`. The ID-specific, expiring
+`IgnoredVulns` entries in `config/osv-scanner.toml` then produce the filtered
+SARIF report. Accepted tuples cover only transitive Android test, lint, and
+AGP-internal tooling that is absent from shipped configurations. A new ID, a
+known ID on another coordinate, a stale tuple, or movement into production
+fails. Because the live OSV database changes independently, re-review both
+reports and the policy whenever the result set changes.
+
 ## Offline speech native build
 
 The debug build includes a source-built sherpa-onnx online-recognition runtime.

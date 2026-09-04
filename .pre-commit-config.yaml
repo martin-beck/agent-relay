@@ -190,6 +190,19 @@ repos:
         pass_filenames: false
         files: >-
           ^(config/android-locales\.txt|app/src/main/res/(resources\.properties|values.*)|scripts/ci/verify_android_locales\.py)$
+      - id: verify-dependency-integrity
+        name: Verify dependency integrity metadata and locks
+        entry: python scripts/ci/verify_dependency_integrity.py
+        language: system
+        pass_filenames: false
+        files: >-
+          ^(config/dependency-lockfiles\.txt|
+          config/osv-accepted-vulnerabilities\.json|
+          config/osv-scanner(-release\.json|\.toml)|
+          gradle/verification-metadata\.xml|
+          .*gradle\.lockfile|
+          uv\.lock|
+          scripts/ci/verify_dependency_integrity\.py)$
       - id: render-usage-workflows
         name: Render executable usage workflow pages
         entry: python scripts/docs/render_workflows.py --check
