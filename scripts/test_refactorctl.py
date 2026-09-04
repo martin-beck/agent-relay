@@ -98,3 +98,16 @@ def test_apply_rejects_behavior_risk(tmp_path: Path) -> None:
     value = recipe(behaviorChange="review-required", ownership={"status": "allowlisted"})
     with pytest.raises(refactorctl.RefactorError, match="behavior change"):
         refactorctl.require_claim(value, "AR-0017", "worker-test")
+
+
+def test_catalog_recipe_matches_golden_without_semantic_drift() -> None:
+    catalog = refactorctl.load_catalog(Path("config/refactoring-recipes.json"))
+    recipe_value = refactorctl.recipe_for(catalog, "kotlin-explicit-boolean-wrapper")
+    source = Path("fixtures/structural/kotlin/positive/input.kt").read_text(encoding="utf-8")
+    golden = Path("fixtures/structural/kotlin/golden/output.kt").read_text(encoding="utf-8")
+    found = refactorctl.matches(Path.cwd(), recipe_value)
+    assert len(found) == 1
+    assert found[0][2] == golden
+    assert "Boolean.valueOf" not in found[0][2]
+    assert source != found[0][2]
+    assert refactorctl.matches(Path.cwd(), recipe_value)[0][2] == golden

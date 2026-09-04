@@ -30,7 +30,7 @@
     "recipe": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "engine", "toolVersion", "risk", "languages", "include", "exclude", "prohibitions", "preconditions", "invariants", "budgets", "fixtures", "verification", "ownership", "compatibility"],
+      "required": ["id", "engine", "toolVersion", "risk", "languages", "include", "exclude", "prohibitions", "preconditions", "invariants", "budgets", "fixtures", "verification", "application", "ownership", "compatibility"],
       "properties": {
         "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9.-]{2,63}$"},
         "engine": {"enum": ["ast-grep"]},
@@ -48,6 +48,7 @@
         "budgets": {"type": "object", "additionalProperties": false, "required": ["maxMatches", "maxFiles", "maxChangedLines", "convergesInOnePass"], "properties": {"maxMatches": {"type": "integer", "minimum": 0}, "maxFiles": {"type": "integer", "minimum": 0}, "maxChangedLines": {"type": "integer", "minimum": 0}, "convergesInOnePass": {"type": "boolean"}}},
         "fixtures": {"type": "object", "additionalProperties": false, "required": ["positive", "negative", "golden"], "properties": {"positive": {"$ref": "#/$defs/pathList"}, "negative": {"$ref": "#/$defs/pathList"}, "golden": {"$ref": "#/$defs/pathList"}}},
         "verification": {"type": "object", "additionalProperties": false, "required": ["focused", "full"], "properties": {"focused": {"$ref": "#/$defs/commandList"}, "full": {"$ref": "#/$defs/commandList"}}},
+        "application": {"type": "object", "additionalProperties": false, "required": ["command", "convergence"], "properties": {"command": {"$ref": "#/$defs/commandList"}, "convergence": {"enum": ["one-pass", "bounded-multi-pass"]}}},
         "ownership": {"type": "object", "additionalProperties": false, "required": ["maintainer", "status"], "properties": {"maintainer": {"type": "string", "minLength": 1}, "status": {"enum": ["experimental", "allowlisted", "deprecated"]}, "deprecatedReason": {"type": "string", "minLength": 1}}},
         "compatibility": {"type": "object", "additionalProperties": false, "required": ["catalogVersion", "minimumRefactorctl"], "properties": {"catalogVersion": {"type": "integer", "minimum": 1}, "minimumRefactorctl": {"type": "string", "minLength": 1}}}
       }
