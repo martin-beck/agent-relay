@@ -35,13 +35,43 @@ internal object SshAuthorizedKeysInstallScript {
             lock_owner_file=${'$'}lock_dir/owner
             lock_recovery_file=${'$'}lock_dir/recovery
             lock_recovery_dir=${'$'}ssh_dir/.agent-relay-authorized-keys.recovery.${'$'}${'$'}
+            lock_observation_file=${'$'}ssh_dir/.agent-relay-authorized-keys.observation.${'$'}${'$'}
             lock_owner=
             lock_owned=0
             recovery_owned=0
             recovery_quarantined=0
             recovery_delete_allowed=0
+            observation_owned=0
+            observation_inode=
             uncertain_lock_state=
             uncertain_lock_observations=0
+            # A hardlink pins the foreign marker inode across generations; ls -i remains
+            # available on POSIX targets whose test utility does not implement -ef.
+            read_regular_file_inode() {
+              file_inode=
+              if [ -L "${'$'}1" ] || [ ! -f "${'$'}1" ]; then
+                return 1
+              fi
+              file_inode=${'$'}(
+                LC_ALL=C ls -id "${'$'}1" 2>/dev/null | awk '{ print ${'$'}1; exit }'
+              ) || return 1
+              case "${'$'}file_inode" in
+                ""|*[!0-9]*)
+                  return 1
+                  ;;
+              esac
+            }
+            cleanup_observation() {
+              if [ "${'$'}observation_owned" -eq 1 ]; then
+                if read_regular_file_inode "${'$'}lock_observation_file" &&
+                  [ "${'$'}file_inode" = "${'$'}observation_inode" ]; then
+                  rm -f "${'$'}lock_observation_file" || return 1
+                fi
+              fi
+              observation_owned=0
+              observation_inode=
+              return 0
+            }
             read_lock_owner() {
               lock_owner=
               if [ -L "${'$'}lock_owner_file" ] || [ ! -f "${'$'}lock_owner_file" ]; then
@@ -54,67 +84,162 @@ internal object SshAuthorizedKeysInstallScript {
                   ;;
               esac
             }
-            recover_stale_lock() {
+            owner_publication_failure_is_retryable() {
+              if [ ! -e "${'$'}lock_dir" ] && [ ! -L "${'$'}lock_dir" ]; then
+                return 0
+              fi
               if [ -L "${'$'}lock_dir" ] || [ ! -d "${'$'}lock_dir" ]; then
+                return 1
+              fi
+              if read_lock_owner; then
+                if kill -0 "${'$'}lock_owner" 2>/dev/null; then
+                  return 0
+                fi
+                return 1
+              fi
+              if [ -e "${'$'}lock_owner_file" ] || [ -L "${'$'}lock_owner_file" ]; then
+                return 1
+              fi
+              if [ -L "${'$'}lock_recovery_file" ] || [ ! -f "${'$'}lock_recovery_file" ]; then
+                return 1
+              fi
+              recovery_owner=
+              IFS= read -r recovery_owner < "${'$'}lock_recovery_file" || return 1
+              case "${'$'}recovery_owner" in
+                ""|*[!0-9]*)
+                  return 1
+                  ;;
+              esac
+              if kill -0 "${'$'}recovery_owner" 2>/dev/null; then
+                return 0
+              fi
+              return 1
+            }
+            recover_stale_lock() {
+              confirmation_required=0
+              if [ -L "${'$'}lock_dir" ] || [ ! -d "${'$'}lock_dir" ]; then
+                cleanup_observation || :
                 uncertain_lock_state=
                 uncertain_lock_observations=0
                 return 1
               fi
               if [ -L "${'$'}lock_owner_file" ] ||
                 { [ -e "${'$'}lock_owner_file" ] && [ ! -f "${'$'}lock_owner_file" ]; }; then
+                cleanup_observation || :
                 uncertain_lock_state=
                 uncertain_lock_observations=0
                 return 1
               fi
               if read_lock_owner; then
                 if kill -0 "${'$'}lock_owner" 2>/dev/null; then
+                  cleanup_observation || :
                   uncertain_lock_state=
                   uncertain_lock_observations=0
                   return 1
                 fi
                 current_lock_state=owner:${'$'}lock_owner
               else
+                confirmation_required=1
                 if [ -e "${'$'}lock_owner_file" ]; then
                   current_lock_state=malformed:${'$'}lock_owner
                 else
                   current_lock_state=ownerless
                 fi
-                if [ "${'$'}uncertain_lock_state" = "${'$'}current_lock_state" ]; then
+              fi
+              if [ -e "${'$'}lock_recovery_dir" ] || [ -L "${'$'}lock_recovery_dir" ]; then
+                cleanup_observation || :
+                return 1
+              fi
+              recovery_marker_created=0
+              observation_marker_created=0
+              recovery_marker_foreign=0
+              recovery_owner=
+              if [ -e "${'$'}lock_recovery_file" ] || [ -L "${'$'}lock_recovery_file" ]; then
+                if [ -L "${'$'}lock_recovery_file" ] || [ ! -f "${'$'}lock_recovery_file" ]; then
+                  cleanup_observation || :
+                  return 1
+                fi
+                IFS= read -r recovery_owner < "${'$'}lock_recovery_file" || :
+                if [ "${'$'}recovery_owned" -ne 1 ] || [ "${'$'}recovery_owner" != "${'$'}${'$'}" ]; then
+                  case "${'$'}recovery_owner" in
+                    ""|*[!0-9]*)
+                      ;;
+                    *)
+                      if kill -0 "${'$'}recovery_owner" 2>/dev/null; then
+                        cleanup_observation || :
+                        return 1
+                      fi
+                      ;;
+                  esac
+                  recovery_marker_foreign=1
+                fi
+              fi
+              if [ ! -e "${'$'}lock_recovery_file" ] && [ ! -L "${'$'}lock_recovery_file" ]; then
+                cleanup_observation || :
+                recovery_owned=1
+                if ! (set -C; printf '%s\n' "${'$'}${'$'}" > "${'$'}lock_recovery_file") 2>/dev/null; then
+                  recovery_owned=0
+                  return 1
+                fi
+                recovery_owner=${'$'}${'$'}
+                recovery_marker_created=1
+              fi
+              if [ "${'$'}recovery_marker_foreign" -eq 1 ]; then
+                if [ "${'$'}observation_owned" -eq 1 ]; then
+                  observed_inode=${'$'}observation_inode
+                  if ! read_regular_file_inode "${'$'}lock_observation_file" ||
+                    [ "${'$'}file_inode" != "${'$'}observed_inode" ] ||
+                    ! read_regular_file_inode "${'$'}lock_recovery_file" ||
+                    [ "${'$'}file_inode" != "${'$'}observed_inode" ]; then
+                    cleanup_observation || :
+                    uncertain_lock_state=
+                    uncertain_lock_observations=0
+                  fi
+                fi
+                if [ "${'$'}observation_owned" -eq 0 ]; then
+                  if [ -e "${'$'}lock_observation_file" ] ||
+                    [ -L "${'$'}lock_observation_file" ] ||
+                    ! read_regular_file_inode "${'$'}lock_recovery_file"; then
+                    return 1
+                  fi
+                  if ! ln "${'$'}lock_recovery_file" "${'$'}lock_observation_file" 2>/dev/null; then
+                    return 1
+                  fi
+                  if ! read_regular_file_inode "${'$'}lock_observation_file"; then
+                    return 1
+                  fi
+                  observed_inode=${'$'}file_inode
+                  if ! read_regular_file_inode "${'$'}lock_recovery_file" ||
+                    [ "${'$'}file_inode" != "${'$'}observed_inode" ]; then
+                    return 1
+                  fi
+                  observation_inode=${'$'}observed_inode
+                  observation_owned=1
+                  observation_marker_created=1
+                fi
+              else
+                cleanup_observation || :
+              fi
+              observation_state=${'$'}current_lock_state:recovery:${'$'}recovery_owner
+              if [ "${'$'}observation_owned" -eq 1 ]; then
+                observation_state=${'$'}observation_state:inode:${'$'}observation_inode
+              fi
+              if [ "${'$'}confirmation_required" -eq 1 ]; then
+                if [ "${'$'}recovery_marker_created" -eq 0 ] &&
+                  [ "${'$'}observation_marker_created" -eq 0 ] &&
+                  [ "${'$'}uncertain_lock_state" = "${'$'}observation_state" ]; then
                   uncertain_lock_observations=${'$'}((uncertain_lock_observations + 1))
                 else
-                  uncertain_lock_state=${'$'}current_lock_state
+                  uncertain_lock_state=${'$'}observation_state
                   uncertain_lock_observations=1
                 fi
                 if [ "${'$'}uncertain_lock_observations" -lt 2 ]; then
                   return 1
                 fi
               fi
-              if [ -e "${'$'}lock_recovery_dir" ] || [ -L "${'$'}lock_recovery_dir" ]; then
-                return 1
-              fi
-              if [ -e "${'$'}lock_recovery_file" ] || [ -L "${'$'}lock_recovery_file" ]; then
-                recovery_owner=
-                if [ -L "${'$'}lock_recovery_file" ] || [ ! -f "${'$'}lock_recovery_file" ]; then
-                  return 1
-                fi
-                IFS= read -r recovery_owner < "${'$'}lock_recovery_file" || :
-                case "${'$'}recovery_owner" in
-                  ""|*[!0-9]*)
-                    ;;
-                  *)
-                    if kill -0 "${'$'}recovery_owner" 2>/dev/null; then
-                      return 1
-                    fi
-                    ;;
-                esac
-                rm -f "${'$'}lock_recovery_file" || return 1
-              fi
-              recovery_owned=1
-              if ! (set -C; printf '%s\n' "${'$'}${'$'}" > "${'$'}lock_recovery_file") 2>/dev/null; then
-                recovery_owned=0
-                return 1
-              fi
               observed_lock_state=${'$'}current_lock_state
+              observed_recovery_owner=${'$'}recovery_owner
+              observed_recovery_inode=${'$'}observation_inode
               if read_lock_owner; then
                 current_lock_state=owner:${'$'}lock_owner
               elif [ -e "${'$'}lock_owner_file" ]; then
@@ -123,17 +248,30 @@ internal object SshAuthorizedKeysInstallScript {
                 current_lock_state=ownerless
               fi
               recovery_owner=
+              recovery_marker_invalid=0
+              if [ -L "${'$'}lock_recovery_file" ] || [ ! -f "${'$'}lock_recovery_file" ]; then
+                recovery_marker_invalid=1
+              else
+                IFS= read -r recovery_owner < "${'$'}lock_recovery_file" || :
+              fi
               recovery_quarantined=1
               if [ "${'$'}current_lock_state" != "${'$'}observed_lock_state" ] ||
-                ! IFS= read -r recovery_owner < "${'$'}lock_recovery_file" ||
-                [ "${'$'}recovery_owner" != "${'$'}${'$'}" ] ||
+                [ "${'$'}recovery_marker_invalid" -ne 0 ] ||
+                [ "${'$'}recovery_owner" != "${'$'}observed_recovery_owner" ] ||
+                { [ "${'$'}observation_owned" -eq 1 ] &&
+                  { ! read_regular_file_inode "${'$'}lock_observation_file" ||
+                    [ "${'$'}file_inode" != "${'$'}observed_recovery_inode" ] ||
+                    ! read_regular_file_inode "${'$'}lock_recovery_file" ||
+                    [ "${'$'}file_inode" != "${'$'}observed_recovery_inode" ]; }; } ||
                 ! mv "${'$'}lock_dir" "${'$'}lock_recovery_dir" 2>/dev/null; then
-                if IFS= read -r recovery_owner < "${'$'}lock_recovery_file" &&
+                if [ "${'$'}recovery_owned" -eq 1 ] &&
+                  IFS= read -r recovery_owner < "${'$'}lock_recovery_file" &&
                   [ "${'$'}recovery_owner" = "${'$'}${'$'}" ]; then
                   rm -f "${'$'}lock_recovery_file" || :
                 fi
                 recovery_owned=0
                 recovery_quarantined=0
+                cleanup_observation || :
                 return 1
               fi
               lock_owner_file=${'$'}lock_recovery_dir/owner
@@ -146,18 +284,33 @@ internal object SshAuthorizedKeysInstallScript {
               fi
               lock_owner_file=${'$'}lock_dir/owner
               recovery_owner=
-              IFS= read -r recovery_owner < "${'$'}lock_recovery_dir/recovery" || :
+              recovery_marker_invalid=0
+              if [ -L "${'$'}lock_recovery_dir/recovery" ] ||
+                [ ! -f "${'$'}lock_recovery_dir/recovery" ]; then
+                recovery_marker_invalid=1
+              else
+                IFS= read -r recovery_owner < "${'$'}lock_recovery_dir/recovery" || :
+              fi
               if [ "${'$'}moved_lock_state" != "${'$'}observed_lock_state" ] ||
-                [ "${'$'}recovery_owner" != "${'$'}${'$'}" ]; then
-                if [ "${'$'}recovery_owner" = "${'$'}${'$'}" ]; then
+                [ "${'$'}recovery_marker_invalid" -ne 0 ] ||
+                [ "${'$'}recovery_owner" != "${'$'}observed_recovery_owner" ] ||
+                { [ "${'$'}observation_owned" -eq 1 ] &&
+                  { ! read_regular_file_inode "${'$'}lock_observation_file" ||
+                    [ "${'$'}file_inode" != "${'$'}observed_recovery_inode" ] ||
+                    ! read_regular_file_inode "${'$'}lock_recovery_dir/recovery" ||
+                    [ "${'$'}file_inode" != "${'$'}observed_recovery_inode" ]; }; }; then
+                if [ "${'$'}recovery_owned" -eq 1 ] &&
+                  [ "${'$'}recovery_owner" = "${'$'}${'$'}" ]; then
                   rm -f "${'$'}lock_recovery_dir/recovery" || :
                 fi
                 recovery_owned=0
+                cleanup_observation || :
                 return 1
               fi
               recovery_delete_allowed=1
               rm -f "${'$'}lock_recovery_dir/owner" || return 1
               rm -f "${'$'}lock_recovery_dir/recovery" || return 1
+              cleanup_observation || return 1
               rmdir "${'$'}lock_recovery_dir" 2>/dev/null || return 1
               recovery_owned=0
               recovery_quarantined=0
@@ -190,6 +343,7 @@ internal object SshAuthorizedKeysInstallScript {
             }
             cleanup_lock() {
               cleanup_recovery
+              cleanup_observation || :
               if [ "${'$'}lock_owned" -eq 1 ]; then
                 if read_lock_owner && [ "${'$'}lock_owner" = "${'$'}${'$'}" ]; then
                   rm -f "${'$'}lock_owner_file" || :
@@ -200,24 +354,43 @@ internal object SshAuthorizedKeysInstallScript {
             trap cleanup_lock 0
             trap 'exit 74' 1 2 15
             lock_attempt=0
-            until mkdir "${'$'}lock_dir" 2>/dev/null; do
-              if recover_stale_lock; then
-                continue
+            # Two generation observations and one owner/recovery collision can consume five waits.
+            lock_attempt_limit=8
+            while :; do
+              lock_recovered=0
+              if mkdir "${'$'}lock_dir" 2>/dev/null; then
+                lock_owned=1
+                if ! (set -C; printf '%s\n' "${'$'}${'$'}" > "${'$'}lock_owner_file") 2>/dev/null; then
+                  lock_owned=0
+                  if ! owner_publication_failure_is_retryable; then
+                    exit 75
+                  fi
+                elif ! read_lock_owner || [ "${'$'}lock_owner" != "${'$'}${'$'}" ]; then
+                  lock_owned=0
+                  if ! owner_publication_failure_is_retryable; then
+                    exit 75
+                  fi
+                elif [ ! -e "${'$'}lock_recovery_file" ] && [ ! -L "${'$'}lock_recovery_file" ]; then
+                  break
+                else
+                  if ! read_lock_owner || [ "${'$'}lock_owner" != "${'$'}${'$'}" ]; then
+                    exit 75
+                  fi
+                  rm -f "${'$'}lock_owner_file" || exit 75
+                  lock_owned=0
+                fi
+              elif recover_stale_lock; then
+                lock_recovered=1
               fi
               lock_attempt=${'$'}((lock_attempt + 1))
-              if [ "${'$'}lock_attempt" -ge 5 ]; then
+              if [ "${'$'}lock_attempt" -ge "${'$'}lock_attempt_limit" ]; then
                 exit 75
+              fi
+              if [ "${'$'}lock_recovered" -eq 1 ]; then
+                continue
               fi
               sleep 1
             done
-            lock_owned=1
-            if ! (set -C; printf '%s\n' "${'$'}${'$'}" > "${'$'}lock_owner_file") 2>/dev/null; then
-              exit 75
-            fi
-            if ! read_lock_owner || [ "${'$'}lock_owner" != "${'$'}${'$'}" ] ||
-              [ -e "${'$'}lock_recovery_file" ] || [ -L "${'$'}lock_recovery_file" ]; then
-              exit 75
-            fi
             if [ -L "${'$'}authorized_keys" ] ||
               { [ -e "${'$'}authorized_keys" ] && [ ! -f "${'$'}authorized_keys" ]; }; then
               exit 73

@@ -106,8 +106,10 @@ then runs a bounded POSIX command that:
   and file mode 0600, and avoids touching an existing file unconditionally;
 - serializes cooperating Agent Relay installers with a PID-owned atomic
   directory lock, safely reclaims a well-formed lock whose owner exited or an
-  unchanged ownerless or malformed lock after a bounded wait, and removes its
-  own lock when the remote shell is interrupted;
+  unchanged ownerless or malformed lock after a bounded wait, retries a
+  generation-safe acquisition/recovery handshake within eight total waits,
+  pins a foreign stale recovery marker by hardlink while revalidating its exact
+  inode and contents, and removes only its own evidence when interrupted;
 - strips comments and sends only the validated algorithm and Base64 public-key
   blob;
 - preserves an existing active key line byte-for-byte only when the key occupies
