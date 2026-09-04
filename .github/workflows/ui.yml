@@ -69,8 +69,9 @@ jobs:
           android_sdk_root="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
           test -n "$android_sdk_root"
           system_image="$android_sdk_root/system-images/android-36/default/x86_64"
-          devices_xml="$system_image/devices.xml"
-          if [[ ! -s "$devices_xml" ]]; then
+          source_properties="$system_image/source.properties"
+          system_img="$system_image/system.img"
+          if [[ ! -s "$source_properties" || ! -s "$system_img" ]]; then
             sdkmanager_path="$android_sdk_root/cmdline-tools/latest/bin/sdkmanager"
             test -x "$sdkmanager_path"
             "$sdkmanager_path" --sdk_root="$android_sdk_root" --uninstall \
@@ -78,7 +79,8 @@ jobs:
             "$sdkmanager_path" --sdk_root="$android_sdk_root" --install \
               "system-images;android-36;default;x86_64" --channel=0
           fi
-          test -s "$devices_xml"
+          test -s "$source_properties"
+          test -s "$system_img"
 
       - name: Run semantic UI and accessibility tests
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
@@ -270,8 +272,9 @@ jobs:
           android_sdk_root="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
           test -n "$android_sdk_root"
           system_image="$android_sdk_root/system-images/android-36/default/x86_64"
-          devices_xml="$system_image/devices.xml"
-          if [[ ! -s "$devices_xml" ]]; then
+          source_properties="$system_image/source.properties"
+          system_img="$system_image/system.img"
+          if [[ ! -s "$source_properties" || ! -s "$system_img" ]]; then
             sdkmanager_path="$android_sdk_root/cmdline-tools/latest/bin/sdkmanager"
             test -x "$sdkmanager_path"
             "$sdkmanager_path" --sdk_root="$android_sdk_root" --uninstall \
@@ -279,7 +282,8 @@ jobs:
             "$sdkmanager_path" --sdk_root="$android_sdk_root" --install \
               "system-images;android-36;default;x86_64" --channel=0
           fi
-          test -s "$devices_xml"
+          test -s "$source_properties"
+          test -s "$system_img"
 
       - name: Run semantic UI and accessibility tests
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
