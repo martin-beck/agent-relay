@@ -64,6 +64,12 @@ jobs:
           test -r /dev/kvm
           test -w /dev/kvm
 
+      - name: Verify dedicated emulator ports and ADB state
+        run: |
+          ! ss -H -ltn "sport = :5582" | grep -q .
+          ! ss -H -ltn "sport = :5583" | grep -q .
+          adb devices -l
+
       - name: Validate Android system-image metadata
         run: |
           android_sdk_root="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
@@ -88,7 +94,7 @@ jobs:
           # The self-hosted host keeps a separate diagnostic emulator on 5554.
           # Use a runner-owned port so the action's unbounded emu-kill cleanup
           # cannot target that unrelated process or SDK/ADB transport.
-          ANDROID_SERIAL: emulator-5580
+          ANDROID_SERIAL: emulator-5582
         with:
           api-level: 36
           target: default
@@ -96,7 +102,7 @@ jobs:
           profile: pixel_7_pro
           # Isolate each run from stale AVD locks left by an interrupted action.
           avd-name: test-${{ github.run_id }}-${{ github.run_attempt }}
-          emulator-port: 5580
+          emulator-port: 5582
           disable-animations: true
           script: >-
             adb wait-for-device &&
@@ -267,6 +273,12 @@ jobs:
           test -r /dev/kvm
           test -w /dev/kvm
 
+      - name: Verify dedicated emulator ports and ADB state
+        run: |
+          ! ss -H -ltn "sport = :5582" | grep -q .
+          ! ss -H -ltn "sport = :5583" | grep -q .
+          adb devices -l
+
       - name: Validate Android system-image metadata
         run: |
           android_sdk_root="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
@@ -288,7 +300,7 @@ jobs:
       - name: Run semantic UI and accessibility tests
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         env:
-          ANDROID_SERIAL: emulator-5580
+          ANDROID_SERIAL: emulator-5582
         with:
           api-level: ${{ matrix.api-level }}
           target: default
@@ -296,7 +308,7 @@ jobs:
           profile: ${{ matrix.profile }}
           # Isolate each run from stale AVD locks left by an interrupted action.
           avd-name: test-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.name }}
-          emulator-port: 5580
+          emulator-port: 5582
           disable-animations: true
           script: >-
             adb wait-for-device &&
