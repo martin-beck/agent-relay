@@ -71,7 +71,9 @@ jobs:
           system_image="$android_sdk_root/system-images/android-36/default/x86_64"
           devices_xml="$system_image/devices.xml"
           if [[ ! -s "$devices_xml" ]]; then
-            sdkmanager --install --force "system-images;android-36;default;x86_64" --channel=0
+            sdkmanager_path="$android_sdk_root/cmdline-tools/latest/bin/sdkmanager"
+            test -x "$sdkmanager_path"
+            "$sdkmanager_path" --install --force "system-images;android-36;default;x86_64" --channel=0
           fi
           test -s "$devices_xml"
 
@@ -267,7 +269,9 @@ jobs:
           system_image="$android_sdk_root/system-images/android-36/default/x86_64"
           devices_xml="$system_image/devices.xml"
           if [[ ! -s "$devices_xml" ]]; then
-            sdkmanager --install --force "system-images;android-36;default;x86_64" --channel=0
+            sdkmanager_path="$android_sdk_root/cmdline-tools/latest/bin/sdkmanager"
+            test -x "$sdkmanager_path"
+            "$sdkmanager_path" --install --force "system-images;android-36;default;x86_64" --channel=0
           fi
           test -s "$devices_xml"
 
