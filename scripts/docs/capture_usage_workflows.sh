@@ -2,7 +2,7 @@
 set -euo pipefail
 
 usage() {
-  cat <<'EOF'
+  cat << 'EOF'
 Usage: scripts/docs/capture_usage_workflows.sh [--record]
 
 Capture the verified Android usage journeys on the only connected emulator.
@@ -49,11 +49,17 @@ baseline_root="$repo_root/docs/assets/workflows"
 remote_capture="/sdcard/Download/agent-relay-usage-guide"
 case "$capture_root" in
   "$repo_root"/build/usage-guide/*) ;;
-  *) echo "Unsafe capture path: $capture_root" >&2; exit 2 ;;
+  *)
+    echo "Unsafe capture path: $capture_root" >&2
+    exit 2
+    ;;
 esac
 case "$baseline_root" in
   "$repo_root"/docs/assets/workflows) ;;
-  *) echo "Unsafe baseline path: $baseline_root" >&2; exit 2 ;;
+  *)
+    echo "Unsafe baseline path: $baseline_root" >&2
+    exit 2
+    ;;
 esac
 
 "$adb_bin" shell wm size 1080x2400

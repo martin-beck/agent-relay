@@ -11,6 +11,9 @@ integration.
 - CMake 3.28.3
 - Ninja 1.11.1
 - Bash and standard POSIX build tools
+- Linux x86_64 or arm64 for the shell-quality gate, including WSL on Windows
+- ShellCheck 0.11.0, shfmt 3.14.0, and Bats 1.14.0, installed by the
+  checksum-verifying repository helper on that Linux host
 - Git
 - Vale 3.19.0, installed from the official checksum-verified release archive
 - uv, used to install the repository's locked cross-language check runner
@@ -40,24 +43,26 @@ Run the same gate as GitHub Actions:
 ```bash
 uv sync --locked --only-group quality --only-group docs
 uv run pytest
+scripts/ci/install_shell_quality_tools.sh
 uv run pre-commit run --all-files --show-diff-on-failure
 ./gradlew spotlessCheck detekt buildHealth test koverXmlReport koverVerify checkKotlinAbi lintDebug assembleDebug --stacktrace
 ```
 
-On Windows PowerShell:
+On Windows, run the complete repository and shell gates inside x86_64 or arm64
+WSL. You can run the Gradle portion from PowerShell:
 
 ```powershell
-uv sync --locked --only-group quality --only-group docs
-uv run pytest
-uv run pre-commit run --all-files --show-diff-on-failure
 .\gradlew.bat spotlessCheck detekt buildHealth test koverXmlReport koverVerify checkKotlinAbi lintDebug assembleDebug --stacktrace
 ```
 
-The pre-commit gate covers Python, Markdown, YAML, TOML, XML, properties,
-GitHub metadata, spelling, links, secrets, and generic repository hygiene. The
-Gradle tasks cover Kotlin formatting, Detekt, strict dependency declarations,
-JVM unit and contract tests, aggregate coverage, Android lint, and debug APK
-assembly. The APK is written to:
+The pre-commit gate covers Python, first-party Bash, Markdown, YAML, TOML, XML,
+properties, GitHub metadata, spelling, links, secrets, and generic repository
+hygiene. Its shell slice runs pinned ShellCheck, checks canonical formatting
+with `shfmt --diff`, and runs focused Bats regressions. The generated Gradle
+wrapper remains governed by wrapper validation instead of being reformatted or
+patched locally. The Gradle tasks cover Kotlin formatting, Detekt, strict
+dependency declarations, JVM unit and contract tests, aggregate coverage,
+Android lint, and debug APK assembly. The APK is written to:
 
 ```text
 app/build/outputs/apk/debug/app-debug.apk
@@ -68,6 +73,13 @@ Lizard versions through uv and Vale 3.19.0 through pre-commit. The Python suite
 uses deterministic property examples and rejects branch-aware coverage below
 65% for the four production validators and renderers. CI verifies Vale's official
 archive checksum.
+`install_shell_quality_tools.sh` similarly downloads official immutable release
+assets into `build/tools/shell-quality`, verifies their SHA-256 digests, and
+supports `SHELL_QUALITY_OFFLINE=1` once its archive cache is populated. It does
+not install or replace machine-global tools. Every invocation also verifies the
+extracted ShellCheck binary and the Bats tree's regular-file paths and contents
+against pinned payload digests, repairs drift from the authenticated archives,
+and atomically replaces the executable entry points.
 
 ## Offline speech native build
 
@@ -252,6 +264,9 @@ uv run pre-commit run lizard-complexity --all-files
 uv run pre-commit run markdownlint-cli2 --all-files
 uv run pre-commit run actionlint --all-files
 uv run pre-commit run zizmor --all-files
+scripts/ci/run_shell_quality.sh shellcheck
+scripts/ci/run_shell_quality.sh shfmt
+scripts/ci/run_shell_quality.sh test
 ./gradlew :connection:local:test
 ./gradlew :ssh:jsch:test
 ./gradlew :session:runtime:test

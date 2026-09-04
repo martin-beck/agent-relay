@@ -22,7 +22,7 @@ service_dump() {
 }
 
 service_exists() {
-  service_dump | grep -F "ServiceRecord" >/dev/null
+  service_dump | grep -F "ServiceRecord" > /dev/null
 }
 
 app_pid() {
@@ -32,9 +32,9 @@ app_pid() {
 service_is_foreground() {
   local dump
   dump="$(service_dump)"
-  grep -Fq "ServiceRecord" <<<"$dump" &&
-    grep -Fq "isForeground=true" <<<"$dump" &&
-    grep -Fq "startCommandResult=1" <<<"$dump"
+  grep -Fq "ServiceRecord" <<< "$dump" &&
+    grep -Fq "isForeground=true" <<< "$dump" &&
+    grep -Fq "startCommandResult=1" <<< "$dump"
 }
 
 report_service_failure() {
@@ -46,8 +46,7 @@ report_service_failure() {
 }
 
 wait_for_service() {
-  local attempt
-  for attempt in $(seq 1 "$POLL_ATTEMPTS"); do
+  for _ in $(seq 1 "$POLL_ATTEMPTS"); do
     if [[ -n "$(app_pid)" ]] && service_is_foreground; then
       return 0
     fi
@@ -58,8 +57,7 @@ wait_for_service() {
 }
 
 wait_for_no_service() {
-  local attempt
-  for attempt in $(seq 1 "$POLL_ATTEMPTS"); do
+  for _ in $(seq 1 "$POLL_ATTEMPTS"); do
     if ! service_exists; then
       return 0
     fi
@@ -73,9 +71,8 @@ wait_for_stable_service() {
   local expected_pid="$1"
   local attempts="$2"
   local reason="$3"
-  local attempt
   local current_pid
-  for attempt in $(seq 1 "$attempts"); do
+  for _ in $(seq 1 "$attempts"); do
     current_pid="$(app_pid)"
     if [[ -z "$current_pid" || "$current_pid" != "$expected_pid" ]] ||
       ! service_is_foreground; then
@@ -88,9 +85,8 @@ wait_for_stable_service() {
 
 wait_for_restarted_process() {
   local previous_pid="$1"
-  local attempt
   local current_pid
-  for attempt in $(seq 1 "$POLL_ATTEMPTS"); do
+  for _ in $(seq 1 "$POLL_ATTEMPTS"); do
     current_pid="$(app_pid)"
     if [[ -n "$current_pid" && "$current_pid" != "$previous_pid" ]] &&
       service_is_foreground; then
@@ -104,9 +100,9 @@ wait_for_restarted_process() {
 }
 
 launch_and_start_service() {
-  adb_shell am start -W -n "$PACKAGE_NAME/.MainActivity" >/dev/null
+  adb_shell am start -W -n "$PACKAGE_NAME/.MainActivity" > /dev/null
   adb_shell run-as "$PACKAGE_NAME" am start-foreground-service --user 0 \
-    -a "$START_ACTION" -n "$SERVICE_COMPONENT" >/dev/null
+    -a "$START_ACTION" -n "$SERVICE_COMPONENT" > /dev/null
   adb_shell input keyevent KEYCODE_HOME
   wait_for_service
 }
@@ -118,7 +114,7 @@ assert_stays_stopped_after_reopen() {
     echo "$reason did not stop the complete application." >&2
     return 1
   fi
-  adb_shell am start -W -n "$PACKAGE_NAME/.MainActivity" >/dev/null
+  adb_shell am start -W -n "$PACKAGE_NAME/.MainActivity" > /dev/null
   sleep 3
   if service_exists; then
     echo "$reason restarted background mode without a new explicit action." >&2
@@ -127,7 +123,7 @@ assert_stays_stopped_after_reopen() {
 }
 
 cleanup() {
-  adb_shell am force-stop "$PACKAGE_NAME" >/dev/null 2>&1 || true
+  adb_shell am force-stop "$PACKAGE_NAME" > /dev/null 2>&1 || true
 }
 trap cleanup EXIT
 
@@ -140,18 +136,20 @@ if [[ ! -f "$APK_PATH" ]]; then
   echo "Debug APK is missing before background recovery verification." >&2
   exit 1
 fi
-if ! "$ADB_BIN" install -r "$APK_PATH" >/dev/null; then
+if ! "$ADB_BIN" install -r "$APK_PATH" > /dev/null; then
   echo "Application install failed before background recovery verification." >&2
   exit 1
 fi
 
-readonly SDK_LEVEL="$(adb_shell getprop ro.build.version.sdk | tr -d '\r')"
+SDK_LEVEL="$(adb_shell getprop ro.build.version.sdk | tr -d '\r')"
+readonly SDK_LEVEL
 if ((SDK_LEVEL >= 33)); then
   adb_shell pm grant "$PACKAGE_NAME" android.permission.POST_NOTIFICATIONS
 fi
 
 launch_and_start_service
-readonly BEFORE_PID="$(app_pid)"
+BEFORE_PID="$(app_pid)"
+readonly BEFORE_PID
 if [[ -z "$BEFORE_PID" ]]; then
   report_service_failure "Background service started without an application process."
 fi
@@ -160,20 +158,21 @@ fi
 # only after the service has remained fully foreground for ten seconds.
 wait_for_stable_service "$BEFORE_PID" "$PRE_KILL_STABILITY_ATTEMPTS" \
   "Background service did not remain stable before process-death verification."
-adb_shell run-as "$PACKAGE_NAME" kill -9 "$BEFORE_PID" >/dev/null 2>&1 || true
-readonly AFTER_PID="$(wait_for_restarted_process "$BEFORE_PID")"
+adb_shell run-as "$PACKAGE_NAME" kill -9 "$BEFORE_PID" > /dev/null 2>&1 || true
+AFTER_PID="$(wait_for_restarted_process "$BEFORE_PID")"
+readonly AFTER_PID
 wait_for_stable_service "$AFTER_PID" "$POST_RESTART_STABILITY_ATTEMPTS" \
   "Recreated background service did not remain stable."
 restart_dump="$(service_dump)"
-if ! grep -Fq "restartCount=1" <<<"$restart_dump"; then
+if ! grep -Fq "restartCount=1" <<< "$restart_dump"; then
   report_service_failure "Background service was not recorded as a sticky restart."
 fi
-if ! grep -Fq "startCommandResult=1" <<<"$restart_dump"; then
+if ! grep -Fq "startCommandResult=1" <<< "$restart_dump"; then
   report_service_failure "Background service did not retain START_STICKY."
 fi
 
 adb_shell run-as "$PACKAGE_NAME" am startservice --user 0 \
-  -a "$STOP_ACTION" -n "$SERVICE_COMPONENT" >/dev/null
+  -a "$STOP_ACTION" -n "$SERVICE_COMPONENT" > /dev/null
 wait_for_no_service
 
 user_stop_result="not applicable below API 33"

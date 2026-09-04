@@ -38,6 +38,12 @@ jobs:
       - name: Install repository-check runner
         run: uv sync --locked --only-group quality --only-group docs
 
+      - name: Install pinned shell quality tools
+        run: |
+          tool_root="${RUNNER_TEMP}/agent-relay-shell-quality"
+          SHELL_QUALITY_TOOL_ROOT="$tool_root" scripts/ci/install_shell_quality_tools.sh
+          printf 'SHELL_QUALITY_TOOL_ROOT=%s\n' "$tool_root" >> "$GITHUB_ENV"
+
       - name: Install pinned Vale
         shell: bash
         env:
