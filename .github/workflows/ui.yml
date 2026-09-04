@@ -66,11 +66,17 @@ jobs:
 
       - name: Run semantic UI and accessibility tests
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        env:
+          # The self-hosted host keeps a separate diagnostic emulator on 5554.
+          # Use a runner-owned port so the action's unbounded emu-kill cleanup
+          # cannot target that unrelated process or SDK/ADB transport.
+          ANDROID_SERIAL: emulator-5564
         with:
           api-level: 36
           target: default
           arch: x86_64
           profile: pixel_7_pro
+          emulator-port: 5564
           disable-animations: true
           script: >-
             adb wait-for-device &&
@@ -243,11 +249,14 @@ jobs:
 
       - name: Run semantic UI and accessibility tests
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        env:
+          ANDROID_SERIAL: emulator-5564
         with:
           api-level: ${{ matrix.api-level }}
           target: default
           arch: x86_64
           profile: ${{ matrix.profile }}
+          emulator-port: 5564
           disable-animations: true
           script: >-
             adb wait-for-device &&
