@@ -94,6 +94,21 @@ data class SessionDraft(
     }
 }
 
+data class SessionRecoveryState(
+    val scrollPosition: Int = 0,
+    val eventCursor: String? = null,
+    val pendingCommandIds: Set<String> = emptySet(),
+) {
+    init {
+        require(scrollPosition >= 0) { "Recovery scroll position must not be negative" }
+        eventCursor?.let { requireBounded(it, "Recovery event cursor", MAX_ID_CHARS) }
+        require(pendingCommandIds.size <= MAX_PENDING_COMMANDS) {
+            "Too many pending recovery commands"
+        }
+        pendingCommandIds.forEach { requireBounded(it, "Pending command id", MAX_ID_CHARS) }
+    }
+}
+
 enum class SessionActivityType {
     NEW_OUTPUT,
     APPROVAL_REQUIRED,
@@ -386,6 +401,8 @@ data class SessionHubSnapshot(
     val transcripts: Map<SessionLocator, List<CachedTranscriptEntry>> = emptyMap(),
     val actionRequests: List<SessionActionRequest> = emptyList(),
     val artifacts: List<SessionArtifact> = emptyList(),
+    val activeSession: SessionLocator? = null,
+    val recovery: Map<SessionLocator, SessionRecoveryState> = emptyMap(),
 ) {
     init {
         require(sessions.distinctBy { it.locator }.size == sessions.size) {
@@ -401,6 +418,10 @@ data class SessionHubSnapshot(
             "Session snapshot contains duplicate artifact identities"
         }
         val locators = sessions.mapTo(mutableSetOf()) { it.locator }
+        require(activeSession == null || activeSession in locators) {
+            "Active session references an unknown session"
+        }
+        require(recovery.keys.all(locators::contains)) { "Recovery references an unknown session" }
         require(drafts.keys.all(locators::contains)) { "A draft references an unknown session" }
         require(activities.all { it.locator in locators }) { "Activity references an unknown session" }
         require(transcripts.keys.all(locators::contains)) { "A transcript references an unknown session" }
@@ -543,6 +564,8 @@ internal fun SessionHubSnapshot.normalized(policy: SessionRetentionPolicy): Sess
         transcripts = normalizedTranscripts,
         actionRequests = retainedActionRequests,
         artifacts = retainedArtifacts,
+        activeSession = activeSession?.takeIf(retainedLocators::contains),
+        recovery = recovery.filterKeys(retainedLocators::contains),
     )
 }
 
@@ -611,6 +634,7 @@ private const val MAX_PROVIDER_REQUEST_ID_CHARS = 4_096
 private const val MAX_METADATA_ENTRIES = 64
 private const val MAX_METADATA_KEY_CHARS = 256
 private const val MAX_METADATA_VALUE_CHARS = 4_096
+private const val MAX_PENDING_COMMANDS = 64
 
 private val APPROVING_DECISIONS = setOf(
     AgentApprovalDecision.APPROVE_ONCE,
