@@ -89,6 +89,9 @@ jobs:
           # Use a runner-owned port so the action's unbounded emu-kill cleanup
           # cannot target that unrelated process or SDK/ADB transport.
           ANDROID_SERIAL: emulator-5564
+          # Do not reuse the host ADB server, which only tracks the diagnostic
+          # emulator and can miss the runner-owned instance.
+          ADB_SERVER_SOCKET: tcp:127.0.0.1:5038
         with:
           api-level: 36
           target: default
@@ -289,6 +292,7 @@ jobs:
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         env:
           ANDROID_SERIAL: emulator-5564
+          ADB_SERVER_SOCKET: tcp:127.0.0.1:5038
         with:
           api-level: ${{ matrix.api-level }}
           target: default
