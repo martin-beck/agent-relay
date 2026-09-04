@@ -68,7 +68,9 @@ jobs:
         run: |
           ! ss -H -ltn "sport = :5582" | grep -q .
           ! ss -H -ltn "sport = :5583" | grep -q .
-          adb devices -l
+          android_sdk_root="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+          test -n "$android_sdk_root"
+          "$android_sdk_root/platform-tools/adb" devices -l
 
       - name: Validate Android system-image metadata
         run: |
@@ -277,7 +279,9 @@ jobs:
         run: |
           ! ss -H -ltn "sport = :5582" | grep -q .
           ! ss -H -ltn "sport = :5583" | grep -q .
-          adb devices -l
+          android_sdk_root="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+          test -n "$android_sdk_root"
+          "$android_sdk_root/platform-tools/adb" devices -l
 
       - name: Validate Android system-image metadata
         run: |
