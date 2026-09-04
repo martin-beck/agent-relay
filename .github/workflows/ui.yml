@@ -92,6 +92,7 @@ jobs:
           # Do not reuse the host ADB server, which only tracks the diagnostic
           # emulator and can miss the runner-owned instance.
           ADB_SERVER_SOCKET: tcp:localhost:5038
+          ANDROID_ADB_SERVER_PORT: "5038"
         with:
           api-level: 36
           target: default
@@ -293,6 +294,7 @@ jobs:
         env:
           ANDROID_SERIAL: emulator-5564
           ADB_SERVER_SOCKET: tcp:localhost:5038
+          ANDROID_ADB_SERVER_PORT: "5038"
         with:
           api-level: ${{ matrix.api-level }}
           target: default
