@@ -12,6 +12,14 @@ verifier runs the finite transition relation and checks the model declarations
 against the versioned Kotlin contracts. It is a deterministic bounded result,
 not an unbounded proof.
 
+`WorkflowConcurrency.tla` and `WorkflowConcurrency.alloy` extend that boundary
+with worker leases, bounded attempts, crash recovery, checkpoints, projections,
+and uncertain effects. `scripts/ci/verify_workflow_concurrency.py` exhaustively
+explores the finite interleavings and replays named hostile traces. The tests
+retain duplicate-claim, crash-recovery, and uncertain-effect regressions; the
+model intentionally assumes serialized journal writes, monotonic clocks, and
+durable atomic commits.
+
 ## Evidence classes
 
 | Class | Meaning |
@@ -29,4 +37,5 @@ Run the model verifier with:
 
 ```bash
 python scripts/ci/verify_formal_models.py
+python scripts/ci/verify_workflow_concurrency.py
 ```
