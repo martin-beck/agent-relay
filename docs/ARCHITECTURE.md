@@ -64,6 +64,11 @@ ConnectionProviderId
 The tuple prevents identical provider session IDs from colliding across SSH,
 local access, profiles, or future connection types.
 
+Endpoint trust uses the separate [endpoint identity contract](ENDPOINT_IDENTITY.md).
+Daemon and client identities are fixed-length digests of public signing keys;
+transport addresses and implementation process IDs never define endpoint
+identity. Rotation and compromise recovery are explicit trust transitions.
+
 ## Runtime flow
 
 1. A `ConnectionProvider` enumerates generic profile summaries.

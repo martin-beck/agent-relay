@@ -586,6 +586,137 @@ public final class dev/agentrelay/connection/api/ConnectionState$Reconnecting : 
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class dev/agentrelay/connection/api/EndpointIdentityModelsKt {
+	public static final fun stableEndpointIdentity (Ldev/agentrelay/connection/api/EndpointPublicKey;)Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/EndpointIdentityRecord {
+	public synthetic fun <init> (Ljava/lang/String;Ldev/agentrelay/connection/api/EndpointIdentityRole;Ldev/agentrelay/connection/api/EndpointPublicKey;ILdev/agentrelay/connection/api/IdentityKeyState;JILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/lang/String;Ldev/agentrelay/connection/api/EndpointIdentityRole;Ldev/agentrelay/connection/api/EndpointPublicKey;ILdev/agentrelay/connection/api/IdentityKeyState;JLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-J8HH09g ()Ljava/lang/String;
+	public final fun component2 ()Ldev/agentrelay/connection/api/EndpointIdentityRole;
+	public final fun component3 ()Ldev/agentrelay/connection/api/EndpointPublicKey;
+	public final fun component4 ()I
+	public final fun component5 ()Ldev/agentrelay/connection/api/IdentityKeyState;
+	public final fun component6 ()J
+	public final fun copy-FJhmHx0 (Ljava/lang/String;Ldev/agentrelay/connection/api/EndpointIdentityRole;Ldev/agentrelay/connection/api/EndpointPublicKey;ILdev/agentrelay/connection/api/IdentityKeyState;J)Ldev/agentrelay/connection/api/EndpointIdentityRecord;
+	public static synthetic fun copy-FJhmHx0$default (Ldev/agentrelay/connection/api/EndpointIdentityRecord;Ljava/lang/String;Ldev/agentrelay/connection/api/EndpointIdentityRole;Ldev/agentrelay/connection/api/EndpointPublicKey;ILdev/agentrelay/connection/api/IdentityKeyState;JILjava/lang/Object;)Ldev/agentrelay/connection/api/EndpointIdentityRecord;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCreatedAtMillis ()J
+	public final fun getIdentity-J8HH09g ()Ljava/lang/String;
+	public final fun getKey ()Ldev/agentrelay/connection/api/EndpointPublicKey;
+	public final fun getKeyVersion ()I
+	public final fun getRole ()Ldev/agentrelay/connection/api/EndpointIdentityRole;
+	public final fun getState ()Ldev/agentrelay/connection/api/IdentityKeyState;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/EndpointIdentityRole : java/lang/Enum {
+	public static final field CLIENT Ldev/agentrelay/connection/api/EndpointIdentityRole;
+	public static final field DAEMON Ldev/agentrelay/connection/api/EndpointIdentityRole;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/connection/api/EndpointIdentityRole;
+	public static fun values ()[Ldev/agentrelay/connection/api/EndpointIdentityRole;
+}
+
+public final class dev/agentrelay/connection/api/EndpointIdentityRotation {
+	public fun <init> (Ldev/agentrelay/connection/api/EndpointIdentityRecord;Ldev/agentrelay/connection/api/EndpointIdentityRecord;Ldev/agentrelay/connection/api/IdentityRotationReason;Ldev/agentrelay/connection/api/IdentityContinuityProof;J)V
+	public synthetic fun <init> (Ldev/agentrelay/connection/api/EndpointIdentityRecord;Ldev/agentrelay/connection/api/EndpointIdentityRecord;Ldev/agentrelay/connection/api/IdentityRotationReason;Ldev/agentrelay/connection/api/IdentityContinuityProof;JILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ldev/agentrelay/connection/api/EndpointIdentityRecord;
+	public final fun component2 ()Ldev/agentrelay/connection/api/EndpointIdentityRecord;
+	public final fun component3 ()Ldev/agentrelay/connection/api/IdentityRotationReason;
+	public final fun component4 ()Ldev/agentrelay/connection/api/IdentityContinuityProof;
+	public final fun component5 ()J
+	public final fun copy (Ldev/agentrelay/connection/api/EndpointIdentityRecord;Ldev/agentrelay/connection/api/EndpointIdentityRecord;Ldev/agentrelay/connection/api/IdentityRotationReason;Ldev/agentrelay/connection/api/IdentityContinuityProof;J)Ldev/agentrelay/connection/api/EndpointIdentityRotation;
+	public static synthetic fun copy$default (Ldev/agentrelay/connection/api/EndpointIdentityRotation;Ldev/agentrelay/connection/api/EndpointIdentityRecord;Ldev/agentrelay/connection/api/EndpointIdentityRecord;Ldev/agentrelay/connection/api/IdentityRotationReason;Ldev/agentrelay/connection/api/IdentityContinuityProof;JILjava/lang/Object;)Ldev/agentrelay/connection/api/EndpointIdentityRotation;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getObservedAtMillis ()J
+	public final fun getPrevious ()Ldev/agentrelay/connection/api/EndpointIdentityRecord;
+	public final fun getProof ()Ldev/agentrelay/connection/api/IdentityContinuityProof;
+	public final fun getReason ()Ldev/agentrelay/connection/api/IdentityRotationReason;
+	public final fun getReplacement ()Ldev/agentrelay/connection/api/EndpointIdentityRecord;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/EndpointPublicKey {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Ldev/agentrelay/connection/api/EndpointPublicKey;
+	public static synthetic fun copy$default (Ldev/agentrelay/connection/api/EndpointPublicKey;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ldev/agentrelay/connection/api/EndpointPublicKey;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAlgorithm ()Ljava/lang/String;
+	public final fun getEncodedKey ()Ljava/lang/String;
+	public final fun getStableIdentity-J8HH09g ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/IdentityContinuityProof {
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-J8HH09g ()Ljava/lang/String;
+	public final fun component2-J8HH09g ()Ljava/lang/String;
+	public final fun component3 ()I
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()Ljava/lang/String;
+	public final fun copy-L_Fiink (Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)Ldev/agentrelay/connection/api/IdentityContinuityProof;
+	public static synthetic fun copy-L_Fiink$default (Ldev/agentrelay/connection/api/IdentityContinuityProof;Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ldev/agentrelay/connection/api/IdentityContinuityProof;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getNextIdentity-J8HH09g ()Ljava/lang/String;
+	public final fun getNextKeyVersion ()I
+	public final fun getPreviousIdentity-J8HH09g ()Ljava/lang/String;
+	public final fun getSignature ()Ljava/lang/String;
+	public final fun getTranscriptDigest ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/IdentityKeyState : java/lang/Enum {
+	public static final field ACTIVE Ldev/agentrelay/connection/api/IdentityKeyState;
+	public static final field COMPROMISED Ldev/agentrelay/connection/api/IdentityKeyState;
+	public static final field RETIRED Ldev/agentrelay/connection/api/IdentityKeyState;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/connection/api/IdentityKeyState;
+	public static fun values ()[Ldev/agentrelay/connection/api/IdentityKeyState;
+}
+
+public final class dev/agentrelay/connection/api/IdentityRotationReason : java/lang/Enum {
+	public static final field COMPROMISE_RECOVERY Ldev/agentrelay/connection/api/IdentityRotationReason;
+	public static final field KEY_EXPIRY Ldev/agentrelay/connection/api/IdentityRotationReason;
+	public static final field PLANNED Ldev/agentrelay/connection/api/IdentityRotationReason;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/connection/api/IdentityRotationReason;
+	public static fun values ()[Ldev/agentrelay/connection/api/IdentityRotationReason;
+}
+
+public final class dev/agentrelay/connection/api/IdentityTrustDecision : java/lang/Enum {
+	public static final field ACCEPT_FIRST_USE Ldev/agentrelay/connection/api/IdentityTrustDecision;
+	public static final field ACCEPT_ROTATION Ldev/agentrelay/connection/api/IdentityTrustDecision;
+	public static final field REJECT Ldev/agentrelay/connection/api/IdentityTrustDecision;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/connection/api/IdentityTrustDecision;
+	public static fun values ()[Ldev/agentrelay/connection/api/IdentityTrustDecision;
+}
+
+public final class dev/agentrelay/connection/api/IdentityTrustObservation {
+	public fun <init> (Ldev/agentrelay/connection/api/EndpointIdentityRecord;Ldev/agentrelay/connection/api/EndpointIdentityRecord;Ldev/agentrelay/connection/api/EndpointIdentityRotation;)V
+	public synthetic fun <init> (Ldev/agentrelay/connection/api/EndpointIdentityRecord;Ldev/agentrelay/connection/api/EndpointIdentityRecord;Ldev/agentrelay/connection/api/EndpointIdentityRotation;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ldev/agentrelay/connection/api/EndpointIdentityRecord;
+	public final fun component2 ()Ldev/agentrelay/connection/api/EndpointIdentityRecord;
+	public final fun component3 ()Ldev/agentrelay/connection/api/EndpointIdentityRotation;
+	public final fun copy (Ldev/agentrelay/connection/api/EndpointIdentityRecord;Ldev/agentrelay/connection/api/EndpointIdentityRecord;Ldev/agentrelay/connection/api/EndpointIdentityRotation;)Ldev/agentrelay/connection/api/IdentityTrustObservation;
+	public static synthetic fun copy$default (Ldev/agentrelay/connection/api/IdentityTrustObservation;Ldev/agentrelay/connection/api/EndpointIdentityRecord;Ldev/agentrelay/connection/api/EndpointIdentityRecord;Ldev/agentrelay/connection/api/EndpointIdentityRotation;ILjava/lang/Object;)Ldev/agentrelay/connection/api/IdentityTrustObservation;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getPinned ()Ldev/agentrelay/connection/api/EndpointIdentityRecord;
+	public final fun getPresented ()Ldev/agentrelay/connection/api/EndpointIdentityRecord;
+	public final fun getRequiresExplicitDecision ()Z
+	public final fun getRotation ()Ldev/agentrelay/connection/api/EndpointIdentityRotation;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public abstract interface class dev/agentrelay/connection/api/ManagedConnection {
 	public abstract fun connect ()V
 	public abstract fun diagnosticSnapshot ()Ldev/agentrelay/connection/api/ConnectionDiagnosticSnapshot;
@@ -597,5 +728,19 @@ public abstract interface class dev/agentrelay/connection/api/ManagedConnection 
 	public abstract fun resumeFromBackground ()V
 	public abstract fun runtimeOrNull ()Ldev/agentrelay/provider/api/RemoteAgentRuntime;
 	public abstract fun suspendForBackground (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class dev/agentrelay/connection/api/StableEndpointIdentity {
+	public static final synthetic fun box-impl (Ljava/lang/String;)Ldev/agentrelay/connection/api/StableEndpointIdentity;
+	public static fun constructor-impl (Ljava/lang/String;)Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
 }
 
