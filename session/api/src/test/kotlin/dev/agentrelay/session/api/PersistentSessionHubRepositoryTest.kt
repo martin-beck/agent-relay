@@ -90,6 +90,34 @@ class PersistentSessionHubRepositoryTest {
     }
 
     @Test
+    fun recoveryStateSurvivesReopenAndActiveSessionIsIdempotent() = runTest {
+        val store = InMemorySessionHubStore()
+        val repository = PersistentSessionHubRepository.open(store)
+        val session = locator("local.device", "local", "recovery-thread")
+        repository.upsertSession(observation(session, updatedAt = 1L))
+        repository.setActiveSession(session)
+        repository.setActiveSession(session)
+        repository.updateRecoveryState(
+            session,
+            SessionRecoveryState(
+                scrollPosition = 42,
+                eventCursor = "event-7",
+                pendingCommandIds = setOf("command-1"),
+            ),
+        )
+
+        val restored = PersistentSessionHubRepository.open(store).snapshot.value
+        assertEquals(session, restored.activeSession)
+        assertEquals(42, restored.recovery[session]?.scrollPosition)
+        assertEquals("event-7", restored.recovery[session]?.eventCursor)
+        assertEquals(setOf("command-1"), restored.recovery[session]?.pendingCommandIds)
+
+        repository.removeSession(session)
+        assertTrue(repository.snapshot.value.activeSession == null)
+        assertTrue(repository.snapshot.value.recovery[session] == null)
+    }
+
+    @Test
     fun duplicateActivityIsIdempotentAndReadStateIsTransactional() = runTest {
         val store = RecordingStore()
         val repository = PersistentSessionHubRepository.open(store)

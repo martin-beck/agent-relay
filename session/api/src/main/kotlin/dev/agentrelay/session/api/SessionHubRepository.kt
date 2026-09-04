@@ -69,6 +69,10 @@ interface SessionHubRepository {
         draft: SessionDraft,
     )
 
+    suspend fun setActiveSession(locator: SessionLocator?)
+
+    suspend fun updateRecoveryState(locator: SessionLocator, state: SessionRecoveryState)
+
     suspend fun recordActivity(activity: SessionActivity)
 
     suspend fun markSessionRead(
@@ -212,6 +216,20 @@ class PersistentSessionHubRepository private constructor(
         mutate { current ->
             current.requireSession(locator)
             current.copy(drafts = current.drafts + (locator to draft))
+        }
+    }
+
+    override suspend fun setActiveSession(locator: SessionLocator?) {
+        mutate { current ->
+            require(locator == null || current.session(locator) != null) { "No session found for active session" }
+            current.copy(activeSession = locator)
+        }
+    }
+
+    override suspend fun updateRecoveryState(locator: SessionLocator, state: SessionRecoveryState) {
+        mutate { current ->
+            current.requireSession(locator)
+            current.copy(recovery = current.recovery + (locator to state))
         }
     }
 
@@ -361,6 +379,8 @@ class PersistentSessionHubRepository private constructor(
                 current.copy(
                     sessions = current.sessions.filterNot { it.locator == locator },
                     drafts = current.drafts - locator,
+                    activeSession = current.activeSession?.takeUnless { it == locator },
+                    recovery = current.recovery - locator,
                     activities = current.activities.filterNot { it.locator == locator },
                     transcripts = current.transcripts - locator,
                     actionRequests = current.actionRequests.filterNot { it.locator == locator },
