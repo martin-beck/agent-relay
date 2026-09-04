@@ -66,7 +66,7 @@ spotless {
             ".editorconfig",
             ".gitignore",
         )
-        targetExclude("**/build/**", ".gradle/**", ".venv/**")
+        targetExclude("**/build/**", "**/.gradle/**", ".venv/**")
         trimTrailingWhitespace()
         endWithNewline()
     }

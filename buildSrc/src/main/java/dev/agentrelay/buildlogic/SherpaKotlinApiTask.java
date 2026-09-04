@@ -19,53 +19,49 @@ import org.gradle.api.tasks.TaskAction;
 /** Selects the minimal pinned sherpa Kotlin JNI API required by the speech adapter. */
 @CacheableTask
 public abstract class SherpaKotlinApiTask extends DefaultTask {
-    private static final List<String> API_FILES =
-            List.of(
-                    "FeatureConfig.kt",
-                    "HomophoneReplacerConfig.kt",
-                    "OnlineRecognizer.kt",
-                    "OnlineStream.kt",
-                    "QnnConfig.kt");
+  private static final List<String> API_FILES =
+      List.of(
+          "FeatureConfig.kt",
+          "HomophoneReplacerConfig.kt",
+          "OnlineRecognizer.kt",
+          "OnlineStream.kt",
+          "QnnConfig.kt");
 
-    @Inject
-    protected abstract FileSystemOperations getFileSystemOperations();
+  @Inject
+  protected abstract FileSystemOperations getFileSystemOperations();
 
-    @InputDirectory
-    @PathSensitive(PathSensitivity.RELATIVE)
-    public abstract DirectoryProperty getSourceDirectory();
+  @InputDirectory
+  @PathSensitive(PathSensitivity.RELATIVE)
+  public abstract DirectoryProperty getSourceDirectory();
 
-    @OutputDirectory
-    public abstract DirectoryProperty getOutputDirectory();
+  @OutputDirectory
+  public abstract DirectoryProperty getOutputDirectory();
 
-    @TaskAction
-    public final void generate() throws IOException {
-        Path source =
-                getSourceDirectory()
-                        .get()
-                        .getAsFile()
-                        .toPath()
-                        .resolve("sherpa-onnx/kotlin-api");
-        Path output = getOutputDirectory().get().getAsFile().toPath();
+  @TaskAction
+  public final void generate() throws IOException {
+    Path source = getSourceDirectory().get().getAsFile().toPath().resolve("sherpa-onnx/kotlin-api");
+    Path output = getOutputDirectory().get().getAsFile().toPath();
 
-        getFileSystemOperations()
-                .sync(
-                        spec -> {
-                            spec.from(source);
-                            spec.into(output);
-                            spec.include(API_FILES);
-                            spec.setDuplicatesStrategy(DuplicatesStrategy.FAIL);
-                        });
+    getFileSystemOperations()
+        .sync(
+            spec -> {
+              spec.from(source);
+              spec.into(output);
+              spec.include(API_FILES);
+              spec.setDuplicatesStrategy(DuplicatesStrategy.FAIL);
+            });
 
-        List<String> actual;
-        try (var files = Files.list(output)) {
-            actual =
-                    files.filter(Files::isRegularFile)
-                            .map(path -> path.getFileName().toString())
-                            .sorted()
-                            .toList();
-        }
-        if (!actual.equals(API_FILES.stream().sorted().toList())) {
-            throw new IOException("Generated sherpa Kotlin API was incomplete");
-        }
+    List<String> actual;
+    try (var files = Files.list(output)) {
+      actual =
+          files
+              .filter(Files::isRegularFile)
+              .map(path -> path.getFileName().toString())
+              .sorted()
+              .toList();
     }
+    if (!actual.equals(API_FILES.stream().sorted().toList())) {
+      throw new IOException("Generated sherpa Kotlin API was incomplete");
+    }
+  }
 }

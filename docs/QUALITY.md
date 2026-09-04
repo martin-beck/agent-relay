@@ -28,6 +28,7 @@ representative physical-device release evidence.
 | yamllint, Taplo, and schema checks | Deterministic YAML/TOML style and valid GitHub workflow, issue-form, and Dependabot structure | Any finding fails |
 | actionlint and zizmor | GitHub Actions expressions, graph semantics, permissions, injection, and supply-chain safety | Any finding fails; audits run offline on pull requests |
 | Typos and Gitleaks | Source-aware spelling and hard-coded secret detection across tracked text | Any finding fails; suppressions must identify a reviewed false positive narrowly |
+| Build logic | Google Java Format, `javac -Xlint:all -Werror`, PMD, SpotBugs, Gradle plugin validation, JUnit 5, TestKit, and JaCoCo | Any finding or test failure fails; line coverage below 93% or branch coverage below 82% fails |
 | Kotlin compiler | Type safety and compiler diagnostics | All warnings are errors |
 | Detekt | Kotlin correctness plus cyclomatic, cognitive, nesting, length, parameter, and size limits | Any configured finding fails; cognitive complexity is ratcheted below 34 and no baseline is used |
 | Android lint | Android and dependency lint checks | Errors and warnings fail; HTML, XML, and SARIF reports |
@@ -99,11 +100,15 @@ uv sync --locked --only-group quality --only-group docs
 uv run pytest
 scripts/ci/install_shell_quality_tools.sh
 uv run pre-commit run --all-files --show-diff-on-failure
+./gradlew -p buildSrc check --stacktrace
 ./gradlew spotlessCheck detekt buildHealth test koverXmlReport koverVerify checkKotlinAbi lintDebug assembleDebug --stacktrace
 ```
 
-Run the complete repository and shell gate on Linux x86_64 or arm64. Windows
-hosts use WSL for those checks; the Gradle portion can run from PowerShell.
+This first build-logic slice covers the Java native-download and extraction
+tasks. Dedicated assurance for native shell scripts, dependency provenance and
+verification metadata, Python support tools, and Kotlin convention logic stays
+as explicitly scoped follow-on work; their existing repository gates remain
+mandatory in the meantime.
 
 Install the fast checks as a Git hook after the first sync:
 
@@ -267,7 +272,7 @@ Verify the committed UI baselines separately:
 ./gradlew :app:verifyRoborazziDebug --stacktrace
 ```
 
-Reports are written below `build/reports/detekt`,
+Reports are written below `buildSrc/build/reports`, `build/reports/detekt`,
 `build/reports/dependency-analysis`, `build/reports/kover`, and
 `build/reports/problems`, plus `build/reports/quality` (including Python
 branch-aware coverage XML) and each Android
