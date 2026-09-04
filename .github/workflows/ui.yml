@@ -64,6 +64,17 @@ jobs:
           test -r /dev/kvm
           test -w /dev/kvm
 
+      - name: Validate Android system-image metadata
+        run: |
+          android_sdk_root="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+          test -n "$android_sdk_root"
+          system_image="$android_sdk_root/system-images/android-36/default/x86_64"
+          devices_xml="$system_image/devices.xml"
+          if [[ ! -s "$devices_xml" ]]; then
+            sdkmanager --install --force "system-images;android-36;default;x86_64" --channel=0
+          fi
+          test -s "$devices_xml"
+
       - name: Run semantic UI and accessibility tests
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         env:
@@ -248,6 +259,17 @@ jobs:
           test -c /dev/kvm
           test -r /dev/kvm
           test -w /dev/kvm
+
+      - name: Validate Android system-image metadata
+        run: |
+          android_sdk_root="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+          test -n "$android_sdk_root"
+          system_image="$android_sdk_root/system-images/android-36/default/x86_64"
+          devices_xml="$system_image/devices.xml"
+          if [[ ! -s "$devices_xml" ]]; then
+            sdkmanager --install --force "system-images;android-36;default;x86_64" --channel=0
+          fi
+          test -s "$devices_xml"
 
       - name: Run semantic UI and accessibility tests
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
