@@ -66,8 +66,14 @@ jobs:
 
       - name: Verify dedicated emulator ports and ADB state
         run: |
-          ! ss -H -ltn "sport = :5582" | grep -q .
-          ! ss -H -ltn "sport = :5583" | grep -q .
+          if ss -H -ltn "sport = :5582" | grep -q .; then
+            echo 'emulator console port 5582 is occupied' >&2
+            exit 1
+          fi
+          if ss -H -ltn "sport = :5583" | grep -q .; then
+            echo 'emulator ADB port 5583 is occupied' >&2
+            exit 1
+          fi
           android_sdk_root="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
           test -n "$android_sdk_root"
           "$android_sdk_root/platform-tools/adb" devices -l
@@ -277,8 +283,14 @@ jobs:
 
       - name: Verify dedicated emulator ports and ADB state
         run: |
-          ! ss -H -ltn "sport = :5582" | grep -q .
-          ! ss -H -ltn "sport = :5583" | grep -q .
+          if ss -H -ltn "sport = :5582" | grep -q .; then
+            echo 'emulator console port 5582 is occupied' >&2
+            exit 1
+          fi
+          if ss -H -ltn "sport = :5583" | grep -q .; then
+            echo 'emulator ADB port 5583 is occupied' >&2
+            exit 1
+          fi
           android_sdk_root="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
           test -n "$android_sdk_root"
           "$android_sdk_root/platform-tools/adb" devices -l
