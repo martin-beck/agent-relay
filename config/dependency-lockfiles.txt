@@ -4,6 +4,7 @@ connection/api/gradle.lockfile
 connection/gradle.lockfile
 connection/local/gradle.lockfile
 gradle.lockfile
+lint-checks/gradle.lockfile
 provider/aider/gradle.lockfile
 provider/api/gradle.lockfile
 provider/claude/gradle.lockfile

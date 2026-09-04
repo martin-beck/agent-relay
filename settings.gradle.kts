@@ -42,6 +42,7 @@ include(":ssh:android")
 
 rootProject.name = "Agent Relay"
 include(":app")
+include(":lint-checks")
 include(":provider:api")
 include(":provider:codex")
 include(":provider:opencode")

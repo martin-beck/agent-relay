@@ -5,6 +5,10 @@ plugins {
     alias(libs.plugins.roborazzi)
 }
 
+dependencies {
+    lintChecks(project(":lint-checks"))
+}
+
 android {
     namespace = "com.example.agentrelay"
     compileSdk = 36
