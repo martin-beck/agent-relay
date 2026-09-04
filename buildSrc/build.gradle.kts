@@ -14,6 +14,11 @@ dependencies {
     implementation("org.apache.commons:commons-compress:1.28.0")
     testImplementation("org.junit.jupiter:junit-jupiter:5.14.4")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.14.4")
+
+    constraints {
+        add("spotbugs", "org.apache.logging.log4j:log4j-api:2.25.5")
+        add("spotbugs", "org.apache.logging.log4j:log4j-core:2.25.4")
+    }
 }
 
 java {
@@ -83,7 +88,7 @@ tasks.jacocoTestCoverageVerification {
 }
 
 pmd {
-    toolVersion = "7.16.0"
+    toolVersion = "7.22.0"
     isConsoleOutput = true
     rulesMinimumPriority.set(3)
     ruleSets = emptyList()
