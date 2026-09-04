@@ -40,7 +40,7 @@ Run the same gate as GitHub Actions:
 ```bash
 uv sync --locked --only-group quality --only-group docs
 uv run pre-commit run --all-files --show-diff-on-failure
-./gradlew spotlessCheck detekt buildHealth test koverXmlReport koverVerify lintDebug assembleDebug --stacktrace
+./gradlew spotlessCheck detekt buildHealth test koverXmlReport koverVerify checkKotlinAbi lintDebug assembleDebug --stacktrace
 ```
 
 On Windows PowerShell:
@@ -48,7 +48,7 @@ On Windows PowerShell:
 ```powershell
 uv sync --locked --only-group quality --only-group docs
 uv run pre-commit run --all-files --show-diff-on-failure
-.\gradlew.bat spotlessCheck detekt buildHealth test koverXmlReport koverVerify lintDebug assembleDebug --stacktrace
+.\gradlew.bat spotlessCheck detekt buildHealth test koverXmlReport koverVerify checkKotlinAbi lintDebug assembleDebug --stacktrace
 ```
 
 The pre-commit gate covers Python, Markdown, YAML, TOML, XML, properties,
@@ -252,7 +252,14 @@ uv run pre-commit run zizmor --all-files
 ./gradlew :app:lintDebug :app:assembleDebug
 ./gradlew detekt buildHealth
 ./gradlew koverHtmlReport koverVerify
+./gradlew checkKotlinAbi
 ```
+
+The last command checks the committed public provider and connection API dumps.
+After an intentional compatible contract change, run
+`./gradlew :provider:api:updateKotlinAbi :connection:api:updateKotlinAbi` and
+review the generated text before committing it. Never update a dump merely to
+silence an unexplained compatibility failure.
 
 The opt-in provider and SSH live checks are disabled in normal builds. Their
 private environment variables and prerequisites are documented in

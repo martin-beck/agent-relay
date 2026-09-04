@@ -36,7 +36,8 @@ representative physical-device release evidence.
 | Device UI tests | Semantic flows and API 34+ accessibility checks | API 36 phone fails pull requests; minimum API and tablet run weekly |
 | Executable workflow guide | Scenario contracts, generated pages, reviewed emulator captures, and strict site build | Missing, orphaned, stale, oversized, malformed, or materially changed evidence fails |
 | Visual regression | Deterministic Roborazzi images across state, size, theme, and font variants | Any pixel drift fails; actual/diff evidence is retained |
-| Kover | Aggregate JVM-testable line coverage across modules | Less than 70% fails |
+| Kover | Aggregate and critical-module JVM-testable line coverage | Aggregate below 70%, or a critical module below its ratcheted floor, fails |
+| Kotlin ABI validation | Public provider and connection contracts from the pinned Kotlin Gradle plugin | Any unreviewed difference from the committed ABI dumps fails |
 | Debug assembly | Packaging and resource integration | Any failure fails |
 
 The dependency-analysis exception for `:session:api` is intentionally narrow:
@@ -74,12 +75,27 @@ Add another presentation exclusion only with a
 required connected test that exercises the user-visible behavior; never exclude
 domain or orchestration logic to meet the percentage.
 
+Critical JVM boundaries also enforce their own line-coverage floors. The floors
+are integer ratchets immediately below the clean measured results: provider API
+25% (25.68% measured), connection API 70% (70.36%), session API 89% (89.89%),
+session runtime 83% (83.47%), speech API 74% (74.34%), and SSH API 86% (86.85%).
+These checks run through each module's normal `koverVerify` task and do not
+replace or reduce the aggregate 70% rule.
+
+The provider and connection API modules enable the experimental ABI validator
+shipped in the pinned Kotlin Gradle plugin 2.3.20. `checkKotlinAbi` compares the
+compiled public contracts with the reviewable dumps under each module's `api`
+directory. Run `updateKotlinAbi` only for an intentional compatible API change,
+then review every dump line. A green check means the compiled ABI matches the
+committed reference; it does not promise source compatibility, behavioral
+compatibility, or semantic-versioning policy.
+
 Run the full local gate:
 
 ```bash
 uv sync --locked --only-group quality --only-group docs
 uv run pre-commit run --all-files --show-diff-on-failure
-./gradlew spotlessCheck detekt buildHealth test koverXmlReport koverVerify lintDebug assembleDebug --stacktrace
+./gradlew spotlessCheck detekt buildHealth test koverXmlReport koverVerify checkKotlinAbi lintDebug assembleDebug --stacktrace
 ```
 
 Install the fast checks as a Git hook after the first sync:

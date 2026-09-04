@@ -1,0 +1,601 @@
+public final class dev/agentrelay/connection/api/ConnectionCapability : java/lang/Enum {
+	public static final field AUTOMATIC_RECONNECT Ldev/agentrelay/connection/api/ConnectionCapability;
+	public static final field BACKGROUND_RECOVERY Ldev/agentrelay/connection/api/ConnectionCapability;
+	public static final field HEARTBEAT Ldev/agentrelay/connection/api/ConnectionCapability;
+	public static final field MULTIPLEXED_PROCESSES Ldev/agentrelay/connection/api/ConnectionCapability;
+	public static final field PROFILE_MANAGEMENT Ldev/agentrelay/connection/api/ConnectionCapability;
+	public static final field SECRET_AUTHENTICATION Ldev/agentrelay/connection/api/ConnectionCapability;
+	public static final field SERVER_IDENTITY_VERIFICATION Ldev/agentrelay/connection/api/ConnectionCapability;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/connection/api/ConnectionCapability;
+	public static fun values ()[Ldev/agentrelay/connection/api/ConnectionCapability;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionChallengeId {
+	public static final synthetic fun box-impl (Ljava/lang/String;)Ldev/agentrelay/connection/api/ConnectionChallengeId;
+	public static fun constructor-impl (Ljava/lang/String;)Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionDiagnosticSnapshot {
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ldev/agentrelay/connection/api/ConnectionState;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-wlm8PqQ ()Ljava/lang/String;
+	public final fun component2-4HG7NZc ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ldev/agentrelay/connection/api/ConnectionState;
+	public final fun copy-nm6hgN4 (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ldev/agentrelay/connection/api/ConnectionState;)Ldev/agentrelay/connection/api/ConnectionDiagnosticSnapshot;
+	public static synthetic fun copy-nm6hgN4$default (Ldev/agentrelay/connection/api/ConnectionDiagnosticSnapshot;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ldev/agentrelay/connection/api/ConnectionState;ILjava/lang/Object;)Ldev/agentrelay/connection/api/ConnectionDiagnosticSnapshot;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getProfileId-4HG7NZc ()Ljava/lang/String;
+	public final fun getProviderId-wlm8PqQ ()Ljava/lang/String;
+	public final fun getState ()Ldev/agentrelay/connection/api/ConnectionState;
+	public final fun getTarget ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionDisconnectReason : java/lang/Enum {
+	public static final field AUTHENTICATION_FAILED Ldev/agentrelay/connection/api/ConnectionDisconnectReason;
+	public static final field BACKGROUND_SUSPENDED Ldev/agentrelay/connection/api/ConnectionDisconnectReason;
+	public static final field CREDENTIAL_UNAVAILABLE Ldev/agentrelay/connection/api/ConnectionDisconnectReason;
+	public static final field NETWORK_LOST Ldev/agentrelay/connection/api/ConnectionDisconnectReason;
+	public static final field NOT_CONNECTED Ldev/agentrelay/connection/api/ConnectionDisconnectReason;
+	public static final field PROVIDER_STOPPED Ldev/agentrelay/connection/api/ConnectionDisconnectReason;
+	public static final field RETRY_LIMIT_REACHED Ldev/agentrelay/connection/api/ConnectionDisconnectReason;
+	public static final field SERVER_IDENTITY_REJECTED Ldev/agentrelay/connection/api/ConnectionDisconnectReason;
+	public static final field USER_REQUESTED Ldev/agentrelay/connection/api/ConnectionDisconnectReason;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/connection/api/ConnectionDisconnectReason;
+	public static fun values ()[Ldev/agentrelay/connection/api/ConnectionDisconnectReason;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionFailure {
+	public fun <init> (Ldev/agentrelay/connection/api/ConnectionFailureCategory;Ljava/lang/String;Ldev/agentrelay/connection/api/ConnectionFailureMessage;Z)V
+	public fun <init> (Ldev/agentrelay/connection/api/ConnectionFailureCategory;Ljava/lang/String;Ljava/lang/String;Z)V
+	public final fun component1 ()Ldev/agentrelay/connection/api/ConnectionFailureCategory;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ldev/agentrelay/connection/api/ConnectionFailureMessage;
+	public final fun component4 ()Z
+	public final fun copy (Ldev/agentrelay/connection/api/ConnectionFailureCategory;Ljava/lang/String;Ldev/agentrelay/connection/api/ConnectionFailureMessage;Z)Ldev/agentrelay/connection/api/ConnectionFailure;
+	public static synthetic fun copy$default (Ldev/agentrelay/connection/api/ConnectionFailure;Ldev/agentrelay/connection/api/ConnectionFailureCategory;Ljava/lang/String;Ldev/agentrelay/connection/api/ConnectionFailureMessage;ZILjava/lang/Object;)Ldev/agentrelay/connection/api/ConnectionFailure;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getActionableMessage ()Ljava/lang/String;
+	public final fun getCategory ()Ldev/agentrelay/connection/api/ConnectionFailureCategory;
+	public final fun getCode ()Ljava/lang/String;
+	public final fun getMessage ()Ldev/agentrelay/connection/api/ConnectionFailureMessage;
+	public final fun getRecoverable ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionFailureCategory : java/lang/Enum {
+	public static final field AUTHENTICATION Ldev/agentrelay/connection/api/ConnectionFailureCategory;
+	public static final field BACKGROUND_SUSPENSION Ldev/agentrelay/connection/api/ConnectionFailureCategory;
+	public static final field CONFIGURATION Ldev/agentrelay/connection/api/ConnectionFailureCategory;
+	public static final field CREDENTIAL_UNAVAILABLE Ldev/agentrelay/connection/api/ConnectionFailureCategory;
+	public static final field NETWORK Ldev/agentrelay/connection/api/ConnectionFailureCategory;
+	public static final field PROVIDER_UNAVAILABLE Ldev/agentrelay/connection/api/ConnectionFailureCategory;
+	public static final field REMOTE_PROCESS_EXIT Ldev/agentrelay/connection/api/ConnectionFailureCategory;
+	public static final field SERVER_IDENTITY Ldev/agentrelay/connection/api/ConnectionFailureCategory;
+	public static final field UNKNOWN Ldev/agentrelay/connection/api/ConnectionFailureCategory;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/connection/api/ConnectionFailureCategory;
+	public static fun values ()[Ldev/agentrelay/connection/api/ConnectionFailureCategory;
+}
+
+public abstract interface class dev/agentrelay/connection/api/ConnectionFailureMessage {
+}
+
+public final class dev/agentrelay/connection/api/ConnectionFailureMessage$Generated : dev/agentrelay/connection/api/ConnectionFailureMessage {
+	public fun <init> (Ldev/agentrelay/connection/api/ConnectionFailureMessageKind;)V
+	public final fun component1 ()Ldev/agentrelay/connection/api/ConnectionFailureMessageKind;
+	public final fun copy (Ldev/agentrelay/connection/api/ConnectionFailureMessageKind;)Ldev/agentrelay/connection/api/ConnectionFailureMessage$Generated;
+	public static synthetic fun copy$default (Ldev/agentrelay/connection/api/ConnectionFailureMessage$Generated;Ldev/agentrelay/connection/api/ConnectionFailureMessageKind;ILjava/lang/Object;)Ldev/agentrelay/connection/api/ConnectionFailureMessage$Generated;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getKind ()Ldev/agentrelay/connection/api/ConnectionFailureMessageKind;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionFailureMessage$Verbatim : dev/agentrelay/connection/api/ConnectionFailureMessage {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Ldev/agentrelay/connection/api/ConnectionFailureMessage$Verbatim;
+	public static synthetic fun copy$default (Ldev/agentrelay/connection/api/ConnectionFailureMessage$Verbatim;Ljava/lang/String;ILjava/lang/Object;)Ldev/agentrelay/connection/api/ConnectionFailureMessage$Verbatim;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getText ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionFailureMessageKind : java/lang/Enum {
+	public static final field PROFILE_PREPARATION_FAILED Ldev/agentrelay/connection/api/ConnectionFailureMessageKind;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/connection/api/ConnectionFailureMessageKind;
+	public static fun values ()[Ldev/agentrelay/connection/api/ConnectionFailureMessageKind;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionIdentityChallenge {
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ldev/agentrelay/connection/api/ConnectionIdentityDisposition;Ljava/util/List;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-NxdW7Mw ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()Ldev/agentrelay/connection/api/ConnectionIdentityDisposition;
+	public final fun component6 ()Ljava/util/List;
+	public final fun copy-Lc1nLps (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ldev/agentrelay/connection/api/ConnectionIdentityDisposition;Ljava/util/List;)Ldev/agentrelay/connection/api/ConnectionIdentityChallenge;
+	public static synthetic fun copy-Lc1nLps$default (Ldev/agentrelay/connection/api/ConnectionIdentityChallenge;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ldev/agentrelay/connection/api/ConnectionIdentityDisposition;Ljava/util/List;ILjava/lang/Object;)Ldev/agentrelay/connection/api/ConnectionIdentityChallenge;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAlgorithm ()Ljava/lang/String;
+	public final fun getDisposition ()Ldev/agentrelay/connection/api/ConnectionIdentityDisposition;
+	public final fun getEndpoint ()Ljava/lang/String;
+	public final fun getId-NxdW7Mw ()Ljava/lang/String;
+	public final fun getPreviouslyTrustedFingerprints ()Ljava/util/List;
+	public final fun getSha256Fingerprint ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionIdentityDecision : java/lang/Enum {
+	public static final field REJECT Ldev/agentrelay/connection/api/ConnectionIdentityDecision;
+	public static final field REPLACE_CHANGED Ldev/agentrelay/connection/api/ConnectionIdentityDecision;
+	public static final field TRUST_FIRST_USE Ldev/agentrelay/connection/api/ConnectionIdentityDecision;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/connection/api/ConnectionIdentityDecision;
+	public static fun values ()[Ldev/agentrelay/connection/api/ConnectionIdentityDecision;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionIdentityDisposition : java/lang/Enum {
+	public static final field CHANGED Ldev/agentrelay/connection/api/ConnectionIdentityDisposition;
+	public static final field UNKNOWN Ldev/agentrelay/connection/api/ConnectionIdentityDisposition;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/connection/api/ConnectionIdentityDisposition;
+	public static fun values ()[Ldev/agentrelay/connection/api/ConnectionIdentityDisposition;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionPhase : java/lang/Enum {
+	public static final field AUTHENTICATING Ldev/agentrelay/connection/api/ConnectionPhase;
+	public static final field OPENING_TRANSPORT Ldev/agentrelay/connection/api/ConnectionPhase;
+	public static final field PREPARING Ldev/agentrelay/connection/api/ConnectionPhase;
+	public static final field VERIFYING_SERVER_IDENTITY Ldev/agentrelay/connection/api/ConnectionPhase;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/connection/api/ConnectionPhase;
+	public static fun values ()[Ldev/agentrelay/connection/api/ConnectionPhase;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionProfileDeleteException : java/lang/IllegalStateException {
+	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getActionableMessage ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionProfileEditor {
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;ZLjava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;ZLjava/util/List;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-wlm8PqQ ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3-CeMKT-U ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()Ljava/util/List;
+	public final fun component6 ()Z
+	public final fun component7 ()Ljava/util/List;
+	public final fun copy-ckc7zpM (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;ZLjava/util/List;)Ldev/agentrelay/connection/api/ConnectionProfileEditor;
+	public static synthetic fun copy-ckc7zpM$default (Ldev/agentrelay/connection/api/ConnectionProfileEditor;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;ZLjava/util/List;ILjava/lang/Object;)Ldev/agentrelay/connection/api/ConnectionProfileEditor;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCanDelete ()Z
+	public final fun getFields ()Ljava/util/List;
+	public final fun getOperations ()Ljava/util/List;
+	public final fun getProfileId-CeMKT-U ()Ljava/lang/String;
+	public final fun getProviderId-wlm8PqQ ()Ljava/lang/String;
+	public final fun getProviderName ()Ljava/lang/String;
+	public final fun getTitle ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionProfileField {
+	public static final field Companion Ldev/agentrelay/connection/api/ConnectionProfileField$Companion;
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ldev/agentrelay/connection/api/ConnectionProfileFieldType;Ljava/lang/String;Ljava/lang/String;ZILjava/util/List;Ljava/util/List;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ldev/agentrelay/connection/api/ConnectionProfileFieldType;Ljava/lang/String;Ljava/lang/String;ZILjava/util/List;Ljava/util/List;ZLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-ch787Ok ()Ljava/lang/String;
+	public final fun component10 ()Z
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ldev/agentrelay/connection/api/ConnectionProfileFieldType;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()Ljava/lang/String;
+	public final fun component6 ()Z
+	public final fun component7 ()I
+	public final fun component8 ()Ljava/util/List;
+	public final fun component9 ()Ljava/util/List;
+	public final fun copy-wHm25yE (Ljava/lang/String;Ljava/lang/String;Ldev/agentrelay/connection/api/ConnectionProfileFieldType;Ljava/lang/String;Ljava/lang/String;ZILjava/util/List;Ljava/util/List;Z)Ldev/agentrelay/connection/api/ConnectionProfileField;
+	public static synthetic fun copy-wHm25yE$default (Ldev/agentrelay/connection/api/ConnectionProfileField;Ljava/lang/String;Ljava/lang/String;Ldev/agentrelay/connection/api/ConnectionProfileFieldType;Ljava/lang/String;Ljava/lang/String;ZILjava/util/List;Ljava/util/List;ZILjava/lang/Object;)Ldev/agentrelay/connection/api/ConnectionProfileField;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getHasStoredSecret ()Z
+	public final fun getId-ch787Ok ()Ljava/lang/String;
+	public final fun getLabel ()Ljava/lang/String;
+	public final fun getMaxLength ()I
+	public final fun getOptions ()Ljava/util/List;
+	public final fun getRequired ()Z
+	public final fun getSupportingText ()Ljava/lang/String;
+	public final fun getType ()Ldev/agentrelay/connection/api/ConnectionProfileFieldType;
+	public final fun getValue ()Ljava/lang/String;
+	public final fun getVisibleWhen ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionProfileField$Companion {
+}
+
+public final class dev/agentrelay/connection/api/ConnectionProfileFieldCondition {
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-ch787Ok ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy-2QpsO1o (Ljava/lang/String;Ljava/lang/String;)Ldev/agentrelay/connection/api/ConnectionProfileFieldCondition;
+	public static synthetic fun copy-2QpsO1o$default (Ldev/agentrelay/connection/api/ConnectionProfileFieldCondition;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ldev/agentrelay/connection/api/ConnectionProfileFieldCondition;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getExpectedValue ()Ljava/lang/String;
+	public final fun getFieldId-ch787Ok ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionProfileFieldId {
+	public static final synthetic fun box-impl (Ljava/lang/String;)Ldev/agentrelay/connection/api/ConnectionProfileFieldId;
+	public static fun constructor-impl (Ljava/lang/String;)Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public abstract interface class dev/agentrelay/connection/api/ConnectionProfileFieldInput : java/lang/AutoCloseable {
+}
+
+public final class dev/agentrelay/connection/api/ConnectionProfileFieldInput$Secret : dev/agentrelay/connection/api/ConnectionProfileFieldInput {
+	public static final field Companion Ldev/agentrelay/connection/api/ConnectionProfileFieldInput$Secret$Companion;
+	public synthetic fun <init> ([CLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun close ()V
+	public final fun getLength ()I
+	public final fun isEmpty ()Z
+	public fun toString ()Ljava/lang/String;
+	public final fun useChars (Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionProfileFieldInput$Secret$Companion {
+	public final fun copyOf ([C)Ldev/agentrelay/connection/api/ConnectionProfileFieldInput$Secret;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionProfileFieldInput$Text : dev/agentrelay/connection/api/ConnectionProfileFieldInput {
+	public fun <init> (Ljava/lang/String;)V
+	public fun close ()V
+	public final fun getValue ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionProfileFieldOption {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ldev/agentrelay/connection/api/ConnectionProfileFieldOption;
+	public static synthetic fun copy$default (Ldev/agentrelay/connection/api/ConnectionProfileFieldOption;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ldev/agentrelay/connection/api/ConnectionProfileFieldOption;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getLabel ()Ljava/lang/String;
+	public final fun getSupportingText ()Ljava/lang/String;
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionProfileFieldType : java/lang/Enum {
+	public static final field MULTILINE_SECRET Ldev/agentrelay/connection/api/ConnectionProfileFieldType;
+	public static final field PASSWORD Ldev/agentrelay/connection/api/ConnectionProfileFieldType;
+	public static final field PORT Ldev/agentrelay/connection/api/ConnectionProfileFieldType;
+	public static final field READ_ONLY Ldev/agentrelay/connection/api/ConnectionProfileFieldType;
+	public static final field SINGLE_CHOICE Ldev/agentrelay/connection/api/ConnectionProfileFieldType;
+	public static final field TEXT Ldev/agentrelay/connection/api/ConnectionProfileFieldType;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/connection/api/ConnectionProfileFieldType;
+	public static fun values ()[Ldev/agentrelay/connection/api/ConnectionProfileFieldType;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionProfileId {
+	public static final synthetic fun box-impl (Ljava/lang/String;)Ldev/agentrelay/connection/api/ConnectionProfileId;
+	public static fun constructor-impl (Ljava/lang/String;)Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public abstract interface class dev/agentrelay/connection/api/ConnectionProfileManager {
+	public abstract fun delete-Cc0RMMU (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun editor-ygxidOI (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun editor-ygxidOI$default (Ldev/agentrelay/connection/api/ConnectionProfileManager;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public fun performOperation-Mx7e0Gg (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun save (Ldev/agentrelay/connection/api/ConnectionProfileUpdate;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionProfileManager$DefaultImpls {
+	public static synthetic fun editor-ygxidOI$default (Ldev/agentrelay/connection/api/ConnectionProfileManager;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static fun performOperation-Mx7e0Gg (Ldev/agentrelay/connection/api/ConnectionProfileManager;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionProfileOperation {
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-kq6gv_I ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()Ljava/lang/String;
+	public final fun copy-zBOatss (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ldev/agentrelay/connection/api/ConnectionProfileOperation;
+	public static synthetic fun copy-zBOatss$default (Ldev/agentrelay/connection/api/ConnectionProfileOperation;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ldev/agentrelay/connection/api/ConnectionProfileOperation;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getConfirmationMessage ()Ljava/lang/String;
+	public final fun getConfirmationTitle ()Ljava/lang/String;
+	public final fun getId-kq6gv_I ()Ljava/lang/String;
+	public final fun getLabel ()Ljava/lang/String;
+	public final fun getRequiresConfirmation ()Z
+	public final fun getSupportingText ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionProfileOperationException : java/lang/IllegalStateException {
+	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getActionableMessage ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionProfileOperationId {
+	public static final synthetic fun box-impl (Ljava/lang/String;)Ldev/agentrelay/connection/api/ConnectionProfileOperationId;
+	public static fun constructor-impl (Ljava/lang/String;)Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionProfileOperationResult {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Ldev/agentrelay/connection/api/ConnectionProfileOperationResult;
+	public static synthetic fun copy$default (Ldev/agentrelay/connection/api/ConnectionProfileOperationResult;Ljava/lang/String;ILjava/lang/Object;)Ldev/agentrelay/connection/api/ConnectionProfileOperationResult;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getNotice ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionProfileSaveResult {
+	public fun <init> (Ldev/agentrelay/connection/api/ConnectionProfileSummary;Ljava/lang/String;)V
+	public synthetic fun <init> (Ldev/agentrelay/connection/api/ConnectionProfileSummary;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ldev/agentrelay/connection/api/ConnectionProfileSummary;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ldev/agentrelay/connection/api/ConnectionProfileSummary;Ljava/lang/String;)Ldev/agentrelay/connection/api/ConnectionProfileSaveResult;
+	public static synthetic fun copy$default (Ldev/agentrelay/connection/api/ConnectionProfileSaveResult;Ldev/agentrelay/connection/api/ConnectionProfileSummary;Ljava/lang/String;ILjava/lang/Object;)Ldev/agentrelay/connection/api/ConnectionProfileSaveResult;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getNotice ()Ljava/lang/String;
+	public final fun getProfile ()Ldev/agentrelay/connection/api/ConnectionProfileSummary;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionProfileSummary {
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-4HG7NZc ()Ljava/lang/String;
+	public final fun component2-wlm8PqQ ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()Ljava/lang/String;
+	public final fun copy-qH02Nfo (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ldev/agentrelay/connection/api/ConnectionProfileSummary;
+	public static synthetic fun copy-qH02Nfo$default (Ldev/agentrelay/connection/api/ConnectionProfileSummary;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ldev/agentrelay/connection/api/ConnectionProfileSummary;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAuthenticationLabel ()Ljava/lang/String;
+	public final fun getId-4HG7NZc ()Ljava/lang/String;
+	public final fun getLabel ()Ljava/lang/String;
+	public final fun getProviderId-wlm8PqQ ()Ljava/lang/String;
+	public final fun getTarget ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionProfileUpdate : java/lang/AutoCloseable {
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun close ()V
+	public final fun component1-wlm8PqQ ()Ljava/lang/String;
+	public final fun component2-CeMKT-U ()Ljava/lang/String;
+	public final fun component3 ()Ljava/util/Map;
+	public final fun copy-OEDA7rU (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)Ldev/agentrelay/connection/api/ConnectionProfileUpdate;
+	public static synthetic fun copy-OEDA7rU$default (Ldev/agentrelay/connection/api/ConnectionProfileUpdate;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;ILjava/lang/Object;)Ldev/agentrelay/connection/api/ConnectionProfileUpdate;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getFields ()Ljava/util/Map;
+	public final fun getProfileId-CeMKT-U ()Ljava/lang/String;
+	public final fun getProviderId-wlm8PqQ ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionProfileValidationException : java/lang/IllegalArgumentException {
+	public fun <init> (Ljava/util/Map;)V
+	public final fun getFieldErrors ()Ljava/util/Map;
+}
+
+public abstract interface class dev/agentrelay/connection/api/ConnectionProvider : java/io/Closeable {
+	public abstract fun connection-PLOhbEc (Ljava/lang/String;)Ldev/agentrelay/connection/api/ManagedConnection;
+	public abstract fun getDescriptor ()Ldev/agentrelay/connection/api/ConnectionProviderDescriptor;
+	public fun getProfileManager ()Ldev/agentrelay/connection/api/ConnectionProfileManager;
+	public abstract fun profiles (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionProvider$DefaultImpls {
+	public static fun getProfileManager (Ldev/agentrelay/connection/api/ConnectionProvider;)Ldev/agentrelay/connection/api/ConnectionProfileManager;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionProviderDescriptor {
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Set;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-wlm8PqQ ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/util/Set;
+	public final fun copy-_e29g04 (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Set;)Ldev/agentrelay/connection/api/ConnectionProviderDescriptor;
+	public static synthetic fun copy-_e29g04$default (Ldev/agentrelay/connection/api/ConnectionProviderDescriptor;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Set;ILjava/lang/Object;)Ldev/agentrelay/connection/api/ConnectionProviderDescriptor;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCapabilities ()Ljava/util/Set;
+	public final fun getDisplayName ()Ljava/lang/String;
+	public final fun getId-wlm8PqQ ()Ljava/lang/String;
+	public final fun getProviderVersion ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionProviderId {
+	public static final synthetic fun box-impl (Ljava/lang/String;)Ldev/agentrelay/connection/api/ConnectionProviderId;
+	public static fun constructor-impl (Ljava/lang/String;)Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionProviderRegistry : java/io/Closeable {
+	public fun <init> (Ljava/lang/Iterable;)V
+	public fun close ()V
+	public final fun descriptors ()Ljava/util/List;
+	public final fun profileManager-BHJLLvs (Ljava/lang/String;)Ldev/agentrelay/connection/api/ConnectionProfileManager;
+	public final fun profiles (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun provider-BHJLLvs (Ljava/lang/String;)Ldev/agentrelay/connection/api/ConnectionProvider;
+}
+
+public abstract interface class dev/agentrelay/connection/api/ConnectionState {
+}
+
+public final class dev/agentrelay/connection/api/ConnectionState$AwaitingIdentityTrust : dev/agentrelay/connection/api/ConnectionState {
+	public fun <init> (Ldev/agentrelay/connection/api/ConnectionIdentityChallenge;J)V
+	public final fun component1 ()Ldev/agentrelay/connection/api/ConnectionIdentityChallenge;
+	public final fun component2 ()J
+	public final fun copy (Ldev/agentrelay/connection/api/ConnectionIdentityChallenge;J)Ldev/agentrelay/connection/api/ConnectionState$AwaitingIdentityTrust;
+	public static synthetic fun copy$default (Ldev/agentrelay/connection/api/ConnectionState$AwaitingIdentityTrust;Ldev/agentrelay/connection/api/ConnectionIdentityChallenge;JILjava/lang/Object;)Ldev/agentrelay/connection/api/ConnectionState$AwaitingIdentityTrust;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAtEpochMillis ()J
+	public final fun getChallenge ()Ldev/agentrelay/connection/api/ConnectionIdentityChallenge;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionState$Connected : dev/agentrelay/connection/api/ConnectionState {
+	public synthetic fun <init> (JLjava/lang/Long;Lkotlin/time/Duration;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()J
+	public final fun component2 ()Ljava/lang/Long;
+	public final fun component3-FghU774 ()Lkotlin/time/Duration;
+	public final fun copy-moChb0s (JLjava/lang/Long;Lkotlin/time/Duration;)Ldev/agentrelay/connection/api/ConnectionState$Connected;
+	public static synthetic fun copy-moChb0s$default (Ldev/agentrelay/connection/api/ConnectionState$Connected;JLjava/lang/Long;Lkotlin/time/Duration;ILjava/lang/Object;)Ldev/agentrelay/connection/api/ConnectionState$Connected;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getConnectedAtEpochMillis ()J
+	public final fun getLastHeartbeatAtEpochMillis ()Ljava/lang/Long;
+	public final fun getLastLatency-FghU774 ()Lkotlin/time/Duration;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionState$Connecting : dev/agentrelay/connection/api/ConnectionState {
+	public fun <init> (ILdev/agentrelay/connection/api/ConnectionPhase;J)V
+	public final fun component1 ()I
+	public final fun component2 ()Ldev/agentrelay/connection/api/ConnectionPhase;
+	public final fun component3 ()J
+	public final fun copy (ILdev/agentrelay/connection/api/ConnectionPhase;J)Ldev/agentrelay/connection/api/ConnectionState$Connecting;
+	public static synthetic fun copy$default (Ldev/agentrelay/connection/api/ConnectionState$Connecting;ILdev/agentrelay/connection/api/ConnectionPhase;JILjava/lang/Object;)Ldev/agentrelay/connection/api/ConnectionState$Connecting;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAttempt ()I
+	public final fun getPhase ()Ldev/agentrelay/connection/api/ConnectionPhase;
+	public final fun getStartedAtEpochMillis ()J
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionState$Disconnected : dev/agentrelay/connection/api/ConnectionState {
+	public fun <init> (Ldev/agentrelay/connection/api/ConnectionDisconnectReason;J)V
+	public final fun component1 ()Ldev/agentrelay/connection/api/ConnectionDisconnectReason;
+	public final fun component2 ()J
+	public final fun copy (Ldev/agentrelay/connection/api/ConnectionDisconnectReason;J)Ldev/agentrelay/connection/api/ConnectionState$Disconnected;
+	public static synthetic fun copy$default (Ldev/agentrelay/connection/api/ConnectionState$Disconnected;Ldev/agentrelay/connection/api/ConnectionDisconnectReason;JILjava/lang/Object;)Ldev/agentrelay/connection/api/ConnectionState$Disconnected;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAtEpochMillis ()J
+	public final fun getReason ()Ldev/agentrelay/connection/api/ConnectionDisconnectReason;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionState$Failed : dev/agentrelay/connection/api/ConnectionState {
+	public fun <init> (Ldev/agentrelay/connection/api/ConnectionFailure;J)V
+	public final fun component1 ()Ldev/agentrelay/connection/api/ConnectionFailure;
+	public final fun component2 ()J
+	public final fun copy (Ldev/agentrelay/connection/api/ConnectionFailure;J)Ldev/agentrelay/connection/api/ConnectionState$Failed;
+	public static synthetic fun copy$default (Ldev/agentrelay/connection/api/ConnectionState$Failed;Ldev/agentrelay/connection/api/ConnectionFailure;JILjava/lang/Object;)Ldev/agentrelay/connection/api/ConnectionState$Failed;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAtEpochMillis ()J
+	public final fun getFailure ()Ldev/agentrelay/connection/api/ConnectionFailure;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectionState$Reconnecting : dev/agentrelay/connection/api/ConnectionState {
+	public synthetic fun <init> (IJJLdev/agentrelay/connection/api/ConnectionFailure;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()I
+	public final fun component2-UwyO8pc ()J
+	public final fun component3 ()J
+	public final fun component4 ()Ldev/agentrelay/connection/api/ConnectionFailure;
+	public final fun copy-dWUq8MI (IJJLdev/agentrelay/connection/api/ConnectionFailure;)Ldev/agentrelay/connection/api/ConnectionState$Reconnecting;
+	public static synthetic fun copy-dWUq8MI$default (Ldev/agentrelay/connection/api/ConnectionState$Reconnecting;IJJLdev/agentrelay/connection/api/ConnectionFailure;ILjava/lang/Object;)Ldev/agentrelay/connection/api/ConnectionState$Reconnecting;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAttempt ()I
+	public final fun getDelay-UwyO8pc ()J
+	public final fun getLastFailure ()Ldev/agentrelay/connection/api/ConnectionFailure;
+	public final fun getRetryAtEpochMillis ()J
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class dev/agentrelay/connection/api/ManagedConnection {
+	public abstract fun connect ()V
+	public abstract fun diagnosticSnapshot ()Ldev/agentrelay/connection/api/ConnectionDiagnosticSnapshot;
+	public abstract fun disconnect (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getProfileId-4HG7NZc ()Ljava/lang/String;
+	public abstract fun getProviderId-wlm8PqQ ()Ljava/lang/String;
+	public abstract fun getState ()Lkotlinx/coroutines/flow/StateFlow;
+	public abstract fun resolveIdentityChallenge-0odLSG8 (Ljava/lang/String;Ldev/agentrelay/connection/api/ConnectionIdentityDecision;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun resumeFromBackground ()V
+	public abstract fun runtimeOrNull ()Ldev/agentrelay/provider/api/RemoteAgentRuntime;
+	public abstract fun suspendForBackground (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
