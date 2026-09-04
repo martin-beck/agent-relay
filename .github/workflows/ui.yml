@@ -76,6 +76,8 @@ jobs:
           target: default
           arch: x86_64
           profile: pixel_7_pro
+          # Isolate each run from stale AVD locks left by an interrupted action.
+          avd-name: test-${{ github.run_id }}-${{ github.run_attempt }}
           emulator-port: 5564
           disable-animations: true
           script: >-
@@ -256,6 +258,8 @@ jobs:
           target: default
           arch: x86_64
           profile: ${{ matrix.profile }}
+          # Isolate each run from stale AVD locks left by an interrupted action.
+          avd-name: test-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.name }}
           emulator-port: 5564
           disable-animations: true
           script: >-
