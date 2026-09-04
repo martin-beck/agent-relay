@@ -171,6 +171,15 @@ preferences, transcript cache, and changed-file records belong to the session
 repository. Transfer progress belongs to the short-lived UI controller. Compose
 is a projection of these sources and must not become a second authority.
 
+Diagnostic observations are bounded, provider-neutral projections rather than
+a second state authority. `DiagnosticEvent` carries stable causal identifiers,
+opaque workflow references, clocks, severity, outcome, and a stable failure
+category; it never carries secrets or raw host, path, credential, or token
+attributes. Its schema compatibility and explicit redaction/export policy are
+validated at the session API boundary. Later capture and tracing components may
+retain or export these observations, but domain events and the session
+repository remain authoritative.
+
 The process lifecycle is a provider-neutral composition boundary. Moving the
 app to the background serially suspends an already-created session runtime
 unless the user explicitly started background connection mode. Returning to the
