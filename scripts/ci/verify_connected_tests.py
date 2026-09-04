@@ -5,9 +5,11 @@ from __future__ import annotations
 
 import argparse
 import sys
-import xml.etree.ElementTree as ElementTree
 from dataclasses import dataclass
 from pathlib import Path
+
+from defusedxml import ElementTree  # type: ignore[import-untyped]
+from defusedxml.common import DefusedXmlException  # type: ignore[import-untyped]
 
 RESULT_GLOB = "**/build/outputs/androidTest-results/connected/**/TEST-*.xml"
 
@@ -66,7 +68,7 @@ def collect_evidence(root: Path) -> dict[str, TestCounts]:
     for report in reports:
         try:
             document = ElementTree.parse(report).getroot()
-        except (ElementTree.ParseError, OSError) as failure:
+        except (DefusedXmlException, ElementTree.ParseError, OSError) as failure:
             raise EvidenceError(f"{report}: JUnit XML could not be parsed") from failure
         suites = (
             [document] if document.tag == "testsuite" else list(document.findall("./testsuite"))

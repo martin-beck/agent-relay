@@ -39,6 +39,7 @@ Run the same gate as GitHub Actions:
 
 ```bash
 uv sync --locked --only-group quality --only-group docs
+uv run pytest
 uv run pre-commit run --all-files --show-diff-on-failure
 ./gradlew spotlessCheck detekt buildHealth test koverXmlReport koverVerify checkKotlinAbi lintDebug assembleDebug --stacktrace
 ```
@@ -47,6 +48,7 @@ On Windows PowerShell:
 
 ```powershell
 uv sync --locked --only-group quality --only-group docs
+uv run pytest
 uv run pre-commit run --all-files --show-diff-on-failure
 .\gradlew.bat spotlessCheck detekt buildHealth test koverXmlReport koverVerify checkKotlinAbi lintDebug assembleDebug --stacktrace
 ```
@@ -61,8 +63,11 @@ assembly. The APK is written to:
 app/build/outputs/apk/debug/app-debug.apk
 ```
 
-The repository gate invokes pinned Radon and Lizard versions through uv and
-Vale 3.19.0 through pre-commit. CI verifies Vale's official archive checksum.
+The repository gate invokes pinned Pytest, Hypothesis, Coverage.py, Radon, and
+Lizard versions through uv and Vale 3.19.0 through pre-commit. The Python suite
+uses deterministic property examples and rejects branch-aware coverage below
+65% for the four production validators and renderers. CI verifies Vale's official
+archive checksum.
 
 ## Offline speech native build
 
@@ -239,6 +244,7 @@ Examples:
 ```bash
 uv run pre-commit run ruff-check --all-files
 uv run pre-commit run mypy --all-files
+uv run pytest
 uv run pre-commit run vale --all-files
 uv run pre-commit run radon-complexity --all-files
 uv run pre-commit run radon-maintainability --all-files

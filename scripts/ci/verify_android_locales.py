@@ -7,13 +7,16 @@ import argparse
 import collections
 import re
 import sys
-import xml.etree.ElementTree as ElementTree
 from dataclasses import dataclass
 from pathlib import Path
+
+from defusedxml import ElementTree  # type: ignore[import-untyped]
+from defusedxml.common import DefusedXmlException  # type: ignore[import-untyped]
 
 FORMAT_ARGUMENT = re.compile(
     r"(?<!%)%(?!%)(?:(?P<position>[1-9][0-9]*)\$)?[-#+ 0,(]*[0-9]*(?:\.[0-9]+)?(?P<kind>[a-zA-Z])"
 )
+RESOURCE_DIRECTORY = re.compile(r"^values(?:-[A-Za-z0-9]+)*$")
 
 PLURAL_QUANTITIES_BY_LANGUAGE = {
     "ar": frozenset({"zero", "one", "two", "few", "many", "other"}),
@@ -71,7 +74,7 @@ def read_locale_map(path: Path) -> dict[str, str]:
             raise LocaleError(
                 f"{path}:{line_number}: expected language-tag=values-directory"
             ) from failure
-        if not tag or not directory.startswith("values"):
+        if not tag or not RESOURCE_DIRECTORY.fullmatch(directory):
             raise LocaleError(f"{path}:{line_number}: invalid locale mapping")
         if tag in locales:
             raise LocaleError(f"{path}:{line_number}: duplicate locale tag {tag}")
@@ -113,7 +116,7 @@ def read_resource_variants(
 def read_catalog(path: Path) -> dict[tuple[str, str], Resource]:
     try:
         root = ElementTree.parse(path).getroot()
-    except (ElementTree.ParseError, OSError) as failure:
+    except (DefusedXmlException, ElementTree.ParseError, OSError) as failure:
         raise LocaleError(f"{path}: could not parse Android resources") from failure
     if root.tag != "resources":
         raise LocaleError(f"{path}: root element must be resources")

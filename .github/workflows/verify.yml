@@ -98,8 +98,8 @@ jobs:
 
       - name: Test repository support scripts
         run: |
-          uv run python -m unittest discover -s scripts/ci -p 'test_*.py'
-          uv run python -m unittest discover -s scripts/docs -p 'test_*.py'
+          mkdir -p build/reports/quality
+          uv run pytest --cov-report=xml:build/reports/quality/python-coverage.xml
 
       - name: Verify and build app workflow guide
         run: |

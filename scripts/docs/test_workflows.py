@@ -5,9 +5,11 @@ import unittest
 from pathlib import Path
 from typing import Any
 
+import yaml
+from hypothesis import given, settings, strategies
 from PIL import Image
 from render_workflows import ManifestError, render_scenario, validate_manifest, write_or_check
-from verify_workflows import difference_metrics
+from verify_workflows import check_png, difference_metrics, reject_orphans
 
 
 def scenario(status: str = "verified") -> dict[str, Any]:
@@ -80,6 +82,70 @@ class RenderWorkflowsTest(unittest.TestCase):
             self.assertLess(ratio, 0.01)
             self.assertLess(rms, 4.0)
             self.assertFalse(diff.exists())
+
+    @settings(derandomize=True, deadline=None, max_examples=30)
+    @given(
+        width=strategies.integers(min_value=320, max_value=340),
+        height=strategies.integers(min_value=480, max_value=500),
+    )
+    def test_png_dimension_boundaries_accept_valid_images(self, width: int, height: int) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            image = Path(directory) / "evidence.png"
+            Image.new("RGB", (width, height), "white").save(image)
+
+            self.assertEqual((width, height), check_png(image))
+
+    @settings(derandomize=True, deadline=None, max_examples=30)
+    @given(
+        names=strategies.sets(
+            strategies.from_regex(r"case-[a-z0-9]{1,8}\.png", fullmatch=True),
+            min_size=1,
+            max_size=6,
+        ),
+    )
+    def test_expected_png_paths_reject_any_orphan(self, names: set[str]) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            expected = {Path("sample") / name for name in names}
+            for relative in expected:
+                path = root / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.touch()
+
+            reject_orphans(root, expected, "property-test")
+            orphan = root / "sample/unexpected.png"
+            orphan.touch()
+
+            with self.assertRaisesRegex(ManifestError, "orphan property-test PNG"):
+                reject_orphans(root, expected, "property-test")
+
+    @settings(derandomize=True, max_examples=80)
+    @given(stem=strategies.from_regex(r"[a-z0-9]+(?:-[a-z0-9]+){0,3}", fullmatch=True))
+    def test_yaml_manifest_accepts_safe_local_screenshot_names(self, stem: str) -> None:
+        manifest = scenario()
+        manifest["steps"][0]["screenshot"] = f"{stem}.png"
+        loaded = yaml.safe_load(yaml.safe_dump(manifest))
+
+        validated = validate_manifest(loaded, Path("sample.yml"))
+
+        self.assertEqual(f"{stem}.png", validated["steps"][0]["screenshot"])
+
+    @settings(derandomize=True, max_examples=80)
+    @given(
+        directory=strategies.sampled_from(("..", ".", "nested")),
+        stem=strategies.from_regex(r"[a-z0-9]+(?:-[a-z0-9]+){0,3}", fullmatch=True),
+    )
+    def test_yaml_manifest_rejects_nonlocal_screenshot_paths(
+        self,
+        directory: str,
+        stem: str,
+    ) -> None:
+        manifest = scenario()
+        manifest["steps"][0]["screenshot"] = f"{directory}/{stem}.png"
+        loaded = yaml.safe_load(yaml.safe_dump(manifest))
+
+        with self.assertRaisesRegex(ManifestError, "one PNG file name"):
+            validate_manifest(loaded, Path("sample.yml"))
 
 
 if __name__ == "__main__":
