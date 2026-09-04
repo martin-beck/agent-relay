@@ -73,7 +73,10 @@ jobs:
           if [[ ! -s "$devices_xml" ]]; then
             sdkmanager_path="$android_sdk_root/cmdline-tools/latest/bin/sdkmanager"
             test -x "$sdkmanager_path"
-            "$sdkmanager_path" --install --force "system-images;android-36;default;x86_64" --channel=0
+            "$sdkmanager_path" --sdk_root="$android_sdk_root" --uninstall \
+              "system-images;android-36;default;x86_64"
+            "$sdkmanager_path" --sdk_root="$android_sdk_root" --install \
+              "system-images;android-36;default;x86_64" --channel=0
           fi
           test -s "$devices_xml"
 
@@ -271,7 +274,10 @@ jobs:
           if [[ ! -s "$devices_xml" ]]; then
             sdkmanager_path="$android_sdk_root/cmdline-tools/latest/bin/sdkmanager"
             test -x "$sdkmanager_path"
-            "$sdkmanager_path" --install --force "system-images;android-36;default;x86_64" --channel=0
+            "$sdkmanager_path" --sdk_root="$android_sdk_root" --uninstall \
+              "system-images;android-36;default;x86_64"
+            "$sdkmanager_path" --sdk_root="$android_sdk_root" --install \
+              "system-images;android-36;default;x86_64" --channel=0
           fi
           test -s "$devices_xml"
 
