@@ -100,6 +100,22 @@ class DependencyIntegrityVerifierTest(unittest.TestCase):
         with self.assertRaisesRegex(VERIFY.IntegrityError, "SHA-256 only"):
             VERIFY.verify_repository(self.root, self.TODAY)
 
+    def test_rejects_verification_metadata_xml_entities(self) -> None:
+        metadata = self.root / "gradle/verification-metadata.xml"
+        metadata.write_text(
+            '<!DOCTYPE verification-metadata [<!ENTITY digest "expanded">]>'
+            '<verification-metadata xmlns="https://schema.gradle.org/dependency-verification">'
+            "<configuration><verify-metadata>true</verify-metadata>"
+            "<verify-signatures>false</verify-signatures></configuration>"
+            '<components><component group="example" name="tool" version="1.2.3">'
+            '<artifact name="tool.jar"><sha256 value="&digest;"/></artifact>'
+            "</component></components></verification-metadata>",
+            encoding="utf-8",
+        )
+
+        with self.assertRaisesRegex(VERIFY.IntegrityError, "could not parse"):
+            VERIFY.verify_repository(self.root, self.TODAY)
+
     def test_rejects_missing_manifest_lock(self) -> None:
         (self.root / "module/gradle.lockfile").unlink()
         with self.assertRaisesRegex(VERIFY.IntegrityError, "manifest differs"):
@@ -109,6 +125,13 @@ class DependencyIntegrityVerifierTest(unittest.TestCase):
         self.write_lock("releaseRuntimeClasspath")
         with self.assertRaisesRegex(VERIFY.IntegrityError, "ignored in production"):
             VERIFY.verify_repository(self.root, self.TODAY)
+
+    def test_rejects_production_configuration_with_test_or_lint_substring(self) -> None:
+        for configuration in ("contestRuntimeClasspath", "releaseLintedRuntimeClasspath"):
+            with self.subTest(configuration=configuration):
+                self.write_lock(configuration)
+                with self.assertRaisesRegex(VERIFY.IntegrityError, "ignored in production"):
+                    VERIFY.verify_repository(self.root, self.TODAY)
 
     def test_rejects_expired_exception(self) -> None:
         self.write_osv_config(self.TODAY - datetime.timedelta(days=1))

@@ -9,10 +9,12 @@ import json
 import re
 import sys
 import tomllib
-import xml.etree.ElementTree as ElementTree
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
+
+from defusedxml import ElementTree  # type: ignore[import-untyped]
+from defusedxml.common import DefusedXmlException  # type: ignore[import-untyped]
 
 SHA256 = re.compile(r"[0-9a-f]{64}")
 VERSION = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+")
@@ -76,7 +78,10 @@ def read_locks(root: Path, manifest: Path) -> dict[tuple[str, str], set[str]]:
 
 
 def verify_gradle_metadata(path: Path) -> None:
-    root = ElementTree.parse(path).getroot()
+    try:
+        root = ElementTree.parse(path).getroot()
+    except (DefusedXmlException, ElementTree.ParseError, OSError) as failure:
+        raise IntegrityError(f"{path}: could not parse verification metadata") from failure
     metadata = root.findall(".//v:artifact", GRADLE_NAMESPACE)
     if not metadata:
         raise IntegrityError(f"{path}: no verified artifacts")
@@ -112,8 +117,15 @@ def verify_scanner_release(path: Path) -> None:
 
 
 def is_assurance_only(configuration: str) -> bool:
-    lowered = configuration.lower()
-    return configuration.startswith("_internal-") or "test" in lowered or "lint" in lowered
+    assurance_configuration = re.search(
+        r"(?:AndroidTest|UnitTest|Test|Lint)(?=[A-Z]|$)", configuration
+    )
+    top_level_assurance = re.fullmatch(r"(?:test|lint)(?:[A-Z].*)?", configuration)
+    return (
+        configuration.startswith("_internal-")
+        or assurance_configuration is not None
+        or top_level_assurance is not None
+    )
 
 
 def verify_osv_exceptions(

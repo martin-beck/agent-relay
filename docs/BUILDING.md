@@ -91,7 +91,7 @@ updating dependencies:
 
 ```bash
 ./gradlew --write-verification-metadata sha256 --write-locks \
-  spotlessCheck detekt buildHealth test koverXmlReport koverVerify \
+  spotlessCheck detekt buildHealth test koverXmlReport koverVerify checkKotlinAbi \
   lintDebug assembleDebug compileDebugAndroidTestKotlin verifyRoborazziDebug
 python scripts/ci/verify_dependency_integrity.py
 ```
