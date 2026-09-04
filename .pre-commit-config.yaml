@@ -197,6 +197,7 @@ repos:
         pass_filenames: false
         files: >-
           ^(config/dependency-lockfiles\.txt|
+          config/osv-accepted-vulnerabilities\.json|
           config/osv-scanner(-release\.json|\.toml)|
           gradle/verification-metadata\.xml|
           .*gradle\.lockfile|

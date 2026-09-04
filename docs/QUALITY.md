@@ -510,10 +510,15 @@ analysis guards declaration quality. Gradle verifies resolved bytes against
 reviewed SHA-256 metadata and locks resolved versions, while pinned OSV-Scanner
 checks the committed Gradle and uv locks against the current OSV database.
 OSV results are time-dependent advisory data, not proof that a dependency is
-safe. Exact, expiring exceptions cover only non-shipped test, lint, and
-AGP-internal transitive tools; the offline repository verifier rejects an
-exception if that coordinate enters a production configuration. Review release
-notes and security advisories before merging any update.
+safe. CI retains an unfiltered report and accepts only reviewed combinations of
+vulnerability ID, ecosystem, package, and version. ID-specific, expiring
+scanner exceptions then produce the filtered report. The accepted combinations
+cover only non-shipped test, lint, and AGP-internal transitive tools; the
+repository verifier rejects new or stale findings, a reviewed ID on another
+coordinate, or any accepted coordinate that enters a production configuration.
+An ID-specific exception also covers aliases that OSV associates with that ID,
+so any policy or database change still requires human advisory review. Review
+release notes and security advisories before merging any update.
 
 GitHub Dependabot vulnerability alerts are repository-account state and are not
 configured or asserted by this source-only gate. An authorized administrator

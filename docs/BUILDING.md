@@ -103,10 +103,15 @@ pass. CI installs the exact OSV-Scanner release declared in
 `uv.lock` plus every supported Gradle lockfile. The settings lock remains under
 the offline integrity check because OSV-Scanner does not parse that filename.
 
-Exact OSV exceptions in `config/osv-scanner.toml` cover only transitive Android
-test, lint, and AGP-internal tooling that is absent from shipped configurations.
-The repository check rejects broad, expired, untracked, or production-reaching
-exceptions. Reassess or remove them before their expiry date.
+OSV-Scanner first writes unfiltered JSON, and the repository verifier compares
+every vulnerability ID, ecosystem, package, and version with the exact tuples in
+`config/osv-accepted-vulnerabilities.json`. The ID-specific, expiring
+`IgnoredVulns` entries in `config/osv-scanner.toml` then produce the filtered
+SARIF report. Accepted tuples cover only transitive Android test, lint, and
+AGP-internal tooling that is absent from shipped configurations. A new ID, a
+known ID on another coordinate, a stale tuple, or movement into production
+fails. Because the live OSV database changes independently, re-review both
+reports and the policy whenever the result set changes.
 
 ## Offline speech native build
 

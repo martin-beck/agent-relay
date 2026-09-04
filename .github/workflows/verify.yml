@@ -104,6 +104,19 @@ jobs:
             fi
           done < config/dependency-lockfiles.txt
           mkdir -p build/reports/quality
+          set +e
+          "${OSV_SCANNER_BIN}" scan source \
+            --no-resolve \
+            --format json \
+            --output-file build/reports/quality/osv-scanner-unfiltered.json \
+            "${lock_args[@]}"
+          unfiltered_status=$?
+          set -e
+          if (( unfiltered_status > 1 )); then
+            exit "${unfiltered_status}"
+          fi
+          uv run python scripts/ci/verify_dependency_integrity.py \
+            --osv-results build/reports/quality/osv-scanner-unfiltered.json
           "${OSV_SCANNER_BIN}" scan source \
             --config config/osv-scanner.toml \
             --no-resolve \

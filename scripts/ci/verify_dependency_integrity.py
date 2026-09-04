@@ -18,12 +18,14 @@ from defusedxml.common import DefusedXmlException  # type: ignore[import-untyped
 
 SHA256 = re.compile(r"[0-9a-f]{64}")
 VERSION = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+")
+VULNERABILITY_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:-]+")
 GRADLE_NAMESPACE = {"v": "https://schema.gradle.org/dependency-verification"}
 LOCK_HEADER = (
     "# This is a Gradle generated file for dependency locking.",
     "# Manual edits can break the build and are not advised.",
     "# This file is expected to be part of source control.",
 )
+ROOT_LOCKFILE = Path("gradle.lockfile")
 
 
 class IntegrityError(RuntimeError):
@@ -40,6 +42,8 @@ def read_lock_manifest(path: Path) -> tuple[Path, ...]:
         raise IntegrityError(f"{path}: lockfile manifest must be nonempty and unique")
     if tuple(sorted(entries)) != entries:
         raise IntegrityError(f"{path}: lockfile manifest must be sorted")
+    if ROOT_LOCKFILE not in entries:
+        raise IntegrityError(f"{path}: root project {ROOT_LOCKFILE} is required")
     return entries
 
 
@@ -128,58 +132,157 @@ def is_assurance_only(configuration: str) -> bool:
     )
 
 
-def verify_osv_exceptions(
+OsvFinding = tuple[str, str, str, str]
+
+
+def read_osv_policy_document(path: Path) -> tuple[Any, Any, Any]:
+    parsed = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(parsed, dict) or set(parsed) != {
+        "ignore_until",
+        "reason",
+        "accepted_findings",
+    }:
+        raise IntegrityError(f"{path}: unexpected OSV acceptance policy fields")
+    reason = parsed["reason"]
+    if not isinstance(reason, str) or len(reason.strip()) < 20:
+        raise IntegrityError(f"{path}: OSV policy needs a reviewable reason")
+    records = parsed["accepted_findings"]
+    if not isinstance(records, list) or not records:
+        raise IntegrityError(f"{path}: accepted_findings must be a nonempty list")
+    return parsed["ignore_until"], reason, records
+
+
+def parse_osv_policy_expiry(path: Path, value: Any, today: datetime.date) -> datetime.date:
+    try:
+        expiry = datetime.date.fromisoformat(value)
+    except (TypeError, ValueError) as failure:
+        raise IntegrityError(f"{path}: OSV policy expiry must be an ISO date") from failure
+    if not today <= expiry <= today + datetime.timedelta(days=120):
+        raise IntegrityError(f"{path}: OSV policy is expired or overlong")
+    return expiry
+
+
+def parse_accepted_finding(path: Path, record: Any) -> OsvFinding:
+    if not isinstance(record, dict) or set(record) != {
+        "id",
+        "ecosystem",
+        "name",
+        "version",
+    }:
+        raise IntegrityError(f"{path}: every accepted finding must be exact")
+    finding = (record["id"], record["ecosystem"], record["name"], record["version"])
+    if not all(isinstance(value, str) and value for value in finding):
+        raise IntegrityError(f"{path}: accepted finding fields must be nonempty strings")
+    if VULNERABILITY_ID.fullmatch(finding[0]) is None or finding[1] != "Maven":
+        raise IntegrityError(f"{path}: accepted finding must name an exact Maven vulnerability")
+    return finding
+
+
+def verify_accepted_finding_scope(
+    path: Path,
+    finding: OsvFinding,
+    locked_configurations: dict[tuple[str, str], set[str]],
+) -> None:
+    coordinate = (finding[2], finding[3])
+    if coordinate not in locked_configurations:
+        raise IntegrityError(f"{path}: accepted finding is not locked: {finding}")
+    unsafe = sorted(
+        configuration
+        for configuration in locked_configurations[coordinate]
+        if not is_assurance_only(configuration)
+    )
+    if unsafe:
+        raise IntegrityError(f"{path}: {coordinate} is ignored in production: {unsafe}")
+
+
+def read_osv_policy(
     path: Path,
     locked_configurations: dict[tuple[str, str], set[str]],
     today: datetime.date,
+) -> tuple[set[OsvFinding], dict[str, tuple[datetime.date, str]]]:
+    expiry_value, reason, records = read_osv_policy_document(path)
+    expiry = parse_osv_policy_expiry(path, expiry_value, today)
+    findings: list[OsvFinding] = []
+    for record in records:
+        finding = parse_accepted_finding(path, record)
+        verify_accepted_finding_scope(path, finding, locked_configurations)
+        findings.append(finding)
+    if findings != sorted(set(findings)):
+        raise IntegrityError(f"{path}: accepted findings must be unique and sorted")
+    ids = {finding[0] for finding in findings}
+    return set(findings), dict.fromkeys(ids, (expiry, reason))
+
+
+def verify_osv_exceptions(
+    path: Path,
+    expected: dict[str, tuple[datetime.date, str]],
 ) -> None:
     parsed: dict[str, Any] = tomllib.loads(path.read_text(encoding="utf-8"))
-    if set(parsed) != {"PackageOverrides"}:
-        raise IntegrityError(f"{path}: only exact package overrides are allowed")
-    overrides = parsed["PackageOverrides"]
-    if not isinstance(overrides, list):
-        raise IntegrityError(f"{path}: PackageOverrides must be a list")
-    seen: set[tuple[str, str]] = set()
-    for override in overrides:
-        if set(override) != {
-            "name",
-            "version",
-            "ecosystem",
-            "vulnerability",
-            "effectiveUntil",
-            "reason",
-        }:
+    if set(parsed) != {"IgnoredVulns"}:
+        raise IntegrityError(f"{path}: only ID-specific IgnoredVulns are allowed")
+    exceptions = parsed["IgnoredVulns"]
+    if not isinstance(exceptions, list):
+        raise IntegrityError(f"{path}: IgnoredVulns must be a list")
+    actual: dict[str, tuple[datetime.date, str]] = {}
+    for exception in exceptions:
+        if not isinstance(exception, dict) or set(exception) != {"id", "ignoreUntil", "reason"}:
             raise IntegrityError(f"{path}: OSV exceptions must be exact and fully documented")
-        coordinate = (override["name"], override["version"])
-        if coordinate in seen or coordinate not in locked_configurations:
-            raise IntegrityError(f"{path}: duplicate or unlocked OSV exception {coordinate}")
-        seen.add(coordinate)
-        if override["ecosystem"] != "Maven" or override["vulnerability"] != {"ignore": True}:
-            raise IntegrityError(f"{path}: {coordinate} must ignore only Maven vulnerabilities")
-        expiry = override["effectiveUntil"]
-        if not isinstance(
-            expiry, datetime.date
-        ) or not today <= expiry <= today + datetime.timedelta(days=120):
-            raise IntegrityError(f"{path}: {coordinate} has an expired or overlong exception")
-        if not isinstance(override["reason"], str) or len(override["reason"].strip()) < 20:
-            raise IntegrityError(f"{path}: {coordinate} needs a reviewable reason")
-        unsafe = sorted(
-            configuration
-            for configuration in locked_configurations[coordinate]
-            if not is_assurance_only(configuration)
+        vulnerability_id = exception["id"]
+        if (
+            not isinstance(vulnerability_id, str)
+            or VULNERABILITY_ID.fullmatch(vulnerability_id) is None
+        ):
+            raise IntegrityError(f"{path}: invalid vulnerability ID")
+        if vulnerability_id in actual:
+            raise IntegrityError(f"{path}: duplicate vulnerability ID {vulnerability_id}")
+        actual[vulnerability_id] = (exception["ignoreUntil"], exception["reason"])
+    if actual != expected:
+        raise IntegrityError(
+            f"{path}: ignored IDs, expiry, or reason differ from acceptance policy"
         )
-        if unsafe:
-            raise IntegrityError(f"{path}: {coordinate} is ignored in production: {unsafe}")
+
+
+def verify_osv_findings(path: Path, accepted: set[OsvFinding]) -> None:
+    parsed = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(parsed, dict) or not isinstance(parsed.get("results"), list):
+        raise IntegrityError(f"{path}: invalid OSV-Scanner JSON report")
+    findings: set[OsvFinding] = set()
+    try:
+        for result in parsed["results"]:
+            for package_result in result.get("packages", []):
+                package = package_result["package"]
+                for vulnerability in package_result.get("vulnerabilities", []):
+                    findings.add(
+                        (
+                            vulnerability["id"],
+                            package["ecosystem"],
+                            package["name"],
+                            package["version"],
+                        )
+                    )
+    except (KeyError, TypeError) as failure:
+        raise IntegrityError(f"{path}: malformed OSV-Scanner finding") from failure
+    unexpected = sorted(findings - accepted)
+    missing = sorted(accepted - findings)
+    if unexpected or missing:
+        raise IntegrityError(
+            f"{path}: OSV findings differ from reviewed exact tuples: "
+            f"unexpected={unexpected}, missing={missing}"
+        )
 
 
 def verify_repository(root: Path, today: datetime.date | None = None) -> None:
     locked = read_locks(root, root / "config/dependency-lockfiles.txt")
     verify_gradle_metadata(root / "gradle/verification-metadata.xml")
     verify_scanner_release(root / "config/osv-scanner-release.json")
-    verify_osv_exceptions(
-        root / "config/osv-scanner.toml",
+    _, expected_exceptions = read_osv_policy(
+        root / "config/osv-accepted-vulnerabilities.json",
         locked,
         today or datetime.date.today(),
+    )
+    verify_osv_exceptions(
+        root / "config/osv-scanner.toml",
+        expected_exceptions,
     )
     if not (root / "uv.lock").is_file():
         raise IntegrityError(f"{root / 'uv.lock'}: required OSV input is missing")
@@ -188,9 +291,19 @@ def verify_repository(root: Path, today: datetime.date | None = None) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.cwd())
+    parser.add_argument("--osv-results", type=Path)
     arguments = parser.parse_args()
     try:
-        verify_repository(arguments.root.resolve())
+        root = arguments.root.resolve()
+        verify_repository(root)
+        if arguments.osv_results is not None:
+            locked = read_locks(root, root / "config/dependency-lockfiles.txt")
+            accepted, _ = read_osv_policy(
+                root / "config/osv-accepted-vulnerabilities.json",
+                locked,
+                datetime.date.today(),
+            )
+            verify_osv_findings(arguments.osv_results, accepted)
     except (IntegrityError, OSError, ValueError, ElementTree.ParseError) as failure:
         print(f"Dependency integrity verification failed: {failure}", file=sys.stderr)
         return 1

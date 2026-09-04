@@ -28,7 +28,7 @@ class DependencyIntegrityVerifierTest(unittest.TestCase):
         (self.root / "module").mkdir()
         (self.root / "uv.lock").write_text("version = 1\n", encoding="utf-8")
         (self.root / "config/dependency-lockfiles.txt").write_text(
-            "module/gradle.lockfile\n", encoding="utf-8"
+            "gradle.lockfile\nmodule/gradle.lockfile\n", encoding="utf-8"
         )
         self.write_lock("debugUnitTestRuntimeClasspath")
         self.write_metadata("sha256")
@@ -39,17 +39,16 @@ class DependencyIntegrityVerifierTest(unittest.TestCase):
         self.temporary_directory.cleanup()
 
     def write_lock(self, configuration: str) -> None:
-        (self.root / "module/gradle.lockfile").write_text(
-            "\n".join(
-                (
-                    *VERIFY.LOCK_HEADER,
-                    f"example:tool:1.2.3={configuration}",
-                    "empty=annotationProcessor",
-                    "",
-                )
-            ),
-            encoding="utf-8",
+        contents = "\n".join(
+            (
+                *VERIFY.LOCK_HEADER,
+                f"example:tool:1.2.3={configuration}",
+                "empty=annotationProcessor",
+                "",
+            )
         )
+        for relative_path in ("gradle.lockfile", "module/gradle.lockfile"):
+            (self.root / relative_path).write_text(contents, encoding="utf-8")
 
     def write_metadata(self, checksum: str) -> None:
         value = "a" * 64
@@ -79,18 +78,60 @@ class DependencyIntegrityVerifierTest(unittest.TestCase):
         )
 
     def write_osv_config(self, expiry: datetime.date) -> None:
+        reason = "Test-only dependency is not packaged in the application."
+        policy = {
+            "ignore_until": expiry.isoformat(),
+            "reason": reason,
+            "accepted_findings": [
+                {
+                    "id": "GHSA-test-0000-0000",
+                    "ecosystem": "Maven",
+                    "name": "example:tool",
+                    "version": "1.2.3",
+                }
+            ],
+        }
+        (self.root / "config/osv-accepted-vulnerabilities.json").write_text(
+            json.dumps(policy), encoding="utf-8"
+        )
         (self.root / "config/osv-scanner.toml").write_text(
             (
-                "[[PackageOverrides]]\n"
-                'name = "example:tool"\n'
-                'version = "1.2.3"\n'
-                'ecosystem = "Maven"\n'
-                "vulnerability.ignore = true\n"
-                f"effectiveUntil = {expiry.isoformat()}\n"
-                'reason = "Test-only dependency is not packaged."\n'
+                "[[IgnoredVulns]]\n"
+                'id = "GHSA-test-0000-0000"\n'
+                f"ignoreUntil = {expiry.isoformat()}\n"
+                f'reason = "{reason}"\n'
             ),
             encoding="utf-8",
         )
+
+    def write_osv_report(
+        self,
+        vulnerability_id: str = "GHSA-test-0000-0000",
+        name: str = "example:tool",
+    ) -> Path:
+        report = self.root / "osv-results.json"
+        report.write_text(
+            json.dumps(
+                {
+                    "results": [
+                        {
+                            "packages": [
+                                {
+                                    "package": {
+                                        "ecosystem": "Maven",
+                                        "name": name,
+                                        "version": "1.2.3",
+                                    },
+                                    "vulnerabilities": [{"id": vulnerability_id}],
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ),
+            encoding="utf-8",
+        )
+        return report
 
     def test_accepts_exact_sha256_locks_pin_and_test_only_exception(self) -> None:
         VERIFY.verify_repository(self.root, self.TODAY)
@@ -121,6 +162,14 @@ class DependencyIntegrityVerifierTest(unittest.TestCase):
         with self.assertRaisesRegex(VERIFY.IntegrityError, "manifest differs"):
             VERIFY.verify_repository(self.root, self.TODAY)
 
+    def test_rejects_omitted_root_project_lock(self) -> None:
+        (self.root / "gradle.lockfile").unlink()
+        (self.root / "config/dependency-lockfiles.txt").write_text(
+            "module/gradle.lockfile\n", encoding="utf-8"
+        )
+        with self.assertRaisesRegex(VERIFY.IntegrityError, "root project"):
+            VERIFY.verify_repository(self.root, self.TODAY)
+
     def test_rejects_exception_that_reaches_production(self) -> None:
         self.write_lock("releaseRuntimeClasspath")
         with self.assertRaisesRegex(VERIFY.IntegrityError, "ignored in production"):
@@ -137,6 +186,55 @@ class DependencyIntegrityVerifierTest(unittest.TestCase):
         self.write_osv_config(self.TODAY - datetime.timedelta(days=1))
         with self.assertRaisesRegex(VERIFY.IntegrityError, "expired or overlong"):
             VERIFY.verify_repository(self.root, self.TODAY)
+
+    def test_rejects_package_wide_vulnerability_override(self) -> None:
+        (self.root / "config/osv-scanner.toml").write_text(
+            "[[PackageOverrides]]\n"
+            'name = "example:tool"\n'
+            'version = "1.2.3"\n'
+            'ecosystem = "Maven"\n'
+            "vulnerability.ignore = true\n",
+            encoding="utf-8",
+        )
+        with self.assertRaisesRegex(VERIFY.IntegrityError, "ID-specific"):
+            VERIFY.verify_repository(self.root, self.TODAY)
+
+    def test_accepts_only_the_reviewed_unfiltered_osv_finding_tuple(self) -> None:
+        accepted, _ = VERIFY.read_osv_policy(
+            self.root / "config/osv-accepted-vulnerabilities.json",
+            VERIFY.read_locks(self.root, self.root / "config/dependency-lockfiles.txt"),
+            self.TODAY,
+        )
+        VERIFY.verify_osv_findings(self.write_osv_report(), accepted)
+
+    def test_rejects_new_vulnerability_id_in_unfiltered_results(self) -> None:
+        accepted, _ = VERIFY.read_osv_policy(
+            self.root / "config/osv-accepted-vulnerabilities.json",
+            VERIFY.read_locks(self.root, self.root / "config/dependency-lockfiles.txt"),
+            self.TODAY,
+        )
+        with self.assertRaisesRegex(VERIFY.IntegrityError, "unexpected"):
+            VERIFY.verify_osv_findings(self.write_osv_report("GHSA-new0-0000-0000"), accepted)
+
+    def test_rejects_reviewed_id_on_another_package(self) -> None:
+        accepted, _ = VERIFY.read_osv_policy(
+            self.root / "config/osv-accepted-vulnerabilities.json",
+            VERIFY.read_locks(self.root, self.root / "config/dependency-lockfiles.txt"),
+            self.TODAY,
+        )
+        with self.assertRaisesRegex(VERIFY.IntegrityError, "unexpected"):
+            VERIFY.verify_osv_findings(self.write_osv_report(name="example:production"), accepted)
+
+    def test_rejects_stale_reviewed_tuple_missing_from_results(self) -> None:
+        accepted, _ = VERIFY.read_osv_policy(
+            self.root / "config/osv-accepted-vulnerabilities.json",
+            VERIFY.read_locks(self.root, self.root / "config/dependency-lockfiles.txt"),
+            self.TODAY,
+        )
+        empty_report = self.root / "osv-results.json"
+        empty_report.write_text('{"results": []}', encoding="utf-8")
+        with self.assertRaisesRegex(VERIFY.IntegrityError, "missing"):
+            VERIFY.verify_osv_findings(empty_report, accepted)
 
     def test_rejects_mutable_scanner_url(self) -> None:
         self.write_release("https://example.com/latest/osv-scanner")

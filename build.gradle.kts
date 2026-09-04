@@ -11,6 +11,11 @@ plugins {
     alias(libs.plugins.spotless)
 }
 
+dependencyLocking {
+    lockAllConfigurations()
+    lockMode.set(LockMode.STRICT)
+}
+
 val ktlintEditorConfig = mapOf(
     "ij_kotlin_allow_trailing_comma" to "true",
     "ij_kotlin_allow_trailing_comma_on_call_site" to "true",
