@@ -8,6 +8,11 @@ setup() {
   TEST_ROOT="$(mktemp -d "${BATS_TEST_TMPDIR}/tooling.XXXXXX")"
   TOOL_ROOT="$TEST_ROOT/tools"
   OUTSIDE_ROOT=""
+  case "$(uname -m)" in
+    x86_64) SHELLCHECK_PLATFORM=linux.x86_64 ;;
+    aarch64 | arm64) SHELLCHECK_PLATFORM=linux.aarch64 ;;
+    *) SHELLCHECK_PLATFORM=unsupported ;;
+  esac
 }
 
 teardown() {
@@ -34,7 +39,7 @@ install_offline() {
 
 @test "offline install rejects a corrupt cached archive" {
   seed_archives
-  printf 'corruption\n' >> "$TOOL_ROOT/cache/shellcheck-v0.11.0.linux.x86_64.tar.xz"
+  printf 'corruption\n' >> "$TOOL_ROOT/cache/shellcheck-v0.11.0.$SHELLCHECK_PLATFORM.tar.xz"
   run install_offline
   [ "$status" -ne 0 ]
   [ ! -e "$TOOL_ROOT/bin/shellcheck" ]

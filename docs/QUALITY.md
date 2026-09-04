@@ -101,6 +101,9 @@ uv run pre-commit run --all-files --show-diff-on-failure
 ./gradlew spotlessCheck detekt buildHealth test koverXmlReport koverVerify checkKotlinAbi lintDebug assembleDebug --stacktrace
 ```
 
+Run the complete repository and shell gate on Linux x86_64 or arm64. Windows
+hosts use WSL for those checks; the Gradle portion can run from PowerShell.
+
 Install the fast checks as a Git hook after the first sync:
 
 ```bash

@@ -11,8 +11,9 @@ integration.
 - CMake 3.28.3
 - Ninja 1.11.1
 - Bash and standard POSIX build tools
+- Linux x86_64 or arm64 for the shell-quality gate, including WSL on Windows
 - ShellCheck 0.11.0, shfmt 3.14.0, and Bats 1.14.0, installed by the
-  checksum-verifying repository helper
+  checksum-verifying repository helper on that Linux host
 - Git
 - Vale 3.19.0, installed from the official checksum-verified release archive
 - uv, used to install the repository's locked cross-language check runner
@@ -47,12 +48,10 @@ uv run pre-commit run --all-files --show-diff-on-failure
 ./gradlew spotlessCheck detekt buildHealth test koverXmlReport koverVerify checkKotlinAbi lintDebug assembleDebug --stacktrace
 ```
 
-On Windows PowerShell:
+On Windows, run the complete repository and shell gates inside x86_64 or arm64
+WSL. You can run the Gradle portion from PowerShell:
 
 ```powershell
-uv sync --locked --only-group quality --only-group docs
-uv run pytest
-uv run pre-commit run --all-files --show-diff-on-failure
 .\gradlew.bat spotlessCheck detekt buildHealth test koverXmlReport koverVerify checkKotlinAbi lintDebug assembleDebug --stacktrace
 ```
 
