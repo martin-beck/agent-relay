@@ -373,7 +373,7 @@ class SshAuthorizedKeysInstallScriptTest {
             val first = start(home)
             val second = start(home)
             Thread.sleep(100)
-            Files.delete(lockDirectory)
+            assertTrue(lockDirectory.toFile().deleteRecursively())
 
             val firstResult = complete(first)
             val secondResult = complete(second)
