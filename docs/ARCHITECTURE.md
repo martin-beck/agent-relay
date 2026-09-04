@@ -180,6 +180,15 @@ validated at the session API boundary. Later capture and tracing components may
 retain or export these observations, but domain events and the session
 repository remain authoritative.
 
+The bounded capture store accepts observations only through an explicitly
+authorized, component-scoped session. It redacts before writing, assigns a
+monotonic cursor and checksum, and enforces record, byte and age limits.
+Queries are read-only projections filtered by causal references; expiry,
+overwrites, coalescing, truncation and rejected writes are reported as bounded
+counters. Corrupt tail frames are discarded during recovery. Capture cannot
+acknowledge commands, determine completion, or drop effects, failures,
+approvals or evidence links from their authoritative stores.
+
 The process lifecycle is a provider-neutral composition boundary. Moving the
 app to the background serially suspends an already-created session runtime
 unless the user explicitly started background connection mode. Returning to the
