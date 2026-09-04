@@ -18,8 +18,8 @@ base_arguments() {
     --onnx-license "$TEST_ROOT/onnx-license" \
     --onnx-notices "$TEST_ROOT/onnx-notices" \
     --ndk-dir "$TEST_ROOT/ndk" \
-    --cmake cmake \
-    --ninja ninja \
+    --cmake "${CMAKE_COMMAND:-cmake}" \
+    --ninja "${NINJA_COMMAND:-ninja}" \
     --jni-output "$TEST_ROOT/output/speech/sherpa/build/generated/sherpa/runtime/jni" \
     --resources-output "$TEST_ROOT/output/speech/sherpa/build/generated/sherpa/runtime/resources" \
     --work-dir "$TEST_ROOT/output/speech/sherpa/build/tmp/case" \
@@ -34,6 +34,90 @@ base_arguments() {
     --ndk-version 28.2.13676358 \
     --cmake-version 3.28.3 \
     --ninja-version 1.11.1
+}
+
+prepare_fake_build() {
+  local tool
+  mkdir -p \
+    "$TEST_ROOT/source/cmake" \
+    "$TEST_ROOT/fake-bin" \
+    "$TEST_ROOT/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin" \
+    "$TEST_ROOT/output/speech/sherpa/build/generated/sherpa/runtime/jni" \
+    "$TEST_ROOT/output/speech/sherpa/build/generated/sherpa/runtime/resources" \
+    "$TEST_ROOT/output/speech/sherpa/build/tmp/case/runtime-build"
+  printf '%s\n' 'if(NOT DEFINED SHERPA_ONNX_GIT_SHA1)' > "$TEST_ROOT/source/cmake/show-info.cmake"
+  printf '%s\n' 'test license' > "$TEST_ROOT/source/LICENSE"
+  printf '%s\n' 'Pkg.Revision = 28.2.13676358' > "$TEST_ROOT/ndk/source.properties"
+  printf '%s\n' 'old JNI output' > \
+    "$TEST_ROOT/output/speech/sherpa/build/generated/sherpa/runtime/jni/sentinel"
+  printf '%s\n' 'old resources output' > \
+    "$TEST_ROOT/output/speech/sherpa/build/generated/sherpa/runtime/resources/sentinel"
+  printf '%s\n' 'stale work content' > \
+    "$TEST_ROOT/output/speech/sherpa/build/tmp/case/runtime-build/stale"
+
+  cat > "$TEST_ROOT/fake-bin/fake-cmake" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+if [[ "${1:-}" == --version ]]; then
+  printf 'cmake version 3.28.3\n'
+  exit 0
+fi
+if [[ "${1:-}" == --build ]]; then
+  [[ "${FAKE_CMAKE_MODE:-}" != build-fail ]] || exit 48
+  exit 0
+fi
+while (($# > 0)); do
+  if [[ "$1" == -B ]]; then
+    mkdir -p -- "$2"
+    break
+  fi
+  shift
+done
+[[ "${FAKE_CMAKE_MODE:-}" != configure-fail ]] || exit 47
+EOF
+  cat > "$TEST_ROOT/fake-bin/fake-ninja" <<'EOF'
+#!/usr/bin/env bash
+printf '1.11.1\n'
+EOF
+  cat > "$TEST_ROOT/fake-bin/patch" <<'EOF'
+#!/usr/bin/env bash
+cat > /dev/null
+EOF
+  cat > "$TEST_ROOT/fake-bin/sha256sum" <<'EOF'
+#!/usr/bin/env bash
+case "${1:-}" in
+  */onnx-license)
+    printf '2f07c72751aed99790b8a4869cf2311df85a860b22ded05fa22803587a48922c  %s\n' "$1"
+    ;;
+  */onnx-notices)
+    printf '0e07b95f3a8d6230037707c5c4a2b554d12c4cb67369669ac255635528ffcee2  %s\n' "$1"
+    ;;
+  */LICENSE)
+    printf 'cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30  %s\n' "$1"
+    ;;
+  *) exec /usr/bin/sha256sum "$@" ;;
+esac
+EOF
+  chmod +x "$TEST_ROOT/fake-bin/"*
+  for tool in llvm-readelf llvm-nm llvm-strings llvm-strip; do
+    printf '#!/usr/bin/env bash\nexit 0\n' > \
+      "$TEST_ROOT/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/$tool"
+    chmod +x "$TEST_ROOT/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/$tool"
+  done
+  CMAKE_COMMAND=fake-cmake
+  NINJA_COMMAND=fake-ninja
+}
+
+assert_published_outputs_unchanged() {
+  run cat "$TEST_ROOT/output/speech/sherpa/build/generated/sherpa/runtime/jni/sentinel"
+  [ "$status" -eq 0 ]
+  [ "$output" = "old JNI output" ]
+  run cat "$TEST_ROOT/output/speech/sherpa/build/generated/sherpa/runtime/resources/sentinel"
+  [ "$status" -eq 0 ]
+  [ "$output" = "old resources output" ]
+  [ ! -e "$TEST_ROOT/output/speech/sherpa/build/generated/sherpa/runtime/jni.next" ]
+  [ ! -e "$TEST_ROOT/output/speech/sherpa/build/generated/sherpa/runtime/resources.next" ]
+  [ ! -e "$TEST_ROOT/output/speech/sherpa/build/tmp/case/runtime-build/stale" ]
 }
 
 @test "native runtime rejects a dangling option" {
@@ -75,4 +159,34 @@ base_arguments() {
   run "$SCRIPT" "${arguments[@]}"
   [ "$status" -eq 1 ]
   [[ "$output" == *"invalid sherpa source directory"* ]]
+}
+
+@test "native runtime preserves published output when configure fails" {
+  prepare_fake_build
+  mapfile -t arguments < <(base_arguments)
+  run env PATH="$TEST_ROOT/fake-bin:$PATH" FAKE_CMAKE_MODE=configure-fail \
+    "$SCRIPT" "${arguments[@]}"
+  [ "$status" -eq 47 ]
+  [[ "$output" == *"Building TTS-free sherpa Android runtime for arm64-v8a"* ]]
+  assert_published_outputs_unchanged
+}
+
+@test "native runtime preserves published output when the build fails" {
+  prepare_fake_build
+  mapfile -t arguments < <(base_arguments)
+  run env PATH="$TEST_ROOT/fake-bin:$PATH" FAKE_CMAKE_MODE=build-fail \
+    "$SCRIPT" "${arguments[@]}"
+  [ "$status" -eq 48 ]
+  [[ "$output" == *"Building TTS-free sherpa Android runtime for arm64-v8a"* ]]
+  assert_published_outputs_unchanged
+}
+
+@test "native runtime rejects a successful build with no JNI artifact" {
+  prepare_fake_build
+  mapfile -t arguments < <(base_arguments)
+  run env PATH="$TEST_ROOT/fake-bin:$PATH" FAKE_CMAKE_MODE=missing-artifact \
+    "$SCRIPT" "${arguments[@]}"
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"sherpa JNI output was missing for arm64-v8a"* ]]
+  assert_published_outputs_unchanged
 }
