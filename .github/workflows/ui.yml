@@ -97,6 +97,10 @@ jobs:
           # Isolate each run from stale AVD locks left by an interrupted action.
           avd-name: test-${{ github.run_id }}-${{ github.run_attempt }}
           emulator-port: 5564
+          # Pin both sides of the emulator transport.  The action's default
+          # bridge-port derivation is unreliable on the shared self-hosted
+          # runner when another emulator owns the default console range.
+          emulator-options: -ports 5564,5565
           disable-animations: true
           script: >-
             adb wait-for-device &&
@@ -297,6 +301,7 @@ jobs:
           # Isolate each run from stale AVD locks left by an interrupted action.
           avd-name: test-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.name }}
           emulator-port: 5564
+          emulator-options: -ports 5564,5565
           disable-animations: true
           script: >-
             adb wait-for-device &&
