@@ -26,7 +26,7 @@ jobs:
     runs-on: [self-hosted, linux, x64, agent-relay-device-ci]
     timeout-minutes: 40
     env:
-      ADB_SERVER_PORT: "5039"
+      ADB_SERVER_PORT: "5038"
 
     steps:
       - name: Check out source
@@ -204,7 +204,7 @@ jobs:
     runs-on: [self-hosted, linux, x64, agent-relay-device-ci]
     timeout-minutes: 40
     env:
-      ADB_SERVER_PORT: "5039"
+      ADB_SERVER_PORT: "5038"
     strategy:
       fail-fast: false
       matrix:
