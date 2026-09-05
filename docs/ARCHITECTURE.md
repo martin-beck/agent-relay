@@ -83,6 +83,13 @@ frames; they cannot inspect protected payloads or change the negotiated transcri
 Negotiation selects the highest common version and intersects capabilities, while
 malformed, oversized, mismatched, or downgraded messages fail before adapter I/O.
 
+Continuity tokens preserve the daemon identity, pairing grant and protocol
+generation across reconnect and transport failover. The bounded reconnect state
+machine rejects expired or changed tokens. Command IDs use a durable ledger:
+in-flight duplicates are suppressed, completed commands are observed idempotently,
+and partial delivery becomes an explicit unknown outcome that is never replayed
+automatically.
+
 ## Runtime flow
 
 1. A `ConnectionProvider` enumerates generic profile summaries.

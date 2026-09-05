@@ -21,6 +21,51 @@ public final class dev/agentrelay/connection/api/AuthenticatedProtocolFrame {
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class dev/agentrelay/connection/api/CommandDecision {
+	public synthetic fun <init> (Ljava/lang/String;Ldev/agentrelay/connection/api/CommandDisposition;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-RDgCVW0 ()Ljava/lang/String;
+	public final fun component2 ()Ldev/agentrelay/connection/api/CommandDisposition;
+	public final fun copy-aOW6S78 (Ljava/lang/String;Ldev/agentrelay/connection/api/CommandDisposition;)Ldev/agentrelay/connection/api/CommandDecision;
+	public static synthetic fun copy-aOW6S78$default (Ldev/agentrelay/connection/api/CommandDecision;Ljava/lang/String;Ldev/agentrelay/connection/api/CommandDisposition;ILjava/lang/Object;)Ldev/agentrelay/connection/api/CommandDecision;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDisposition ()Ldev/agentrelay/connection/api/CommandDisposition;
+	public final fun getId-RDgCVW0 ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/CommandDisposition : java/lang/Enum {
+	public static final field DUPLICATE_COMPLETED Ldev/agentrelay/connection/api/CommandDisposition;
+	public static final field DUPLICATE_IN_FLIGHT Ldev/agentrelay/connection/api/CommandDisposition;
+	public static final field NEW Ldev/agentrelay/connection/api/CommandDisposition;
+	public static final field UNKNOWN_DELIVERY Ldev/agentrelay/connection/api/CommandDisposition;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/connection/api/CommandDisposition;
+	public static fun values ()[Ldev/agentrelay/connection/api/CommandDisposition;
+}
+
+public final class dev/agentrelay/connection/api/CommandId {
+	public static final synthetic fun box-impl (Ljava/lang/String;)Ldev/agentrelay/connection/api/CommandId;
+	public static fun constructor-impl (Ljava/lang/String;)Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/CommandLedger {
+	public fun <init> ()V
+	public final fun begin-rEiJ2XI (Ljava/lang/String;)Ldev/agentrelay/connection/api/CommandDecision;
+	public final fun complete-rEiJ2XI (Ljava/lang/String;)Z
+	public final fun disposition-rEiJ2XI (Ljava/lang/String;)Ldev/agentrelay/connection/api/CommandDisposition;
+	public final fun markUnknown-rEiJ2XI (Ljava/lang/String;)Z
+}
+
 public final class dev/agentrelay/connection/api/ConnectionCapability : java/lang/Enum {
 	public static final field AUTOMATIC_RECONNECT Ldev/agentrelay/connection/api/ConnectionCapability;
 	public static final field BACKGROUND_RECOVERY Ldev/agentrelay/connection/api/ConnectionCapability;
@@ -605,6 +650,67 @@ public final class dev/agentrelay/connection/api/ConnectionState$Reconnecting : 
 	public final fun getDelay-UwyO8pc ()J
 	public final fun getLastFailure ()Ldev/agentrelay/connection/api/ConnectionFailure;
 	public final fun getRetryAtEpochMillis ()J
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ContinuityController {
+	public fun <init> (Ldev/agentrelay/connection/api/ContinuityToken;I)V
+	public synthetic fun <init> (Ldev/agentrelay/connection/api/ContinuityToken;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun connect (Ldev/agentrelay/connection/api/ContinuityToken;Ldev/agentrelay/connection/api/DaemonTransportKind;J)Ldev/agentrelay/connection/api/ContinuitySnapshot;
+	public final fun disconnect (J)Ldev/agentrelay/connection/api/ContinuitySnapshot;
+	public final fun reconnect (Ldev/agentrelay/connection/api/ContinuityToken;Ldev/agentrelay/connection/api/DaemonTransportKind;J)Ldev/agentrelay/connection/api/ContinuitySnapshot;
+	public final fun snapshot ()Ldev/agentrelay/connection/api/ContinuitySnapshot;
+	public final fun suspend (J)Ldev/agentrelay/connection/api/ContinuitySnapshot;
+}
+
+public final class dev/agentrelay/connection/api/ContinuitySnapshot {
+	public fun <init> (Ldev/agentrelay/connection/api/ContinuityState;Ldev/agentrelay/connection/api/DaemonTransportKind;JI)V
+	public final fun component1 ()Ldev/agentrelay/connection/api/ContinuityState;
+	public final fun component2 ()Ldev/agentrelay/connection/api/DaemonTransportKind;
+	public final fun component3 ()J
+	public final fun component4 ()I
+	public final fun copy (Ldev/agentrelay/connection/api/ContinuityState;Ldev/agentrelay/connection/api/DaemonTransportKind;JI)Ldev/agentrelay/connection/api/ContinuitySnapshot;
+	public static synthetic fun copy$default (Ldev/agentrelay/connection/api/ContinuitySnapshot;Ldev/agentrelay/connection/api/ContinuityState;Ldev/agentrelay/connection/api/DaemonTransportKind;JIILjava/lang/Object;)Ldev/agentrelay/connection/api/ContinuitySnapshot;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getGeneration ()J
+	public final fun getReconnectAttempts ()I
+	public final fun getState ()Ldev/agentrelay/connection/api/ContinuityState;
+	public final fun getTransport ()Ldev/agentrelay/connection/api/DaemonTransportKind;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ContinuityState : java/lang/Enum {
+	public static final field CONNECTED Ldev/agentrelay/connection/api/ContinuityState;
+	public static final field DISCONNECTED Ldev/agentrelay/connection/api/ContinuityState;
+	public static final field FAILING_OVER Ldev/agentrelay/connection/api/ContinuityState;
+	public static final field SUSPENDED Ldev/agentrelay/connection/api/ContinuityState;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/connection/api/ContinuityState;
+	public static fun values ()[Ldev/agentrelay/connection/api/ContinuityState;
+}
+
+public final class dev/agentrelay/connection/api/ContinuityToken {
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJJLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun activeAt (J)Z
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2-J8HH09g ()Ljava/lang/String;
+	public final fun component3-sv2g5rw ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()J
+	public final fun component6 ()J
+	public final fun component7 ()J
+	public final fun copy-PsH8ga4 (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJJ)Ldev/agentrelay/connection/api/ContinuityToken;
+	public static synthetic fun copy-PsH8ga4$default (Ldev/agentrelay/connection/api/ContinuityToken;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJJILjava/lang/Object;)Ldev/agentrelay/connection/api/ContinuityToken;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDaemonIdentity-J8HH09g ()Ljava/lang/String;
+	public final fun getExpiresAtMillis ()J
+	public final fun getGeneration ()J
+	public final fun getGrantId-sv2g5rw ()Ljava/lang/String;
+	public final fun getIssuedAtMillis ()J
+	public final fun getSessionId ()Ljava/lang/String;
+	public final fun getTokenDigest ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
