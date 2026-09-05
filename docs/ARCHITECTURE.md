@@ -76,6 +76,13 @@ and explicit revocation. Unknown, expired, rejected, replayed, or revoked grants
 fail closed. Pairing records carry identities and capabilities, never protected
 task content or transport metadata.
 
+The daemon protocol is transport-independent: versioned authenticated frames,
+capability negotiation, and protected ciphertext are defined in `:connection:api`.
+Direct, private-network, NAT-traversal, and opaque-relay adapters carry the same
+frames; they cannot inspect protected payloads or change the negotiated transcript.
+Negotiation selects the highest common version and intersects capabilities, while
+malformed, oversized, mismatched, or downgraded messages fail before adapter I/O.
+
 ## Runtime flow
 
 1. A `ConnectionProvider` enumerates generic profile summaries.
