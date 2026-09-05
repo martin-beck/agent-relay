@@ -4,6 +4,9 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.ParcelFileDescriptor
 import androidx.activity.ComponentActivity
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -62,6 +65,7 @@ class UsageJourneyTest {
     @Test
     fun capturesVerifiedJourneys() {
         resetCaptureDirectory()
+        hideSystemBars()
         screen = mutableStateOf(UsageGuideScreen.Hub(freshHub()))
         composeTestRule.setContent {
             AgentRelayTheme {
@@ -98,6 +102,18 @@ class UsageJourneyTest {
         captureFileJourney()
         captureAttentionOverview()
         publishCaptures()
+    }
+
+    private fun hideSystemBars() {
+        WindowCompat.getInsetsController(
+                composeTestRule.activity.window,
+                composeTestRule.activity.window.decorView,
+            )
+            .apply {
+                systemBarsBehavior =
+                    WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                hide(WindowInsetsCompat.Type.systemBars())
+            }
     }
 
     private fun captureFreshStartJourney() {
