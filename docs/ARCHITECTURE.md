@@ -2,6 +2,9 @@
 
 Agent Relay separates how an execution environment is reached from how a coding
 agent is controlled. Neither the session layer nor an agent adapter assumes SSH.
+The [extension platform](EXTENSIONS.md) adds versioned, capability-declared
+providers and workflows while keeping policy, secrets, approvals, and durable
+evidence in the phone and daemon authorities.
 
 ## Dependency direction
 
