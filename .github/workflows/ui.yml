@@ -97,43 +97,18 @@ jobs:
           test -s "$system_img"
 
       - name: Run semantic UI and accessibility tests
-        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         env:
-          # The self-hosted host keeps a separate diagnostic emulator on 5554.
-          # Use a runner-owned port so the action's unbounded emu-kill cleanup
-          # cannot target that unrelated process or SDK/ADB transport.
           ANDROID_SERIAL: emulator-5582
-        with:
-          api-level: 36
-          target: default
-          arch: x86_64
-          profile: pixel_7_pro
-          # Isolate each run from stale AVD locks left by an interrupted action.
-          avd-name: test-${{ github.run_id }}-${{ github.run_attempt }}
-          emulator-port: 5582
-          disable-animations: true
-          script: >-
-            adb wait-for-device &&
-            test "$(adb shell getprop sys.boot_completed)" = "1" &&
-            adb shell wm size 1080x2400 &&
-            adb shell wm density 420 &&
-            adb shell settings put system font_scale 1.0 &&
-            adb shell cmd alarm set-timezone UTC &&
-            adb shell cmd uimode night no &&
-            adb shell settings put global window_animation_scale 0 &&
-            adb shell settings put global transition_animation_scale 0 &&
-            adb shell settings put global animator_duration_scale 0 &&
-            adb shell rm -rf /sdcard/Download/agent-relay-usage-guide &&
-            ./gradlew
-            :app:connectedDebugAndroidTest
-            :ssh:android:connectedDebugAndroidTest
-            :storage:android:connectedDebugAndroidTest
-            --stacktrace &&
-            bash scripts/ci/verify_background_process_recovery.sh
-            app/build/outputs/apk/debug/app-debug.apk &&
-            mkdir -p build/usage-guide/captured &&
-            adb pull /sdcard/Download/agent-relay-usage-guide/.
-            build/usage-guide/captured/
+        run: >-
+          EMULATOR_AVD_NAME="test-${{ github.run_id }}-${{ github.run_attempt }}"
+          EMULATOR_PORT=5582 bash scripts/ci/run_android_emulator_tests.sh --
+          ./gradlew :app:connectedDebugAndroidTest :ssh:android:connectedDebugAndroidTest
+          :storage:android:connectedDebugAndroidTest --stacktrace
+          bash scripts/ci/verify_background_process_recovery.sh
+          app/build/outputs/apk/debug/app-debug.apk
+          mkdir -p build/usage-guide/captured
+          "$ANDROID_HOME/platform-tools/adb" pull /sdcard/Download/agent-relay-usage-guide/.
+          build/usage-guide/captured/
 
       - name: Verify connected-test evidence
         run: |
@@ -314,28 +289,15 @@ jobs:
           test -s "$system_img"
 
       - name: Run semantic UI and accessibility tests
-        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         env:
           ANDROID_SERIAL: emulator-5582
-        with:
-          api-level: ${{ matrix.api-level }}
-          target: default
-          arch: x86_64
-          profile: ${{ matrix.profile }}
-          # Isolate each run from stale AVD locks left by an interrupted action.
-          avd-name: test-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.name }}
-          emulator-port: 5582
-          disable-animations: true
-          script: >-
-            adb wait-for-device &&
-            test "$(adb shell getprop sys.boot_completed)" = "1" &&
-            ./gradlew
-            :app:connectedDebugAndroidTest
-            :ssh:android:connectedDebugAndroidTest
-            :storage:android:connectedDebugAndroidTest
-            --stacktrace &&
-            bash scripts/ci/verify_background_process_recovery.sh
-            app/build/outputs/apk/debug/app-debug.apk
+        run: >-
+          EMULATOR_AVD_NAME="test-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.name }}"
+          EMULATOR_PORT=5582 bash scripts/ci/run_android_emulator_tests.sh --
+          ./gradlew :app:connectedDebugAndroidTest :ssh:android:connectedDebugAndroidTest
+          :storage:android:connectedDebugAndroidTest --stacktrace
+          bash scripts/ci/verify_background_process_recovery.sh
+          app/build/outputs/apk/debug/app-debug.apk
 
       - name: Verify connected-test evidence
         run: |

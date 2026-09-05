@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+set -euo pipefail
+: "${ANDROID_HOME:=}"
+: "${ANDROID_AVD_HOME:=}"
+: "${RUNNER_TEMP:=}"
+: "${EMULATOR_AVD_NAME:=agent-relay-ci}"
+: "${EMULATOR_PORT:=5582}"
+: "${EMULATOR_API_LEVEL:=36}"
+: "${EMULATOR_TARGET:=default}"
+: "${EMULATOR_ARCH:=x86_64}"
+: "${EMULATOR_PROFILE:=pixel_7_pro}"
+test -n "$ANDROID_HOME" -a -n "$ANDROID_AVD_HOME" -a -n "$RUNNER_TEMP"
+adb_bin="$ANDROID_HOME/platform-tools/adb"
+emulator_bin="$ANDROID_HOME/emulator/emulator"
+avdmanager_bin="$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager"
+test -x "$adb_bin" -a -x "$emulator_bin" -a -x "$avdmanager_bin"
+mkdir -p "$ANDROID_AVD_HOME"
+echo no | "$avdmanager_bin" create avd --force --name "$EMULATOR_AVD_NAME" --package "system-images;android-$EMULATOR_API_LEVEL;$EMULATOR_TARGET;$EMULATOR_ARCH" --device "$EMULATOR_PROFILE"
+echo 'hw.cpu.ncore=2' >> "$ANDROID_AVD_HOME/$EMULATOR_AVD_NAME.avd/config.ini"
+log_file="$RUNNER_TEMP/agent-relay-emulator-$EMULATOR_PORT.log"
+pid_file="$RUNNER_TEMP/agent-relay-emulator-$EMULATOR_PORT.pid"
+cleanup() {
+  "$adb_bin" -s "emulator-$EMULATOR_PORT" emu kill > /dev/null 2>&1 || true
+  [[ ! -s "$pid_file" ]] || kill "$(< "$pid_file")" > /dev/null 2>&1 || true
+}
+trap cleanup EXIT
+setsid "$emulator_bin" -port "$EMULATOR_PORT" -avd "$EMULATOR_AVD_NAME" -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim > "$log_file" 2>&1 < /dev/null &
+emulator_pid=$!
+echo "$emulator_pid" > "$pid_file"
+echo "Started emulator pid=$emulator_pid port=$EMULATOR_PORT log=$log_file"
+for _ in $(seq 1 300); do
+  if ! kill -0 "$emulator_pid" 2> /dev/null; then
+    cat "$log_file" >&2
+    exit 1
+  fi
+  if [[ "$("$adb_bin" -s "emulator-$EMULATOR_PORT" get-state 2> /dev/null || true)" == device ]] && [[ "$("$adb_bin" -s "emulator-$EMULATOR_PORT" shell getprop sys.boot_completed 2> /dev/null || true)" == 1 ]]; then break; fi
+  sleep 2
+done
+test "$("$adb_bin" -s "emulator-$EMULATOR_PORT" get-state 2> /dev/null)" = device || {
+  cat "$log_file" >&2
+  exit 1
+}
+test "$("$adb_bin" -s "emulator-$EMULATOR_PORT" shell getprop sys.boot_completed)" = 1 || {
+  cat "$log_file" >&2
+  exit 1
+}
+"$adb_bin" -s "emulator-$EMULATOR_PORT" shell wm size 1080x2400
+"$adb_bin" -s "emulator-$EMULATOR_PORT" shell wm density 420
+"$adb_bin" -s "emulator-$EMULATOR_PORT" shell settings put system font_scale 1.0
+"$adb_bin" -s "emulator-$EMULATOR_PORT" shell cmd alarm set-timezone UTC
+"$adb_bin" -s "emulator-$EMULATOR_PORT" shell cmd uimode night no
+"$adb_bin" -s "emulator-$EMULATOR_PORT" shell settings put global window_animation_scale 0
+"$adb_bin" -s "emulator-$EMULATOR_PORT" shell settings put global transition_animation_scale 0
+"$adb_bin" -s "emulator-$EMULATOR_PORT" shell settings put global animator_duration_scale 0
+"$adb_bin" -s "emulator-$EMULATOR_PORT" shell rm -rf /sdcard/Download/agent-relay-usage-guide
+"$@"
