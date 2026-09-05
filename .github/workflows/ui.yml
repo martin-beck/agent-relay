@@ -25,6 +25,8 @@ jobs:
       github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: [self-hosted, linux, x64, agent-relay-device-ci]
     timeout-minutes: 40
+    env:
+      ADB_SERVER_PORT: "5038"
 
     steps:
       - name: Check out source
@@ -203,6 +205,8 @@ jobs:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: [self-hosted, linux, x64, agent-relay-device-ci]
     timeout-minutes: 40
+    env:
+      ADB_SERVER_PORT: "5038"
     strategy:
       fail-fast: false
       matrix:
