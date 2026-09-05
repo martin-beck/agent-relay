@@ -20,6 +20,7 @@ chmod 0700 "$XDG_RUNTIME_DIR"
 export XDG_RUNTIME_DIR
 export ANDROID_EMULATOR_DISCOVERY_DIR="${ANDROID_EMULATOR_DISCOVERY_DIR:-$XDG_RUNTIME_DIR}"
 export ANDROID_EMULATOR_LAUNCHER_DIR="${ANDROID_EMULATOR_LAUNCHER_DIR:-$ANDROID_HOME/emulator}"
+export ANDROID_SERIAL="${ANDROID_SERIAL:-emulator-$EMULATOR_PORT}"
 if [[ "${1:-}" == -- ]]; then shift; fi
 adb_bin="$ANDROID_HOME/platform-tools/adb"
 emulator_bin="$ANDROID_HOME/emulator/emulator"
