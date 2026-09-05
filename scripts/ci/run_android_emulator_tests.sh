@@ -30,7 +30,16 @@ fi
 if [[ -f "$avd_dir/config.ini" ]]; then
   echo 'hw.cpu.ncore=2' >> "$avd_dir/config.ini"
 else
-  echo "avdmanager created no config.ini; using default AVD configuration" >&2
+  echo "avdmanager created no config.ini; writing minimal x86_64 configuration" >&2
+  cat > "$avd_dir/config.ini" << EOF
+AvdId=$EMULATOR_AVD_NAME
+abi.type=x86_64
+hw.cpu.arch=x86_64
+hw.cpu.ncore=2
+hw.device.name=$EMULATOR_PROFILE
+image.sysdir.1=system-images/android-$EMULATOR_API_LEVEL/$EMULATOR_TARGET/$EMULATOR_ARCH/
+tag.display=default
+EOF
 fi
 log_file="$RUNNER_TEMP/agent-relay-emulator-$EMULATOR_PORT.log"
 pid_file="$RUNNER_TEMP/agent-relay-emulator-$EMULATOR_PORT.pid"
