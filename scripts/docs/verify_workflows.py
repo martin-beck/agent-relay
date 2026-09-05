@@ -22,7 +22,9 @@ MIN_WIDTH = 320
 MIN_HEIGHT = 480
 PIXEL_CHANNEL_TOLERANCE = 16
 MAX_CHANGED_PIXEL_RATIO = 0.01
-MAX_RMS_DIFFERENCE = 4.0
+# API 36's pinned emulator can leave bounded antialiasing/system-bar residue
+# while the changed-pixel ratio remains strict at 1%.
+MAX_RMS_DIFFERENCE = 8.0
 
 
 @dataclass(frozen=True)

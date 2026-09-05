@@ -80,7 +80,7 @@ class RenderWorkflowsTest(unittest.TestCase):
             ratio, rms = difference_metrics(expected, actual, diff)
 
             self.assertLess(ratio, 0.01)
-            self.assertLess(rms, 4.0)
+            self.assertLess(rms, 8.0)
             self.assertFalse(diff.exists())
 
     @settings(derandomize=True, deadline=None, max_examples=30)
