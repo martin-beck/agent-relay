@@ -105,14 +105,16 @@ class UsageJourneyTest {
     }
 
     private fun hideSystemBars() {
-        WindowCompat.getInsetsController(
-                composeTestRule.activity.window,
-                composeTestRule.activity.window.decorView,
-            )
-            .apply {
-                systemBarsBehavior =
-                    WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-                hide(WindowInsetsCompat.Type.systemBars())
+        composeTestRule.activity.runOnUiThread {
+            WindowCompat.getInsetsController(
+                    composeTestRule.activity.window,
+                    composeTestRule.activity.window.decorView,
+                )
+                .apply {
+                    systemBarsBehavior =
+                        WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                    hide(WindowInsetsCompat.Type.systemBars())
+                }
             }
     }
 
