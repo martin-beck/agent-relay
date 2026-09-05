@@ -60,35 +60,7 @@ jobs:
 
       - name: Repair and validate pinned Android emulator
         run: |
-          android_sdk_root="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
-          sdkmanager_path="$android_sdk_root/cmdline-tools/latest/bin/sdkmanager"
-          test -x "$sdkmanager_path"
-          "$sdkmanager_path" --sdk_root="$android_sdk_root" --uninstall emulator || true
-          install_log="$RUNNER_TEMP/emulator-install.log"
-          set +e
-          "$sdkmanager_path" --sdk_root="$android_sdk_root" --install emulator >"$install_log" 2>&1
-          install_status=$?
-          set -e
-          cat "$install_log"
-          emulator_bin="$android_sdk_root/emulator/emulator"
-          ls -la "$android_sdk_root/emulator" >&2
-          test -s "$android_sdk_root/emulator/package.xml" || {
-            echo 'emulator package.xml is missing or empty' >&2
-            exit 1
-          }
-          test -x "$emulator_bin" || {
-            echo 'emulator binary is missing or not executable' >&2
-            exit 1
-          }
-          emulator_version_raw="$($emulator_bin -version 2>&1)"
-          printf '%s\n' "$emulator_version_raw" >&2
-          grep -q '^Android emulator version 37\.1\.11\.0' <<<"$emulator_version_raw" || {
-            echo 'unexpected emulator version' >&2
-            exit 1
-          }
-          if [[ "$install_status" != 0 ]]; then
-            echo "sdkmanager returned $install_status after a complete emulator package install" >&2
-          fi
+          bash scripts/ci/install_pinned_emulator.sh
           printf 'Validated Android emulator %s\n' "$emulator_version"
 
       - name: Verify KVM access
@@ -286,35 +258,7 @@ jobs:
 
       - name: Repair and validate pinned Android emulator
         run: |
-          android_sdk_root="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
-          sdkmanager_path="$android_sdk_root/cmdline-tools/latest/bin/sdkmanager"
-          test -x "$sdkmanager_path"
-          "$sdkmanager_path" --sdk_root="$android_sdk_root" --uninstall emulator || true
-          install_log="$RUNNER_TEMP/emulator-install.log"
-          set +e
-          "$sdkmanager_path" --sdk_root="$android_sdk_root" --install emulator >"$install_log" 2>&1
-          install_status=$?
-          set -e
-          cat "$install_log"
-          emulator_bin="$android_sdk_root/emulator/emulator"
-          ls -la "$android_sdk_root/emulator" >&2
-          test -s "$android_sdk_root/emulator/package.xml" || {
-            echo 'emulator package.xml is missing or empty' >&2
-            exit 1
-          }
-          test -x "$emulator_bin" || {
-            echo 'emulator binary is missing or not executable' >&2
-            exit 1
-          }
-          emulator_version_raw="$($emulator_bin -version 2>&1)"
-          printf '%s\n' "$emulator_version_raw" >&2
-          grep -q '^Android emulator version 37\.1\.11\.0' <<<"$emulator_version_raw" || {
-            echo 'unexpected emulator version' >&2
-            exit 1
-          }
-          if [[ "$install_status" != 0 ]]; then
-            echo "sdkmanager returned $install_status after a complete emulator package install" >&2
-          fi
+          bash scripts/ci/install_pinned_emulator.sh
           printf 'Validated Android emulator %s\n' "$emulator_version"
 
       - name: Verify KVM access
