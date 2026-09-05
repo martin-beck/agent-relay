@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "verifier": {
+    "name": "agent-relay-formal-evidence",
+    "version": "1.0.0",
+    "python": ">=3.12,<3.13"
+  },
+  "model_checkers": {
+    "tla_plus": {"name": "declaration-and-bounded-verifier", "version": "1.0.0"},
+    "alloy": {"name": "declaration-and-bounded-verifier", "version": "1.0.0"}
+  },
+  "models": [
+    {"path": "docs/formal/WorkflowDomain.tla", "sha256": "d29436fecf49bcd37f5912c6ae76c98d620815153e13a5fd449b029d806ca172"},
+    {"path": "docs/formal/WorkflowDomain.alloy", "sha256": "87ed044098f75aee65586b2cdea50aae872056ffde796b4fd235c17eeb0ef16c"},
+    {"path": "docs/formal/WorkflowConcurrency.tla", "sha256": "441911e26dde88035fae0b3a41c12ab695d1ab5994ea9625e16388d1a7b02ead"},
+    {"path": "docs/formal/WorkflowConcurrency.alloy", "sha256": "f602726ea6dd44bef60490c49368b6fd1e63f0df1172d6a3234aa57a328ff5a4"}
+  ],
+  "obligations": [
+    {"id": "domain-safety", "evidence": "mechanical-invariant", "verifier": "verify_formal_models.py"},
+    {"id": "bounded-concurrency", "evidence": "bounded-model-result", "verifier": "verify_workflow_concurrency.py"},
+    {"id": "contract-shape", "evidence": "contract-test", "verifier": "test_verify_formal_models.py"}
+  ],
+  "assumptions": [
+    {"id": "serialized-journal-writes", "scope": "formal-model", "review": "explicit"},
+    {"id": "monotonic-clocks", "scope": "formal-model", "review": "explicit"},
+    {"id": "durable-atomic-commits", "scope": "formal-model", "review": "explicit"}
+  ],
+  "counterexamples": {
+    "policy": "named-traces-must-be-reproducible",
+    "directory": "tests/formal/counterexamples",
+    "required": false
+  }
+}
