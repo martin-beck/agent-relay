@@ -43,8 +43,13 @@ class WorkflowTaskCreationModelsTest {
             request.copy(triggers = (0..128).map { "trigger-$it" }.toSet())
         }
         assertFailsWith<IllegalArgumentException> {
-            request.materialize(WorkflowId("task"), WorkflowId("workflow"), "project", "revision")
-                .copy(task = request.materialize(WorkflowId("task"), WorkflowId("workflow"), "project", "revision").task.copy(state = WorkflowTaskState.APPROVED))
+            val materialized = request.materialize(
+                WorkflowId("task"),
+                WorkflowId("workflow"),
+                "project",
+                "revision",
+            )
+            materialized.copy(task = materialized.task.copy(state = WorkflowTaskState.APPROVED))
         }
     }
 }
