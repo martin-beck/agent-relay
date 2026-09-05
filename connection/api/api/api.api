@@ -654,6 +654,146 @@ public final class dev/agentrelay/connection/api/ConnectionState$Reconnecting : 
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class dev/agentrelay/connection/api/ConnectivityDiagnosticsSnapshot {
+	public fun <init> (Ldev/agentrelay/connection/api/ConnectivityTopology;Ljava/util/List;Ldev/agentrelay/connection/api/ConnectivityFaultCounters;JJJ)V
+	public final fun component1 ()Ldev/agentrelay/connection/api/ConnectivityTopology;
+	public final fun component2 ()Ljava/util/List;
+	public final fun component3 ()Ldev/agentrelay/connection/api/ConnectivityFaultCounters;
+	public final fun component4 ()J
+	public final fun component5 ()J
+	public final fun component6 ()J
+	public final fun copy (Ldev/agentrelay/connection/api/ConnectivityTopology;Ljava/util/List;Ldev/agentrelay/connection/api/ConnectivityFaultCounters;JJJ)Ldev/agentrelay/connection/api/ConnectivityDiagnosticsSnapshot;
+	public static synthetic fun copy$default (Ldev/agentrelay/connection/api/ConnectivityDiagnosticsSnapshot;Ldev/agentrelay/connection/api/ConnectivityTopology;Ljava/util/List;Ldev/agentrelay/connection/api/ConnectivityFaultCounters;JJJILjava/lang/Object;)Ldev/agentrelay/connection/api/ConnectivityDiagnosticsSnapshot;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDroppedHistoryEntries ()J
+	public final fun getDroppedTopologyNodes ()J
+	public final fun getFaults ()Ldev/agentrelay/connection/api/ConnectivityFaultCounters;
+	public final fun getGeneratedAtMillis ()J
+	public final fun getHistory ()Ljava/util/List;
+	public final fun getTopology ()Ldev/agentrelay/connection/api/ConnectivityTopology;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectivityDiagnosticsStore {
+	public fun <init> ()V
+	public fun <init> (II)V
+	public synthetic fun <init> (IIILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun observeNode (Ldev/agentrelay/connection/api/ConnectivityNode;)V
+	public final fun recordFault (Ldev/agentrelay/connection/api/ConnectivityFault;)V
+	public final fun recordTransition (Ldev/agentrelay/connection/api/ConnectivityTransition;Ldev/agentrelay/connection/api/DaemonTransportKind;JLjava/lang/Long;)V
+	public static synthetic fun recordTransition$default (Ldev/agentrelay/connection/api/ConnectivityDiagnosticsStore;Ldev/agentrelay/connection/api/ConnectivityTransition;Ldev/agentrelay/connection/api/DaemonTransportKind;JLjava/lang/Long;ILjava/lang/Object;)V
+	public final fun setActiveNode (Ljava/lang/String;)V
+	public final fun snapshot (J)Ldev/agentrelay/connection/api/ConnectivityDiagnosticsSnapshot;
+}
+
+public final class dev/agentrelay/connection/api/ConnectivityFault : java/lang/Enum {
+	public static final field AUTHENTICATION_REJECTED Ldev/agentrelay/connection/api/ConnectivityFault;
+	public static final field DISCOVERY_TIMEOUT Ldev/agentrelay/connection/api/ConnectivityFault;
+	public static final field DUPLICATE_COMMAND Ldev/agentrelay/connection/api/ConnectivityFault;
+	public static final field MALFORMED_FRAME Ldev/agentrelay/connection/api/ConnectivityFault;
+	public static final field TRANSPORT_LOST Ldev/agentrelay/connection/api/ConnectivityFault;
+	public static final field UNKNOWN_DELIVERY Ldev/agentrelay/connection/api/ConnectivityFault;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/connection/api/ConnectivityFault;
+	public static fun values ()[Ldev/agentrelay/connection/api/ConnectivityFault;
+}
+
+public final class dev/agentrelay/connection/api/ConnectivityFaultCounters {
+	public fun <init> ()V
+	public fun <init> (JJJJJJ)V
+	public synthetic fun <init> (JJJJJJILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()J
+	public final fun component2 ()J
+	public final fun component3 ()J
+	public final fun component4 ()J
+	public final fun component5 ()J
+	public final fun component6 ()J
+	public final fun copy (JJJJJJ)Ldev/agentrelay/connection/api/ConnectivityFaultCounters;
+	public static synthetic fun copy$default (Ldev/agentrelay/connection/api/ConnectivityFaultCounters;JJJJJJILjava/lang/Object;)Ldev/agentrelay/connection/api/ConnectivityFaultCounters;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAuthenticationRejections ()J
+	public final fun getDiscoveryTimeouts ()J
+	public final fun getDuplicateCommands ()J
+	public final fun getMalformedFrames ()J
+	public final fun getTransportLosses ()J
+	public final fun getUnknownDeliveries ()J
+	public fun hashCode ()I
+	public final fun increment (Ldev/agentrelay/connection/api/ConnectivityFault;)Ldev/agentrelay/connection/api/ConnectivityFaultCounters;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectivityHistoryEntry {
+	public fun <init> (JLdev/agentrelay/connection/api/ConnectivityTransition;Ldev/agentrelay/connection/api/DaemonTransportKind;JLjava/lang/Long;)V
+	public final fun component1 ()J
+	public final fun component2 ()Ldev/agentrelay/connection/api/ConnectivityTransition;
+	public final fun component3 ()Ldev/agentrelay/connection/api/DaemonTransportKind;
+	public final fun component4 ()J
+	public final fun component5 ()Ljava/lang/Long;
+	public final fun copy (JLdev/agentrelay/connection/api/ConnectivityTransition;Ldev/agentrelay/connection/api/DaemonTransportKind;JLjava/lang/Long;)Ldev/agentrelay/connection/api/ConnectivityHistoryEntry;
+	public static synthetic fun copy$default (Ldev/agentrelay/connection/api/ConnectivityHistoryEntry;JLdev/agentrelay/connection/api/ConnectivityTransition;Ldev/agentrelay/connection/api/DaemonTransportKind;JLjava/lang/Long;ILjava/lang/Object;)Ldev/agentrelay/connection/api/ConnectivityHistoryEntry;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAtMillis ()J
+	public final fun getDurationMillis ()Ljava/lang/Long;
+	public final fun getSequence ()J
+	public final fun getTransition ()Ldev/agentrelay/connection/api/ConnectivityTransition;
+	public final fun getTransport ()Ldev/agentrelay/connection/api/DaemonTransportKind;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectivityNode {
+	public fun <init> (Ljava/lang/String;Ldev/agentrelay/connection/api/ConnectivityNodeRole;Ldev/agentrelay/connection/api/DaemonTransportKind;I)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ldev/agentrelay/connection/api/ConnectivityNodeRole;
+	public final fun component3 ()Ldev/agentrelay/connection/api/DaemonTransportKind;
+	public final fun component4 ()I
+	public final fun copy (Ljava/lang/String;Ldev/agentrelay/connection/api/ConnectivityNodeRole;Ldev/agentrelay/connection/api/DaemonTransportKind;I)Ldev/agentrelay/connection/api/ConnectivityNode;
+	public static synthetic fun copy$default (Ldev/agentrelay/connection/api/ConnectivityNode;Ljava/lang/String;Ldev/agentrelay/connection/api/ConnectivityNodeRole;Ldev/agentrelay/connection/api/DaemonTransportKind;IILjava/lang/Object;)Ldev/agentrelay/connection/api/ConnectivityNode;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDepth ()I
+	public final fun getId ()Ljava/lang/String;
+	public final fun getRole ()Ldev/agentrelay/connection/api/ConnectivityNodeRole;
+	public final fun getTransport ()Ldev/agentrelay/connection/api/DaemonTransportKind;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectivityNodeRole : java/lang/Enum {
+	public static final field CLIENT Ldev/agentrelay/connection/api/ConnectivityNodeRole;
+	public static final field DAEMON Ldev/agentrelay/connection/api/ConnectivityNodeRole;
+	public static final field GATEWAY Ldev/agentrelay/connection/api/ConnectivityNodeRole;
+	public static final field RELAY Ldev/agentrelay/connection/api/ConnectivityNodeRole;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/connection/api/ConnectivityNodeRole;
+	public static fun values ()[Ldev/agentrelay/connection/api/ConnectivityNodeRole;
+}
+
+public final class dev/agentrelay/connection/api/ConnectivityTopology {
+	public fun <init> (Ljava/util/List;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/util/List;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/util/List;Ljava/lang/String;)Ldev/agentrelay/connection/api/ConnectivityTopology;
+	public static synthetic fun copy$default (Ldev/agentrelay/connection/api/ConnectivityTopology;Ljava/util/List;Ljava/lang/String;ILjava/lang/Object;)Ldev/agentrelay/connection/api/ConnectivityTopology;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getActiveNodeId ()Ljava/lang/String;
+	public final fun getNodes ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectivityTransition : java/lang/Enum {
+	public static final field CONNECTED Ldev/agentrelay/connection/api/ConnectivityTransition;
+	public static final field DISCONNECTED Ldev/agentrelay/connection/api/ConnectivityTransition;
+	public static final field DISCOVERED Ldev/agentrelay/connection/api/ConnectivityTransition;
+	public static final field FAILING_OVER Ldev/agentrelay/connection/api/ConnectivityTransition;
+	public static final field RESUMED Ldev/agentrelay/connection/api/ConnectivityTransition;
+	public static final field SUSPENDED Ldev/agentrelay/connection/api/ConnectivityTransition;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/connection/api/ConnectivityTransition;
+	public static fun values ()[Ldev/agentrelay/connection/api/ConnectivityTransition;
+}
+
 public final class dev/agentrelay/connection/api/ContinuityController {
 	public fun <init> (Ldev/agentrelay/connection/api/ContinuityToken;I)V
 	public synthetic fun <init> (Ldev/agentrelay/connection/api/ContinuityToken;IILkotlin/jvm/internal/DefaultConstructorMarker;)V

@@ -90,6 +90,12 @@ in-flight duplicates are suppressed, completed commands are observed idempotentl
 and partial delivery becomes an explicit unknown outcome that is never replayed
 automatically.
 
+Connectivity diagnostics are a bounded projection, not workflow authority. They
+retain only opaque topology labels, transport/state transitions, durations, and
+fault counters; retention overflow increments explicit dropped-data counters.
+Discovery and failover evidence remains deterministic and useful while excluding
+addresses, paths, credentials, task content, and protected payloads.
+
 ## Runtime flow
 
 1. A `ConnectionProvider` enumerates generic profile summaries.
