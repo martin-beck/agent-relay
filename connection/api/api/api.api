@@ -1,3 +1,26 @@
+public final class dev/agentrelay/connection/api/AuthenticatedProtocolFrame {
+	public synthetic fun <init> (Ldev/agentrelay/connection/api/ProtocolFrameHeader;Ljava/lang/String;Ljava/lang/String;Ljava/util/Set;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ldev/agentrelay/connection/api/ProtocolFrameHeader;
+	public final fun component2-J8HH09g ()Ljava/lang/String;
+	public final fun component3-J8HH09g ()Ljava/lang/String;
+	public final fun component4 ()Ljava/util/Set;
+	public final fun component5 ()Ljava/lang/String;
+	public final fun component6 ()Ljava/lang/String;
+	public final fun component7 ()Ljava/lang/String;
+	public final fun copy-n3Gwamk (Ldev/agentrelay/connection/api/ProtocolFrameHeader;Ljava/lang/String;Ljava/lang/String;Ljava/util/Set;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ldev/agentrelay/connection/api/AuthenticatedProtocolFrame;
+	public static synthetic fun copy-n3Gwamk$default (Ldev/agentrelay/connection/api/AuthenticatedProtocolFrame;Ldev/agentrelay/connection/api/ProtocolFrameHeader;Ljava/lang/String;Ljava/lang/String;Ljava/util/Set;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ldev/agentrelay/connection/api/AuthenticatedProtocolFrame;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCapabilities ()Ljava/util/Set;
+	public final fun getHeader ()Ldev/agentrelay/connection/api/ProtocolFrameHeader;
+	public final fun getProtectedPayload ()Ljava/lang/String;
+	public final fun getRecipient-J8HH09g ()Ljava/lang/String;
+	public final fun getSender-J8HH09g ()Ljava/lang/String;
+	public final fun getSignature ()Ljava/lang/String;
+	public final fun getTranscriptDigest ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class dev/agentrelay/connection/api/ConnectionCapability : java/lang/Enum {
 	public static final field AUTOMATIC_RECONNECT Ldev/agentrelay/connection/api/ConnectionCapability;
 	public static final field BACKGROUND_RECOVERY Ldev/agentrelay/connection/api/ConnectionCapability;
@@ -586,6 +609,61 @@ public final class dev/agentrelay/connection/api/ConnectionState$Reconnecting : 
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class dev/agentrelay/connection/api/DaemonProtocolCapability : java/lang/Enum {
+	public static final field HEARTBEAT Ldev/agentrelay/connection/api/DaemonProtocolCapability;
+	public static final field MULTIPLEXED_REQUESTS Ldev/agentrelay/connection/api/DaemonProtocolCapability;
+	public static final field PAIRING_GRANTS Ldev/agentrelay/connection/api/DaemonProtocolCapability;
+	public static final field PROTECTED_MESSAGES Ldev/agentrelay/connection/api/DaemonProtocolCapability;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/connection/api/DaemonProtocolCapability;
+	public static fun values ()[Ldev/agentrelay/connection/api/DaemonProtocolCapability;
+}
+
+public final class dev/agentrelay/connection/api/DaemonProtocolMessageType : java/lang/Enum {
+	public static final field EVENT Ldev/agentrelay/connection/api/DaemonProtocolMessageType;
+	public static final field HEARTBEAT Ldev/agentrelay/connection/api/DaemonProtocolMessageType;
+	public static final field REQUEST Ldev/agentrelay/connection/api/DaemonProtocolMessageType;
+	public static final field RESPONSE Ldev/agentrelay/connection/api/DaemonProtocolMessageType;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/connection/api/DaemonProtocolMessageType;
+	public static fun values ()[Ldev/agentrelay/connection/api/DaemonProtocolMessageType;
+}
+
+public final class dev/agentrelay/connection/api/DaemonProtocolModelsKt {
+	public static final fun negotiateDaemonProtocol (Ldev/agentrelay/connection/api/ProtocolNegotiationOffer;Ldev/agentrelay/connection/api/ProtocolNegotiationOffer;)Ldev/agentrelay/connection/api/ProtocolNegotiation;
+	public static final fun protocolTranscriptDigest (Ldev/agentrelay/connection/api/DaemonProtocolVersion;Ljava/util/Set;I)Ljava/lang/String;
+}
+
+public abstract interface class dev/agentrelay/connection/api/DaemonProtocolTransport {
+	public abstract fun getKind ()Ldev/agentrelay/connection/api/DaemonTransportKind;
+	public abstract fun send (Ldev/agentrelay/connection/api/AuthenticatedProtocolFrame;)V
+}
+
+public final class dev/agentrelay/connection/api/DaemonProtocolVersion : java/lang/Comparable {
+	public fun <init> (II)V
+	public fun compareTo (Ldev/agentrelay/connection/api/DaemonProtocolVersion;)I
+	public synthetic fun compareTo (Ljava/lang/Object;)I
+	public final fun component1 ()I
+	public final fun component2 ()I
+	public final fun copy (II)Ldev/agentrelay/connection/api/DaemonProtocolVersion;
+	public static synthetic fun copy$default (Ldev/agentrelay/connection/api/DaemonProtocolVersion;IIILjava/lang/Object;)Ldev/agentrelay/connection/api/DaemonProtocolVersion;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getMajor ()I
+	public final fun getMinor ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/DaemonTransportKind : java/lang/Enum {
+	public static final field DIRECT Ldev/agentrelay/connection/api/DaemonTransportKind;
+	public static final field NAT_TRAVERSAL Ldev/agentrelay/connection/api/DaemonTransportKind;
+	public static final field OPAQUE_RELAY Ldev/agentrelay/connection/api/DaemonTransportKind;
+	public static final field PRIVATE_NETWORK Ldev/agentrelay/connection/api/DaemonTransportKind;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/connection/api/DaemonTransportKind;
+	public static fun values ()[Ldev/agentrelay/connection/api/DaemonTransportKind;
+}
+
 public final class dev/agentrelay/connection/api/EndpointIdentityModelsKt {
 	public static final fun stableEndpointIdentity (Ldev/agentrelay/connection/api/EndpointPublicKey;)Ljava/lang/String;
 }
@@ -879,6 +957,57 @@ public final class dev/agentrelay/connection/api/PairingScope : java/lang/Enum {
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/connection/api/PairingScope;
 	public static fun values ()[Ldev/agentrelay/connection/api/PairingScope;
+}
+
+public final class dev/agentrelay/connection/api/ProtocolFrameHeader {
+	public fun <init> (Ldev/agentrelay/connection/api/DaemonProtocolVersion;Ldev/agentrelay/connection/api/DaemonProtocolMessageType;Ljava/lang/String;I)V
+	public final fun component1 ()Ldev/agentrelay/connection/api/DaemonProtocolVersion;
+	public final fun component2 ()Ldev/agentrelay/connection/api/DaemonProtocolMessageType;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()I
+	public final fun copy (Ldev/agentrelay/connection/api/DaemonProtocolVersion;Ldev/agentrelay/connection/api/DaemonProtocolMessageType;Ljava/lang/String;I)Ldev/agentrelay/connection/api/ProtocolFrameHeader;
+	public static synthetic fun copy$default (Ldev/agentrelay/connection/api/ProtocolFrameHeader;Ldev/agentrelay/connection/api/DaemonProtocolVersion;Ldev/agentrelay/connection/api/DaemonProtocolMessageType;Ljava/lang/String;IILjava/lang/Object;)Ldev/agentrelay/connection/api/ProtocolFrameHeader;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getMessageId ()Ljava/lang/String;
+	public final fun getPayloadBytes ()I
+	public final fun getType ()Ldev/agentrelay/connection/api/DaemonProtocolMessageType;
+	public final fun getVersion ()Ldev/agentrelay/connection/api/DaemonProtocolVersion;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ProtocolNegotiation {
+	public fun <init> (Ldev/agentrelay/connection/api/DaemonProtocolVersion;Ljava/util/Set;ILjava/lang/String;)V
+	public final fun component1 ()Ldev/agentrelay/connection/api/DaemonProtocolVersion;
+	public final fun component2 ()Ljava/util/Set;
+	public final fun component3 ()I
+	public final fun component4 ()Ljava/lang/String;
+	public final fun copy (Ldev/agentrelay/connection/api/DaemonProtocolVersion;Ljava/util/Set;ILjava/lang/String;)Ldev/agentrelay/connection/api/ProtocolNegotiation;
+	public static synthetic fun copy$default (Ldev/agentrelay/connection/api/ProtocolNegotiation;Ldev/agentrelay/connection/api/DaemonProtocolVersion;Ljava/util/Set;ILjava/lang/String;ILjava/lang/Object;)Ldev/agentrelay/connection/api/ProtocolNegotiation;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCapabilities ()Ljava/util/Set;
+	public final fun getMaxFrameBytes ()I
+	public final fun getTranscriptDigest ()Ljava/lang/String;
+	public final fun getVersion ()Ldev/agentrelay/connection/api/DaemonProtocolVersion;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ProtocolNegotiationOffer {
+	public fun <init> (Ljava/util/Set;Ljava/util/Set;ILjava/lang/String;)V
+	public final fun component1 ()Ljava/util/Set;
+	public final fun component2 ()Ljava/util/Set;
+	public final fun component3 ()I
+	public final fun component4 ()Ljava/lang/String;
+	public final fun copy (Ljava/util/Set;Ljava/util/Set;ILjava/lang/String;)Ldev/agentrelay/connection/api/ProtocolNegotiationOffer;
+	public static synthetic fun copy$default (Ldev/agentrelay/connection/api/ProtocolNegotiationOffer;Ljava/util/Set;Ljava/util/Set;ILjava/lang/String;ILjava/lang/Object;)Ldev/agentrelay/connection/api/ProtocolNegotiationOffer;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCapabilities ()Ljava/util/Set;
+	public final fun getMaxFrameBytes ()I
+	public final fun getTranscriptDigest ()Ljava/lang/String;
+	public final fun getVersions ()Ljava/util/Set;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class dev/agentrelay/connection/api/StableEndpointIdentity {
