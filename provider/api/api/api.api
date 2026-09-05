@@ -571,6 +571,33 @@ public final class dev/agentrelay/provider/api/CapabilitySubjectKind : java/lang
 	public static fun values ()[Ldev/agentrelay/provider/api/CapabilitySubjectKind;
 }
 
+public final class dev/agentrelay/provider/api/ProviderCausalTrace {
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ldev/agentrelay/provider/api/ProviderTracePhase;JLdev/agentrelay/provider/api/ProviderOutcome;Ljava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ldev/agentrelay/provider/api/ProviderTracePhase;JLdev/agentrelay/provider/api/ProviderOutcome;Ljava/util/Map;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-QOyWBJo ()Ljava/lang/String;
+	public final fun component2-Blmauo8 ()Ljava/lang/String;
+	public final fun component3 ()Ldev/agentrelay/provider/api/ProviderTracePhase;
+	public final fun component4 ()J
+	public final fun component5 ()Ldev/agentrelay/provider/api/ProviderOutcome;
+	public final fun component6 ()Ljava/util/Map;
+	public final fun copy-Msy7sso (Ljava/lang/String;Ljava/lang/String;Ldev/agentrelay/provider/api/ProviderTracePhase;JLdev/agentrelay/provider/api/ProviderOutcome;Ljava/util/Map;)Ldev/agentrelay/provider/api/ProviderCausalTrace;
+	public static synthetic fun copy-Msy7sso$default (Ldev/agentrelay/provider/api/ProviderCausalTrace;Ljava/lang/String;Ljava/lang/String;Ldev/agentrelay/provider/api/ProviderTracePhase;JLdev/agentrelay/provider/api/ProviderOutcome;Ljava/util/Map;ILjava/lang/Object;)Ldev/agentrelay/provider/api/ProviderCausalTrace;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAttributes ()Ljava/util/Map;
+	public final fun getObservedAtEpochSeconds ()J
+	public final fun getOutcome ()Ldev/agentrelay/provider/api/ProviderOutcome;
+	public final fun getParentTraceId-Blmauo8 ()Ljava/lang/String;
+	public final fun getPhase ()Ldev/agentrelay/provider/api/ProviderTracePhase;
+	public final fun getTraceId-QOyWBJo ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/provider/api/ProviderCausalTraceModelsKt {
+	public static final field MAX_TRACE_ATTRIBUTES I
+	public static final field MAX_TRACE_ATTRIBUTE_LENGTH I
+}
+
 public final class dev/agentrelay/provider/api/ProviderFailureKind : java/lang/Enum {
 	public static final field AUTHENTICATION Ldev/agentrelay/provider/api/ProviderFailureKind;
 	public static final field AUTHORIZATION Ldev/agentrelay/provider/api/ProviderFailureKind;
@@ -764,6 +791,33 @@ public final class dev/agentrelay/provider/api/ProviderResultKind : java/lang/En
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/provider/api/ProviderResultKind;
 	public static fun values ()[Ldev/agentrelay/provider/api/ProviderResultKind;
+}
+
+public final class dev/agentrelay/provider/api/ProviderTraceId {
+	public static final synthetic fun box-impl (Ljava/lang/String;)Ldev/agentrelay/provider/api/ProviderTraceId;
+	public static fun constructor-impl (Ljava/lang/String;)Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/provider/api/ProviderTracePhase : java/lang/Enum {
+	public static final field CANCELLED Ldev/agentrelay/provider/api/ProviderTracePhase;
+	public static final field CHECKPOINTED Ldev/agentrelay/provider/api/ProviderTracePhase;
+	public static final field COMPLETED Ldev/agentrelay/provider/api/ProviderTracePhase;
+	public static final field FAILED Ldev/agentrelay/provider/api/ProviderTracePhase;
+	public static final field PROGRESSING Ldev/agentrelay/provider/api/ProviderTracePhase;
+	public static final field REQUESTED Ldev/agentrelay/provider/api/ProviderTracePhase;
+	public static final field STARTED Ldev/agentrelay/provider/api/ProviderTracePhase;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/provider/api/ProviderTracePhase;
+	public static fun values ()[Ldev/agentrelay/provider/api/ProviderTracePhase;
 }
 
 public abstract interface class dev/agentrelay/provider/api/RemoteAgentRuntime {
