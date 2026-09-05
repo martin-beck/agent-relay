@@ -9,7 +9,6 @@ set -euo pipefail
 : "${EMULATOR_ARCH:=x86_64}"
 : "${EMULATOR_PROFILE:=pixel_7_pro}"
 ANDROID_AVD_HOME="${ANDROID_AVD_HOME:-${HOME:-$RUNNER_TEMP}/.android/avd}"
-export ANDROID_AVD_HOME
 echo "Android SDK: ${ANDROID_HOME:-<unset>}"
 echo "AVD home: $ANDROID_AVD_HOME"
 echo "Runner temp: ${RUNNER_TEMP:-<unset>}"
@@ -23,11 +22,10 @@ export ANDROID_EMULATOR_DISCOVERY_DIR="${ANDROID_EMULATOR_DISCOVERY_DIR:-$XDG_RU
 export ANDROID_EMULATOR_LAUNCHER_DIR="${ANDROID_EMULATOR_LAUNCHER_DIR:-$ANDROID_HOME/emulator}"
 if [[ "${1:-}" == -- ]]; then shift; fi
 adb_bin="$ANDROID_HOME/platform-tools/adb"
-qemu_bin="$ANDROID_HOME/emulator/qemu/linux-x86_64/qemu-system-x86_64-headless"
-emulator_library_path="$ANDROID_HOME/emulator/lib64:$ANDROID_HOME/emulator/lib64/qt/lib"
+emulator_bin="$ANDROID_HOME/emulator/emulator"
 avdmanager_bin="$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager"
-test -x "$adb_bin" -a -x "$qemu_bin" -a -x "$avdmanager_bin"
-test -x "$(command -v setsid)"
+test -x "$adb_bin" -a -x "$emulator_bin" -a -x "$avdmanager_bin"
+test -x "$(command -v script)"
 mkdir -p "$ANDROID_AVD_HOME"
 echo no | "$avdmanager_bin" create avd --force --name "$EMULATOR_AVD_NAME" --path "$ANDROID_AVD_HOME/$EMULATOR_AVD_NAME.avd" --package "system-images;android-$EMULATOR_API_LEVEL;$EMULATOR_TARGET;$EMULATOR_ARCH" --device "$EMULATOR_PROFILE"
 avd_dir="$ANDROID_AVD_HOME/$EMULATOR_AVD_NAME.avd"
@@ -82,10 +80,8 @@ cleanup() {
   fi
 }
 trap cleanup EXIT
-adb_port=$((EMULATOR_PORT + 1))
-echo "QEMU binary: $qemu_bin"
-echo "QEMU version: $(LD_LIBRARY_PATH="$emulator_library_path" "$qemu_bin" -version | head -1)"
-setsid env "LD_LIBRARY_PATH=$emulator_library_path" "$qemu_bin" -ports "$EMULATOR_PORT,$adb_port" -avd "$EMULATOR_AVD_NAME" -no-window -gpu swiftshader_indirect -no-snapshot -no-audio -no-boot-anim > "$log_file" 2>&1 &
+emulator_command=$(printf '%q ' "$emulator_bin" -port "$EMULATOR_PORT" -avd "$EMULATOR_AVD_NAME" -no-window -gpu swiftshader_indirect -no-snapshot -no-audio -no-boot-anim)
+script -q -e -c "$emulator_command" "$log_file" > /dev/null 2>&1 &
 emulator_pid=$!
 echo "$emulator_pid" > "$pid_file"
 echo "Started emulator pid=$emulator_pid port=$EMULATOR_PORT log=$log_file"
