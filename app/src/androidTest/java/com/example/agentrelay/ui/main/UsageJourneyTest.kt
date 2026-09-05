@@ -246,7 +246,6 @@ class UsageJourneyTest {
         val full = waitForRenderedScreenshot(crop)
         check(full.height > crop * 2)
         val image = Bitmap.createBitmap(full, 0, crop, full.width, full.height - crop * 2)
-        normalizeSystemBarResidue(image)
         val directory = File(captureRoot(), scenario)
         check(directory.mkdirs() || directory.isDirectory)
         FileOutputStream(File(directory, name)).use { stream ->
@@ -255,47 +254,6 @@ class UsageJourneyTest {
         image.recycle()
         full.recycle()
     }
-
-    private fun normalizeSystemBarResidue(image: Bitmap) {
-        val edge = minOf(32, image.height / 4)
-        val topColor = image.getPixel(0, edge)
-        val bottomColor = image.getPixel(0, image.height - edge - 1)
-        if (luminance(topColor) < 220 || hasDarkResidue(image, edge)) {
-            for (y in 0 until edge) {
-                for (x in 0 until image.width) image.setPixel(x, y, topColor)
-            }
-        }
-        val bottomResidueStart = findBottomResidueStart(image)
-        if (bottomResidueStart >= 0) {
-            for (y in bottomResidueStart until image.height) {
-                for (x in 0 until image.width) image.setPixel(x, y, bottomColor)
-            }
-        }
-    }
-
-    private fun hasDarkResidue(image: Bitmap, edge: Int): Boolean =
-        (0 until edge).any { y ->
-            (0 until image.width step 8).any { x -> luminance(image.getPixel(x, y)) < 200 }
-        }
-
-    private fun findBottomResidueStart(image: Bitmap): Int {
-        val center = image.width / 2
-        val edgeColor = image.getPixel(center, image.height - 1)
-        val lookback = minOf(128, image.height / 4)
-        return if (colorDistance(image.getPixel(center, image.height - lookback - 1), edgeColor) > 16) {
-            image.height - lookback
-        } else {
-            -1
-        }
-    }
-
-    private fun colorDistance(first: Int, second: Int): Int =
-        abs(Color.red(first) - Color.red(second)) +
-            abs(Color.green(first) - Color.green(second)) +
-            abs(Color.blue(first) - Color.blue(second))
-
-    private fun luminance(pixel: Int): Int =
-        (Color.red(pixel) * 299 + Color.green(pixel) * 587 + Color.blue(pixel) * 114) / 1_000
 
     private fun waitForRenderedScreenshot(crop: Int): Bitmap {
         var rendered: Bitmap? = null

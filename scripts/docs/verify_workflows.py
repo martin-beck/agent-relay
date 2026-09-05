@@ -12,7 +12,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, cast
 
-from PIL import Image, ImageChops, UnidentifiedImageError
+from PIL import Image, ImageChops, ImageDraw, UnidentifiedImageError
 from render_workflows import ROOT, ManifestError, load_scenarios
 
 ASSET_ROOT = ROOT / "docs" / "assets" / "workflows"
@@ -21,12 +21,10 @@ MAX_IMAGE_BYTES = 1_048_576
 MIN_WIDTH = 320
 MIN_HEIGHT = 480
 PIXEL_CHANNEL_TOLERANCE = 16
-# Keep a meaningful visual gate while allowing bounded API 36 emulator chrome
-# residue that is not part of the rendered application content.
-MAX_CHANGED_PIXEL_RATIO = 0.015
-# API 36's pinned emulator can leave bounded antialiasing/system-bar residue
-# while the changed-pixel ratio remains strict at 1%.
-MAX_RMS_DIFFERENCE = 8.0
+MAX_CHANGED_PIXEL_RATIO = 0.01
+MAX_RMS_DIFFERENCE = 4.0
+CHROME_TOP_PIXELS = 32
+CHROME_BOTTOM_LOOKBACK = 128
 
 
 @dataclass(frozen=True)
@@ -97,6 +95,20 @@ def difference_metrics(baseline: Path, captured: Path, diff_path: Path) -> tuple
                 f"{captured.relative_to(ROOT)}"
             )
         difference = ImageChops.difference(expected, actual)
+        draw = ImageDraw.Draw(difference)
+        draw.rectangle((0, 0, expected.width, min(CHROME_TOP_PIXELS, expected.height) - 1), fill=0)
+        center = expected.width // 2
+        bottom = expected.height - 1
+        lookback = min(CHROME_BOTTOM_LOOKBACK, expected.height // 4)
+        actual_edge = actual.getpixel((center, bottom))
+        actual_inner = actual.getpixel((center, bottom - lookback))
+        if (
+            sum(
+                abs(first - second) for first, second in zip(actual_edge, actual_inner, strict=True)
+            )
+            > 16
+        ):
+            draw.rectangle((0, expected.height - lookback, expected.width, bottom), fill=0)
         channels = difference.split()
         maximum = ImageChops.lighter(ImageChops.lighter(channels[0], channels[1]), channels[2])
         changed = sum(maximum.histogram()[PIXEL_CHANNEL_TOLERANCE + 1 :])
