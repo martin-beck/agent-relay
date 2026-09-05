@@ -104,7 +104,7 @@ jobs:
         env:
           ANDROID_SERIAL: emulator-5582
         run: |
-          EMULATOR_AVD_NAME="test-${{ github.run_id }}-${{ github.run_attempt }}"
+          export EMULATOR_AVD_NAME="test-${{ github.run_id }}-${{ github.run_attempt }}"
           EMULATOR_PORT=5582 bash scripts/ci/run_android_emulator_tests.sh
           ./gradlew :app:connectedDebugAndroidTest :ssh:android:connectedDebugAndroidTest
           :storage:android:connectedDebugAndroidTest --stacktrace
@@ -301,7 +301,7 @@ jobs:
         env:
           ANDROID_SERIAL: emulator-5582
         run: >-
-          EMULATOR_AVD_NAME="test-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.name }}"
+          export EMULATOR_AVD_NAME="test-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.name }}"
           EMULATOR_PORT=5582 bash scripts/ci/run_android_emulator_tests.sh
           ./gradlew :app:connectedDebugAndroidTest :ssh:android:connectedDebugAndroidTest
           :storage:android:connectedDebugAndroidTest --stacktrace
