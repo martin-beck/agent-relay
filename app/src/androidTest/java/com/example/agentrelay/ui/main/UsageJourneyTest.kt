@@ -281,12 +281,9 @@ class UsageJourneyTest {
     private fun findBottomResidueStart(image: Bitmap): Int {
         val center = image.width / 2
         val edgeColor = image.getPixel(center, image.height - 1)
-        var start = image.height - 1
-        while (start > 0 && colorDistance(image.getPixel(center, start - 1), edgeColor) <= 16) {
-            start--
-        }
-        return if (start >= 16 && colorDistance(image.getPixel(center, start - 16), edgeColor) > 16) {
-            start
+        val lookback = minOf(128, image.height / 4)
+        return if (colorDistance(image.getPixel(center, image.height - lookback - 1), edgeColor) > 16) {
+            image.height - lookback
         } else {
             -1
         }
