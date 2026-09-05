@@ -34,10 +34,24 @@ else
   cat > "$avd_dir/config.ini" << EOF
 AvdId=$EMULATOR_AVD_NAME
 abi.type=x86_64
+avd.ini.displayname=Agent Relay CI
+disk.dataPartition.size=6G
+fastboot.forceColdBoot=yes
+hw.accelerometer=yes
+hw.audioInput=yes
+hw.battery=yes
 hw.cpu.arch=x86_64
 hw.cpu.ncore=2
+hw.gpu.enabled=yes
+hw.gpu.mode=swiftshader_indirect
 hw.device.name=$EMULATOR_PROFILE
+hw.keyboard=yes
+hw.lcd.density=420
+hw.lcd.height=2400
+hw.lcd.width=1080
+hw.ramSize=2048
 image.sysdir.1=system-images/android-$EMULATOR_API_LEVEL/$EMULATOR_TARGET/$EMULATOR_ARCH/
+target=android-$EMULATOR_API_LEVEL
 tag.display=default
 EOF
 fi
