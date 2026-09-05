@@ -136,6 +136,7 @@ test "$("$adb_bin" -s "emulator-$EMULATOR_PORT" shell getprop sys.boot_completed
 "$adb_bin" -s "emulator-$EMULATOR_PORT" shell settings put global window_animation_scale 0
 "$adb_bin" -s "emulator-$EMULATOR_PORT" shell settings put global transition_animation_scale 0
 "$adb_bin" -s "emulator-$EMULATOR_PORT" shell settings put global animator_duration_scale 0
+"$adb_bin" -s "emulator-$EMULATOR_PORT" shell settings put global policy_control 'immersive.full=*'
 "$adb_bin" -s "emulator-$EMULATOR_PORT" shell rm -rf /sdcard/Download/agent-relay-usage-guide
 verify_device_stable() {
   serial="emulator-$EMULATOR_PORT"
