@@ -53,6 +53,7 @@ ensure_adb_keypair() {
 ensure_adb_keypair
 "$adb_bin" kill-server > /dev/null 2>&1 || true
 export ADB_VENDOR_KEYS="$adb_private_key"
+"$adb_bin" start-server > /dev/null 2>&1
 mkdir -p "$ANDROID_AVD_HOME"
 echo no | "$avdmanager_bin" create avd --force --name "$EMULATOR_AVD_NAME" --path "$ANDROID_AVD_HOME/$EMULATOR_AVD_NAME.avd" --package "system-images;android-$EMULATOR_API_LEVEL;$EMULATOR_TARGET;$EMULATOR_ARCH" --device "$EMULATOR_PROFILE"
 avd_dir="$ANDROID_AVD_HOME/$EMULATOR_AVD_NAME.avd"
@@ -139,6 +140,8 @@ test "$("$adb_bin" -s "emulator-$EMULATOR_PORT" shell getprop sys.boot_completed
 "$adb_bin" -s "emulator-$EMULATOR_PORT" shell rm -rf /sdcard/Download/agent-relay-usage-guide
 verify_device_stable() {
   serial="emulator-$EMULATOR_PORT"
+  "$adb_bin" reconnect offline > /dev/null 2>&1 || true
+  timeout 5 "$adb_bin" -s "$serial" wait-for-device > /dev/null 2>&1 || true
   for _ in $(seq 1 5); do
     if [[ -s "$pid_file" ]] && kill -0 "$(< "$pid_file")" 2> /dev/null &&
       "$adb_bin" devices -l | awk -v serial="$serial" '$1 == serial && $2 == "device" { found = 1 } END { exit !found }' &&
