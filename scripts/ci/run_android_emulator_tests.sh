@@ -117,77 +117,33 @@ trap cleanup EXIT
 adb_port=$((EMULATOR_PORT + 1))
 echo "QEMU binary: $qemu_bin"
 echo "QEMU version: $(LD_LIBRARY_PATH="$emulator_library_path" "$qemu_bin" -version | head -1)"
-controller_status_file="$RUNNER_TEMP/agent-relay-emulator-$EMULATOR_PORT.status"
-run_controller() {
-  qemu_pid=""
-  for _ in $(seq 1 20); do
-    qemu_pid="$(pgrep -u "$(id -u)" -f "$qemu_bin.*-ports $EMULATOR_PORT,$adb_port" | head -1 || true)"
-    [[ -n "$qemu_pid" ]] && break
-    sleep 1
-  done
-  if [[ -z "$qemu_pid" ]]; then
-    echo 1 > "$controller_status_file"
-    return 0
-  fi
-  echo "$qemu_pid" > "$pid_file"
-  echo "Started emulator pid=$qemu_pid port=$EMULATOR_PORT log=$log_file"
-  for _ in $(seq 1 300); do
-    if ! kill -0 "$qemu_pid" 2> /dev/null; then
-      cat "$log_file" >&2
-      echo 1 > "$controller_status_file"
-      return 0
-    fi
-    if [[ "$("$adb_bin" -s "emulator-$EMULATOR_PORT" get-state 2> /dev/null || true)" == device ]] && [[ "$("$adb_bin" -s "emulator-$EMULATOR_PORT" shell getprop sys.boot_completed 2> /dev/null || true)" == 1 ]]; then break; fi
-    sleep 2
-  done
-  if [[ "$("$adb_bin" -s "emulator-$EMULATOR_PORT" get-state 2> /dev/null || true)" != device ]] || [[ "$("$adb_bin" -s "emulator-$EMULATOR_PORT" shell getprop sys.boot_completed 2> /dev/null || true)" != 1 ]]; then
+env "LD_LIBRARY_PATH=$emulator_library_path" "$qemu_bin" -ports "$EMULATOR_PORT,$adb_port" -avd "$EMULATOR_AVD_NAME" -no-window -gpu swiftshader_indirect -no-snapshot -no-audio -no-boot-anim > "$log_file" 2>&1 &
+emulator_pid=$!
+echo "$emulator_pid" > "$pid_file"
+echo "Started emulator pid=$emulator_pid port=$EMULATOR_PORT log=$log_file"
+for _ in $(seq 1 300); do
+  if ! kill -0 "$emulator_pid" 2> /dev/null; then
     cat "$log_file" >&2
-    echo 1 > "$controller_status_file"
-    kill "$qemu_pid" 2> /dev/null || true
-    return 0
-  fi
-  "$adb_bin" -s "emulator-$EMULATOR_PORT" shell wm size 1080x2400
-  "$adb_bin" -s "emulator-$EMULATOR_PORT" shell wm density 420
-  "$adb_bin" -s "emulator-$EMULATOR_PORT" shell settings put system font_scale 1.0
-  "$adb_bin" -s "emulator-$EMULATOR_PORT" shell cmd alarm set-timezone UTC
-  "$adb_bin" -s "emulator-$EMULATOR_PORT" shell cmd uimode night no
-  "$adb_bin" -s "emulator-$EMULATOR_PORT" shell settings put global window_animation_scale 0
-  "$adb_bin" -s "emulator-$EMULATOR_PORT" shell settings put global transition_animation_scale 0
-  "$adb_bin" -s "emulator-$EMULATOR_PORT" shell settings put global animator_duration_scale 0
-  "$adb_bin" -s "emulator-$EMULATOR_PORT" shell rm -rf /sdcard/Download/agent-relay-usage-guide
-  set +e
-  "$@"
-  test_status=$?
-  set -e
-  echo "$test_status" > "$controller_status_file"
-  "$adb_bin" -s "emulator-$EMULATOR_PORT" emu kill > /dev/null 2>&1 || true
-  for _ in $(seq 1 10); do
-    kill -0 "$qemu_pid" 2> /dev/null || return 0
-    sleep 1
-  done
-  kill "$qemu_pid" 2> /dev/null || true
-}
-run_controller "$@" &
-controller_pid=$!
-set +e
-env "LD_LIBRARY_PATH=$emulator_library_path" "$qemu_bin" -ports "$EMULATOR_PORT,$adb_port" -avd "$EMULATOR_AVD_NAME" -no-window -gpu swiftshader_indirect -no-snapshot -no-audio -no-boot-anim > "$log_file" 2>&1
-qemu_status=$?
-set -e
-if [[ "$qemu_status" -ne 0 && "$qemu_status" -ne 143 ]]; then
-  kill "$controller_pid" 2> /dev/null || true
-  wait "$controller_pid" || true
-  cat "$log_file" >&2
-  exit 1
-fi
-wait "$controller_pid" || true
-test_status=1
-[[ -s "$controller_status_file" ]] && test_status="$(< "$controller_status_file")"
-if [[ "$test_status" -eq 0 ]]; then
-  if [[ "$qemu_status" -ne 0 && "$qemu_status" -ne 143 ]]; then
-    echo "QEMU exited unexpectedly with status $qemu_status" >&2
     exit 1
   fi
-  exit 0
-fi
-cat "$log_file" >&2
-exit "$test_status"
+  if [[ "$("$adb_bin" -s "emulator-$EMULATOR_PORT" get-state 2> /dev/null || true)" == device ]] && [[ "$("$adb_bin" -s "emulator-$EMULATOR_PORT" shell getprop sys.boot_completed 2> /dev/null || true)" == 1 ]]; then break; fi
+  sleep 2
+done
+test "$("$adb_bin" -s "emulator-$EMULATOR_PORT" get-state 2> /dev/null)" = device || {
+  cat "$log_file" >&2
+  exit 1
+}
+test "$("$adb_bin" -s "emulator-$EMULATOR_PORT" shell getprop sys.boot_completed)" = 1 || {
+  cat "$log_file" >&2
+  exit 1
+}
+"$adb_bin" -s "emulator-$EMULATOR_PORT" shell wm size 1080x2400
+"$adb_bin" -s "emulator-$EMULATOR_PORT" shell wm density 420
+"$adb_bin" -s "emulator-$EMULATOR_PORT" shell settings put system font_scale 1.0
+"$adb_bin" -s "emulator-$EMULATOR_PORT" shell cmd alarm set-timezone UTC
+"$adb_bin" -s "emulator-$EMULATOR_PORT" shell cmd uimode night no
+"$adb_bin" -s "emulator-$EMULATOR_PORT" shell settings put global window_animation_scale 0
+"$adb_bin" -s "emulator-$EMULATOR_PORT" shell settings put global transition_animation_scale 0
+"$adb_bin" -s "emulator-$EMULATOR_PORT" shell settings put global animator_duration_scale 0
+"$adb_bin" -s "emulator-$EMULATOR_PORT" shell rm -rf /sdcard/Download/agent-relay-usage-guide
+"$@"
