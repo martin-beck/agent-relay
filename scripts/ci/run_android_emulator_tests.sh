@@ -20,7 +20,7 @@ emulator_bin="$ANDROID_HOME/emulator/emulator"
 avdmanager_bin="$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager"
 test -x "$adb_bin" -a -x "$emulator_bin" -a -x "$avdmanager_bin"
 mkdir -p "$ANDROID_AVD_HOME"
-echo no | "$avdmanager_bin" create avd --sdk_root "$ANDROID_HOME" --force --name "$EMULATOR_AVD_NAME" --package "system-images;android-$EMULATOR_API_LEVEL;$EMULATOR_TARGET;$EMULATOR_ARCH" --device "$EMULATOR_PROFILE"
+echo no | "$avdmanager_bin" create avd --force --name "$EMULATOR_AVD_NAME" --path "$ANDROID_AVD_HOME/$EMULATOR_AVD_NAME.avd" --package "system-images;android-$EMULATOR_API_LEVEL;$EMULATOR_TARGET;$EMULATOR_ARCH" --device "$EMULATOR_PROFILE"
 avd_dir="$ANDROID_AVD_HOME/$EMULATOR_AVD_NAME.avd"
 if [[ ! -d "$avd_dir" ]]; then
   echo "avdmanager did not create expected AVD directory: $avd_dir" >&2
