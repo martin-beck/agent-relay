@@ -260,13 +260,32 @@ class UsageJourneyTest {
         val edge = minOf(32, image.height / 4)
         val topColor = image.getPixel(0, edge)
         val bottomColor = image.getPixel(0, image.height - edge - 1)
-        for (y in 0 until edge) {
-            for (x in 0 until image.width) image.setPixel(x, y, topColor)
+        if (hasDarkResidue(image, edge)) {
+            for (y in 0 until edge) {
+                for (x in 0 until image.width) image.setPixel(x, y, topColor)
+            }
         }
-        for (y in image.height - edge until image.height) {
-            for (x in 0 until image.width) image.setPixel(x, y, bottomColor)
+        if (hasBrightResidue(image, image.height - edge, bottomColor)) {
+            for (y in image.height - edge until image.height) {
+                for (x in 0 until image.width) image.setPixel(x, y, bottomColor)
+            }
         }
     }
+
+    private fun hasDarkResidue(image: Bitmap, edge: Int): Boolean =
+        (0 until edge).any { y ->
+            (0 until image.width step 8).count { x -> luminance(image.getPixel(x, y)) < 80 } > 2
+        }
+
+    private fun hasBrightResidue(image: Bitmap, start: Int, background: Int): Boolean {
+        if (luminance(background) > 220) return false
+        return (start until image.height).any { y ->
+            (0 until image.width step 8).count { x -> luminance(image.getPixel(x, y)) > 220 } > 2
+        }
+    }
+
+    private fun luminance(pixel: Int): Int =
+        (Color.red(pixel) * 299 + Color.green(pixel) * 587 + Color.blue(pixel) * 114) / 1_000
 
     private fun waitForRenderedScreenshot(crop: Int): Bitmap {
         var rendered: Bitmap? = null
