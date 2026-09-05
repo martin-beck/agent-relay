@@ -43,7 +43,7 @@ hw.battery=yes
 hw.cpu.arch=x86_64
 hw.cpu.ncore=2
 hw.gpu.enabled=yes
-hw.gpu.mode=swiftshader_indirect
+hw.gpu.mode=auto
 hw.device.name=$EMULATOR_PROFILE
 hw.keyboard=yes
 hw.lcd.density=420
@@ -73,7 +73,7 @@ cleanup() {
   fi
 }
 trap cleanup EXIT
-setsid "$emulator_bin" -port "$EMULATOR_PORT" -avd "$EMULATOR_AVD_NAME" -no-window -gpu swiftshader_indirect -accel off -no-snapshot -noaudio -no-boot-anim > "$log_file" 2>&1 < /dev/null &
+setsid "$emulator_bin" -port "$EMULATOR_PORT" -avd "$EMULATOR_AVD_NAME" -no-window -gpu swiftshader_indirect -no-snapshot -no-audio -no-boot-anim > "$log_file" 2>&1 < /dev/null &
 emulator_pid=$!
 echo "$emulator_pid" > "$pid_file"
 echo "Started emulator pid=$emulator_pid port=$EMULATOR_PORT log=$log_file"
