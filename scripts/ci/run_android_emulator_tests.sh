@@ -160,4 +160,7 @@ verify_device_stable
 "$adb_bin" devices -l
 "$adb_bin" -s "emulator-$EMULATOR_PORT" get-state
 ./gradlew --stop > /dev/null 2>&1 || true
+if "$adb_bin" devices | awk '$1 == "emulator-5554" && $2 == "unauthorized" { found = 1 } END { exit !found }'; then
+  "$adb_bin" disconnect localhost:5554 > /dev/null 2>&1 || true
+fi
 "$@"
