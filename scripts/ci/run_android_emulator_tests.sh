@@ -8,10 +8,6 @@ set -euo pipefail
 : "${EMULATOR_TARGET:=default}"
 : "${EMULATOR_ARCH:=x86_64}"
 : "${EMULATOR_PROFILE:=pixel_7_pro}"
-: "${EMULATOR_START_ATTEMPTS:=3}"
-: "${EMULATOR_START_ATTEMPT:=1}"
-: "${EMULATOR_BASE_AVD_NAME:=$EMULATOR_AVD_NAME}"
-EMULATOR_AVD_NAME="${EMULATOR_BASE_AVD_NAME}-attempt-${EMULATOR_START_ATTEMPT}"
 ANDROID_AVD_HOME="${ANDROID_AVD_HOME:-${HOME:-$RUNNER_TEMP}/.android/avd}"
 export ANDROID_AVD_HOME
 echo "Android SDK: ${ANDROID_HOME:-<unset>}"
@@ -100,8 +96,8 @@ target=android-$EMULATOR_API_LEVEL
 tag.display=default
 EOF
 fi
-log_file="$RUNNER_TEMP/agent-relay-emulator-$EMULATOR_PORT-attempt-$EMULATOR_START_ATTEMPT.log"
-pid_file="$RUNNER_TEMP/agent-relay-emulator-$EMULATOR_PORT-attempt-$EMULATOR_START_ATTEMPT.pid"
+log_file="$RUNNER_TEMP/agent-relay-emulator-$EMULATOR_PORT.log"
+pid_file="$RUNNER_TEMP/agent-relay-emulator-$EMULATOR_PORT.pid"
 cleanup() {
   mkdir -p build/emulator
   [[ ! -f "$log_file" ]] || cp "$log_file" "build/emulator/emulator-$EMULATOR_PORT.log"
@@ -171,19 +167,6 @@ run_controller() {
   done
   kill "$qemu_pid" 2> /dev/null || true
 }
-retry_startup() {
-  status="$1"
-  shift
-  if ((EMULATOR_START_ATTEMPT < EMULATOR_START_ATTEMPTS)); then
-    mkdir -p build/emulator
-    [[ ! -f "$log_file" ]] || cp "$log_file" "build/emulator/emulator-$EMULATOR_PORT-attempt-$EMULATOR_START_ATTEMPT.log"
-    [[ ! -f "$pid_file" ]] || cp "$pid_file" "build/emulator/emulator-$EMULATOR_PORT-attempt-$EMULATOR_START_ATTEMPT.pid"
-    next_attempt=$((EMULATOR_START_ATTEMPT + 1))
-    echo "Retrying emulator startup with fresh AVD attempt $next_attempt/$EMULATOR_START_ATTEMPTS" >&2
-    exec env EMULATOR_BASE_AVD_NAME="$EMULATOR_BASE_AVD_NAME" EMULATOR_START_ATTEMPT="$next_attempt" "$0" "$@"
-  fi
-  return "$status"
-}
 run_controller "$@" &
 controller_pid=$!
 set +e
@@ -193,7 +176,6 @@ set -e
 if [[ "$qemu_status" -ne 0 && "$qemu_status" -ne 143 ]]; then
   kill "$controller_pid" 2> /dev/null || true
   wait "$controller_pid" || true
-  retry_startup 1 "$@"
   cat "$log_file" >&2
   exit 1
 fi
@@ -206,9 +188,6 @@ if [[ "$test_status" -eq 0 ]]; then
     exit 1
   fi
   exit 0
-fi
-if [[ "$qemu_status" -eq 143 ]]; then
-  retry_startup 1 "$@"
 fi
 cat "$log_file" >&2
 exit "$test_status"
