@@ -138,7 +138,6 @@ test "$("$adb_bin" -s "emulator-$EMULATOR_PORT" shell getprop sys.boot_completed
 "$adb_bin" -s "emulator-$EMULATOR_PORT" shell rm -rf /sdcard/Download/agent-relay-usage-guide
 verify_device_stable() {
   serial="emulator-$EMULATOR_PORT"
-  "$adb_bin" reconnect offline > /dev/null 2>&1 || true
   timeout 5 "$adb_bin" -s "$serial" wait-for-device > /dev/null 2>&1 || true
   for _ in $(seq 1 5); do
     if [[ -s "$pid_file" ]] && kill -0 "$(< "$pid_file")" 2> /dev/null &&
