@@ -136,4 +136,20 @@ test "$("$adb_bin" -s "emulator-$EMULATOR_PORT" shell getprop sys.boot_completed
 "$adb_bin" -s "emulator-$EMULATOR_PORT" shell settings put global transition_animation_scale 0
 "$adb_bin" -s "emulator-$EMULATOR_PORT" shell settings put global animator_duration_scale 0
 "$adb_bin" -s "emulator-$EMULATOR_PORT" shell rm -rf /sdcard/Download/agent-relay-usage-guide
+verify_device_stable() {
+  serial="emulator-$EMULATOR_PORT"
+  for _ in $(seq 1 5); do
+    if [[ -s "$pid_file" ]] && kill -0 "$(< "$pid_file")" 2> /dev/null &&
+      "$adb_bin" devices -l | awk -v serial="$serial" '$1 == serial && $2 == "device" { found = 1 } END { exit !found }' &&
+      [[ "$("$adb_bin" -s "$serial" get-state 2> /dev/null || true)" == device ]]; then
+      return 0
+    fi
+    sleep 1
+  done
+  echo "Target emulator $serial was not stable immediately before tests" >&2
+  "$adb_bin" devices -l >&2 || true
+  "$adb_bin" server-status >&2 || true
+  return 1
+}
+verify_device_stable
 "$@"
