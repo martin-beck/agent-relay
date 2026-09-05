@@ -138,6 +138,10 @@ test "$("$adb_bin" -s "emulator-$EMULATOR_PORT" shell getprop sys.boot_completed
 "$adb_bin" -s "emulator-$EMULATOR_PORT" shell rm -rf /sdcard/Download/agent-relay-usage-guide
 verify_device_stable() {
   serial="emulator-$EMULATOR_PORT"
+  if "$adb_bin" devices | awk '$1 == "emulator-5554" && $2 == "unauthorized" { found = 1 } END { exit !found }'; then
+    # Remove only the stale unauthorized transport; do not stop its emulator.
+    "$adb_bin" disconnect emulator-5554 > /dev/null 2>&1 || true
+  fi
   timeout 5 "$adb_bin" -s "$serial" wait-for-device > /dev/null 2>&1 || true
   for _ in $(seq 1 5); do
     if [[ -s "$pid_file" ]] && kill -0 "$(< "$pid_file")" 2> /dev/null &&
