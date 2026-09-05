@@ -10,6 +10,7 @@ set -euo pipefail
 : "${EMULATOR_ARCH:=x86_64}"
 : "${EMULATOR_PROFILE:=pixel_7_pro}"
 test -n "$ANDROID_HOME" -a -n "$ANDROID_AVD_HOME" -a -n "$RUNNER_TEMP"
+if [[ "${1:-}" == -- ]]; then shift; fi
 adb_bin="$ANDROID_HOME/platform-tools/adb"
 emulator_bin="$ANDROID_HOME/emulator/emulator"
 avdmanager_bin="$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager"
@@ -20,8 +21,19 @@ echo 'hw.cpu.ncore=2' >> "$ANDROID_AVD_HOME/$EMULATOR_AVD_NAME.avd/config.ini"
 log_file="$RUNNER_TEMP/agent-relay-emulator-$EMULATOR_PORT.log"
 pid_file="$RUNNER_TEMP/agent-relay-emulator-$EMULATOR_PORT.pid"
 cleanup() {
+  mkdir -p build/emulator
+  [[ ! -f "$log_file" ]] || cp "$log_file" "build/emulator/emulator-$EMULATOR_PORT.log"
+  [[ ! -f "$pid_file" ]] || cp "$pid_file" "build/emulator/emulator-$EMULATOR_PORT.pid"
   "$adb_bin" -s "emulator-$EMULATOR_PORT" emu kill > /dev/null 2>&1 || true
-  [[ ! -s "$pid_file" ]] || kill "$(< "$pid_file")" > /dev/null 2>&1 || true
+  if [[ -s "$pid_file" ]]; then
+    pid="$(< "$pid_file")"
+    kill -- "-$pid" > /dev/null 2>&1 || kill "$pid" > /dev/null 2>&1 || true
+    for _ in $(seq 1 20); do
+      kill -0 "$pid" > /dev/null 2>&1 || break
+      sleep 1
+    done
+    kill -KILL -- "-$pid" > /dev/null 2>&1 || true
+  fi
 }
 trap cleanup EXIT
 setsid "$emulator_bin" -port "$EMULATOR_PORT" -avd "$EMULATOR_AVD_NAME" -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim > "$log_file" 2>&1 < /dev/null &

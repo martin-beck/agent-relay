@@ -143,6 +143,7 @@ jobs:
             **/build/outputs/androidTest-results/connected/**
             **/build/reports/androidTests/connected/**
             build/reports/problems/**
+            build/emulator/**
             build/usage-guide/**
           if-no-files-found: error
           retention-days: 14
@@ -318,5 +319,6 @@ jobs:
             **/build/outputs/androidTest-results/connected/**
             **/build/reports/androidTests/connected/**
             build/reports/problems/**
+            build/emulator/**
           if-no-files-found: error
           retention-days: 14
