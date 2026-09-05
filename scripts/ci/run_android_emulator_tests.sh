@@ -26,6 +26,32 @@ emulator_bin="$ANDROID_HOME/emulator/emulator"
 avdmanager_bin="$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager"
 test -x "$adb_bin" -a -x "$emulator_bin" -a -x "$avdmanager_bin"
 test -x "$(command -v script)"
+android_config_dir="${HOME:-$RUNNER_TEMP}/.android"
+adb_private_key="$android_config_dir/adbkey"
+adb_public_key="$adb_private_key.pub"
+ensure_adb_keypair() {
+  # QEMU's ADB-auth bridge assumes both files exist. A stale cache containing
+  # only adbkey can crash the native bridge before the emulator exposes ADB.
+  if [[ -s "$adb_private_key" && -s "$adb_public_key" ]]; then return 0; fi
+  mkdir -p "$android_config_dir"
+  chmod 0700 "$android_config_dir"
+  key_tmp_dir="$(mktemp -d "$RUNNER_TEMP/agent-relay-adbkey.XXXXXX")"
+  umask 077
+  if ! "$adb_bin" keygen "$key_tmp_dir/adbkey" > /dev/null 2>&1; then
+    rm -rf "$key_tmp_dir"
+    echo "Unable to generate the Android ADB keypair" >&2
+    return 1
+  fi
+  test -s "$key_tmp_dir/adbkey" -a -s "$key_tmp_dir/adbkey.pub"
+  mv -f "$key_tmp_dir/adbkey" "$adb_private_key"
+  mv -f "$key_tmp_dir/adbkey.pub" "$adb_public_key"
+  rmdir "$key_tmp_dir"
+  chmod 0600 "$adb_private_key"
+  chmod 0644 "$adb_public_key"
+  echo "Initialized complete Android ADB keypair for emulator startup"
+}
+ensure_adb_keypair
+"$adb_bin" kill-server > /dev/null 2>&1 || true
 mkdir -p "$ANDROID_AVD_HOME"
 echo no | "$avdmanager_bin" create avd --force --name "$EMULATOR_AVD_NAME" --path "$ANDROID_AVD_HOME/$EMULATOR_AVD_NAME.avd" --package "system-images;android-$EMULATOR_API_LEVEL;$EMULATOR_TARGET;$EMULATOR_ARCH" --device "$EMULATOR_PROFILE"
 avd_dir="$ANDROID_AVD_HOME/$EMULATOR_AVD_NAME.avd"
