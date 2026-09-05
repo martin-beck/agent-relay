@@ -140,7 +140,7 @@ verify_device_stable() {
   serial="emulator-$EMULATOR_PORT"
   if "$adb_bin" devices | awk '$1 == "emulator-5554" && $2 == "unauthorized" { found = 1 } END { exit !found }'; then
     # Remove only the stale unauthorized transport; do not stop its emulator.
-    "$adb_bin" disconnect emulator-5554 > /dev/null 2>&1 || true
+    "$adb_bin" disconnect localhost:5554 > /dev/null 2>&1 || true
   fi
   timeout 5 "$adb_bin" -s "$serial" wait-for-device > /dev/null 2>&1 || true
   for _ in $(seq 1 5); do
