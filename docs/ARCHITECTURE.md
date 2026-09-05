@@ -24,6 +24,15 @@ No connection or agent provider depends on the speech stack.
 :session:api and :session:android persist provider-neutral session state.
 ```
 
+## Phone-local AI evidence boundary
+
+Phone-local model discovery reports capability and validation evidence separately from
+the model itself. API availability, model metadata, loadability, mocks, and virtual-device
+checks are useful validation signals but do not prove physical on-device inference. Only a
+`PHYSICAL_DEVICE` observation at `INFERENCE_VERIFIED` may be used to route real user data
+to a phone-local model. Observations contain bounded identifiers and policy data, never
+paths, addresses, hardware identifiers, or model content.
+
 Dependencies point toward contracts. Agent providers consume
 `RemoteAgentRuntime`; they do not cast it to an SSH or local implementation.
 Connection providers do not know agent protocols. A provider can optionally

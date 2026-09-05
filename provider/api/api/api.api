@@ -643,6 +643,58 @@ public final class dev/agentrelay/provider/api/DiscoveredCapability {
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class dev/agentrelay/provider/api/LocalAiDetectionModelsKt {
+	public static final field MAX_LOCAL_AI_CAPABILITIES I
+	public static final fun provesPhysicalInference (Ldev/agentrelay/provider/api/LocalAiModelObservation;)Z
+}
+
+public final class dev/agentrelay/provider/api/LocalAiExecutionEnvironment : java/lang/Enum {
+	public static final field PHYSICAL_DEVICE Ldev/agentrelay/provider/api/LocalAiExecutionEnvironment;
+	public static final field UNKNOWN Ldev/agentrelay/provider/api/LocalAiExecutionEnvironment;
+	public static final field VIRTUAL_DEVICE Ldev/agentrelay/provider/api/LocalAiExecutionEnvironment;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/provider/api/LocalAiExecutionEnvironment;
+	public static fun values ()[Ldev/agentrelay/provider/api/LocalAiExecutionEnvironment;
+}
+
+public final class dev/agentrelay/provider/api/LocalAiModelObservation {
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/Set;Ljava/lang/String;Ldev/agentrelay/provider/api/LocalAiExecutionEnvironment;Ldev/agentrelay/provider/api/LocalAiValidationLevel;JLjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/Set;Ljava/lang/String;Ldev/agentrelay/provider/api/LocalAiExecutionEnvironment;Ldev/agentrelay/provider/api/LocalAiValidationLevel;JLjava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-g5zA26w ()Ljava/lang/String;
+	public final fun component2-g5zA26w ()Ljava/lang/String;
+	public final fun component3 ()Ljava/util/Set;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()Ldev/agentrelay/provider/api/LocalAiExecutionEnvironment;
+	public final fun component6 ()Ldev/agentrelay/provider/api/LocalAiValidationLevel;
+	public final fun component7 ()J
+	public final fun component8 ()Ljava/lang/String;
+	public final fun copy-k2k-MWw (Ljava/lang/String;Ljava/lang/String;Ljava/util/Set;Ljava/lang/String;Ldev/agentrelay/provider/api/LocalAiExecutionEnvironment;Ldev/agentrelay/provider/api/LocalAiValidationLevel;JLjava/lang/String;)Ldev/agentrelay/provider/api/LocalAiModelObservation;
+	public static synthetic fun copy-k2k-MWw$default (Ldev/agentrelay/provider/api/LocalAiModelObservation;Ljava/lang/String;Ljava/lang/String;Ljava/util/Set;Ljava/lang/String;Ldev/agentrelay/provider/api/LocalAiExecutionEnvironment;Ldev/agentrelay/provider/api/LocalAiValidationLevel;JLjava/lang/String;ILjava/lang/Object;)Ldev/agentrelay/provider/api/LocalAiModelObservation;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCapabilities ()Ljava/util/Set;
+	public final fun getDataLocationClass ()Ljava/lang/String;
+	public final fun getEnvironment ()Ldev/agentrelay/provider/api/LocalAiExecutionEnvironment;
+	public final fun getModelId-g5zA26w ()Ljava/lang/String;
+	public final fun getObservedAtEpochSeconds ()J
+	public final fun getReasonCode ()Ljava/lang/String;
+	public final fun getRuntimeId-g5zA26w ()Ljava/lang/String;
+	public final fun getValidation ()Ldev/agentrelay/provider/api/LocalAiValidationLevel;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/provider/api/LocalAiValidationLevel : java/lang/Enum {
+	public static final field API_AVAILABLE Ldev/agentrelay/provider/api/LocalAiValidationLevel;
+	public static final field INFERENCE_VERIFIED Ldev/agentrelay/provider/api/LocalAiValidationLevel;
+	public static final field MODEL_LOADABLE Ldev/agentrelay/provider/api/LocalAiValidationLevel;
+	public static final field MODEL_METADATA_AVAILABLE Ldev/agentrelay/provider/api/LocalAiValidationLevel;
+	public static final field UNKNOWN Ldev/agentrelay/provider/api/LocalAiValidationLevel;
+	public static final field UNSUPPORTED Ldev/agentrelay/provider/api/LocalAiValidationLevel;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/provider/api/LocalAiValidationLevel;
+	public static fun values ()[Ldev/agentrelay/provider/api/LocalAiValidationLevel;
+}
+
 public final class dev/agentrelay/provider/api/ProviderCausalTrace {
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ldev/agentrelay/provider/api/ProviderTracePhase;JLdev/agentrelay/provider/api/ProviderOutcome;Ljava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ldev/agentrelay/provider/api/ProviderTracePhase;JLdev/agentrelay/provider/api/ProviderOutcome;Ljava/util/Map;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
