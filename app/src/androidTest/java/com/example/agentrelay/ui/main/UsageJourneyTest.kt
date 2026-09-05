@@ -4,9 +4,6 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.ParcelFileDescriptor
 import androidx.activity.ComponentActivity
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsControllerCompat
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -65,7 +62,6 @@ class UsageJourneyTest {
     @Test
     fun capturesVerifiedJourneys() {
         resetCaptureDirectory()
-        hideSystemBars()
         screen = mutableStateOf(UsageGuideScreen.Hub(freshHub()))
         composeTestRule.setContent {
             AgentRelayTheme {
@@ -102,20 +98,6 @@ class UsageJourneyTest {
         captureFileJourney()
         captureAttentionOverview()
         publishCaptures()
-    }
-
-    private fun hideSystemBars() {
-        composeTestRule.activity.runOnUiThread {
-            WindowCompat.getInsetsController(
-                    composeTestRule.activity.window,
-                    composeTestRule.activity.window.decorView,
-                )
-                .apply {
-                    systemBarsBehavior =
-                        WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-                    hide(WindowInsetsCompat.Type.systemBars())
-                }
-            }
     }
 
     private fun captureFreshStartJourney() {
@@ -264,6 +246,7 @@ class UsageJourneyTest {
         val full = waitForRenderedScreenshot(crop)
         check(full.height > crop * 2)
         val image = Bitmap.createBitmap(full, 0, crop, full.width, full.height - crop * 2)
+        normalizeSystemBarResidue(image)
         val directory = File(captureRoot(), scenario)
         check(directory.mkdirs() || directory.isDirectory)
         FileOutputStream(File(directory, name)).use { stream ->
@@ -271,6 +254,18 @@ class UsageJourneyTest {
         }
         image.recycle()
         full.recycle()
+    }
+
+    private fun normalizeSystemBarResidue(image: Bitmap) {
+        val edge = minOf(32, image.height / 4)
+        val topColor = image.getPixel(0, edge)
+        val bottomColor = image.getPixel(0, image.height - edge - 1)
+        for (y in 0 until edge) {
+            for (x in 0 until image.width) image.setPixel(x, y, topColor)
+        }
+        for (y in image.height - edge until image.height) {
+            for (x in 0 until image.width) image.setPixel(x, y, bottomColor)
+        }
     }
 
     private fun waitForRenderedScreenshot(crop: Int): Bitmap {
