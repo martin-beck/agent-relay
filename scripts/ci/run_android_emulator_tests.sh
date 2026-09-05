@@ -20,8 +20,18 @@ emulator_bin="$ANDROID_HOME/emulator/emulator"
 avdmanager_bin="$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager"
 test -x "$adb_bin" -a -x "$emulator_bin" -a -x "$avdmanager_bin"
 mkdir -p "$ANDROID_AVD_HOME"
-echo no | "$avdmanager_bin" create avd --force --name "$EMULATOR_AVD_NAME" --package "system-images;android-$EMULATOR_API_LEVEL;$EMULATOR_TARGET;$EMULATOR_ARCH" --device "$EMULATOR_PROFILE"
-echo 'hw.cpu.ncore=2' >> "$ANDROID_AVD_HOME/$EMULATOR_AVD_NAME.avd/config.ini"
+echo no | "$avdmanager_bin" --sdk_root "$ANDROID_HOME" create avd --force --name "$EMULATOR_AVD_NAME" --package "system-images;android-$EMULATOR_API_LEVEL;$EMULATOR_TARGET;$EMULATOR_ARCH" --device "$EMULATOR_PROFILE"
+avd_dir="$ANDROID_AVD_HOME/$EMULATOR_AVD_NAME.avd"
+if [[ ! -d "$avd_dir" ]]; then
+  echo "avdmanager did not create expected AVD directory: $avd_dir" >&2
+  find "$ANDROID_AVD_HOME" -maxdepth 2 -type f -name config.ini -print >&2 || true
+  exit 1
+fi
+if [[ -f "$avd_dir/config.ini" ]]; then
+  echo 'hw.cpu.ncore=2' >> "$avd_dir/config.ini"
+else
+  echo "avdmanager created no config.ini; using default AVD configuration" >&2
+fi
 log_file="$RUNNER_TEMP/agent-relay-emulator-$EMULATOR_PORT.log"
 pid_file="$RUNNER_TEMP/agent-relay-emulator-$EMULATOR_PORT.pid"
 cleanup() {
