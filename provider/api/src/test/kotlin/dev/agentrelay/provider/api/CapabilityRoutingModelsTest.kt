@@ -61,6 +61,31 @@ class CapabilityRoutingModelsTest {
     }
 
     @Test
+    fun `audits capability permission availability cost and context rejection`() {
+        val decision = route(
+            policy.copy(maxAttempts = 10),
+            listOf(
+                candidate("availability", availability = RoutingAvailability.UNAVAILABLE, costMicros = 1),
+                candidate("capability", capabilities = setOf("session.resume"), costMicros = 1),
+                candidate("context", context = setOf("background"), costMicros = 1),
+                candidate("cost", costMicros = 101),
+                candidate("permission", permissions = setOf(CapabilityPermission.NETWORK), costMicros = 1),
+            ),
+        )
+
+        assertEquals(
+            mapOf(
+                "availability" to RoutingRejectionReason.UNAVAILABLE,
+                "capability" to RoutingRejectionReason.MISSING_CAPABILITY,
+                "context" to RoutingRejectionReason.CONTEXT_MISMATCH,
+                "cost" to RoutingRejectionReason.COST_LIMIT,
+                "permission" to RoutingRejectionReason.PERMISSION_NOT_ALLOWED,
+            ),
+            decision.attempts.associate { it.subjectId.value to it.rejection },
+        )
+    }
+
+    @Test
     fun `rejects unsafe bounds and duplicate candidates`() {
         assertFailsWith<IllegalArgumentException> { policy.copy(maxLoadPercent = 101) }
         assertFailsWith<IllegalArgumentException> {
@@ -72,18 +97,22 @@ class CapabilityRoutingModelsTest {
         id: String,
         dataLocationClass: String = "local",
         privacyClass: RoutingPrivacyClass = RoutingPrivacyClass.PUBLIC_METADATA,
+        capabilities: Set<String> = setOf("session.start"),
+        permissions: Set<CapabilityPermission> = setOf(CapabilityPermission.READ_ONLY),
+        availability: RoutingAvailability = RoutingAvailability.AVAILABLE,
         costMicros: Long = 10,
+        context: Set<String> = setOf("interactive"),
         loadPercent: Int = 20,
     ) = RoutingCandidate(
         subjectId = CapabilityRecordId(id),
         subjectKind = CapabilitySubjectKind.PROVIDER,
-        capabilities = setOf("session.start"),
+        capabilities = capabilities,
         dataLocationClass = dataLocationClass,
         privacyClass = privacyClass,
-        permissions = setOf(CapabilityPermission.READ_ONLY),
-        availability = RoutingAvailability.AVAILABLE,
+        permissions = permissions,
+        availability = availability,
         costMicros = costMicros,
-        context = setOf("interactive"),
+        context = context,
         loadPercent = loadPercent,
     )
 }
