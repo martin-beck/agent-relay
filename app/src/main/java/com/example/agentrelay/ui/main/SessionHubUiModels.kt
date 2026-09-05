@@ -110,6 +110,39 @@ internal data class SessionUiModel(
     val isPinned: Boolean,
 )
 
+internal data class AttentionSurfaceBuckets(
+    val needsAttention: List<SessionUiModel>,
+    val changed: List<SessionUiModel>,
+    val running: List<SessionUiModel>,
+    val recentlyCompleted: List<SessionUiModel>,
+)
+
+internal fun attentionSurfaceBuckets(sessions: List<SessionUiModel>): AttentionSurfaceBuckets {
+    val buckets = sessions.groupBy { session ->
+        when {
+            session.requiresActionCount > 0 ||
+                session.agentState == AgentSessionState.WAITING_FOR_APPROVAL ->
+                AttentionSurfaceBucket.NEEDS_ATTENTION
+            session.agentState == AgentSessionState.RUNNING -> AttentionSurfaceBucket.RUNNING
+            session.unreadCount > 0 -> AttentionSurfaceBucket.CHANGED
+            else -> AttentionSurfaceBucket.RECENTLY_COMPLETED
+        }
+    }
+    return AttentionSurfaceBuckets(
+        needsAttention = buckets[AttentionSurfaceBucket.NEEDS_ATTENTION].orEmpty(),
+        changed = buckets[AttentionSurfaceBucket.CHANGED].orEmpty(),
+        running = buckets[AttentionSurfaceBucket.RUNNING].orEmpty(),
+        recentlyCompleted = buckets[AttentionSurfaceBucket.RECENTLY_COMPLETED].orEmpty(),
+    )
+}
+
+private enum class AttentionSurfaceBucket {
+    NEEDS_ATTENTION,
+    CHANGED,
+    RUNNING,
+    RECENTLY_COMPLETED,
+}
+
 internal data class SessionLauncherUiModel(
     val stableKey: String,
     val connectionLabel: String,
