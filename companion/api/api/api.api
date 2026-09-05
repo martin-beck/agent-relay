@@ -1,0 +1,156 @@
+public final class dev/agentrelay/companion/api/CompanionActionClass : java/lang/Enum {
+	public static final field HIGH_RISK_APPROVAL Ldev/agentrelay/companion/api/CompanionActionClass;
+	public static final field NAVIGATION Ldev/agentrelay/companion/api/CompanionActionClass;
+	public static final field NOTIFICATION Ldev/agentrelay/companion/api/CompanionActionClass;
+	public static final field SPEECH_INPUT_REQUEST Ldev/agentrelay/companion/api/CompanionActionClass;
+	public static final field SPEECH_OUTPUT Ldev/agentrelay/companion/api/CompanionActionClass;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/companion/api/CompanionActionClass;
+	public static fun values ()[Ldev/agentrelay/companion/api/CompanionActionClass;
+}
+
+public final class dev/agentrelay/companion/api/CompanionCapability : java/lang/Enum {
+	public static final field NOTIFICATIONS Ldev/agentrelay/companion/api/CompanionCapability;
+	public static final field SAFE_ACTIONS Ldev/agentrelay/companion/api/CompanionCapability;
+	public static final field SPEECH_INPUT Ldev/agentrelay/companion/api/CompanionCapability;
+	public static final field SPEECH_OUTPUT Ldev/agentrelay/companion/api/CompanionCapability;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/companion/api/CompanionCapability;
+	public static fun values ()[Ldev/agentrelay/companion/api/CompanionCapability;
+}
+
+public final class dev/agentrelay/companion/api/CompanionDeliveryOutcome : java/lang/Enum {
+	public static final field ACCEPTED Ldev/agentrelay/companion/api/CompanionDeliveryOutcome;
+	public static final field DUPLICATE Ldev/agentrelay/companion/api/CompanionDeliveryOutcome;
+	public static final field EXPIRED Ldev/agentrelay/companion/api/CompanionDeliveryOutcome;
+	public static final field REVOKED Ldev/agentrelay/companion/api/CompanionDeliveryOutcome;
+	public static final field STALE Ldev/agentrelay/companion/api/CompanionDeliveryOutcome;
+	public static final field UNKNOWN Ldev/agentrelay/companion/api/CompanionDeliveryOutcome;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/companion/api/CompanionDeliveryOutcome;
+	public static fun values ()[Ldev/agentrelay/companion/api/CompanionDeliveryOutcome;
+}
+
+public final class dev/agentrelay/companion/api/CompanionDeviceId {
+	public static final synthetic fun box-impl (Ljava/lang/String;)Ldev/agentrelay/companion/api/CompanionDeviceId;
+	public static fun constructor-impl (Ljava/lang/String;)Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/companion/api/CompanionDeviceIdentity {
+	public synthetic fun <init> (Ljava/lang/String;Ldev/agentrelay/companion/api/CompanionDeviceType;Ljava/lang/String;Ljava/lang/String;ILjava/util/Set;Ldev/agentrelay/companion/api/CompanionReachability;Ljava/lang/Integer;Ljava/lang/Long;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-30reNtw ()Ljava/lang/String;
+	public final fun component2 ()Ldev/agentrelay/companion/api/CompanionDeviceType;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()I
+	public final fun component6 ()Ljava/util/Set;
+	public final fun component7 ()Ldev/agentrelay/companion/api/CompanionReachability;
+	public final fun component8 ()Ljava/lang/Integer;
+	public final fun component9 ()Ljava/lang/Long;
+	public final fun copy-hNS1bwU (Ljava/lang/String;Ldev/agentrelay/companion/api/CompanionDeviceType;Ljava/lang/String;Ljava/lang/String;ILjava/util/Set;Ldev/agentrelay/companion/api/CompanionReachability;Ljava/lang/Integer;Ljava/lang/Long;)Ldev/agentrelay/companion/api/CompanionDeviceIdentity;
+	public static synthetic fun copy-hNS1bwU$default (Ldev/agentrelay/companion/api/CompanionDeviceIdentity;Ljava/lang/String;Ldev/agentrelay/companion/api/CompanionDeviceType;Ljava/lang/String;Ljava/lang/String;ILjava/util/Set;Ldev/agentrelay/companion/api/CompanionReachability;Ljava/lang/Integer;Ljava/lang/Long;ILjava/lang/Object;)Ldev/agentrelay/companion/api/CompanionDeviceIdentity;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAlias ()Ljava/lang/String;
+	public final fun getBatteryPercent ()Ljava/lang/Integer;
+	public final fun getCapabilities ()Ljava/util/Set;
+	public final fun getId-30reNtw ()Ljava/lang/String;
+	public final fun getLastSeenEpochMillis ()Ljava/lang/Long;
+	public final fun getReachability ()Ldev/agentrelay/companion/api/CompanionReachability;
+	public final fun getSchemaVersion ()I
+	public final fun getSoftwareVersion ()Ljava/lang/String;
+	public final fun getType ()Ldev/agentrelay/companion/api/CompanionDeviceType;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/companion/api/CompanionDeviceType : java/lang/Enum {
+	public static final field DESKTOP Ldev/agentrelay/companion/api/CompanionDeviceType;
+	public static final field OTHER Ldev/agentrelay/companion/api/CompanionDeviceType;
+	public static final field PHONE Ldev/agentrelay/companion/api/CompanionDeviceType;
+	public static final field TABLET Ldev/agentrelay/companion/api/CompanionDeviceType;
+	public static final field WATCH Ldev/agentrelay/companion/api/CompanionDeviceType;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/companion/api/CompanionDeviceType;
+	public static fun values ()[Ldev/agentrelay/companion/api/CompanionDeviceType;
+}
+
+public final class dev/agentrelay/companion/api/CompanionEnrollment {
+	public fun <init> (Ldev/agentrelay/companion/api/CompanionDeviceIdentity;Ldev/agentrelay/companion/api/CompanionEnrollmentState;JJ)V
+	public final fun component1 ()Ldev/agentrelay/companion/api/CompanionDeviceIdentity;
+	public final fun component2 ()Ldev/agentrelay/companion/api/CompanionEnrollmentState;
+	public final fun component3 ()J
+	public final fun component4 ()J
+	public final fun copy (Ldev/agentrelay/companion/api/CompanionDeviceIdentity;Ldev/agentrelay/companion/api/CompanionEnrollmentState;JJ)Ldev/agentrelay/companion/api/CompanionEnrollment;
+	public static synthetic fun copy$default (Ldev/agentrelay/companion/api/CompanionEnrollment;Ldev/agentrelay/companion/api/CompanionDeviceIdentity;Ldev/agentrelay/companion/api/CompanionEnrollmentState;JJILjava/lang/Object;)Ldev/agentrelay/companion/api/CompanionEnrollment;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getChangedAtEpochMillis ()J
+	public final fun getDevice ()Ldev/agentrelay/companion/api/CompanionDeviceIdentity;
+	public final fun getGeneration ()J
+	public final fun getState ()Ldev/agentrelay/companion/api/CompanionEnrollmentState;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/companion/api/CompanionEnrollmentState : java/lang/Enum {
+	public static final field ENROLLED Ldev/agentrelay/companion/api/CompanionEnrollmentState;
+	public static final field REPLACED Ldev/agentrelay/companion/api/CompanionEnrollmentState;
+	public static final field REVOKED Ldev/agentrelay/companion/api/CompanionEnrollmentState;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/companion/api/CompanionEnrollmentState;
+	public static fun values ()[Ldev/agentrelay/companion/api/CompanionEnrollmentState;
+}
+
+public final class dev/agentrelay/companion/api/CompanionPrivacyClass : java/lang/Enum {
+	public static final field PRIVATE_SUMMARY Ldev/agentrelay/companion/api/CompanionPrivacyClass;
+	public static final field PUBLIC_SUMMARY Ldev/agentrelay/companion/api/CompanionPrivacyClass;
+	public static final field SENSITIVE_REDACTED Ldev/agentrelay/companion/api/CompanionPrivacyClass;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/companion/api/CompanionPrivacyClass;
+	public static fun values ()[Ldev/agentrelay/companion/api/CompanionPrivacyClass;
+}
+
+public final class dev/agentrelay/companion/api/CompanionProjection {
+	public synthetic fun <init> (Ljava/lang/String;JLjava/lang/String;JJLdev/agentrelay/companion/api/CompanionPrivacyClass;Ldev/agentrelay/companion/api/CompanionActionClass;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-30reNtw ()Ljava/lang/String;
+	public final fun component2 ()J
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()J
+	public final fun component5 ()J
+	public final fun component6 ()Ldev/agentrelay/companion/api/CompanionPrivacyClass;
+	public final fun component7 ()Ldev/agentrelay/companion/api/CompanionActionClass;
+	public final fun component8 ()Ljava/lang/String;
+	public final fun component9 ()Ljava/lang/String;
+	public final fun copy-hNS1bwU (Ljava/lang/String;JLjava/lang/String;JJLdev/agentrelay/companion/api/CompanionPrivacyClass;Ldev/agentrelay/companion/api/CompanionActionClass;Ljava/lang/String;Ljava/lang/String;)Ldev/agentrelay/companion/api/CompanionProjection;
+	public static synthetic fun copy-hNS1bwU$default (Ldev/agentrelay/companion/api/CompanionProjection;Ljava/lang/String;JLjava/lang/String;JJLdev/agentrelay/companion/api/CompanionPrivacyClass;Ldev/agentrelay/companion/api/CompanionActionClass;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ldev/agentrelay/companion/api/CompanionProjection;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getActionClass ()Ldev/agentrelay/companion/api/CompanionActionClass;
+	public final fun getAuthenticationTag ()Ljava/lang/String;
+	public final fun getDeviceId-30reNtw ()Ljava/lang/String;
+	public final fun getExpiresAtEpochMillis ()J
+	public final fun getIdempotencyKey ()Ljava/lang/String;
+	public final fun getIssuedAtEpochMillis ()J
+	public final fun getPayload ()Ljava/lang/String;
+	public final fun getPrivacyClass ()Ldev/agentrelay/companion/api/CompanionPrivacyClass;
+	public final fun getProjectionRevision ()J
+	public fun hashCode ()I
+	public final fun isFreshAt (J)Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/companion/api/CompanionReachability : java/lang/Enum {
+	public static final field OFFLINE Ldev/agentrelay/companion/api/CompanionReachability;
+	public static final field ONLINE Ldev/agentrelay/companion/api/CompanionReachability;
+	public static final field UNKNOWN Ldev/agentrelay/companion/api/CompanionReachability;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/companion/api/CompanionReachability;
+	public static fun values ()[Ldev/agentrelay/companion/api/CompanionReachability;
+}
