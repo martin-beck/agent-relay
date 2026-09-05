@@ -103,14 +103,15 @@ jobs:
       - name: Run semantic UI and accessibility tests
         run: |
           export EMULATOR_AVD_NAME="test-${{ github.run_id }}-${{ github.run_attempt }}"
-          EMULATOR_PORT=5582 bash scripts/ci/run_android_emulator_tests.sh
-          ./gradlew :app:connectedDebugAndroidTest :ssh:android:connectedDebugAndroidTest \
-            :storage:android:connectedDebugAndroidTest --stacktrace
-          bash scripts/ci/verify_background_process_recovery.sh
-          app/build/outputs/apk/debug/app-debug.apk
-          mkdir -p build/usage-guide/captured
-          "$ANDROID_HOME/platform-tools/adb" pull /sdcard/Download/agent-relay-usage-guide/.
-          build/usage-guide/captured/
+          EMULATOR_PORT=5582 bash scripts/ci/run_android_emulator_tests.sh -- bash -c '
+            ./gradlew :app:connectedDebugAndroidTest :ssh:android:connectedDebugAndroidTest \
+              :storage:android:connectedDebugAndroidTest --stacktrace
+            bash scripts/ci/verify_background_process_recovery.sh
+            test -s app/build/outputs/apk/debug/app-debug.apk
+            mkdir -p build/usage-guide/captured
+            "$ANDROID_HOME/platform-tools/adb" pull /sdcard/Download/agent-relay-usage-guide/. \
+              build/usage-guide/captured/
+          '
 
       - name: Verify connected-test evidence
         run: |
@@ -298,11 +299,12 @@ jobs:
       - name: Run semantic UI and accessibility tests
         run: |
           export EMULATOR_AVD_NAME="test-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.name }}"
-          EMULATOR_PORT=5582 bash scripts/ci/run_android_emulator_tests.sh
-          ./gradlew :app:connectedDebugAndroidTest :ssh:android:connectedDebugAndroidTest \
-            :storage:android:connectedDebugAndroidTest --stacktrace
-          bash scripts/ci/verify_background_process_recovery.sh
-          app/build/outputs/apk/debug/app-debug.apk
+          EMULATOR_PORT=5582 bash scripts/ci/run_android_emulator_tests.sh -- bash -c '
+            ./gradlew :app:connectedDebugAndroidTest :ssh:android:connectedDebugAndroidTest \
+              :storage:android:connectedDebugAndroidTest --stacktrace
+            bash scripts/ci/verify_background_process_recovery.sh
+            test -s app/build/outputs/apk/debug/app-debug.apk
+          '
 
       - name: Verify connected-test evidence
         run: |
