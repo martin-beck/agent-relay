@@ -28,6 +28,7 @@ jobs:
     env:
       ADB_SERVER_PORT: "5039"
       ANDROID_ADB_SERVER_PORT: "5039"
+      ADB_SERVER_SOCKET: tcp:localhost:5039
 
     steps:
       - name: Check out source
@@ -207,6 +208,7 @@ jobs:
     env:
       ADB_SERVER_PORT: "5039"
       ANDROID_ADB_SERVER_PORT: "5039"
+      ADB_SERVER_SOCKET: tcp:localhost:5039
     strategy:
       fail-fast: false
       matrix:
