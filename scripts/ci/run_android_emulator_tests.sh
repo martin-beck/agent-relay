@@ -50,7 +50,7 @@ cleanup() {
   fi
 }
 trap cleanup EXIT
-setsid "$emulator_bin" -port "$EMULATOR_PORT" -avd "$EMULATOR_AVD_NAME" -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim > "$log_file" 2>&1 < /dev/null &
+setsid "$emulator_bin" -port "$EMULATOR_PORT" -avd "$EMULATOR_AVD_NAME" -no-window -gpu swiftshader_indirect -accel off -no-snapshot -noaudio -no-boot-anim > "$log_file" 2>&1 < /dev/null &
 emulator_pid=$!
 echo "$emulator_pid" > "$pid_file"
 echo "Started emulator pid=$emulator_pid port=$EMULATOR_PORT log=$log_file"
