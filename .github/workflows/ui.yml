@@ -71,11 +71,21 @@ jobs:
           set -e
           cat "$install_log"
           emulator_bin="$android_sdk_root/emulator/emulator"
-          test -s "$android_sdk_root/emulator/package.xml"
-          test -x "$emulator_bin"
-          emulator_version="$("$emulator_bin" -version 2>&1 |
-            sed -n 's/^Android emulator version //p' | head -1)"
-          test "$emulator_version" = "37.1.11.0"
+          ls -la "$android_sdk_root/emulator" >&2
+          test -s "$android_sdk_root/emulator/package.xml" || {
+            echo 'emulator package.xml is missing or empty' >&2
+            exit 1
+          }
+          test -x "$emulator_bin" || {
+            echo 'emulator binary is missing or not executable' >&2
+            exit 1
+          }
+          emulator_version_raw="$($emulator_bin -version 2>&1)"
+          printf '%s\n' "$emulator_version_raw" >&2
+          grep -q '^Android emulator version 37\.1\.11\.0' <<<"$emulator_version_raw" || {
+            echo 'unexpected emulator version' >&2
+            exit 1
+          }
           if [[ "$install_status" != 0 ]]; then
             echo "sdkmanager returned $install_status after a complete emulator package install" >&2
           fi
@@ -287,11 +297,21 @@ jobs:
           set -e
           cat "$install_log"
           emulator_bin="$android_sdk_root/emulator/emulator"
-          test -s "$android_sdk_root/emulator/package.xml"
-          test -x "$emulator_bin"
-          emulator_version="$("$emulator_bin" -version 2>&1 |
-            sed -n 's/^Android emulator version //p' | head -1)"
-          test "$emulator_version" = "37.1.11.0"
+          ls -la "$android_sdk_root/emulator" >&2
+          test -s "$android_sdk_root/emulator/package.xml" || {
+            echo 'emulator package.xml is missing or empty' >&2
+            exit 1
+          }
+          test -x "$emulator_bin" || {
+            echo 'emulator binary is missing or not executable' >&2
+            exit 1
+          }
+          emulator_version_raw="$($emulator_bin -version 2>&1)"
+          printf '%s\n' "$emulator_version_raw" >&2
+          grep -q '^Android emulator version 37\.1\.11\.0' <<<"$emulator_version_raw" || {
+            echo 'unexpected emulator version' >&2
+            exit 1
+          }
           if [[ "$install_status" != 0 ]]; then
             echo "sdkmanager returned $install_status after a complete emulator package install" >&2
           fi
