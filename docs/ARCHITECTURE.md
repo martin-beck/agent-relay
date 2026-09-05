@@ -96,6 +96,13 @@ fault counters; retention overflow increments explicit dropped-data counters.
 Discovery and failover evidence remains deterministic and useful while excluding
 addresses, paths, credentials, task content, and protected payloads.
 
+Incident bundles are proof artifacts rather than raw log archives. Export requires
+explicit authorization plus a one-document grant. The versioned manifest carries
+only redacted evidence digests, bounded self-check results, artifact hashes and
+omitted-data counts; AES-GCM protects the manifest and integrity verification is
+performed before export. Prompts, transcripts, credentials, routes, commands and
+paths are excluded by construction.
+
 ## Runtime flow
 
 1. A `ConnectionProvider` enumerates generic profile summaries.
