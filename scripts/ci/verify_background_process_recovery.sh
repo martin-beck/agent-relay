@@ -6,7 +6,9 @@ readonly SERVICE_COMPONENT="$PACKAGE_NAME/.background.RemoteSessionForegroundSer
 readonly START_ACTION="$PACKAGE_NAME.background.START"
 readonly STOP_ACTION="$PACKAGE_NAME.background.STOP"
 readonly APK_PATH="${1:-app/build/outputs/apk/debug/app-debug.apk}"
-readonly ADB_BIN="${ADB_BIN:-adb}"
+adb_default="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}/platform-tools/adb"
+if [[ ! -x "$adb_default" ]]; then adb_default=adb; fi
+readonly ADB_BIN="${ADB_BIN:-$adb_default}"
 readonly POLL_ATTEMPTS=80
 readonly POLL_SECONDS=0.25
 readonly STABILITY_SECONDS=5
@@ -14,7 +16,19 @@ readonly PRE_KILL_STABILITY_ATTEMPTS=40
 readonly POST_RESTART_STABILITY_ATTEMPTS=20
 
 adb_shell() {
-  "$ADB_BIN" shell -n "$@"
+  if [[ -n "${ANDROID_SERIAL:-}" ]]; then
+    "$ADB_BIN" -s "$ANDROID_SERIAL" shell -n "$@"
+  else
+    "$ADB_BIN" shell -n "$@"
+  fi
+}
+
+adb_cmd() {
+  if [[ -n "${ANDROID_SERIAL:-}" ]]; then
+    "$ADB_BIN" -s "$ANDROID_SERIAL" "$@"
+  else
+    "$ADB_BIN" "$@"
+  fi
 }
 
 service_dump() {
@@ -127,7 +141,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-"$ADB_BIN" wait-for-device
+adb_cmd wait-for-device
 if [[ "$(adb_shell getprop sys.boot_completed | tr -d '\r')" != "1" ]]; then
   echo "Android device did not report a completed boot." >&2
   exit 1
@@ -136,7 +150,7 @@ if [[ ! -f "$APK_PATH" ]]; then
   echo "Debug APK is missing before background recovery verification." >&2
   exit 1
 fi
-if ! "$ADB_BIN" install -r "$APK_PATH" > /dev/null; then
+if ! adb_cmd install -r "$APK_PATH" > /dev/null; then
   echo "Application install failed before background recovery verification." >&2
   exit 1
 fi

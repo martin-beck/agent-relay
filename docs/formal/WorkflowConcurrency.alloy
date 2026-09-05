@@ -1,0 +1,24 @@
+module WorkflowConcurrency
+
+abstract sig Step, Worker {}
+abstract sig Effect {}
+one sig None, Completed, Uncertain extends Effect {}
+sig StepRecord { owner: lone Worker, attempt: one Int, effect: one Effect }
+sig RunRecord { uncertain: one Bool }
+sig Journal { sequence: one Int, checkpoint: one Int, projection: one Int }
+
+fact BoundsAndTypes {
+  #StepRecord <= 2
+  #Worker <= 2
+  all s: StepRecord | s.attempt >= 0 and s.attempt <= 2
+  all j: Journal | j.checkpoint >= 0 and j.projection >= 0
+    and j.checkpoint <= j.sequence and j.projection <= j.sequence
+  all s: StepRecord | s.effect = Uncertain implies no s.owner
+}
+
+assert ConcurrencySafety { #StepRecord.owner <= #Worker }
+assert UncertainSafety { all r: RunRecord | r.uncertain = True implies
+  all s: StepRecord | s.effect != Completed }
+
+check ConcurrencySafety for 2 but exactly 2 Int
+check UncertainSafety for 2 but exactly 2 Int

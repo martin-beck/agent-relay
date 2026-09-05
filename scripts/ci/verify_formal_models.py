@@ -25,6 +25,14 @@ REQUIRED_ALLOY = (
     "CursorOrdering",
     "RevisionNonNegative",
 )
+REQUIRED_CONCURRENCY_TLA = (
+    "ConcurrencySafety",
+    "LeaseFencing",
+    "RecoverySafety",
+    "OrderingSafety",
+    "UncertainSafety",
+)
+REQUIRED_CONCURRENCY_ALLOY = ("BoundsAndTypes", "ConcurrencySafety", "UncertainSafety")
 
 
 def _read(name: str) -> str:
@@ -59,8 +67,26 @@ def _verify_bounds(tla: str, alloy: str) -> None:
         raise AssertionError("models must not contain secret payloads")
 
 
+def _verify_concurrency_models(tla: str, alloy: str) -> None:
+    if not tla.startswith("---- MODULE WorkflowConcurrency ----") or not tla.rstrip().endswith(
+        "===="
+    ):
+        raise AssertionError("concurrency TLA+ module delimiters are invalid")
+    if not alloy.startswith("module WorkflowConcurrency"):
+        raise AssertionError("concurrency Alloy module declaration is invalid")
+    for declaration in REQUIRED_CONCURRENCY_TLA:
+        if not re.search(rf"(?m)^{re.escape(declaration)}\s*==", tla):
+            raise AssertionError(f"missing concurrency TLA+ declaration: {declaration}")
+    for declaration in REQUIRED_CONCURRENCY_ALLOY:
+        if not re.search(rf"(?m)^(?:fact|assert)\s+{re.escape(declaration)}\b", alloy):
+            raise AssertionError(f"missing concurrency Alloy declaration: {declaration}")
+    if "SECRET" in tla or "SECRET" in alloy:
+        raise AssertionError("concurrency models must not contain secret payloads")
+
+
 def verify_models() -> None:
     _verify_declarations(_read("WorkflowDomain.tla"), _read("WorkflowDomain.alloy"))
+    _verify_concurrency_models(_read("WorkflowConcurrency.tla"), _read("WorkflowConcurrency.alloy"))
 
 
 if __name__ == "__main__":
