@@ -103,7 +103,7 @@ jobs:
       - name: Run semantic UI and accessibility tests
         env:
           ANDROID_SERIAL: emulator-5582
-        run: >-
+        run: |
           EMULATOR_AVD_NAME="test-${{ github.run_id }}-${{ github.run_attempt }}"
           EMULATOR_PORT=5582 bash scripts/ci/run_android_emulator_tests.sh
           ./gradlew :app:connectedDebugAndroidTest :ssh:android:connectedDebugAndroidTest
