@@ -74,7 +74,7 @@ cleanup() {
   fi
 }
 trap cleanup EXIT
-emulator_command=$(printf '%q ' "$emulator_bin" -port "$EMULATOR_PORT" -avd "$EMULATOR_AVD_NAME" -no-window -gpu off -no-snapshot -no-audio -no-boot-anim)
+emulator_command=$(printf '%q ' "$emulator_bin" -port "$EMULATOR_PORT" -avd "$EMULATOR_AVD_NAME" -no-window -gpu swiftshader_indirect -no-snapshot -no-audio -no-boot-anim)
 script -q -e -c "$emulator_command" "$log_file" > /dev/null 2>&1 &
 emulator_pid=$!
 echo "$emulator_pid" > "$pid_file"
