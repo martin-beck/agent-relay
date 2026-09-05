@@ -61,7 +61,6 @@ jobs:
       - name: Repair and validate pinned Android emulator
         run: |
           bash scripts/ci/install_pinned_emulator.sh
-          printf 'Validated Android emulator %s\n' "$emulator_version"
 
       - name: Verify KVM access
         run: |
@@ -259,7 +258,6 @@ jobs:
       - name: Repair and validate pinned Android emulator
         run: |
           bash scripts/ci/install_pinned_emulator.sh
-          printf 'Validated Android emulator %s\n' "$emulator_version"
 
       - name: Verify KVM access
         run: |
