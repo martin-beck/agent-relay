@@ -14,6 +14,12 @@ echo "AVD home: $ANDROID_AVD_HOME"
 echo "Runner temp: ${RUNNER_TEMP:-<unset>}"
 echo "Emulator port: $EMULATOR_PORT"
 test -n "$ANDROID_HOME" -a -n "$ANDROID_AVD_HOME" -a -n "$RUNNER_TEMP"
+XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-$RUNNER_TEMP/android-runtime}"
+mkdir -p "$XDG_RUNTIME_DIR"
+chmod 0700 "$XDG_RUNTIME_DIR"
+export XDG_RUNTIME_DIR
+export ANDROID_EMULATOR_DISCOVERY_DIR="${ANDROID_EMULATOR_DISCOVERY_DIR:-$XDG_RUNTIME_DIR}"
+export ANDROID_EMULATOR_LAUNCHER_DIR="${ANDROID_EMULATOR_LAUNCHER_DIR:-$ANDROID_HOME/emulator}"
 if [[ "${1:-}" == -- ]]; then shift; fi
 adb_bin="$ANDROID_HOME/platform-tools/adb"
 emulator_bin="$ANDROID_HOME/emulator/emulator"
