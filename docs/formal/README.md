@@ -33,9 +33,16 @@ The current bounds are two tasks, two runs, two steps, four event sequence
 positions, and one active lease per step. Increasing a bound requires reviewing
 runtime and memory budgets and does not change the domain contract by itself.
 
+`config/formal-evidence-manifest.json` is the CI evidence contract. It pins the
+verifier/checker metadata, hashes every checked-in model, names each obligation's
+evidence class, records reviewed environmental assumptions, and defines the
+counterexample reproducibility policy. CI rejects stale model hashes or missing
+assumption metadata before running the bounded verifiers.
+
 Run the model verifier with:
 
 ```bash
 python scripts/ci/verify_formal_models.py
 python scripts/ci/verify_workflow_concurrency.py
+python scripts/ci/verify_formal_evidence.py
 ```
