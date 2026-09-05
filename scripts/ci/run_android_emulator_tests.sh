@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 : "${ANDROID_HOME:=}"
-: "${ANDROID_AVD_HOME:=}"
 : "${RUNNER_TEMP:=}"
 : "${EMULATOR_AVD_NAME:=agent-relay-ci}"
 : "${EMULATOR_PORT:=5582}"
@@ -9,6 +8,11 @@ set -euo pipefail
 : "${EMULATOR_TARGET:=default}"
 : "${EMULATOR_ARCH:=x86_64}"
 : "${EMULATOR_PROFILE:=pixel_7_pro}"
+ANDROID_AVD_HOME="${ANDROID_AVD_HOME:-$RUNNER_TEMP/agent-relay-avd}"
+echo "Android SDK: ${ANDROID_HOME:-<unset>}"
+echo "AVD home: $ANDROID_AVD_HOME"
+echo "Runner temp: ${RUNNER_TEMP:-<unset>}"
+echo "Emulator port: $EMULATOR_PORT"
 test -n "$ANDROID_HOME" -a -n "$ANDROID_AVD_HOME" -a -n "$RUNNER_TEMP"
 if [[ "${1:-}" == -- ]]; then shift; fi
 adb_bin="$ANDROID_HOME/platform-tools/adb"
