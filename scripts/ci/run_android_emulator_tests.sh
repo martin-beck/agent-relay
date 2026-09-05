@@ -25,7 +25,6 @@ adb_bin="$ANDROID_HOME/platform-tools/adb"
 emulator_bin="$ANDROID_HOME/emulator/emulator"
 avdmanager_bin="$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager"
 test -x "$adb_bin" -a -x "$emulator_bin" -a -x "$avdmanager_bin"
-test -x "$(command -v script)"
 android_config_dir="${HOME:-$RUNNER_TEMP}/.android"
 adb_private_key="$android_config_dir/adbkey"
 adb_public_key="$adb_private_key.pub"
@@ -108,8 +107,7 @@ cleanup() {
   fi
 }
 trap cleanup EXIT
-emulator_command=$(printf '%q ' "$emulator_bin" -port "$EMULATOR_PORT" -avd "$EMULATOR_AVD_NAME" -no-window -gpu swiftshader_indirect -no-snapshot -no-audio -no-boot-anim)
-script -q -e -c "$emulator_command" "$log_file" > /dev/null 2>&1 &
+env "$emulator_bin" -port "$EMULATOR_PORT" -avd "$EMULATOR_AVD_NAME" -no-window -gpu swiftshader_indirect -no-snapshot -no-audio -no-boot-anim > "$log_file" 2>&1 &
 emulator_pid=$!
 echo "$emulator_pid" > "$pid_file"
 echo "Started emulator pid=$emulator_pid port=$EMULATOR_PORT log=$log_file"
