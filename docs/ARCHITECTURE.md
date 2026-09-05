@@ -268,3 +268,13 @@ without live credentials. Opt-in live checks verify installed tools in private
 disposable environments. Android Keystore behavior additionally requires
 connected device tests. The complete hosted gate is documented in
 [Building](BUILDING.md).
+
+## Android diagnostic build modes
+
+The app exposes `debug`, `diagnostic`, `profileable`, and `release` variants. The diagnostic
+variant is an explicitly selected, debuggable build with bounded runtime probes and expiring
+opt-in coroutine dumps. The profileable variant is release-like and enables shell profiling
+without enabling capture or dumps. All variants use the same authentication, authorization,
+endpoint-trust, and redaction code paths; diagnostic controls never enable capture by default.
+Stable `android.os.Trace` sections cover startup and may be extended around persistence,
+connection, synchronization, and rendering boundaries without recording payloads or secrets.

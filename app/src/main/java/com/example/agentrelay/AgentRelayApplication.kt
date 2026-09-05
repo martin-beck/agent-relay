@@ -11,6 +11,8 @@ import com.example.agentrelay.background.configuredBackgroundRecoveryConnections
 import com.example.agentrelay.data.CoordinatorSessionHubRuntime
 import com.example.agentrelay.data.BackgroundAwareSessionHubRuntime
 import com.example.agentrelay.data.SessionHubRuntime
+import com.example.agentrelay.diagnostics.DiagnosticRuntimeConfig
+import com.example.agentrelay.diagnostics.DiagnosticTrace
 import com.example.agentrelay.notifications.AndroidSessionNotificationSink
 import com.example.agentrelay.notifications.SessionNotificationRuntime
 import dev.agentrelay.connection.api.ConnectionProviderRegistry
@@ -36,6 +38,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 class AgentRelayApplication : Application() {
+    internal val diagnosticConfig: DiagnosticRuntimeConfig = DiagnosticRuntimeConfig.fromBuildConfig()
     private val lifecycleScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     private val graphDelegate = lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
@@ -59,7 +62,9 @@ class AgentRelayApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        ProcessLifecycleOwner.get().lifecycle.addObserver(backgroundLifecycle)
+        DiagnosticTrace.section(diagnosticConfig, "startup") {
+            ProcessLifecycleOwner.get().lifecycle.addObserver(backgroundLifecycle)
+        }
     }
 
     internal fun releaseBackgroundTransportAfterServiceDestruction() {
