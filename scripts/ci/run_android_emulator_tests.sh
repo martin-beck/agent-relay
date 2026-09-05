@@ -60,6 +60,10 @@ ensure_adb_keypair() {
   echo "Initialized complete Android ADB keypair for emulator startup"
 }
 ensure_adb_keypair
+# The workflow's preflight `adb devices` may have started a server with the
+# incomplete cached identity.  Force the first emulator operation to start a
+# server using the repaired pair.
+"$adb_bin" kill-server > /dev/null 2>&1 || true
 mkdir -p "$ANDROID_AVD_HOME"
 echo no | "$avdmanager_bin" create avd --force --name "$EMULATOR_AVD_NAME" --path "$ANDROID_AVD_HOME/$EMULATOR_AVD_NAME.avd" --package "system-images;android-$EMULATOR_API_LEVEL;$EMULATOR_TARGET;$EMULATOR_ARCH" --device "$EMULATOR_PROFILE"
 avd_dir="$ANDROID_AVD_HOME/$EMULATOR_AVD_NAME.avd"
