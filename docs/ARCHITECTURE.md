@@ -93,6 +93,10 @@ automatically.
 Connectivity diagnostics are a bounded projection, not workflow authority. They
 retain only opaque topology labels, transport/state transitions, durations, and
 fault counters; retention overflow increments explicit dropped-data counters.
+Local connectivity verification uses bounded named fault scenarios (delay, reset,
+truncation, partition and path switching). Each scenario is replayable from a
+non-negative seed and produces only redacted, deterministic events; it never opens
+an unauthenticated diagnostic endpoint or performs network I/O.
 Discovery and failover evidence remains deterministic and useful while excluding
 addresses, paths, credentials, task content, and protected payloads.
 
