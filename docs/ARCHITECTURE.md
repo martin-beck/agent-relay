@@ -24,6 +24,9 @@ speech stack. The Android layer owns verified app-private model activation and
 injectable audio boundaries; the sherpa layer supplies native online inference.
 No connection or agent provider depends on the speech stack.
 :storage:android is shared by Android persistence implementations.
+:backup:api owns the provider-neutral, contract-first encrypted configuration
+archive schema; Android document-picker and durable-store adapters remain above
+this boundary.
 :session:api and :session:android persist provider-neutral session state.
 ```
 
@@ -61,6 +64,7 @@ schema without importing SSH configuration types.
 | `:session:android` | Encrypted Android session-hub document store |
 | `:session:runtime` | Profile discovery, connection lifecycle, agent discovery, event projection, and actions |
 | `:storage:android` | Namespaced authenticated Android Keystore document encryption |
+| `:backup:api` | Versioned, redacted and authenticated portable configuration backup contract |
 
 ## Session identity
 
@@ -214,6 +218,11 @@ session or UI layers.
   for the whole export.
 - Android export uses a one-document SAF grant, not broad storage permission.
 - Output, protocol lines, retention, retries, and process lifetimes are bounded.
+- Configuration backup is explicit and user-controlled. The portable contract
+  allowlists non-secret categories, rejects sensitive material during model
+  construction, authenticates the archive with passphrase-derived AES-GCM, and
+  never serializes Android Keystore keys, credentials, prompts or protected
+  transcripts. Import adapters must preview and validate before an atomic commit.
 
 See [Connection providers](CONNECTION_PROVIDERS.md) and
 [Session hub](SESSION_HUB.md) for detailed invariants.
