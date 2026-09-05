@@ -278,11 +278,19 @@ class UsageJourneyTest {
         }
 
     private fun hasBrightResidue(image: Bitmap, start: Int, background: Int): Boolean {
+        val centerBackground = image.getPixel(image.width / 2, start - 1)
+        val centerEdge = image.getPixel(image.width / 2, image.height - 1)
+        if (colorDistance(centerBackground, centerEdge) > 16) return true
         if (luminance(background) > 220) return false
         return (start until image.height).any { y ->
             (0 until image.width step 8).count { x -> luminance(image.getPixel(x, y)) > 220 } > 2
         }
     }
+
+    private fun colorDistance(first: Int, second: Int): Int =
+        abs(Color.red(first) - Color.red(second)) +
+            abs(Color.green(first) - Color.green(second)) +
+            abs(Color.blue(first) - Color.blue(second))
 
     private fun luminance(pixel: Int): Int =
         (Color.red(pixel) * 299 + Color.green(pixel) * 587 + Color.blue(pixel) * 114) / 1_000
