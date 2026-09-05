@@ -8,7 +8,7 @@ set -euo pipefail
 : "${EMULATOR_TARGET:=default}"
 : "${EMULATOR_ARCH:=x86_64}"
 : "${EMULATOR_PROFILE:=pixel_7_pro}"
-ANDROID_AVD_HOME="${ANDROID_AVD_HOME:-$RUNNER_TEMP/agent-relay-avd}"
+ANDROID_AVD_HOME="${ANDROID_AVD_HOME:-${HOME:-$RUNNER_TEMP}/.android/avd}"
 echo "Android SDK: ${ANDROID_HOME:-<unset>}"
 echo "AVD home: $ANDROID_AVD_HOME"
 echo "Runner temp: ${RUNNER_TEMP:-<unset>}"
