@@ -18,6 +18,16 @@ mkdir -p "$ANDROID_HOME/emulator"
 unzip -oq "$archive" -d "$ANDROID_HOME"
 emulator_bin="$ANDROID_HOME/emulator/emulator"
 test -x "$emulator_bin"
+cat > "$ANDROID_HOME/emulator/package.xml" << EOF
+<?xml version="1.0" encoding="utf-8"?>
+<localPackage xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ns5="http://schemas.android.com/repository/android/generic/03" path="emulator" obsolete="false">
+  <type-details xsi:type="ns5:genericDetailsType"/>
+  <revision><major>36</major><minor>6</minor><micro>11</micro></revision>
+  <display-name>Android Emulator</display-name>
+  <uses-license ref="android-sdk-license"/>
+</localPackage>
+EOF
+test -s "$ANDROID_HOME/emulator/package.xml"
 source_properties="$ANDROID_HOME/emulator/source.properties"
 test -s "$source_properties"
 grep -Eq '^Pkg.Revision[[:space:]]*=[[:space:]]*36\.6\.11$' "$source_properties"
