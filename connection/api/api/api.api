@@ -699,6 +699,17 @@ public final class dev/agentrelay/connection/api/ConnectivityFault : java/lang/E
 	public static fun values ()[Ldev/agentrelay/connection/api/ConnectivityFault;
 }
 
+public final class dev/agentrelay/connection/api/ConnectivityFaultAction : java/lang/Enum {
+	public static final field DELAY Ldev/agentrelay/connection/api/ConnectivityFaultAction;
+	public static final field PARTITION Ldev/agentrelay/connection/api/ConnectivityFaultAction;
+	public static final field RESET Ldev/agentrelay/connection/api/ConnectivityFaultAction;
+	public static final field SWITCH_PATH Ldev/agentrelay/connection/api/ConnectivityFaultAction;
+	public static final field TRUNCATE Ldev/agentrelay/connection/api/ConnectivityFaultAction;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/connection/api/ConnectivityFaultAction;
+	public static fun values ()[Ldev/agentrelay/connection/api/ConnectivityFaultAction;
+}
+
 public final class dev/agentrelay/connection/api/ConnectivityFaultCounters {
 	public fun <init> ()V
 	public fun <init> (JJJJJJ)V
@@ -721,6 +732,49 @@ public final class dev/agentrelay/connection/api/ConnectivityFaultCounters {
 	public fun hashCode ()I
 	public final fun increment (Ldev/agentrelay/connection/api/ConnectivityFault;)Ldev/agentrelay/connection/api/ConnectivityFaultCounters;
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectivityFaultEvent {
+	public fun <init> (ILdev/agentrelay/connection/api/ConnectivityFaultAction;I)V
+	public final fun component1 ()I
+	public final fun component2 ()Ldev/agentrelay/connection/api/ConnectivityFaultAction;
+	public final fun component3 ()I
+	public final fun copy (ILdev/agentrelay/connection/api/ConnectivityFaultAction;I)Ldev/agentrelay/connection/api/ConnectivityFaultEvent;
+	public static synthetic fun copy$default (Ldev/agentrelay/connection/api/ConnectivityFaultEvent;ILdev/agentrelay/connection/api/ConnectivityFaultAction;IILjava/lang/Object;)Ldev/agentrelay/connection/api/ConnectivityFaultEvent;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAction ()Ldev/agentrelay/connection/api/ConnectivityFaultAction;
+	public final fun getSequence ()I
+	public final fun getValue ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectivityFaultScenario {
+	public fun <init> (Ldev/agentrelay/connection/api/ConnectivityFaultScenarioName;JI)V
+	public synthetic fun <init> (Ldev/agentrelay/connection/api/ConnectivityFaultScenarioName;JIILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ldev/agentrelay/connection/api/ConnectivityFaultScenarioName;
+	public final fun component2 ()J
+	public final fun component3 ()I
+	public final fun copy (Ldev/agentrelay/connection/api/ConnectivityFaultScenarioName;JI)Ldev/agentrelay/connection/api/ConnectivityFaultScenario;
+	public static synthetic fun copy$default (Ldev/agentrelay/connection/api/ConnectivityFaultScenario;Ldev/agentrelay/connection/api/ConnectivityFaultScenarioName;JIILjava/lang/Object;)Ldev/agentrelay/connection/api/ConnectivityFaultScenario;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getName ()Ldev/agentrelay/connection/api/ConnectivityFaultScenarioName;
+	public final fun getSeed ()J
+	public final fun getSteps ()I
+	public fun hashCode ()I
+	public final fun replay ()Ljava/util/List;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ConnectivityFaultScenarioName : java/lang/Enum {
+	public static final field DELAY Ldev/agentrelay/connection/api/ConnectivityFaultScenarioName;
+	public static final field PARTITION Ldev/agentrelay/connection/api/ConnectivityFaultScenarioName;
+	public static final field PATH_SWITCHING Ldev/agentrelay/connection/api/ConnectivityFaultScenarioName;
+	public static final field RESET Ldev/agentrelay/connection/api/ConnectivityFaultScenarioName;
+	public static final field TRUNCATION Ldev/agentrelay/connection/api/ConnectivityFaultScenarioName;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/connection/api/ConnectivityFaultScenarioName;
+	public static fun values ()[Ldev/agentrelay/connection/api/ConnectivityFaultScenarioName;
 }
 
 public final class dev/agentrelay/connection/api/ConnectivityHistoryEntry {
