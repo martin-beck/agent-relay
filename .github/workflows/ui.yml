@@ -27,7 +27,6 @@ jobs:
     timeout-minutes: 40
     env:
       ADB_SERVER_PORT: "5039"
-      ANDROID_ADB_SERVER_PORT: "5039"
 
     steps:
       - name: Check out source
@@ -206,7 +205,6 @@ jobs:
     timeout-minutes: 40
     env:
       ADB_SERVER_PORT: "5039"
-      ANDROID_ADB_SERVER_PORT: "5039"
     strategy:
       fail-fast: false
       matrix:
