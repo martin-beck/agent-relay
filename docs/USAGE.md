@@ -4,6 +4,15 @@ For goal-oriented walkthroughs with reviewed emulator screenshots, start with
 the [app workflow catalogue](WORKFLOWS.md). It labels implemented journeys as
 verified and future interaction contracts as planned.
 
+## Journey contracts
+
+The versioned interaction-cost contracts in
+[`contracts/user-journeys-v1.json`](contracts/user-journeys-v1.json) define starting
+contexts, outcomes, recovery expectations, and dimension-specific budgets for representative
+user journeys. They intentionally avoid a universal click-depth rule: navigation, scrolling,
+entry, confirmation, waiting, and error costs are measured separately so critical recovery
+journeys can receive tighter budgets than first-time setup for the right reason.
+
 ## Current application behavior
 
 The debug application now launches an adaptive session hub backed by the real

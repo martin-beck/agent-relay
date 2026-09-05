@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "contracts": [
+    {"id":"fresh-start","title":"Start a first useful session","criticality":"IMPORTANT","starts":["FRESH_START"],"outcome":"A provider is connected and the user can submit the first request.","recovery":"RETRY_IN_PLACE","budget":{"navigationSteps":6,"scrolls":2,"entryFields":4,"confirmations":2,"waitMillis":30000,"errors":1},"checkpoints":["choose-provider","confirm-connection","submit-request"]},
+    {"id":"attention-resolution","title":"Resolve one attention item","criticality":"CRITICAL","starts":["ATTENTION_ITEM"],"outcome":"The pending approval or question is answered with visible result state.","recovery":"RESTORE_CONTEXT","budget":{"navigationSteps":4,"scrolls":1,"entryFields":0,"confirmations":1,"waitMillis":15000,"errors":1},"checkpoints":["open-attention","inspect-context","answer-item"]},
+    {"id":"session-switch","title":"Switch to a known session","criticality":"ROUTINE","starts":["SESSION_DETAIL"],"outcome":"The selected session is visible without losing its draft or context.","recovery":"RESTORE_CONTEXT","budget":{"navigationSteps":3,"scrolls":1,"entryFields":0,"confirmations":0,"waitMillis":10000,"errors":1},"checkpoints":["open-session-hub","select-session","restore-draft"]},
+    {"id":"connection-recovery","title":"Recover a disconnected connection","criticality":"CRITICAL","starts":["CONNECTION_PROFILE","RECOVERY_NOTICE"],"outcome":"The connection recovers or the user receives a safe actionable failure.","recovery":"EXPLICIT_REAUTHORIZATION","budget":{"navigationSteps":5,"scrolls":2,"entryFields":2,"confirmations":1,"waitMillis":45000,"errors":2},"checkpoints":["inspect-status","retry-connection","verify-identity"]},
+    {"id":"artifact-export","title":"Export a completed artifact","criticality":"IMPORTANT","starts":["SESSION_DETAIL"],"outcome":"The selected artifact is saved to the user-approved destination.","recovery":"SAFE_ABORT","budget":{"navigationSteps":5,"scrolls":2,"entryFields":0,"confirmations":1,"waitMillis":30000,"errors":1},"checkpoints":["open-artifact","choose-destination","confirm-export"]}
+  ]
+}
