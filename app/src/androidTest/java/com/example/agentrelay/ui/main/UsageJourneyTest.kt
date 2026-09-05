@@ -260,7 +260,7 @@ class UsageJourneyTest {
         val edge = minOf(32, image.height / 4)
         val topColor = image.getPixel(0, edge)
         val bottomColor = image.getPixel(0, image.height - edge - 1)
-        if (hasDarkResidue(image, edge)) {
+        if (luminance(topColor) < 220 || hasDarkResidue(image, edge)) {
             for (y in 0 until edge) {
                 for (x in 0 until image.width) image.setPixel(x, y, topColor)
             }
