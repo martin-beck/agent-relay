@@ -104,8 +104,6 @@ jobs:
           test -s "$system_img"
 
       - name: Run semantic UI and accessibility tests
-        env:
-          ANDROID_SERIAL: emulator-5582
         run: |
           export EMULATOR_AVD_NAME="test-${{ github.run_id }}-${{ github.run_attempt }}"
           EMULATOR_PORT=5582 bash scripts/ci/run_android_emulator_tests.sh
@@ -304,8 +302,6 @@ jobs:
           test -s "$system_img"
 
       - name: Run semantic UI and accessibility tests
-        env:
-          ANDROID_SERIAL: emulator-5582
         run: |
           export EMULATOR_AVD_NAME="test-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.name }}"
           EMULATOR_PORT=5582 bash scripts/ci/run_android_emulator_tests.sh
