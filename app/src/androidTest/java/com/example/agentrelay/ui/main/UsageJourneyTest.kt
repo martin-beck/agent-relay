@@ -274,7 +274,7 @@ class UsageJourneyTest {
 
     private fun hasDarkResidue(image: Bitmap, edge: Int): Boolean =
         (0 until edge).any { y ->
-            (0 until image.width step 8).count { x -> luminance(image.getPixel(x, y)) < 80 } > 2
+            (0 until image.width step 8).any { x -> luminance(image.getPixel(x, y)) < 120 }
         }
 
     private fun hasBrightResidue(image: Bitmap, start: Int, background: Int): Boolean {
