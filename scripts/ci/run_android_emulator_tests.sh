@@ -91,7 +91,9 @@ EOF
 fi
 log_file="$RUNNER_TEMP/agent-relay-emulator-$EMULATOR_PORT.log"
 pid_file="$RUNNER_TEMP/agent-relay-emulator-$EMULATOR_PORT.pid"
+guard_pid=""
 cleanup() {
+  [[ -z "$guard_pid" ]] || kill "$guard_pid" > /dev/null 2>&1 || true
   mkdir -p build/emulator
   [[ ! -f "$log_file" ]] || cp "$log_file" "build/emulator/emulator-$EMULATOR_PORT.log"
   [[ ! -f "$pid_file" ]] || cp "$pid_file" "build/emulator/emulator-$EMULATOR_PORT.pid"
@@ -160,4 +162,20 @@ verify_device_stable
 "$adb_bin" devices -l
 "$adb_bin" -s "emulator-$EMULATOR_PORT" get-state
 ./gradlew --stop > /dev/null 2>&1 || true
+guard_stale_transport() {
+  while sleep 1; do
+    if "$adb_bin" devices | awk '$1 == "emulator-5554" && $2 == "unauthorized" { found = 1 } END { exit !found }'; then
+      "$adb_bin" disconnect localhost:5554 > /dev/null 2>&1 || true
+    fi
+  done
+}
+guard_stale_transport &
+guard_pid=$!
+set +e
 "$@"
+test_status=$?
+set -e
+kill "$guard_pid" > /dev/null 2>&1 || true
+wait "$guard_pid" 2> /dev/null || true
+guard_pid=""
+exit "$test_status"
