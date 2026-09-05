@@ -69,6 +69,13 @@ Daemon and client identities are fixed-length digests of public signing keys;
 transport addresses and implementation process IDs never define endpoint
 identity. Rotation and compromise recovery are explicit trust transitions.
 
+Pairing is an explicit ceremony between a daemon identity and a client identity.
+An authenticated proof is required before a grant is issued; approved scopes may
+only narrow the request, and every grant has a bounded expiry, revisioned renewal,
+and explicit revocation. Unknown, expired, rejected, replayed, or revoked grants
+fail closed. Pairing records carry identities and capabilities, never protected
+task content or transport metadata.
+
 ## Runtime flow
 
 1. A `ConnectionProvider` enumerates generic profile summaries.
