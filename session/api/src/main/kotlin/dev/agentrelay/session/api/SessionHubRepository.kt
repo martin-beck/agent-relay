@@ -73,6 +73,14 @@ interface SessionHubRepository {
 
     suspend fun updateRecoveryState(locator: SessionLocator, state: SessionRecoveryState)
 
+    suspend fun enqueueCommand(locator: SessionLocator, command: DurableCommand): CommandEnqueueResult
+
+    suspend fun markCommandInFlight(locator: SessionLocator, commandId: String): Boolean
+
+    suspend fun markCommandUnknown(locator: SessionLocator, commandId: String): Boolean
+
+    suspend fun acknowledgeCommand(locator: SessionLocator, commandId: String): Boolean
+
     suspend fun recordActivity(activity: SessionActivity)
 
     suspend fun markSessionRead(
@@ -233,6 +241,65 @@ class PersistentSessionHubRepository private constructor(
         }
     }
 
+    override suspend fun enqueueCommand(
+        locator: SessionLocator,
+        command: DurableCommand,
+    ): CommandEnqueueResult = mutex.withLock {
+        val current = mutableSnapshot.value
+        current.requireSession(locator)
+        val existing = current.command(locator, command.id)
+        if (existing != null) {
+            if (existing.payload == command.payload) return@withLock CommandEnqueueResult.DUPLICATE
+            val conflicted = current.copy(
+                commandOutbox = current.commandOutbox.updatedCommand(
+                    locator,
+                    existing.copy(state = CommandOutboxState.CONFLICT),
+                ),
+            )
+            store.save(conflicted)
+            mutableSnapshot.value = conflicted
+            return@withLock CommandEnqueueResult.CONFLICT
+        }
+        val commands = current.commandOutbox[locator].orEmpty()
+        require(commands.size < MAX_PENDING_COMMANDS) { "Command outbox is full" }
+        val next = current.copy(commandOutbox = current.commandOutbox + (locator to (commands + command)))
+            .normalized(retentionPolicy)
+        store.save(next)
+        mutableSnapshot.value = next
+        CommandEnqueueResult.ENQUEUED
+    }
+
+    override suspend fun markCommandInFlight(locator: SessionLocator, commandId: String): Boolean =
+        transitionCommand(locator, commandId) { command ->
+            if (command.state != CommandOutboxState.QUEUED) {
+                null
+            } else {
+                command.copy(state = CommandOutboxState.IN_FLIGHT)
+            }
+        }
+
+    override suspend fun markCommandUnknown(locator: SessionLocator, commandId: String): Boolean =
+        transitionCommand(locator, commandId) { command ->
+            if (command.state != CommandOutboxState.IN_FLIGHT) {
+                null
+            } else {
+                command.copy(state = CommandOutboxState.UNKNOWN_DELIVERY)
+            }
+        }
+
+    override suspend fun acknowledgeCommand(locator: SessionLocator, commandId: String): Boolean =
+        transitionCommand(locator, commandId) { command ->
+            when (command.state) {
+                CommandOutboxState.IN_FLIGHT,
+                CommandOutboxState.UNKNOWN_DELIVERY,
+                -> command.copy(state = CommandOutboxState.ACKNOWLEDGED)
+                CommandOutboxState.ACKNOWLEDGED,
+                CommandOutboxState.QUEUED,
+                CommandOutboxState.CONFLICT,
+                -> null
+            }
+        }
+
     override suspend fun recordActivity(activity: SessionActivity) {
         mutate { current ->
             current.requireSession(activity.locator)
@@ -381,6 +448,7 @@ class PersistentSessionHubRepository private constructor(
                     drafts = current.drafts - locator,
                     activeSession = current.activeSession?.takeUnless { it == locator },
                     recovery = current.recovery - locator,
+                    commandOutbox = current.commandOutbox - locator,
                     activities = current.activities.filterNot { it.locator == locator },
                     transcripts = current.transcripts - locator,
                     actionRequests = current.actionRequests.filterNot { it.locator == locator },
@@ -401,6 +469,22 @@ class PersistentSessionHubRepository private constructor(
             store.save(next)
             mutableSnapshot.value = next
         }
+    }
+
+    private suspend fun transitionCommand(
+        locator: SessionLocator,
+        commandId: String,
+        transition: (DurableCommand) -> DurableCommand?,
+    ): Boolean = mutex.withLock {
+        val current = mutableSnapshot.value
+        current.requireSession(locator)
+        val existing = current.command(locator, commandId) ?: return@withLock false
+        val updated = transition(existing) ?: return@withLock false
+        val next = current.copy(commandOutbox = current.commandOutbox.updatedCommand(locator, updated))
+            .normalized(retentionPolicy)
+        store.save(next)
+        mutableSnapshot.value = next
+        true
     }
 
     companion object {
@@ -435,6 +519,15 @@ class InMemorySessionHubStore(
 
 private fun SessionHubSnapshot.requireSession(locator: SessionLocator): SessionRecord =
     session(locator) ?: throw NoSuchElementException("No session found for the supplied locator")
+
+private fun Map<SessionLocator, List<DurableCommand>>.updatedCommand(
+    locator: SessionLocator,
+    command: DurableCommand,
+): Map<SessionLocator, List<DurableCommand>> = this + (
+    locator to getValue(locator).map { existing ->
+        if (existing.id == command.id) command else existing
+    }
+    )
 
 private fun SessionHubSnapshot.updatedArtifacts(update: SessionEventUpdate): List<SessionArtifact> {
     val workspaceChanged = update.observation?.let { incoming ->
