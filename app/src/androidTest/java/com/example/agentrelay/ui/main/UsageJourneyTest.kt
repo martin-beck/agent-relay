@@ -265,8 +265,9 @@ class UsageJourneyTest {
                 for (x in 0 until image.width) image.setPixel(x, y, topColor)
             }
         }
-        if (hasBrightResidue(image, image.height - edge, bottomColor)) {
-            for (y in image.height - edge until image.height) {
+        val bottomResidueStart = findBottomResidueStart(image)
+        if (bottomResidueStart >= 0) {
+            for (y in bottomResidueStart until image.height) {
                 for (x in 0 until image.width) image.setPixel(x, y, bottomColor)
             }
         }
@@ -277,13 +278,17 @@ class UsageJourneyTest {
             (0 until image.width step 8).any { x -> luminance(image.getPixel(x, y)) < 200 }
         }
 
-    private fun hasBrightResidue(image: Bitmap, start: Int, background: Int): Boolean {
-        val centerBackground = image.getPixel(image.width / 2, start - 1)
-        val centerEdge = image.getPixel(image.width / 2, image.height - 1)
-        if (colorDistance(centerBackground, centerEdge) > 16) return true
-        if (luminance(background) > 220) return false
-        return (start until image.height).any { y ->
-            (0 until image.width step 8).count { x -> luminance(image.getPixel(x, y)) > 220 } > 2
+    private fun findBottomResidueStart(image: Bitmap): Int {
+        val center = image.width / 2
+        val edgeColor = image.getPixel(center, image.height - 1)
+        var start = image.height - 1
+        while (start > 0 && colorDistance(image.getPixel(center, start - 1), edgeColor) <= 16) {
+            start--
+        }
+        return if (start >= 16 && colorDistance(image.getPixel(center, start - 16), edgeColor) > 16) {
+            start
+        } else {
+            -1
         }
     }
 
