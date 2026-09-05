@@ -109,6 +109,35 @@ data class SessionRecoveryState(
     }
 }
 
+enum class CommandOutboxState {
+    QUEUED,
+    IN_FLIGHT,
+    UNKNOWN_DELIVERY,
+    ACKNOWLEDGED,
+    CONFLICT,
+}
+
+enum class CommandEnqueueResult {
+    ENQUEUED,
+    DUPLICATE,
+    CONFLICT,
+}
+
+/** A command intent retained until its delivery outcome is known. */
+data class DurableCommand(
+    val id: String,
+    val payload: String,
+    val createdAtEpochMillis: Long,
+    val state: CommandOutboxState = CommandOutboxState.QUEUED,
+) {
+    init {
+        requireBounded(id, "Command id", MAX_ID_CHARS)
+        require(payload.isNotEmpty()) { "Command payload must not be empty" }
+        require(payload.length <= MAX_COMMAND_CHARS) { "Command payload is too large" }
+        require(createdAtEpochMillis >= 0L) { "Command creation time must not be negative" }
+    }
+}
+
 enum class SessionActivityType {
     NEW_OUTPUT,
     APPROVAL_REQUIRED,
@@ -403,6 +432,7 @@ data class SessionHubSnapshot(
     val artifacts: List<SessionArtifact> = emptyList(),
     val activeSession: SessionLocator? = null,
     val recovery: Map<SessionLocator, SessionRecoveryState> = emptyMap(),
+    val commandOutbox: Map<SessionLocator, List<DurableCommand>> = emptyMap(),
 ) {
     init {
         require(sessions.distinctBy { it.locator }.size == sessions.size) {
@@ -422,6 +452,13 @@ data class SessionHubSnapshot(
             "Active session references an unknown session"
         }
         require(recovery.keys.all(locators::contains)) { "Recovery references an unknown session" }
+        require(commandOutbox.keys.all(locators::contains)) { "Command outbox references an unknown session" }
+        require(commandOutbox.values.all { commands -> commands.distinctBy(DurableCommand::id).size == commands.size }) {
+            "Command outbox contains duplicate command identities"
+        }
+        require(commandOutbox.values.all { commands -> commands.size <= MAX_PENDING_COMMANDS }) {
+            "Too many durable commands"
+        }
         require(drafts.keys.all(locators::contains)) { "A draft references an unknown session" }
         require(activities.all { it.locator in locators }) { "Activity references an unknown session" }
         require(transcripts.keys.all(locators::contains)) { "A transcript references an unknown session" }
@@ -441,6 +478,9 @@ data class SessionHubSnapshot(
     }
 
     fun session(locator: SessionLocator): SessionRecord? = sessions.firstOrNull { it.locator == locator }
+
+    fun command(locator: SessionLocator, id: String): DurableCommand? =
+        commandOutbox[locator].orEmpty().firstOrNull { it.id == id }
 
     fun actionRequest(locator: SessionLocator, id: String): SessionActionRequest? =
         actionRequests.firstOrNull { it.locator == locator && it.id == id }
@@ -566,6 +606,7 @@ internal fun SessionHubSnapshot.normalized(policy: SessionRetentionPolicy): Sess
         artifacts = retainedArtifacts,
         activeSession = activeSession?.takeIf(retainedLocators::contains),
         recovery = recovery.filterKeys(retainedLocators::contains),
+        commandOutbox = commandOutbox.filterKeys(retainedLocators::contains),
     )
 }
 
@@ -634,7 +675,7 @@ private const val MAX_PROVIDER_REQUEST_ID_CHARS = 4_096
 private const val MAX_METADATA_ENTRIES = 64
 private const val MAX_METADATA_KEY_CHARS = 256
 private const val MAX_METADATA_VALUE_CHARS = 4_096
-private const val MAX_PENDING_COMMANDS = 64
+internal const val MAX_PENDING_COMMANDS = 64
 
 private val APPROVING_DECISIONS = setOf(
     AgentApprovalDecision.APPROVE_ONCE,

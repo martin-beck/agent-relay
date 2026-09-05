@@ -6,6 +6,8 @@ import dev.agentrelay.connection.api.ConnectionProviderId
 import dev.agentrelay.provider.api.AgentProviderId
 import dev.agentrelay.provider.api.AgentSessionId
 import dev.agentrelay.session.api.CachedTranscriptEntry
+import dev.agentrelay.session.api.CommandOutboxState
+import dev.agentrelay.session.api.DurableCommand
 import dev.agentrelay.session.api.SessionActivity
 import dev.agentrelay.session.api.SessionActivitySummary
 import dev.agentrelay.session.api.SessionActivitySummaryKind
@@ -100,6 +102,7 @@ private data class SessionHubDocument(
     val artifacts: List<SessionArtifactDocument> = emptyList(),
     val activeSession: SessionLocatorDocument? = null,
     val recovery: List<SessionRecoveryDocument> = emptyList(),
+    val commandOutbox: List<SessionCommandOutboxDocument> = emptyList(),
 )
 
 @Serializable
@@ -108,6 +111,20 @@ private data class SessionRecoveryDocument(
     val scrollPosition: Int,
     val eventCursor: String?,
     val pendingCommandIds: List<String>,
+)
+
+@Serializable
+private data class SessionCommandOutboxDocument(
+    val locator: SessionLocatorDocument,
+    val commands: List<DurableCommandDocument>,
+)
+
+@Serializable
+private data class DurableCommandDocument(
+    val id: String,
+    val payload: String,
+    val createdAtEpochMillis: Long,
+    val state: String,
 )
 
 @Serializable
@@ -259,6 +276,19 @@ private fun SessionHubSnapshot.toDocument() = SessionHubDocument(
     artifacts = artifacts.map(SessionArtifact::toDocument),
     activeSession = activeSession?.toDocument(),
     recovery = recovery.map { (locator, state) -> state.toDocument(locator) },
+    commandOutbox = commandOutbox.map { (locator, commands) ->
+        SessionCommandOutboxDocument(
+            locator.toDocument(),
+            commands.map { command ->
+                DurableCommandDocument(
+                    id = command.id,
+                    payload = command.payload,
+                    createdAtEpochMillis = command.createdAtEpochMillis,
+                    state = command.state.name,
+                )
+            },
+        )
+    },
 )
 
 private fun SessionHubDocument.toDomain(): SessionHubSnapshot {
@@ -273,6 +303,19 @@ private fun SessionHubDocument.toDomain(): SessionHubSnapshot {
     val restoredRecovery = recovery
         .requireUniqueBy(SessionRecoveryDocument::locator, "session recovery")
         .associate { it.locator.toDomain() to it.toDomain() }
+    val restoredCommandOutbox = commandOutbox
+        .requireUniqueBy(SessionCommandOutboxDocument::locator, "session command outbox")
+        .associate { document ->
+            document.locator.toDomain() to document.commands.map { command ->
+                DurableCommand(
+                    id = command.id,
+                    payload = command.payload,
+                    createdAtEpochMillis = command.createdAtEpochMillis,
+                    state = runCatching { CommandOutboxState.valueOf(command.state) }
+                        .getOrElse { throw IllegalArgumentException("Unknown command outbox state") },
+                )
+            }
+        }
     return SessionHubSnapshot(
         sessions = sessions.map(SessionRecordDocument::toDomain),
         drafts = restoredDrafts,
@@ -282,6 +325,7 @@ private fun SessionHubDocument.toDomain(): SessionHubSnapshot {
         artifacts = artifacts.map(SessionArtifactDocument::toDomain),
         activeSession = activeSession?.toDomain(),
         recovery = restoredRecovery,
+        commandOutbox = restoredCommandOutbox,
     )
 }
 

@@ -118,6 +118,46 @@ class PersistentSessionHubRepositoryTest {
     }
 
     @Test
+    fun commandOutboxPersistsTransitionsAndRejectsConflictingReuse() = runTest {
+        val store = InMemorySessionHubStore()
+        val repository = PersistentSessionHubRepository.open(store)
+        val session = locator("local.device", "local", "outbox-thread")
+        repository.upsertSession(observation(session, updatedAt = 1L))
+        val command = DurableCommand("command-1", "run tests", 2L)
+
+        assertEquals(CommandEnqueueResult.ENQUEUED, repository.enqueueCommand(session, command))
+        assertEquals(CommandEnqueueResult.DUPLICATE, repository.enqueueCommand(session, command))
+        assertEquals(
+            CommandEnqueueResult.CONFLICT,
+            repository.enqueueCommand(session, command.copy(payload = "delete data")),
+        )
+        assertEquals(CommandOutboxState.CONFLICT, repository.snapshot.value.commandOutbox[session]?.single()?.state)
+        assertFalse(repository.markCommandInFlight(session, command.id))
+
+        val restored = PersistentSessionHubRepository.open(store).snapshot.value
+        assertEquals(CommandOutboxState.CONFLICT, restored.commandOutbox[session]?.single()?.state)
+    }
+
+    @Test
+    fun unknownDeliveryCanOnlyBeAcknowledgedAndIsNeverAutomaticallyReplayable() = runTest {
+        val repository = PersistentSessionHubRepository.open(InMemorySessionHubStore())
+        val session = locator("local.device", "local", "unknown-delivery")
+        repository.upsertSession(observation(session, updatedAt = 1L))
+        val command = DurableCommand("command-unknown", "safe command", 2L)
+        repository.enqueueCommand(session, command)
+
+        assertTrue(repository.markCommandInFlight(session, command.id))
+        assertTrue(repository.markCommandUnknown(session, command.id))
+        assertFalse(repository.markCommandInFlight(session, command.id))
+        assertTrue(repository.acknowledgeCommand(session, command.id))
+        assertFalse(repository.acknowledgeCommand(session, command.id))
+        assertEquals(
+            CommandOutboxState.ACKNOWLEDGED,
+            repository.snapshot.value.commandOutbox[session]?.single()?.state,
+        )
+    }
+
+    @Test
     fun duplicateActivityIsIdempotentAndReadStateIsTransactional() = runTest {
         val store = RecordingStore()
         val repository = PersistentSessionHubRepository.open(store)
