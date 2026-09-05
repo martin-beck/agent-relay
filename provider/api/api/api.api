@@ -643,6 +643,218 @@ public final class dev/agentrelay/provider/api/DiscoveredCapability {
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class dev/agentrelay/provider/api/ExtensionAction {
+	public static final synthetic fun box-impl (Ljava/lang/String;)Ldev/agentrelay/provider/api/ExtensionAction;
+	public static fun constructor-impl (Ljava/lang/String;)Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/provider/api/ExtensionApiVersion {
+	public fun <init> (II)V
+	public final fun component1 ()I
+	public final fun component2 ()I
+	public final fun copy (II)Ldev/agentrelay/provider/api/ExtensionApiVersion;
+	public static synthetic fun copy$default (Ldev/agentrelay/provider/api/ExtensionApiVersion;IIILjava/lang/Object;)Ldev/agentrelay/provider/api/ExtensionApiVersion;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getMajor ()I
+	public final fun getMinor ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/provider/api/ExtensionCapability : java/lang/Enum {
+	public static final field AGENT Ldev/agentrelay/provider/api/ExtensionCapability;
+	public static final field CONNECTOR Ldev/agentrelay/provider/api/ExtensionCapability;
+	public static final field PRESENTATION Ldev/agentrelay/provider/api/ExtensionCapability;
+	public static final field WORKFLOW Ldev/agentrelay/provider/api/ExtensionCapability;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/provider/api/ExtensionCapability;
+	public static fun values ()[Ldev/agentrelay/provider/api/ExtensionCapability;
+}
+
+public final class dev/agentrelay/provider/api/ExtensionField {
+	public static final synthetic fun box-impl (Ljava/lang/String;)Ldev/agentrelay/provider/api/ExtensionField;
+	public static fun constructor-impl (Ljava/lang/String;)Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/provider/api/ExtensionId {
+	public static final synthetic fun box-impl (Ljava/lang/String;)Ldev/agentrelay/provider/api/ExtensionId;
+	public static fun constructor-impl (Ljava/lang/String;)Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/provider/api/ExtensionInvocation {
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Set;JILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Set;JLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-5dQZfws ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3-NLYP5vg ()Ljava/lang/String;
+	public final fun component4 ()Ljava/util/Map;
+	public final fun component5 ()Ljava/util/Set;
+	public final fun component6 ()J
+	public final fun copy-qCFDJHk (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Set;J)Ldev/agentrelay/provider/api/ExtensionInvocation;
+	public static synthetic fun copy-qCFDJHk$default (Ldev/agentrelay/provider/api/ExtensionInvocation;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Set;JILjava/lang/Object;)Ldev/agentrelay/provider/api/ExtensionInvocation;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getExtensionId-5dQZfws ()Ljava/lang/String;
+	public final fun getIdempotencyKey ()Ljava/lang/String;
+	public final fun getInput ()Ljava/util/Map;
+	public final fun getRequestedPermissions ()Ljava/util/Set;
+	public final fun getRevision ()J
+	public final fun getTrigger-NLYP5vg ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class dev/agentrelay/provider/api/ExtensionInvocationDecision {
+}
+
+public final class dev/agentrelay/provider/api/ExtensionInvocationDecision$Accepted : dev/agentrelay/provider/api/ExtensionInvocationDecision {
+	public fun <init> (Ljava/util/Set;)V
+	public final fun component1 ()Ljava/util/Set;
+	public final fun copy (Ljava/util/Set;)Ldev/agentrelay/provider/api/ExtensionInvocationDecision$Accepted;
+	public static synthetic fun copy$default (Ldev/agentrelay/provider/api/ExtensionInvocationDecision$Accepted;Ljava/util/Set;ILjava/lang/Object;)Ldev/agentrelay/provider/api/ExtensionInvocationDecision$Accepted;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getPermissions ()Ljava/util/Set;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/provider/api/ExtensionInvocationDecision$Rejected : dev/agentrelay/provider/api/ExtensionInvocationDecision {
+	public fun <init> (Ldev/agentrelay/provider/api/ExtensionRejection;)V
+	public final fun component1 ()Ldev/agentrelay/provider/api/ExtensionRejection;
+	public final fun copy (Ldev/agentrelay/provider/api/ExtensionRejection;)Ldev/agentrelay/provider/api/ExtensionInvocationDecision$Rejected;
+	public static synthetic fun copy$default (Ldev/agentrelay/provider/api/ExtensionInvocationDecision$Rejected;Ldev/agentrelay/provider/api/ExtensionRejection;ILjava/lang/Object;)Ldev/agentrelay/provider/api/ExtensionInvocationDecision$Rejected;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getReason ()Ldev/agentrelay/provider/api/ExtensionRejection;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/provider/api/ExtensionInvocationLedger {
+	public fun <init> ()V
+	public final fun evaluate (Ldev/agentrelay/provider/api/ExtensionManifest;Ldev/agentrelay/provider/api/ExtensionInvocation;Ldev/agentrelay/provider/api/ExtensionApiVersion;ILjava/util/Set;IJZZ)Ldev/agentrelay/provider/api/ExtensionInvocationDecision;
+	public static synthetic fun evaluate$default (Ldev/agentrelay/provider/api/ExtensionInvocationLedger;Ldev/agentrelay/provider/api/ExtensionManifest;Ldev/agentrelay/provider/api/ExtensionInvocation;Ldev/agentrelay/provider/api/ExtensionApiVersion;ILjava/util/Set;IJZZILjava/lang/Object;)Ldev/agentrelay/provider/api/ExtensionInvocationDecision;
+}
+
+public final class dev/agentrelay/provider/api/ExtensionLifecycle {
+	public fun <init> ()V
+	public fun <init> (ZZZ)V
+	public synthetic fun <init> (ZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Z
+	public final fun component2 ()Z
+	public final fun component3 ()Z
+	public final fun copy (ZZZ)Ldev/agentrelay/provider/api/ExtensionLifecycle;
+	public static synthetic fun copy$default (Ldev/agentrelay/provider/api/ExtensionLifecycle;ZZZILjava/lang/Object;)Ldev/agentrelay/provider/api/ExtensionLifecycle;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getHealth ()Z
+	public final fun getShutdown ()Z
+	public final fun getStartup ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/provider/api/ExtensionManifest {
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ldev/agentrelay/provider/api/ExtensionApiVersion;ILjava/util/Set;Ljava/util/Set;Ljava/util/Set;Ljava/util/Set;Ljava/util/Set;Ldev/agentrelay/provider/api/ExtensionResourceBudget;Ldev/agentrelay/provider/api/ExtensionLifecycle;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ldev/agentrelay/provider/api/ExtensionApiVersion;ILjava/util/Set;Ljava/util/Set;Ljava/util/Set;Ljava/util/Set;Ljava/util/Set;Ldev/agentrelay/provider/api/ExtensionResourceBudget;Ldev/agentrelay/provider/api/ExtensionLifecycle;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun compatibleWith (Ldev/agentrelay/provider/api/ExtensionApiVersion;I)Z
+	public final fun component1-5dQZfws ()Ljava/lang/String;
+	public final fun component10 ()Ldev/agentrelay/provider/api/ExtensionResourceBudget;
+	public final fun component11 ()Ldev/agentrelay/provider/api/ExtensionLifecycle;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ldev/agentrelay/provider/api/ExtensionApiVersion;
+	public final fun component4 ()I
+	public final fun component5 ()Ljava/util/Set;
+	public final fun component6 ()Ljava/util/Set;
+	public final fun component7 ()Ljava/util/Set;
+	public final fun component8 ()Ljava/util/Set;
+	public final fun component9 ()Ljava/util/Set;
+	public final fun copy-kJLbVgY (Ljava/lang/String;Ljava/lang/String;Ldev/agentrelay/provider/api/ExtensionApiVersion;ILjava/util/Set;Ljava/util/Set;Ljava/util/Set;Ljava/util/Set;Ljava/util/Set;Ldev/agentrelay/provider/api/ExtensionResourceBudget;Ldev/agentrelay/provider/api/ExtensionLifecycle;)Ldev/agentrelay/provider/api/ExtensionManifest;
+	public static synthetic fun copy-kJLbVgY$default (Ldev/agentrelay/provider/api/ExtensionManifest;Ljava/lang/String;Ljava/lang/String;Ldev/agentrelay/provider/api/ExtensionApiVersion;ILjava/util/Set;Ljava/util/Set;Ljava/util/Set;Ljava/util/Set;Ljava/util/Set;Ldev/agentrelay/provider/api/ExtensionResourceBudget;Ldev/agentrelay/provider/api/ExtensionLifecycle;ILjava/lang/Object;)Ldev/agentrelay/provider/api/ExtensionManifest;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getActions ()Ljava/util/Set;
+	public final fun getApiVersion ()Ldev/agentrelay/provider/api/ExtensionApiVersion;
+	public final fun getBudget ()Ldev/agentrelay/provider/api/ExtensionResourceBudget;
+	public final fun getCapabilities ()Ljava/util/Set;
+	public final fun getDisplayName ()Ljava/lang/String;
+	public final fun getId-5dQZfws ()Ljava/lang/String;
+	public final fun getLifecycle ()Ldev/agentrelay/provider/api/ExtensionLifecycle;
+	public final fun getPermissions ()Ljava/util/Set;
+	public final fun getRequestedFields ()Ljava/util/Set;
+	public final fun getSchemaVersion ()I
+	public final fun getTriggers ()Ljava/util/Set;
+	public fun hashCode ()I
+	public final fun narrowedPermissions (Ljava/util/Set;)Ljava/util/Set;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/provider/api/ExtensionPermission : java/lang/Enum {
+	public static final field PROPOSE_ACTIONS Ldev/agentrelay/provider/api/ExtensionPermission;
+	public static final field READ_FIELDS Ldev/agentrelay/provider/api/ExtensionPermission;
+	public static final field REQUEST_APPROVAL Ldev/agentrelay/provider/api/ExtensionPermission;
+	public static final field WRITE_FIELDS Ldev/agentrelay/provider/api/ExtensionPermission;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/provider/api/ExtensionPermission;
+	public static fun values ()[Ldev/agentrelay/provider/api/ExtensionPermission;
+}
+
+public final class dev/agentrelay/provider/api/ExtensionRejection : java/lang/Enum {
+	public static final field CANCELLED Ldev/agentrelay/provider/api/ExtensionRejection;
+	public static final field INCOMPATIBLE_VERSION Ldev/agentrelay/provider/api/ExtensionRejection;
+	public static final field INPUT_TOO_LARGE Ldev/agentrelay/provider/api/ExtensionRejection;
+	public static final field INVOCATION_BUDGET_EXCEEDED Ldev/agentrelay/provider/api/ExtensionRejection;
+	public static final field PERMISSION_NOT_GRANTED Ldev/agentrelay/provider/api/ExtensionRejection;
+	public static final field REVOKED Ldev/agentrelay/provider/api/ExtensionRejection;
+	public static final field STALE_REVISION Ldev/agentrelay/provider/api/ExtensionRejection;
+	public static final field UNDECLARED_ACTION Ldev/agentrelay/provider/api/ExtensionRejection;
+	public static final field UNDECLARED_FIELD Ldev/agentrelay/provider/api/ExtensionRejection;
+	public static final field UNKNOWN_EXTENSION Ldev/agentrelay/provider/api/ExtensionRejection;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/provider/api/ExtensionRejection;
+	public static fun values ()[Ldev/agentrelay/provider/api/ExtensionRejection;
+}
+
+public final class dev/agentrelay/provider/api/ExtensionResourceBudget {
+	public fun <init> (IIIJ)V
+	public final fun component1 ()I
+	public final fun component2 ()I
+	public final fun component3 ()I
+	public final fun component4 ()J
+	public final fun copy (IIIJ)Ldev/agentrelay/provider/api/ExtensionResourceBudget;
+	public static synthetic fun copy$default (Ldev/agentrelay/provider/api/ExtensionResourceBudget;IIIJILjava/lang/Object;)Ldev/agentrelay/provider/api/ExtensionResourceBudget;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getMaxDurationMillis ()J
+	public final fun getMaxInputBytes ()I
+	public final fun getMaxInvocations ()I
+	public final fun getMaxOutputBytes ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class dev/agentrelay/provider/api/LocalAiDetectionModelsKt {
 	public static final field MAX_LOCAL_AI_CAPABILITIES I
 	public static final fun provesPhysicalInference (Ldev/agentrelay/provider/api/LocalAiModelObservation;)Z
