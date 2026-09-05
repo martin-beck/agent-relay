@@ -19,6 +19,7 @@ adb_bin="$ANDROID_HOME/platform-tools/adb"
 emulator_bin="$ANDROID_HOME/emulator/emulator"
 avdmanager_bin="$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager"
 test -x "$adb_bin" -a -x "$emulator_bin" -a -x "$avdmanager_bin"
+test -x "$(command -v script)"
 mkdir -p "$ANDROID_AVD_HOME"
 echo no | "$avdmanager_bin" create avd --force --name "$EMULATOR_AVD_NAME" --path "$ANDROID_AVD_HOME/$EMULATOR_AVD_NAME.avd" --package "system-images;android-$EMULATOR_API_LEVEL;$EMULATOR_TARGET;$EMULATOR_ARCH" --device "$EMULATOR_PROFILE"
 avd_dir="$ANDROID_AVD_HOME/$EMULATOR_AVD_NAME.avd"
@@ -73,7 +74,8 @@ cleanup() {
   fi
 }
 trap cleanup EXIT
-nohup "$emulator_bin" -port "$EMULATOR_PORT" -avd "$EMULATOR_AVD_NAME" -no-window -gpu off -no-snapshot -no-audio -no-boot-anim > "$log_file" 2>&1 < /dev/null &
+emulator_command=$(printf '%q ' "$emulator_bin" -port "$EMULATOR_PORT" -avd "$EMULATOR_AVD_NAME" -no-window -gpu off -no-snapshot -no-audio -no-boot-anim)
+script -q -e -c "$emulator_command" "$log_file" > /dev/null 2>&1 &
 emulator_pid=$!
 echo "$emulator_pid" > "$pid_file"
 echo "Started emulator pid=$emulator_pid port=$EMULATOR_PORT log=$log_file"
