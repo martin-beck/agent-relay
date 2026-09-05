@@ -571,6 +571,113 @@ public final class dev/agentrelay/provider/api/CapabilitySubjectKind : java/lang
 	public static fun values ()[Ldev/agentrelay/provider/api/CapabilitySubjectKind;
 }
 
+public final class dev/agentrelay/provider/api/ProviderFailureKind : java/lang/Enum {
+	public static final field AUTHENTICATION Ldev/agentrelay/provider/api/ProviderFailureKind;
+	public static final field AUTHORIZATION Ldev/agentrelay/provider/api/ProviderFailureKind;
+	public static final field INVALID_REQUEST Ldev/agentrelay/provider/api/ProviderFailureKind;
+	public static final field NETWORK Ldev/agentrelay/provider/api/ProviderFailureKind;
+	public static final field PROVIDER Ldev/agentrelay/provider/api/ProviderFailureKind;
+	public static final field RATE_LIMIT Ldev/agentrelay/provider/api/ProviderFailureKind;
+	public static final field UNKNOWN Ldev/agentrelay/provider/api/ProviderFailureKind;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/provider/api/ProviderFailureKind;
+	public static fun values ()[Ldev/agentrelay/provider/api/ProviderFailureKind;
+}
+
+public abstract interface class dev/agentrelay/provider/api/ProviderOutcome {
+	public abstract fun getObservedAtEpochSeconds ()J
+}
+
+public final class dev/agentrelay/provider/api/ProviderOutcome$Checkpoint : dev/agentrelay/provider/api/ProviderOutcome {
+	public fun <init> (JLjava/lang/String;Z)V
+	public synthetic fun <init> (JLjava/lang/String;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()J
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Z
+	public final fun copy (JLjava/lang/String;Z)Ldev/agentrelay/provider/api/ProviderOutcome$Checkpoint;
+	public static synthetic fun copy$default (Ldev/agentrelay/provider/api/ProviderOutcome$Checkpoint;JLjava/lang/String;ZILjava/lang/Object;)Ldev/agentrelay/provider/api/ProviderOutcome$Checkpoint;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getObservedAtEpochSeconds ()J
+	public final fun getResumable ()Z
+	public final fun getToken ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/provider/api/ProviderOutcome$Failure : dev/agentrelay/provider/api/ProviderOutcome {
+	public fun <init> (JLdev/agentrelay/provider/api/ProviderFailureKind;ZLjava/lang/String;)V
+	public synthetic fun <init> (JLdev/agentrelay/provider/api/ProviderFailureKind;ZLjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()J
+	public final fun component2 ()Ldev/agentrelay/provider/api/ProviderFailureKind;
+	public final fun component3 ()Z
+	public final fun component4 ()Ljava/lang/String;
+	public final fun copy (JLdev/agentrelay/provider/api/ProviderFailureKind;ZLjava/lang/String;)Ldev/agentrelay/provider/api/ProviderOutcome$Failure;
+	public static synthetic fun copy$default (Ldev/agentrelay/provider/api/ProviderOutcome$Failure;JLdev/agentrelay/provider/api/ProviderFailureKind;ZLjava/lang/String;ILjava/lang/Object;)Ldev/agentrelay/provider/api/ProviderOutcome$Failure;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDetail ()Ljava/lang/String;
+	public final fun getKind ()Ldev/agentrelay/provider/api/ProviderFailureKind;
+	public fun getObservedAtEpochSeconds ()J
+	public final fun getRecoverable ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/provider/api/ProviderOutcome$Progress : dev/agentrelay/provider/api/ProviderOutcome {
+	public fun <init> (JJLjava/lang/Long;Ljava/lang/String;)V
+	public synthetic fun <init> (JJLjava/lang/Long;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()J
+	public final fun component2 ()J
+	public final fun component3 ()Ljava/lang/Long;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun copy (JJLjava/lang/Long;Ljava/lang/String;)Ldev/agentrelay/provider/api/ProviderOutcome$Progress;
+	public static synthetic fun copy$default (Ldev/agentrelay/provider/api/ProviderOutcome$Progress;JJLjava/lang/Long;Ljava/lang/String;ILjava/lang/Object;)Ldev/agentrelay/provider/api/ProviderOutcome$Progress;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCompletedUnits ()J
+	public final fun getMessage ()Ljava/lang/String;
+	public fun getObservedAtEpochSeconds ()J
+	public final fun getTotalUnits ()Ljava/lang/Long;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/provider/api/ProviderOutcome$Resource : dev/agentrelay/provider/api/ProviderOutcome {
+	public fun <init> (JLdev/agentrelay/provider/api/ProviderResourceKind;JLjava/lang/Long;)V
+	public synthetic fun <init> (JLdev/agentrelay/provider/api/ProviderResourceKind;JLjava/lang/Long;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()J
+	public final fun component2 ()Ldev/agentrelay/provider/api/ProviderResourceKind;
+	public final fun component3 ()J
+	public final fun component4 ()Ljava/lang/Long;
+	public final fun copy (JLdev/agentrelay/provider/api/ProviderResourceKind;JLjava/lang/Long;)Ldev/agentrelay/provider/api/ProviderOutcome$Resource;
+	public static synthetic fun copy$default (Ldev/agentrelay/provider/api/ProviderOutcome$Resource;JLdev/agentrelay/provider/api/ProviderResourceKind;JLjava/lang/Long;ILjava/lang/Object;)Ldev/agentrelay/provider/api/ProviderOutcome$Resource;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getConsumedUnits ()J
+	public final fun getKind ()Ldev/agentrelay/provider/api/ProviderResourceKind;
+	public final fun getLimitUnits ()Ljava/lang/Long;
+	public fun getObservedAtEpochSeconds ()J
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/provider/api/ProviderOutcome$Result : dev/agentrelay/provider/api/ProviderOutcome {
+	public fun <init> (JLdev/agentrelay/provider/api/ProviderResultKind;Ljava/lang/String;)V
+	public synthetic fun <init> (JLdev/agentrelay/provider/api/ProviderResultKind;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()J
+	public final fun component2 ()Ldev/agentrelay/provider/api/ProviderResultKind;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun copy (JLdev/agentrelay/provider/api/ProviderResultKind;Ljava/lang/String;)Ldev/agentrelay/provider/api/ProviderOutcome$Result;
+	public static synthetic fun copy$default (Ldev/agentrelay/provider/api/ProviderOutcome$Result;JLdev/agentrelay/provider/api/ProviderResultKind;Ljava/lang/String;ILjava/lang/Object;)Ldev/agentrelay/provider/api/ProviderOutcome$Result;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getObservedAtEpochSeconds ()J
+	public final fun getOutcome ()Ldev/agentrelay/provider/api/ProviderResultKind;
+	public final fun getSummary ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/provider/api/ProviderOutcomeModelsKt {
+	public static final field MAX_OUTCOME_MESSAGE_LENGTH I
+}
+
 public abstract interface class dev/agentrelay/provider/api/ProviderReadiness {
 }
 
@@ -638,6 +745,25 @@ public final class dev/agentrelay/provider/api/ProviderReadiness$Ready : dev/age
 	public final fun getVersion ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/provider/api/ProviderResourceKind : java/lang/Enum {
+	public static final field BYTES Ldev/agentrelay/provider/api/ProviderResourceKind;
+	public static final field REQUESTS Ldev/agentrelay/provider/api/ProviderResourceKind;
+	public static final field TIME_MILLIS Ldev/agentrelay/provider/api/ProviderResourceKind;
+	public static final field TOKENS Ldev/agentrelay/provider/api/ProviderResourceKind;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/provider/api/ProviderResourceKind;
+	public static fun values ()[Ldev/agentrelay/provider/api/ProviderResourceKind;
+}
+
+public final class dev/agentrelay/provider/api/ProviderResultKind : java/lang/Enum {
+	public static final field CANCELLED Ldev/agentrelay/provider/api/ProviderResultKind;
+	public static final field PARTIAL Ldev/agentrelay/provider/api/ProviderResultKind;
+	public static final field SUCCEEDED Ldev/agentrelay/provider/api/ProviderResultKind;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/provider/api/ProviderResultKind;
+	public static fun values ()[Ldev/agentrelay/provider/api/ProviderResultKind;
 }
 
 public abstract interface class dev/agentrelay/provider/api/RemoteAgentRuntime {
