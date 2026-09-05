@@ -1,0 +1,34 @@
+id: workflow-recovery
+title: Recover a failed workflow safely
+summary: Resume a workflow from durable state while keeping uncertain operations visible.
+status: planned
+order: 16
+goal: Recover useful progress after interruption without duplicating a command or hiding uncertainty.
+preconditions:
+  - A synthetic workflow contains completed, running, failed, and uncertain operations.
+  - Each operation has a durable identity and an explicit retry policy.
+automatic:
+  - Agent Relay restores workflow state and suppresses replay of completed operations.
+  - Safe idempotent work retries within a bounded budget.
+  - Uncertain non-idempotent work remains visible and non-retryable until inspected.
+attention:
+  - Review the operation identity and last known outcome.
+  - Choose resume, inspect, or abort only where the workflow allows it.
+  - Confirm any action that expands scope or repeats external side effects.
+recovery:
+  - Exhausted retries become an actionable failure instead of a loop.
+  - Restarting the app preserves the same workflow identity and decision history.
+  - Aborting a workflow preserves its redacted evidence for later review.
+steps:
+  - id: open-recovery
+    title: Open the recovery view
+    action: Select a synthetic workflow interrupted during an external operation.
+    expected: Completed, retryable, and uncertain items are visibly distinct.
+  - id: inspect-uncertainty
+    title: Inspect the uncertain operation
+    action: Open its evidence and operation identity.
+    expected: The app explains why retry is blocked and identifies safe inspection steps.
+  - id: resume-safe-work
+    title: Resume safe work
+    action: Resume only the operation marked idempotent and retryable.
+    expected: The workflow advances without replaying completed or uncertain work.

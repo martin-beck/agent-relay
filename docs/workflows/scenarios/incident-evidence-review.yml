@@ -1,0 +1,34 @@
+id: incident-evidence-review
+title: Capture and review an incident bundle
+summary: Collect a bounded, redacted incident bundle that explains a failure and its recovery state.
+status: planned
+order: 14
+goal: Give a person and a support reviewer enough evidence to understand an incident safely.
+preconditions:
+  - A synthetic connection or session has a reproducible incident state.
+  - The bundle policy defines retention, redaction, and maximum size.
+automatic:
+  - Agent Relay gathers relevant health transitions, operation identities, and bounded logs.
+  - Secret values, raw credentials, and unrelated sessions are excluded before export.
+  - The bundle receives a manifest and digest for integrity checks.
+attention:
+  - Review the selected incident scope before capture.
+  - Confirm the destination and retention policy for the exported bundle.
+  - Decide whether sharing the bundle is appropriate for the intended reviewer.
+recovery:
+  - Capture stops cleanly when the size or deadline budget is reached.
+  - Partial bundles are marked incomplete and cannot appear complete by accident.
+  - Export cancellation removes the partial destination when the provider permits it.
+steps:
+  - id: select-incident
+    title: Select one incident
+    action: Open the incident evidence action for a synthetic failed session.
+    expected: The app shows the affected host, session, time window, and redaction boundary.
+  - id: review-bundle
+    title: Review the proposed bundle
+    action: Inspect the manifest before capture.
+    expected: Included evidence, omitted sensitive data, size limit, and retention are explicit.
+  - id: export-bundle
+    title: Export bounded evidence
+    action: Confirm a synthetic destination and complete the capture.
+    expected: The exported bundle reports its digest and whether capture completed fully.

@@ -227,6 +227,11 @@ reviewed output separate:
 - `scripts/docs` renders, checks, captures, and compares the guide; and
 - `mkdocs.yml` defines the searchable static site.
 
+When a user-visible capability changes, update or add its scenario contract in the
+same change. Keep a scenario `planned` until a semantic Android journey and reviewed
+captures exist; fixtures and model-only contracts must never be presented as verified
+product evidence.
+
 Validate the authored catalogue, reviewed images, and site without an emulator:
 
 ```bash
