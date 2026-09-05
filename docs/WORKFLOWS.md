@@ -18,6 +18,12 @@ A **verified** page is backed by a semantic Android emulator journey and reviewe
 - [Pair the phone with a durable host](workflows/qr-pairing.md) - **Planned.** Scan one host-generated QR code and establish an authenticated route when both devices share a network.
 - [Capture and review offline voice input](workflows/voice-input.md) - **Planned.** Turn speech into a draft locally, then let the user review it before any agent receives it.
 - [Review what needs attention across hosts](workflows/attention-overview.md) - **Verified.** See exceptional work first while healthy sessions and connections continue quietly.
+- [Bootstrap a durable host connection](workflows/daemon-bootstrap.md) - **Planned.** Install and supervise the host-side relay service without exposing bootstrap secrets.
+- [Recover a connection through an alternate route](workflows/connection-failover.md) - **Planned.** Preserve session context while a connection moves between bounded transports.
+- [Diagnose a degraded connection](workflows/connectivity-diagnostics.md) - **Planned.** Inspect privacy-preserving connectivity evidence and choose a bounded next action.
+- [Capture and review an incident bundle](workflows/incident-evidence-review.md) - **Planned.** Collect a bounded, redacted incident bundle that explains a failure and its recovery state.
+- [Review capability health and drift](workflows/capability-health-review.md) - **Planned.** See which provider capabilities remain available and what changed since the last check.
+- [Recover a failed workflow safely](workflows/workflow-recovery.md) - **Planned.** Resume a workflow from durable state while keeping uncertain operations visible.
 
 ## Evidence policy
 
