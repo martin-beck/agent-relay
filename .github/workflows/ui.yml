@@ -106,8 +106,8 @@ jobs:
         run: |
           export EMULATOR_AVD_NAME="test-${{ github.run_id }}-${{ github.run_attempt }}"
           EMULATOR_PORT=5582 bash scripts/ci/run_android_emulator_tests.sh
-          ./gradlew :app:connectedDebugAndroidTest :ssh:android:connectedDebugAndroidTest
-          :storage:android:connectedDebugAndroidTest --stacktrace
+          ./gradlew :app:connectedDebugAndroidTest :ssh:android:connectedDebugAndroidTest \
+            :storage:android:connectedDebugAndroidTest --stacktrace
           bash scripts/ci/verify_background_process_recovery.sh
           app/build/outputs/apk/debug/app-debug.apk
           mkdir -p build/usage-guide/captured

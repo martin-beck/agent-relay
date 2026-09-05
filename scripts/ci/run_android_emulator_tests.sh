@@ -153,4 +153,7 @@ verify_device_stable() {
   return 1
 }
 verify_device_stable
+"$adb_bin" devices -l
+"$adb_bin" -s "emulator-$EMULATOR_PORT" get-state
+./gradlew --stop > /dev/null 2>&1 || true
 "$@"
