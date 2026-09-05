@@ -63,10 +63,10 @@ jobs:
           android_sdk_root="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
           sdkmanager_path="$android_sdk_root/cmdline-tools/latest/bin/sdkmanager"
           test -x "$sdkmanager_path"
-          "$sdkmanager_path" --uninstall emulator || true
+          "$sdkmanager_path" --sdk_root="$android_sdk_root" --uninstall emulator || true
           install_log="$RUNNER_TEMP/emulator-install.log"
           set +e
-          "$sdkmanager_path" --install emulator >"$install_log" 2>&1
+          "$sdkmanager_path" --sdk_root="$android_sdk_root" --install emulator >"$install_log" 2>&1
           install_status=$?
           set -e
           cat "$install_log"
@@ -279,10 +279,10 @@ jobs:
           android_sdk_root="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
           sdkmanager_path="$android_sdk_root/cmdline-tools/latest/bin/sdkmanager"
           test -x "$sdkmanager_path"
-          "$sdkmanager_path" --uninstall emulator || true
+          "$sdkmanager_path" --sdk_root="$android_sdk_root" --uninstall emulator || true
           install_log="$RUNNER_TEMP/emulator-install.log"
           set +e
-          "$sdkmanager_path" --install emulator >"$install_log" 2>&1
+          "$sdkmanager_path" --sdk_root="$android_sdk_root" --install emulator >"$install_log" 2>&1
           install_status=$?
           set -e
           cat "$install_log"
