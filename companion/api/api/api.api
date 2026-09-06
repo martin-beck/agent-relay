@@ -289,6 +289,14 @@ public final class dev/agentrelay/companion/api/CompanionSpeechResult {
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class dev/agentrelay/companion/api/WearArtifactVariant : java/lang/Enum {
+	public static final field DEBUG Ldev/agentrelay/companion/api/WearArtifactVariant;
+	public static final field INTERNAL Ldev/agentrelay/companion/api/WearArtifactVariant;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/companion/api/WearArtifactVariant;
+	public static fun values ()[Ldev/agentrelay/companion/api/WearArtifactVariant;
+}
+
 public final class dev/agentrelay/companion/api/WearCardState : java/lang/Enum {
 	public static final field ACTIVE Ldev/agentrelay/companion/api/WearCardState;
 	public static final field EXPIRED Ldev/agentrelay/companion/api/WearCardState;
@@ -306,6 +314,79 @@ public final class dev/agentrelay/companion/api/WearCardUrgency : java/lang/Enum
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/companion/api/WearCardUrgency;
 	public static fun values ()[Ldev/agentrelay/companion/api/WearCardUrgency;
+}
+
+public final class dev/agentrelay/companion/api/WearDevelopmentArtifact {
+	public fun <init> (Ljava/lang/String;JILdev/agentrelay/companion/api/WearArtifactVariant;Ljava/lang/String;JLjava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()J
+	public final fun component3 ()I
+	public final fun component4 ()Ldev/agentrelay/companion/api/WearArtifactVariant;
+	public final fun component5 ()Ljava/lang/String;
+	public final fun component6 ()J
+	public final fun component7 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;JILdev/agentrelay/companion/api/WearArtifactVariant;Ljava/lang/String;JLjava/lang/String;)Ldev/agentrelay/companion/api/WearDevelopmentArtifact;
+	public static synthetic fun copy$default (Ldev/agentrelay/companion/api/WearDevelopmentArtifact;Ljava/lang/String;JILdev/agentrelay/companion/api/WearArtifactVariant;Ljava/lang/String;JLjava/lang/String;ILjava/lang/Object;)Ldev/agentrelay/companion/api/WearDevelopmentArtifact;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getPackageName ()Ljava/lang/String;
+	public final fun getSchemaVersion ()I
+	public final fun getSha256 ()Ljava/lang/String;
+	public final fun getSigningFingerprint ()Ljava/lang/String;
+	public final fun getSizeBytes ()J
+	public final fun getVariant ()Ldev/agentrelay/companion/api/WearArtifactVariant;
+	public final fun getVersionCode ()J
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/companion/api/WearDeviceProfile {
+	public fun <init> (ILjava/lang/String;Ljava/lang/String;Z)V
+	public final fun component1 ()I
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Z
+	public final fun copy (ILjava/lang/String;Ljava/lang/String;Z)Ldev/agentrelay/companion/api/WearDeviceProfile;
+	public static synthetic fun copy$default (Ldev/agentrelay/companion/api/WearDeviceProfile;ILjava/lang/String;Ljava/lang/String;ZILjava/lang/Object;)Ldev/agentrelay/companion/api/WearDeviceProfile;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAbi ()Ljava/lang/String;
+	public final fun getApiLevel ()I
+	public final fun getDebugAuthorized ()Z
+	public final fun getModel ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/companion/api/WearInstallationFailure : java/lang/Enum {
+	public static final field ABI_INCOMPATIBLE Ldev/agentrelay/companion/api/WearInstallationFailure;
+	public static final field API_INCOMPATIBLE Ldev/agentrelay/companion/api/WearInstallationFailure;
+	public static final field DEBUG_AUTHORIZATION_REQUIRED Ldev/agentrelay/companion/api/WearInstallationFailure;
+	public static final field PACKAGE_MISMATCH Ldev/agentrelay/companion/api/WearInstallationFailure;
+	public static final field RELEASE_SIGNING_KEY Ldev/agentrelay/companion/api/WearInstallationFailure;
+	public static final field SCHEMA_INCOMPATIBLE Ldev/agentrelay/companion/api/WearInstallationFailure;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/companion/api/WearInstallationFailure;
+	public static fun values ()[Ldev/agentrelay/companion/api/WearInstallationFailure;
+}
+
+public final class dev/agentrelay/companion/api/WearInstallationRequest {
+	public fun <init> (Ldev/agentrelay/companion/api/WearDeviceProfile;Ldev/agentrelay/companion/api/WearDevelopmentArtifact;Ljava/lang/String;IZ)V
+	public final fun component1 ()Ldev/agentrelay/companion/api/WearDeviceProfile;
+	public final fun component2 ()Ldev/agentrelay/companion/api/WearDevelopmentArtifact;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()I
+	public final fun component5 ()Z
+	public final fun copy (Ldev/agentrelay/companion/api/WearDeviceProfile;Ldev/agentrelay/companion/api/WearDevelopmentArtifact;Ljava/lang/String;IZ)Ldev/agentrelay/companion/api/WearInstallationRequest;
+	public static synthetic fun copy$default (Ldev/agentrelay/companion/api/WearInstallationRequest;Ldev/agentrelay/companion/api/WearDeviceProfile;Ldev/agentrelay/companion/api/WearDevelopmentArtifact;Ljava/lang/String;IZILjava/lang/Object;)Ldev/agentrelay/companion/api/WearInstallationRequest;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun failure ()Ldev/agentrelay/companion/api/WearInstallationFailure;
+	public final fun getAllowUpgrade ()Z
+	public final fun getArtifact ()Ldev/agentrelay/companion/api/WearDevelopmentArtifact;
+	public final fun getExpectedPackageName ()Ljava/lang/String;
+	public final fun getExpectedSchemaVersion ()I
+	public final fun getProfile ()Ldev/agentrelay/companion/api/WearDeviceProfile;
+	public fun hashCode ()I
+	public final fun isInstallable ()Z
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class dev/agentrelay/companion/api/WearNotificationCard {
