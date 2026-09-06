@@ -1,6 +1,8 @@
 package com.example.agentrelay
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -9,6 +11,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.entryProvider
@@ -31,10 +39,15 @@ internal fun MainNavigation(
         SessionNotificationPermissionState.HIDDEN,
     onRequestNotificationPermission: () -> Unit = {},
     onOpenNotificationSettings: () -> Unit = {},
+    pairingHandoffState: kotlinx.coroutines.flow.StateFlow<PairingHandoffUiState?>? = null,
+    onPairingApproved: (VerifiedPairingAppLink) -> Unit = {},
+    onPairingDismissed: () -> Unit = {},
 ) {
     val application = LocalContext.current.applicationContext as AgentRelayApplication
     val backgroundTransportState by
         application.backgroundTransport.state.collectAsStateWithLifecycle()
+    val pairingState by (pairingHandoffState ?: remember { kotlinx.coroutines.flow.MutableStateFlow<PairingHandoffUiState?>(null) })
+        .collectAsStateWithLifecycle()
     val mainViewModel = viewModel {
         MainScreenViewModel {
             application.graph.sessionHubRuntime()
@@ -82,11 +95,12 @@ internal fun MainNavigation(
         onNotificationNavigationConsumed(sessionKey)
     }
 
-    NavDisplay(
-        backStack = backStack,
-        onBack = onBack,
-        entryProvider =
-        entryProvider {
+    Box(modifier = Modifier.fillMaxSize()) {
+        NavDisplay(
+            backStack = backStack,
+            onBack = onBack,
+            entryProvider =
+            entryProvider {
             entry<Main> {
                 MainScreen(
                     viewModel = mainViewModel,
@@ -123,6 +137,50 @@ internal fun MainNavigation(
                     modifier = Modifier.safeDrawingPadding(),
                 )
             }
-        },
-    )
+            },
+        )
+        when (val state = pairingState) {
+            is PairingHandoffUiState.Review -> PairingAppLinkReview(
+                profile = state.verified.profile,
+                onApprove = { onPairingApproved(state.verified) },
+                onDismiss = onPairingDismissed,
+            )
+            PairingHandoffUiState.Rejected -> PairingAppLinkRejected(onDismiss = onPairingDismissed)
+            null -> Unit
+        }
+    }
+}
+
+@Composable
+private fun PairingAppLinkReview(
+    profile: dev.agentrelay.connection.api.PairingEnrollmentProfile,
+    onApprove: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    Card(modifier = Modifier.fillMaxSize().safeDrawingPadding().padding(16.dp)) {
+        Column(modifier = Modifier.padding(24.dp)) {
+            Text("Review secure pairing")
+            Spacer(modifier = Modifier.height(12.dp))
+            Text("Confirm the verified daemon before enrolling this device.")
+            Text("Daemon: ${profile.daemonIdentity.value}")
+            Text("Requested scope: secure enrollment and the advertised host route.")
+            Text("Authentication phrase: compare the host phrase before approving.")
+            Spacer(modifier = Modifier.height(24.dp))
+            Button(onClick = onApprove) { Text("Approve pairing") }
+            Button(onClick = onDismiss) { Text("Reject") }
+        }
+    }
+}
+
+@Composable
+private fun PairingAppLinkRejected(onDismiss: () -> Unit) {
+    Card(modifier = Modifier.fillMaxSize().safeDrawingPadding().padding(16.dp)) {
+        Column(modifier = Modifier.padding(24.dp)) {
+            Text("Pairing link rejected")
+            Spacer(modifier = Modifier.height(12.dp))
+            Text("The link was expired, replayed, or not trusted. Return to Agent Relay and scan a new code.")
+            Spacer(modifier = Modifier.height(24.dp))
+            Button(onClick = onDismiss) { Text("Return to Agent Relay") }
+        }
+    }
 }

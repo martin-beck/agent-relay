@@ -25,10 +25,14 @@ import com.example.agentrelay.notifications.resolveSessionNotificationPermission
 import com.example.agentrelay.notifications.sessionNotificationNavigationKey
 import com.example.agentrelay.theme.AgentRelayTheme
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private val notificationNavigationKey = MutableStateFlow<String?>(null)
+    private val pairingHandoffState = MutableStateFlow<PairingHandoffUiState?>(null)
+    private val pairingEnrollment by lazy { AndroidPairingAppLinkEnrollment(this) }
+    private var pairingIntentJob: Job? = null
     private val notificationPermissionState =
         MutableStateFlow(SessionNotificationPermissionState.HIDDEN)
     private val notificationPermissionPreferences by lazy {
@@ -46,6 +50,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         acceptNotificationNavigation(intent)
+        acceptPairingAppLink(intent)
         refreshNotificationPermissionState()
 
         enableEdgeToEdge()
@@ -60,6 +65,9 @@ class MainActivity : ComponentActivity() {
                         notificationPermissionState = permissionState,
                         onRequestNotificationPermission = ::requestNotificationPermission,
                         onOpenNotificationSettings = ::openNotificationSettings,
+                        pairingHandoffState = pairingHandoffState,
+                        onPairingApproved = ::approvePairing,
+                        onPairingDismissed = ::dismissPairing,
                     )
                 }
             }
@@ -70,6 +78,7 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         acceptNotificationNavigation(intent)
+        acceptPairingAppLink(intent)
     }
 
     override fun onResume() {
@@ -82,10 +91,49 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun onDestroy() {
+        pairingIntentJob?.cancel()
+        super.onDestroy()
+    }
+
     private fun acceptNotificationNavigation(intent: Intent) {
         intent.sessionNotificationNavigationKey(packageName)?.let { navigationKey ->
             notificationNavigationKey.value = navigationKey
         }
+    }
+
+    private fun acceptPairingAppLink(intent: Intent) {
+        if (intent.action != Intent.ACTION_VIEW || intent.dataString == null) {
+            return
+        }
+        val rawLink = intent.dataString ?: return
+        pairingIntentJob?.cancel()
+        pairingHandoffState.value = null
+        pairingIntentJob = lifecycleScope.launch {
+            val verified = pairingEnrollment.resolveAndVerifyLink(rawLink, System.currentTimeMillis())
+            pairingHandoffState.value = verified?.let(PairingHandoffUiState::Review)
+                ?: PairingHandoffUiState.Rejected
+        }
+    }
+
+    private fun approvePairing(verified: VerifiedPairingAppLink) {
+        pairingIntentJob?.cancel()
+        pairingIntentJob = lifecycleScope.launch {
+            if (pairingEnrollment.enroll(verified)) {
+                pairingHandoffState.value = null
+                intent.action = null
+                intent.data = null
+            } else {
+                pairingHandoffState.value = PairingHandoffUiState.Rejected
+            }
+        }
+    }
+
+    private fun dismissPairing() {
+        pairingIntentJob?.cancel()
+        pairingHandoffState.value = null
+        intent.action = null
+        intent.data = null
     }
 
     private fun consumeNotificationNavigation(navigationKey: String) {

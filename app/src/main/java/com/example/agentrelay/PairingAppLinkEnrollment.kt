@@ -1,7 +1,10 @@
 package com.example.agentrelay
 
 import android.content.Context
+import androidx.core.net.toUri
 import dev.agentrelay.connection.api.PairingAppLinkCodec
+import dev.agentrelay.connection.api.PairingAppLink
+import dev.agentrelay.connection.api.PairingEnrollmentCoordinator
 import dev.agentrelay.connection.api.PairingEnrollmentProfile
 import dev.agentrelay.storage.android.EncryptedFileDocumentStore
 import dev.agentrelay.storage.android.SecureDocumentNamespace
@@ -11,6 +14,22 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.runBlocking
+import android.content.Intent
+
+internal data class VerifiedPairingAppLink(
+    val link: PairingAppLink,
+    val profile: PairingEnrollmentProfile,
+)
+
+@Serializable
+private data class PersistedEnrollmentProfile(
+    val daemonIdentity: String,
+    val grantReference: String,
+    val credentialReference: String,
+    val routeReference: String,
+    val expiresAtMillis: Long,
+)
 
 @Serializable
 internal data class PairingLinkGrantRecord(
@@ -41,7 +60,7 @@ internal class AndroidPairingAppLinkEnrollment(
         ),
     )
 
-    suspend fun resolveAndVerify(raw: String, nowMillis: Long): PairingEnrollmentProfile? = mutex.withLock {
+    suspend fun resolveAndVerifyLink(raw: String, nowMillis: Long): VerifiedPairingAppLink? = mutex.withLock {
         val parsed = runCatching { PairingAppLinkCodec.parse(raw, nowMillis) }.getOrNull() ?: return@withLock null
         val record = read(parsed.grantReference) ?: return@withLock null
         if (record.consumed || record.grantReference != parsed.grantReference ||
@@ -52,24 +71,98 @@ internal class AndroidPairingAppLinkEnrollment(
         val key = runCatching { Base64.getUrlDecoder().decode(record.encodedPublicKey) }.getOrNull()
             ?: return@withLock null
         val verifier = PairingAppLinkCodec.ed25519Verifier(key)
-        if (!verifier.verify(parsed.signingPayload(), parsed.signature)) return@withLock null
-        PairingEnrollmentProfile(
-            daemonIdentity = parsed.daemonIdentity,
-            grantReference = parsed.grantReference,
-            credentialReference = record.credentialReference,
-            routeReference = record.routeReference,
-            expiresAtMillis = parsed.expiresAtMillis,
+        val intentResult = parsePairingAppLinkIntent(
+            Intent(Intent.ACTION_VIEW).setData(raw.toUri()),
+            nowMillis,
+            verifier,
+        )
+        val verifiedLink = (intentResult as? PairingAppLinkIntentResult.Accepted)?.link
+            ?: return@withLock null
+        VerifiedPairingAppLink(
+            link = verifiedLink,
+            profile = PairingEnrollmentProfile(
+                daemonIdentity = parsed.daemonIdentity,
+                grantReference = parsed.grantReference,
+                credentialReference = record.credentialReference,
+                routeReference = record.routeReference,
+                expiresAtMillis = parsed.expiresAtMillis,
+            ),
         )
     }
 
+    suspend fun resolveAndVerify(raw: String, nowMillis: Long): PairingEnrollmentProfile? =
+        resolveAndVerifyLink(raw, nowMillis)?.profile
+
+    suspend fun enroll(verified: VerifiedPairingAppLink): Boolean = mutex.withLock {
+        val persisted = PersistedEnrollmentProfile(
+            daemonIdentity = verified.profile.daemonIdentity.value,
+            grantReference = verified.profile.grantReference,
+            credentialReference = verified.profile.credentialReference,
+            routeReference = verified.profile.routeReference,
+            expiresAtMillis = verified.profile.expiresAtMillis,
+        )
+        documents.write(
+            enrollmentDocumentId(verified.profile.grantReference),
+            json.encodeToString(PersistedEnrollmentProfile.serializer(), persisted).toByteArray(),
+        )
+        val coordinator = PairingEnrollmentCoordinator(
+            store = object : dev.agentrelay.connection.api.PairingEnrollmentStore {
+                override fun begin(profile: PairingEnrollmentProfile) =
+                    object : dev.agentrelay.connection.api.PairingEnrollmentTransaction {
+                        private var committed = false
+
+                        override fun commit() {
+                            committed = true
+                        }
+
+                        override fun rollback() {
+                            if (!committed) {
+                                runBlocking { documents.delete(enrollmentDocumentId(profile.grantReference)) }
+                            }
+                        }
+                    }
+            },
+            profileFactory = { verified.profile },
+            probe = { profile ->
+                runBlocking {
+                    documents.read(enrollmentDocumentId(profile.grantReference))
+                        ?.decodeToString()
+                        ?.let { encoded ->
+                            runCatching {
+                                json.decodeFromString(
+                                    PersistedEnrollmentProfile.serializer(),
+                                    encoded,
+                                )
+                            }.getOrNull()
+                        }
+                        ?.let { stored ->
+                            stored.grantReference == profile.grantReference &&
+                                stored.daemonIdentity == profile.daemonIdentity.value &&
+                                stored.credentialReference == profile.credentialReference &&
+                                stored.routeReference == profile.routeReference &&
+                                stored.expiresAtMillis == profile.expiresAtMillis
+                        } == true
+                }
+            },
+        )
+        if (!coordinator.enroll(verified.link)) return@withLock false
+        if (consumeLocked(verified.profile.grantReference)) return@withLock true
+        documents.delete(enrollmentDocumentId(verified.profile.grantReference))
+        false
+    }
+
     suspend fun consume(grantReference: String): Boolean = mutex.withLock {
-        val record = read(grantReference) ?: return@withLock false
-        if (record.consumed) return@withLock false
+        consumeLocked(grantReference)
+    }
+
+    private suspend fun consumeLocked(grantReference: String): Boolean {
+        val record = read(grantReference) ?: return false
+        if (record.consumed) return false
         documents.write(
             documentId(grantReference),
             json.encodeToString(PairingLinkGrantRecord.serializer(), record.copy(consumed = true)).toByteArray(),
         )
-        true
+        return true
     }
 
     suspend fun write(record: PairingLinkGrantRecord) {
@@ -83,4 +176,6 @@ internal class AndroidPairingAppLinkEnrollment(
         }
 
     private fun documentId(reference: String): String = "grant-$reference"
+
+    private fun enrollmentDocumentId(reference: String): String = "enrollment-$reference"
 }
