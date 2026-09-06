@@ -3,7 +3,6 @@ package dev.agentrelay.companion.api
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 class WearControlModelsTest {
     @Test
@@ -20,7 +19,10 @@ class WearControlModelsTest {
         )
         val request = request(WearControlAction.ACKNOWLEDGE)
 
-        assertEquals(WearControlOutcome.EXECUTED, processor.process(request, 150, phoneAvailable = true))
+        assertEquals(
+            WearControlOutcome.EXECUTED,
+            processor.process(request, 150, phoneAvailable = true),
+        )
         assertEquals(WearControlOutcome.REJECT_REPLAY, processor.process(request, 150, phoneAvailable = true))
         assertEquals(listOf(WearControlAction.ACKNOWLEDGE), executed)
     }
@@ -81,8 +83,18 @@ class WearControlModelsTest {
             WearControlAuthorizer { it.authorizationTag == "valid" },
             WearControlExecutor { WearControlExecution(it.action, it.cardId, it.cardRevision) },
         )
-        assertTrue(processor.process(request(WearControlAction.DEFER, "valid"), 150, true) == WearControlOutcome.EXECUTED)
-        assertTrue(processor.process(request(WearControlAction.OPEN_ON_PHONE, "valid", id = "control_v1_open00001"), 150, true) == WearControlOutcome.EXECUTED)
+        assertEquals(
+            WearControlOutcome.EXECUTED,
+            processor.process(request(WearControlAction.DEFER, "valid"), 150, true),
+        )
+        assertEquals(
+            WearControlOutcome.EXECUTED,
+            processor.process(
+                request(WearControlAction.OPEN_ON_PHONE, "valid", id = "control_v1_open00001"),
+                150,
+                true,
+            ),
+        )
     }
 
     private fun coordinator(): CompanionPhoneCoordinator = CompanionPhoneCoordinator().also {
