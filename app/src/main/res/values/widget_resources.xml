@@ -12,4 +12,8 @@
     <string name="home_widget_status_quiet" translatable="false">Agent Relay</string>
     <string name="home_widget_status_attention" translatable="false">Needs attention</string>
     <string name="home_widget_status_refresh" translatable="false">Refresh in the app</string>
+    <string name="home_widget_action_open_details" translatable="false">Open attention details</string>
+    <string name="home_widget_action_acknowledge" translatable="false">Acknowledge</string>
+    <string name="home_widget_action_defer" translatable="false">Defer</string>
+    <string name="home_widget_action_mute_confirm" translatable="false">Mute…</string>
 </resources>

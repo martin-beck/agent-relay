@@ -64,6 +64,8 @@ class AttentionWidgetModelsTest {
         assertNull(entry.summary)
         assertFalse(entry.canOpen)
         assertFalse(entry.canAcknowledge)
+        assertFalse(entry.canDefer)
+        assertFalse(entry.canMute)
     }
 
     @Test

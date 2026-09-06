@@ -291,6 +291,26 @@ host, path, profile identifier, or unbounded agent-session identifier. Domain
 state continues to use the lossless locator rather than the digest.
 Approval and question UI keys follow the same one-way digest rule.
 
+Home-screen widget controls cross a non-exported broadcast boundary using
+explicit, immutable, one-shot `PendingIntent` values. Each request is bounded,
+short-lived, authenticated over its complete canonical payload, and tied to an
+authority generation plus an exact attention-snapshot revision. Admission
+authenticates before inspecting authoritative state, rejects revoked, expired,
+duplicate, stale, or no-longer-permitted actions, and durably records the
+request identifier before any effect. A failed durable write prevents the
+effect. The executor performs a final atomic state comparison, and an uncertain
+result remains consumed rather than being retried automatically. Revocation and
+reactivation also require a durable generation transition, so process restart
+cannot revive an old widget capability.
+
+Widget controls never approve an agent-requested privileged action. Opening
+details is available at every home-widget size; medium widgets may also expose
+acknowledge and defer; mute is limited to expanded widgets and always opens an
+in-app confirmation boundary. Lock-screen projections carry no action
+capability. Until the authoritative refresh runtime is installed, the Android
+receiver fails closed after process death rather than interpreting an intent on
+its own.
+
 ## Verification
 
 Contract tests use fake runtimes and providers to validate the boundaries
