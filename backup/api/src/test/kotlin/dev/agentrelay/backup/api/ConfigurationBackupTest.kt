@@ -5,6 +5,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlinx.serialization.json.Json
 import org.junit.Test
 
 class ConfigurationBackupTest {
@@ -70,6 +71,47 @@ class ConfigurationBackupTest {
         assertFailsWith<IllegalArgumentException> { codec.create(snapshot, "too-short".toCharArray(), "1.0", "a".repeat(64), "1.0") }
         val archive = codec.create(snapshot, "correct horse battery staple".toCharArray(), "1.0", "a".repeat(64), "1.0")
         assertTrue(archive.isNotEmpty())
+    }
+
+    @Test
+    fun readerWindowRejectsArchivesOutsideTheSupportedReleaseRange() {
+        val codec = ConfigurationBackupCodec(BackupDependencies(randomBytes = deterministicRandom()))
+        val archive = codec.create(snapshot, "correct horse battery staple".toCharArray(), "1.0", "a".repeat(64), "1.0")
+        val parsed = Json.decodeFromString(EncryptedConfigurationArchive.serializer(), archive.decodeToString())
+        val futureArchive = Json.encodeToString(
+            EncryptedConfigurationArchive.serializer(),
+            parsed.copy(metadata = parsed.metadata.copy(minimumReaderVersion = 2, maximumReaderVersion = 2)),
+        ).encodeToByteArray()
+        assertFailsWith<IllegalArgumentException> {
+            codec.preview(futureArchive, "correct horse battery staple".toCharArray())
+        }
+        assertFailsWith<IllegalArgumentException> {
+            ConfigurationBackupCodec(readerVersion = 0).preview(archive, "correct horse battery staple".toCharArray())
+        }
+    }
+
+    @Test
+    fun releaseMetadataRejectsInvalidVersionsAndReaderWindows() {
+        assertFailsWith<IllegalArgumentException> {
+            BackupMetadata(
+                sourceAppVersion = "1.0",
+                minimumReaderVersion = 2,
+                maximumReaderVersion = 1,
+                createdAtMillis = 0,
+                sourceDeviceIdentityDigest = "a".repeat(64),
+                toolVersion = "1.0",
+            )
+        }
+        assertFailsWith<IllegalArgumentException> {
+            BackupMetadata(
+                sourceAppVersion = "release",
+                minimumReaderVersion = 1,
+                maximumReaderVersion = 1,
+                createdAtMillis = 0,
+                sourceDeviceIdentityDigest = "a".repeat(64),
+                toolVersion = "1.0",
+            )
+        }
     }
 
     private fun deterministicRandom(): (Int) -> ByteArray = { size -> ByteArray(size) { index -> (index + size).toByte() } }
