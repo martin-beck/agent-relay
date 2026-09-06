@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="widget_primary_text">#FFFFFF</color>
+    <color name="widget_secondary_text">#D0D4DC</color>
+    <string name="lock_widget_description" translatable="false">Attention-first lock-screen summary</string>
+    <string name="lock_widget_no_attention" translatable="false">No attention needed</string>
+    <string name="lock_widget_status_quiet" translatable="false">Agent Relay</string>
+    <string name="lock_widget_status_attention" translatable="false">Needs attention</string>
+    <string name="lock_widget_status_refresh" translatable="false">Refresh in the app</string>
+</resources>

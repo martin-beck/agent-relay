@@ -42,6 +42,18 @@
             android:exported="false"
             android:foregroundServiceType="remoteMessaging"
             android:stopWithTask="false" />
+        <receiver
+            android:name=".widgets.LockScreenAttentionWidgetProvider"
+            android:exported="false"
+            android:label="@string/lock_widget_description">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.example.agentrelay.action.REFRESH_LOCK_WIDGET" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/lock_screen_attention_widget_info" />
+        </receiver>
     </application>
 
 </manifest>
