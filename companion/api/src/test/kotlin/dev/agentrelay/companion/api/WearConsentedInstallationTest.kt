@@ -26,7 +26,10 @@ class WearConsentedInstallationTest {
         val transport = FakeTransport()
         val coordinator = WearConsentedInstallationCoordinator(transport)
         assertEquals(WearConsentedInstallOutcome.CONSENT_REQUIRED, coordinator.install(null, device, request, 10))
-        assertEquals(WearConsentedInstallOutcome.WRONG_DEVICE, coordinator.install(consent(), CompanionDeviceId("cd_v1_otherdev"), request, 10))
+        assertEquals(
+            WearConsentedInstallOutcome.WRONG_DEVICE,
+            coordinator.install(consent(), CompanionDeviceId("cd_v1_otherdev"), request, 10),
+        )
         assertEquals(0, transport.installCalls)
     }
 
@@ -34,8 +37,14 @@ class WearConsentedInstallationTest {
     fun cancellationAndExpiredConsentDoNotReachDevice() {
         val transport = FakeTransport()
         val coordinator = WearConsentedInstallationCoordinator(transport)
-        assertEquals(WearConsentedInstallOutcome.CANCELLED, coordinator.install(consent(), device, request, 10, cancelled = true))
-        assertEquals(WearConsentedInstallOutcome.CONSENT_EXPIRED, coordinator.install(consent(expires = 10), device, request, 10))
+        assertEquals(
+            WearConsentedInstallOutcome.CANCELLED,
+            coordinator.install(consent(), device, request, 10, cancelled = true),
+        )
+        assertEquals(
+            WearConsentedInstallOutcome.CONSENT_EXPIRED,
+            coordinator.install(consent(expires = 10), device, request, 10),
+        )
         assertEquals(0, transport.installCalls)
     }
 
@@ -44,7 +53,12 @@ class WearConsentedInstallationTest {
         val transport = FakeTransport()
         val coordinator = WearConsentedInstallationCoordinator(transport)
         transport.receipt = receipt()
-        transport.receipt = WearInstallReceipt(device, "dev.agentrelay.wear.other", 7, request.artifact.signingFingerprint)
+        transport.receipt = WearInstallReceipt(
+            device,
+            "dev.agentrelay.wear.other",
+            7,
+            request.artifact.signingFingerprint,
+        )
         assertEquals(WearConsentedInstallOutcome.ROLLED_BACK, coordinator.install(consent(), device, request, 10))
         assertEquals(1, transport.rollbackCalls)
         transport.receipt = receipt()
@@ -60,8 +74,20 @@ class WearConsentedInstallationTest {
         assertEquals(WearConsentedInstallOutcome.ROLLBACK_FAILED, coordinator.install(consent(), device, request, 10))
     }
 
-    private fun consent(expires: Long = 100) = WearInstallConsent(device, WearInstallPolicy("dev.agentrelay.wear.companion", 7), true, 0, expires)
-    private fun receipt() = WearInstallReceipt(device, request.artifact.packageName, 7, request.artifact.signingFingerprint)
+    private fun consent(expires: Long = 100) = WearInstallConsent(
+        device,
+        WearInstallPolicy("dev.agentrelay.wear.companion", 7),
+        true,
+        0,
+        expires,
+    )
+
+    private fun receipt() = WearInstallReceipt(
+        device,
+        request.artifact.packageName,
+        7,
+        request.artifact.signingFingerprint,
+    )
 
     private class FakeTransport(private val installFails: Boolean = false) : WearInstallTransport {
         var installCalls = 0
