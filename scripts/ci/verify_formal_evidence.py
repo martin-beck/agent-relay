@@ -79,6 +79,7 @@ def _verify_assumptions(data: dict[str, Any]) -> None:
 
 
 def verify_manifest(manifest: dict[str, Any] | None = None) -> None:
+    """Validate the pinned formal-evidence contract and its referenced models."""
     data = _load() if manifest is None else manifest
     if data.get("schema_version") != 1:
         raise AssertionError("unsupported formal evidence schema")

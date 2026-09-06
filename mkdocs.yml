@@ -49,6 +49,7 @@ nav:
   - Build: BUILDING.md
   - Development process: DEVELOPMENT.md
   - Architecture: ARCHITECTURE.md
+  - Generated API reference: generated/api-reference.md
   - Connection providers: CONNECTION_PROVIDERS.md
   - Provider operations: PROVIDER_OPERATIONS.md
   - Session hub: SESSION_HUB.md
