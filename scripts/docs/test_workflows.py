@@ -8,7 +8,13 @@ from typing import Any
 import yaml
 from hypothesis import given, settings, strategies
 from PIL import Image
-from render_workflows import ManifestError, render_scenario, validate_manifest, write_or_check
+from render_workflows import (
+    SCENARIO_DIR,
+    ManifestError,
+    render_scenario,
+    validate_manifest,
+    write_or_check,
+)
 from verify_workflows import check_png, difference_metrics, reject_orphans
 
 
@@ -40,6 +46,17 @@ def scenario(status: str = "verified") -> dict[str, Any]:
 
 
 class RenderWorkflowsTest(unittest.TestCase):
+    def test_companion_device_evidence_stays_planned_until_backed_by_hardware(self) -> None:
+        source = SCENARIO_DIR / "companion-device-verification.yml"
+        manifest = yaml.safe_load(source.read_text(encoding="utf-8"))
+
+        validated = validate_manifest(manifest, source)
+
+        self.assertEqual("planned", validated["status"])
+        self.assertNotIn("verified_test", validated)
+        self.assertIn("redacted identities", validated["steps"][0]["expected"])
+        self.assertIn("unsupported modes", validated["steps"][2]["expected"])
+
     def test_verified_manifest_renders_emulator_evidence(self) -> None:
         manifest = validate_manifest(scenario(), Path("sample.yml"))
 
