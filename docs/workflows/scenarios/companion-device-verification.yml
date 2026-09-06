@@ -1,0 +1,34 @@
+id: companion-device-verification
+title: Verify companion device recovery safely
+summary: Review notification, speech, and reconnect evidence across a phone and a companion watch.
+status: planned
+order: 60
+goal: Confirm a companion-device workflow is safe before relying on it during an active session.
+preconditions:
+  - A phone and a companion watch are enrolled with distinct, revocable identities.
+  - The test run has redacted manifests and bounded timing evidence for each device.
+automatic:
+  - Agent Relay keeps notification content redacted until the device policy permits disclosure.
+  - Speech delivery is generation-safe and stops when the session is revoked or superseded.
+  - Reconnect evidence records transport, revision, battery, and latency outcomes without secrets.
+attention:
+  - Review notification redaction and safe action routing on both devices.
+  - Confirm speech interruption and no-submit-by-default behavior before accepting a handoff.
+  - Check that battery, latency, and unsupported physical-device modes are labelled honestly.
+recovery:
+  - Revoke the watch when identity or revision evidence is stale.
+  - Keep the phone workflow available when the watch is offline or below its battery threshold.
+  - Leave unsupported hardware scenarios planned rather than presenting model-only evidence as verified.
+steps:
+  - id: review-device-evidence
+    title: Review redacted device evidence
+    action: Open the companion verification report and inspect the phone/watch identity and policy summary.
+    expected: The report shows redacted identities, notification policy, device capabilities, and terminal outcomes.
+  - id: exercise-speech-recovery
+    title: Exercise speech and reconnect recovery
+    action: Interrupt speech, revoke the watch, and reconnect with a newer session revision.
+    expected: Stale delivery is suppressed, the phone remains usable, and the report records bounded recovery evidence.
+  - id: classify-hardware-coverage
+    title: Classify hardware coverage
+    action: Review emulator, physical-watch, and unavailable-device results separately.
+    expected: Only semantic and hardware-backed results are verified; unsupported modes remain planned.
