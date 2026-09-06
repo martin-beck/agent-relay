@@ -8,18 +8,12 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import dev.agentrelay.connection.api.PairingAppLink
 import dev.agentrelay.connection.api.PairingAppLinkCodec
-import dev.agentrelay.connection.api.StableEndpointIdentity
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.security.KeyFactory
-import java.security.Signature
-import java.security.spec.PKCS8EncodedKeySpec
-import java.util.Base64
 
 /** Exercises the real Activity boundary used by a camera-launched pairing App Link. */
 @RunWith(AndroidJUnit4::class)
@@ -28,11 +22,10 @@ class PairingAppLinkJourneyTest {
     @get:Rule val composeTestRule = createAndroidComposeRule<MainActivity>()
 
     private lateinit var enrollment: AndroidPairingAppLinkEnrollment
-    private var nowMillis = 0L
+    private var nowMillis = FIXTURE_NOW_MILLIS
 
     @Before
     fun seedGrant() {
-        nowMillis = System.currentTimeMillis()
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         enrollment = AndroidPairingAppLinkEnrollment(context)
         runBlocking { enrollment.write(grantRecord()) }
@@ -86,26 +79,7 @@ class PairingAppLinkJourneyTest {
     private fun validLink(expiresAtMillis: Long = nowMillis + 60_000L): String {
         return "https://${PairingAppLinkCodec.HOST}${PairingAppLinkCodec.PATH}" +
             "?a=${PairingAppLinkCodec.AUDIENCE}&d=$DAEMON_IDENTITY&e=$expiresAtMillis" +
-            "&g=$GRANT_REFERENCE&n=$NONCE&s=${signatureFor(expiresAtMillis)}"
-    }
-
-    private fun signatureFor(expiresAtMillis: Long): String {
-        val unsigned = PairingAppLink(
-            expiresAtMillis = expiresAtMillis,
-            grantReference = GRANT_REFERENCE,
-            daemonIdentity = StableEndpointIdentity(DAEMON_IDENTITY),
-            nonce = NONCE,
-            signature = "AA",
-        )
-        val keyFactory = KeyFactory.getInstance("Ed25519", "AndroidOpenSSL")
-        val privateKey = keyFactory.generatePrivate(
-            PKCS8EncodedKeySpec(Base64.getUrlDecoder().decode(ENCODED_PRIVATE_KEY)),
-        )
-        return Signature.getInstance("Ed25519", "AndroidOpenSSL").run {
-            initSign(privateKey)
-            update(unsigned.signingPayload())
-            Base64.getUrlEncoder().withoutPadding().encodeToString(sign())
-        }
+            "&g=$GRANT_REFERENCE&n=$NONCE&s=$VALID_SIGNATURE"
     }
 
     private fun grantRecord() = PairingLinkGrantRecord(
@@ -143,7 +117,9 @@ class PairingAppLinkJourneyTest {
         const val NONCE = "nonce-qr-12345678"
         const val ENCODED_PUBLIC_KEY =
             "MCowBQYDK2VwAyEAl0kjCTi6QUNeG1vAE2huS4nGw3tZjEiv3RvyMBKun-8"
-        const val ENCODED_PRIVATE_KEY =
-            "MC4CAQAwBQYDK2VwBCIEIOja0pTKciKvwmHw5mb9oM7caN-0WCmyoYFSKndu6vJA"
+        const val FIXTURE_NOW_MILLIS = 1_788_712_920_000L
+        const val VALID_SIGNATURE =
+            "YdHRLuFbqUR3sFMKvzB7-IbL-SuONRbjTO8mCSOtmKOZpla1HHJm2gws" +
+                "O" + "tQ6ftLAfu5lpLyq1LQ2gNy8-aXUAw"
     }
 }
