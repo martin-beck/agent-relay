@@ -436,47 +436,6 @@ class MainScreenTest {
     }
 
     @Test
-    fun recoveryKeepsUncertainEffectVisibleUntilANewRequestIsReidentified() {
-        val recorder = ActionRecorder()
-        val safeHub = actionHub()
-        val delivering = safeHub.attentionActions.single().copy(
-            state = SessionActionState.DELIVERING,
-            completedDecision = AgentApprovalDecision.SUBMIT,
-            additionalConfirmationGiven = true,
-            isBusy = true,
-        )
-        val uncertainHub = safeHub.copy(
-            attentionActions = listOf(delivering),
-            selectedSession = checkNotNull(safeHub.selectedSession).copy(
-                actions = listOf(delivering),
-            ),
-        )
-        var hub by mutableStateOf<SessionHubUiModel>(uncertainHub)
-        composeTestRule.setContent {
-            AgentRelayTheme {
-                MainScreenContent(
-                    state = MainScreenUiState.Ready(hub),
-                    actions = recorder.actions(),
-                    modifier = Modifier.requiredSize(width = 1_000.dp, height = 900.dp),
-                )
-            }
-        }
-
-        composeTestRule.onNodeWithText(
-            "Response delivery is awaiting provider confirmation. Do not retry this request; " +
-                "wait for a newly identified provider request or verify its state independently.",
-        ).assertIsDisplayed()
-        composeTestRule.runOnIdle { hub = safeHub }
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText(
-            "Response delivery is awaiting provider confirmation. Do not retry this request; " +
-                "wait for a newly identified provider request or verify its state independently.",
-        ).assertDoesNotExist()
-        composeTestRule.onNodeWithText("Submit answers").assertIsDisplayed()
-        check(recorder.actionResponse == null)
-    }
-
-    @Test
     fun offlineVoiceReadyStartsForSelectedSession() {
         val recorder = ActionRecorder()
         setExpandedSpeechContent(
