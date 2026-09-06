@@ -33,6 +33,7 @@ class MainActivity : ComponentActivity() {
     private val pairingHandoffState = MutableStateFlow<PairingHandoffUiState?>(null)
     private val pairingEnrollment by lazy { AndroidPairingAppLinkEnrollment(this) }
     private var pairingIntentJob: Job? = null
+    private var pairingIntentGeneration = 0L
     private val notificationPermissionState =
         MutableStateFlow(SessionNotificationPermissionState.HIDDEN)
     private val notificationPermissionPreferences by lazy {
@@ -92,6 +93,7 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
+        pairingIntentGeneration++
         pairingIntentJob?.cancel()
         super.onDestroy()
     }
@@ -107,19 +109,24 @@ class MainActivity : ComponentActivity() {
             return
         }
         val rawLink = intent.dataString ?: return
+        val generation = ++pairingIntentGeneration
         pairingIntentJob?.cancel()
         pairingHandoffState.value = null
         pairingIntentJob = lifecycleScope.launch {
             val verified = pairingEnrollment.resolveAndVerifyLink(rawLink, System.currentTimeMillis())
+            if (generation != pairingIntentGeneration) return@launch
             pairingHandoffState.value = verified?.let(PairingHandoffUiState::Review)
                 ?: PairingHandoffUiState.Rejected
         }
     }
 
     private fun approvePairing(verified: VerifiedPairingAppLink) {
+        val generation = ++pairingIntentGeneration
         pairingIntentJob?.cancel()
         pairingIntentJob = lifecycleScope.launch {
-            if (pairingEnrollment.enroll(verified)) {
+            val enrolled = pairingEnrollment.enroll(verified)
+            if (generation != pairingIntentGeneration) return@launch
+            if (enrolled) {
                 pairingHandoffState.value = null
                 intent.action = null
                 intent.data = null
@@ -130,6 +137,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun dismissPairing() {
+        pairingIntentGeneration++
         pairingIntentJob?.cancel()
         pairingHandoffState.value = null
         intent.action = null
