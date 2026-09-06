@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schemaVersion", "statusAuthority", "capabilities"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "statusAuthority": { "const": "config/capability-status-registry.json" },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "maturity", "appExposed", "supportedSurfaces", "sourceModules", "tests", "workflowEvidence", "arReferences", "limitations", "evidenceAgeDays"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z][a-z0-9.-]{2,63}$" },
+          "name": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "maturity": { "enum": ["planned", "foundation", "implemented", "app_exposed", "verified", "evidence_pending", "unsupported", "deprecated"] },
+          "appExposed": { "type": "boolean" },
+          "supportedSurfaces": { "type": "array", "items": { "type": "string", "minLength": 1 }, "maxItems": 8 },
+          "sourceModules": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 1, "maxItems": 8 },
+          "tests": { "type": "array", "items": { "type": "string", "minLength": 1 }, "maxItems": 16 },
+          "workflowEvidence": { "type": "array", "items": { "type": "string", "minLength": 1 }, "maxItems": 16 },
+          "arReferences": { "type": "array", "items": { "type": "string", "pattern": "^AR-[0-9]{4}$" }, "minItems": 1, "maxItems": 8 },
+          "limitations": { "type": "array", "items": { "type": "string", "minLength": 1, "maxLength": 500 }, "maxItems": 8 },
+          "evidenceAgeDays": { "type": "integer", "minimum": 0, "maximum": 3650 }
+        },
+        "additionalProperties": false
+      },
+      "maxItems": 256,
+      "uniqueItems": true
+    }
+  },
+  "additionalProperties": false
+}
