@@ -312,6 +312,15 @@ Pre-release Detekt 2 builds are not used merely to hide this warning.
 
 ## UI usability and accessibility
 
+### Documentation privacy boundary
+
+Documentation and fixture content is scanned for high-confidence private key,
+access-token, credential-assignment, and cloud-key patterns by
+`scripts/docs/verify_documentation_privacy.py`. Examples must use synthetic
+hosts, identifiers, and redacted placeholders; a real secret is never an
+acceptable fixture. The check covers `docs/`, `config/`, and `fixtures/` and
+runs with the documentation verification gates.
+
 Ease of use is a correctness requirement. UI work is incomplete until the
 primary task is discoverable, every state has a safe next action, and tests show
 that the task remains usable across Android configurations and assistive input.
