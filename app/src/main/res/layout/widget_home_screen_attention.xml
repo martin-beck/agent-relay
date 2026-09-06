@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <TextView
+        android:id="@+id/home_widget_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/home_widget_status_quiet"
+        android:textColor="@color/widget_secondary_text"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/home_widget_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:text="@string/home_widget_no_attention"
+        android:textColor="@color/widget_primary_text"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/home_widget_item_one"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:textColor="@color/widget_primary_text" />
+
+    <TextView
+        android:id="@+id/home_widget_item_two"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:textColor="@color/widget_primary_text" />
+
+    <TextView
+        android:id="@+id/home_widget_item_three"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:textColor="@color/widget_primary_text" />
+</LinearLayout>
