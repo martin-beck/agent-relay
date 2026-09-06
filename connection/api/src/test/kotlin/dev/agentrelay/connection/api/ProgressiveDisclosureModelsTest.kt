@@ -7,11 +7,46 @@ import kotlin.test.assertFailsWith
 class ProgressiveDisclosureModelsTest {
     private val tree = ProgressiveDisclosure.of(
         listOf(
-            DisclosureNode(DisclosureNodeId("host"), DisclosureLevel.HOST, null, "Work host", 1, DisclosureStatus.AVAILABLE),
-            DisclosureNode(DisclosureNodeId("connection"), DisclosureLevel.CONNECTION, DisclosureNodeId("host"), "Secure connection", 1, DisclosureStatus.ACTIVE),
-            DisclosureNode(DisclosureNodeId("provider"), DisclosureLevel.PROVIDER, DisclosureNodeId("connection"), "Agent provider", 1, DisclosureStatus.AVAILABLE),
-            DisclosureNode(DisclosureNodeId("session"), DisclosureLevel.SESSION, DisclosureNodeId("provider"), "Session 1", 1, DisclosureStatus.ACTIVE),
-            DisclosureNode(DisclosureNodeId("terminal"), DisclosureLevel.TERMINAL, DisclosureNodeId("session"), "Terminal", 0, DisclosureStatus.ACTIVE),
+            DisclosureNode(
+                DisclosureNodeId("host"),
+                DisclosureLevel.HOST,
+                null,
+                "Work host",
+                1,
+                DisclosureStatus.AVAILABLE,
+            ),
+            DisclosureNode(
+                DisclosureNodeId("connection"),
+                DisclosureLevel.CONNECTION,
+                DisclosureNodeId("host"),
+                "Secure connection",
+                1,
+                DisclosureStatus.ACTIVE,
+            ),
+            DisclosureNode(
+                DisclosureNodeId("provider"),
+                DisclosureLevel.PROVIDER,
+                DisclosureNodeId("connection"),
+                "Agent provider",
+                1,
+                DisclosureStatus.AVAILABLE,
+            ),
+            DisclosureNode(
+                DisclosureNodeId("session"),
+                DisclosureLevel.SESSION,
+                DisclosureNodeId("provider"),
+                "Session 1",
+                1,
+                DisclosureStatus.ACTIVE,
+            ),
+            DisclosureNode(
+                DisclosureNodeId("terminal"),
+                DisclosureLevel.TERMINAL,
+                DisclosureNodeId("session"),
+                "Terminal",
+                0,
+                DisclosureStatus.ACTIVE,
+            ),
         ),
     )
 
@@ -42,9 +77,30 @@ class ProgressiveDisclosureModelsTest {
         assertFailsWith<IllegalArgumentException> {
             ProgressiveDisclosure.of(
                 listOf(
-                    DisclosureNode(DisclosureNodeId("host"), DisclosureLevel.HOST, null, "Host", 0, DisclosureStatus.AVAILABLE),
-                    DisclosureNode(DisclosureNodeId("connection"), DisclosureLevel.CONNECTION, DisclosureNodeId("host"), "Connection", 0, DisclosureStatus.ACTIVE),
-                    DisclosureNode(DisclosureNodeId("nested"), DisclosureLevel.HOST, DisclosureNodeId("connection"), "Nested host", 0, DisclosureStatus.ACTIVE),
+                    DisclosureNode(
+                        DisclosureNodeId("host"),
+                        DisclosureLevel.HOST,
+                        null,
+                        "Host",
+                        0,
+                        DisclosureStatus.AVAILABLE,
+                    ),
+                    DisclosureNode(
+                        DisclosureNodeId("connection"),
+                        DisclosureLevel.CONNECTION,
+                        DisclosureNodeId("host"),
+                        "Connection",
+                        0,
+                        DisclosureStatus.ACTIVE,
+                    ),
+                    DisclosureNode(
+                        DisclosureNodeId("nested"),
+                        DisclosureLevel.HOST,
+                        DisclosureNodeId("connection"),
+                        "Nested host",
+                        0,
+                        DisclosureStatus.ACTIVE,
+                    ),
                 ),
             )
         }
