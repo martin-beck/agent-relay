@@ -68,7 +68,6 @@ class WearControlProcessor(
         if (!phoneAvailable) return WearControlOutcome.PHONE_UNAVAILABLE
         if (!consumedRequestIds.add(request.requestId)) return WearControlOutcome.REJECT_REPLAY
         if (request.action == WearControlAction.REQUEST_APPROVAL) {
-            consumedRequestIds.remove(request.requestId)
             return WearControlOutcome.PHONE_CONFIRMATION_REQUIRED
         }
         executor.execute(request)

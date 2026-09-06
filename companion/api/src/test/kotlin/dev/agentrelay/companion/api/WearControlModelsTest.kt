@@ -43,6 +43,10 @@ class WearControlModelsTest {
             processor.process(request(WearControlAction.REQUEST_APPROVAL), 150, phoneAvailable = true),
         )
         assertFalse(executed)
+        assertEquals(
+            WearControlOutcome.REJECT_REPLAY,
+            processor.process(request(WearControlAction.REQUEST_APPROVAL), 150, phoneAvailable = true),
+        )
     }
 
     @Test
