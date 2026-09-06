@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.unit.dp
 import com.example.agentrelay.theme.AgentRelayTheme
 import dev.agentrelay.provider.api.AgentApprovalDecision
@@ -51,7 +52,7 @@ class SessionRecoveryUiTest {
         composeTestRule.runOnIdle { hub = safeHub }
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithText(uncertainty).assertDoesNotExist()
-        composeTestRule.onNodeWithText("Submit answers").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Submit answers").performScrollTo().assertIsDisplayed()
         check(recorder.actionResponse == null)
     }
 }
