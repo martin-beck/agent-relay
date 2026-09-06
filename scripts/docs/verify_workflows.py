@@ -59,10 +59,16 @@ def expected_paths(scenarios: list[dict[str, Any]]) -> set[Path]:
     return {
         Path(scenario_id) / cast(str, step["screenshot"])
         for scenario_id, step in verified_steps(scenarios)
-        if next(scenario for scenario in scenarios if scenario["id"] == scenario_id).get(
-            "verification_mode"
+    }
+
+
+def expected_capture_paths(scenarios: list[dict[str, Any]]) -> set[Path]:
+    return {
+        Path(scenario_id) / cast(str, step["screenshot"])
+        for scenario_id, step in verified_steps(scenarios)
+        if requires_captured(
+            next(scenario for scenario in scenarios if scenario["id"] == scenario_id)
         )
-        != "synthetic-waiver"
     }
 
 
@@ -196,7 +202,7 @@ def main() -> int:
         expected = expected_paths(scenarios)
         reject_orphans(ASSET_ROOT, expected, "baseline")
         if captured is not None:
-            reject_orphans(captured, expected, "captured")
+            reject_orphans(captured, expected_capture_paths(scenarios), "captured")
         evidence = collect_evidence(scenarios, captured, args.diff_root.resolve())
         write_report(evidence, args.report.resolve())
     except (ManifestError, OSError) as error:
