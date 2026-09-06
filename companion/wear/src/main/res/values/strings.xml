@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Agent Relay Wear</string>
+    <string name="wear_title">Agent Relay</string>
+    <string name="wear_phone_required">Connect your phone to receive attention updates.</string>
+</resources>
