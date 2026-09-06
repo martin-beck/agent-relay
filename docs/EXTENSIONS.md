@@ -38,6 +38,34 @@ filesystem access, private workflow state, or a way to bypass approval and
 uncertain-effect handling. A connector is inactive unless a user-selected
 workflow requests its declared fields; installation alone grants no access.
 
+## Sandboxed execution
+
+Built-in extensions are signed host code and remain subject to the same
+manifest, permission, approval, and evidence checks as sandboxed code. User-
+authored or untrusted code is always admitted as `SANDBOXED` through the
+provider API boundary. Its policy fixes CPU and wall time, memory, storage,
+input/output, and invocation budgets before startup. Network access is denied
+unless a workflow supplies an explicit host allowlist; subprocesses are denied
+by default, filesystem roots are relative and confined, and model access is
+denied unless declared. A built-in extension cannot enable external effects on
+its own.
+
+An extension-backed agent receives only the approved invocation and an opaque
+store reference. External effects remain pending until explicit approval;
+denial, cancellation, stale revisions, resource violations, and authority
+requests fail closed. A result that may have crossed an external-effect
+boundary is `UNCERTAIN` and is never retried automatically. The host adapter
+must observe cancellation and report a proven `CANCELLED` outcome where no
+effect occurred.
+
+Execution evidence is deterministic and redacted: it contains the extension
+and idempotency identifiers, SHA-256 digests of canonical input, output, and
+policy, byte counts, approval state, outcome, and a stable rejection category.
+It never stores prompts, credentials, raw provider output, paths, or private
+workflow content. The provider API conformance tests cover authority denial,
+approval admission, cancellation, uncertain effects, deterministic evidence,
+and invalid resource boundaries.
+
 Watch projections contain only the minimum alert, proposal, or safe action
 needed for the current context. Secrets, full workflow state, and privileged
 credentials remain on the phone or daemon. Consequential actions require

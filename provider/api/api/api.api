@@ -892,6 +892,83 @@ public final class dev/agentrelay/provider/api/ExtensionAction {
 	public final synthetic fun unbox-impl ()Ljava/lang/String;
 }
 
+public abstract interface class dev/agentrelay/provider/api/ExtensionAdmission {
+}
+
+public final class dev/agentrelay/provider/api/ExtensionAdmission$Accepted : dev/agentrelay/provider/api/ExtensionAdmission {
+	public fun <init> (Ljava/util/Set;Ldev/agentrelay/provider/api/ExtensionApprovalState;)V
+	public final fun component1 ()Ljava/util/Set;
+	public final fun component2 ()Ldev/agentrelay/provider/api/ExtensionApprovalState;
+	public final fun copy (Ljava/util/Set;Ldev/agentrelay/provider/api/ExtensionApprovalState;)Ldev/agentrelay/provider/api/ExtensionAdmission$Accepted;
+	public static synthetic fun copy$default (Ldev/agentrelay/provider/api/ExtensionAdmission$Accepted;Ljava/util/Set;Ldev/agentrelay/provider/api/ExtensionApprovalState;ILjava/lang/Object;)Ldev/agentrelay/provider/api/ExtensionAdmission$Accepted;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getApproval ()Ldev/agentrelay/provider/api/ExtensionApprovalState;
+	public final fun getPermissions ()Ljava/util/Set;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/provider/api/ExtensionAdmission$Rejected : dev/agentrelay/provider/api/ExtensionAdmission {
+	public fun <init> (Ldev/agentrelay/provider/api/ExtensionSandboxRejection;)V
+	public final fun component1 ()Ldev/agentrelay/provider/api/ExtensionSandboxRejection;
+	public final fun copy (Ldev/agentrelay/provider/api/ExtensionSandboxRejection;)Ldev/agentrelay/provider/api/ExtensionAdmission$Rejected;
+	public static synthetic fun copy$default (Ldev/agentrelay/provider/api/ExtensionAdmission$Rejected;Ldev/agentrelay/provider/api/ExtensionSandboxRejection;ILjava/lang/Object;)Ldev/agentrelay/provider/api/ExtensionAdmission$Rejected;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getReason ()Ldev/agentrelay/provider/api/ExtensionSandboxRejection;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class dev/agentrelay/provider/api/ExtensionAgentAdapter {
+	public abstract fun execute (Ldev/agentrelay/provider/api/ExtensionAgentRequest;Lkotlin/jvm/functions/Function0;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class dev/agentrelay/provider/api/ExtensionAgentRequest {
+	public fun <init> (Ldev/agentrelay/provider/api/ExtensionInvocation;Ldev/agentrelay/provider/api/ExtensionSandboxPolicy;ZLjava/lang/String;ZZ)V
+	public synthetic fun <init> (Ldev/agentrelay/provider/api/ExtensionInvocation;Ldev/agentrelay/provider/api/ExtensionSandboxPolicy;ZLjava/lang/String;ZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ldev/agentrelay/provider/api/ExtensionInvocation;
+	public final fun component2 ()Ldev/agentrelay/provider/api/ExtensionSandboxPolicy;
+	public final fun component3 ()Z
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()Z
+	public final fun component6 ()Z
+	public final fun copy (Ldev/agentrelay/provider/api/ExtensionInvocation;Ldev/agentrelay/provider/api/ExtensionSandboxPolicy;ZLjava/lang/String;ZZ)Ldev/agentrelay/provider/api/ExtensionAgentRequest;
+	public static synthetic fun copy$default (Ldev/agentrelay/provider/api/ExtensionAgentRequest;Ldev/agentrelay/provider/api/ExtensionInvocation;Ldev/agentrelay/provider/api/ExtensionSandboxPolicy;ZLjava/lang/String;ZZILjava/lang/Object;)Ldev/agentrelay/provider/api/ExtensionAgentRequest;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getInvocation ()Ldev/agentrelay/provider/api/ExtensionInvocation;
+	public final fun getPolicy ()Ldev/agentrelay/provider/api/ExtensionSandboxPolicy;
+	public final fun getRequestedHost ()Ljava/lang/String;
+	public final fun getRequestsModel ()Z
+	public final fun getRequestsSubprocess ()Z
+	public final fun getRequiresExternalEffect ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/provider/api/ExtensionAgentResult {
+	public fun <init> (Ldev/agentrelay/provider/api/ExtensionExecutionOutcome;Ljava/lang/String;ZJJJJ)V
+	public synthetic fun <init> (Ldev/agentrelay/provider/api/ExtensionExecutionOutcome;Ljava/lang/String;ZJJJJILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ldev/agentrelay/provider/api/ExtensionExecutionOutcome;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Z
+	public final fun component4 ()J
+	public final fun component5 ()J
+	public final fun component6 ()J
+	public final fun component7 ()J
+	public final fun copy (Ldev/agentrelay/provider/api/ExtensionExecutionOutcome;Ljava/lang/String;ZJJJJ)Ldev/agentrelay/provider/api/ExtensionAgentResult;
+	public static synthetic fun copy$default (Ldev/agentrelay/provider/api/ExtensionAgentResult;Ldev/agentrelay/provider/api/ExtensionExecutionOutcome;Ljava/lang/String;ZJJJJILjava/lang/Object;)Ldev/agentrelay/provider/api/ExtensionAgentResult;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCpuMillis ()J
+	public final fun getExternalEffectObserved ()Z
+	public final fun getMemoryBytes ()J
+	public final fun getOutcome ()Ldev/agentrelay/provider/api/ExtensionExecutionOutcome;
+	public final fun getOutput ()Ljava/lang/String;
+	public final fun getStorageBytes ()J
+	public final fun getWallMillis ()J
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class dev/agentrelay/provider/api/ExtensionApiVersion {
 	public fun <init> (II)V
 	public final fun component1 ()I
@@ -903,6 +980,16 @@ public final class dev/agentrelay/provider/api/ExtensionApiVersion {
 	public final fun getMinor ()I
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/provider/api/ExtensionApprovalState : java/lang/Enum {
+	public static final field APPROVED Ldev/agentrelay/provider/api/ExtensionApprovalState;
+	public static final field DENIED Ldev/agentrelay/provider/api/ExtensionApprovalState;
+	public static final field NOT_REQUIRED Ldev/agentrelay/provider/api/ExtensionApprovalState;
+	public static final field PENDING Ldev/agentrelay/provider/api/ExtensionApprovalState;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/provider/api/ExtensionApprovalState;
+	public static fun values ()[Ldev/agentrelay/provider/api/ExtensionApprovalState;
 }
 
 public final class dev/agentrelay/provider/api/ExtensionCapability : java/lang/Enum {
@@ -943,6 +1030,58 @@ public final class dev/agentrelay/provider/api/ExtensionDataSource : java/lang/E
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/provider/api/ExtensionDataSource;
 	public static fun values ()[Ldev/agentrelay/provider/api/ExtensionDataSource;
+}
+
+public final class dev/agentrelay/provider/api/ExtensionExecutionClass : java/lang/Enum {
+	public static final field SANDBOXED Ldev/agentrelay/provider/api/ExtensionExecutionClass;
+	public static final field TRUSTED_BUILT_IN Ldev/agentrelay/provider/api/ExtensionExecutionClass;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/provider/api/ExtensionExecutionClass;
+	public static fun values ()[Ldev/agentrelay/provider/api/ExtensionExecutionClass;
+}
+
+public final class dev/agentrelay/provider/api/ExtensionExecutionEvidence {
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ldev/agentrelay/provider/api/ExtensionExecutionOutcome;Ldev/agentrelay/provider/api/ExtensionApprovalState;Ldev/agentrelay/provider/api/ExtensionSandboxRejection;IIZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ldev/agentrelay/provider/api/ExtensionExecutionOutcome;Ldev/agentrelay/provider/api/ExtensionApprovalState;Ldev/agentrelay/provider/api/ExtensionSandboxRejection;IIZLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-5dQZfws ()Ljava/lang/String;
+	public final fun component10 ()I
+	public final fun component11 ()Z
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()Ljava/lang/String;
+	public final fun component6 ()Ldev/agentrelay/provider/api/ExtensionExecutionOutcome;
+	public final fun component7 ()Ldev/agentrelay/provider/api/ExtensionApprovalState;
+	public final fun component8 ()Ldev/agentrelay/provider/api/ExtensionSandboxRejection;
+	public final fun component9 ()I
+	public final fun copy-kJLbVgY (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ldev/agentrelay/provider/api/ExtensionExecutionOutcome;Ldev/agentrelay/provider/api/ExtensionApprovalState;Ldev/agentrelay/provider/api/ExtensionSandboxRejection;IIZ)Ldev/agentrelay/provider/api/ExtensionExecutionEvidence;
+	public static synthetic fun copy-kJLbVgY$default (Ldev/agentrelay/provider/api/ExtensionExecutionEvidence;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ldev/agentrelay/provider/api/ExtensionExecutionOutcome;Ldev/agentrelay/provider/api/ExtensionApprovalState;Ldev/agentrelay/provider/api/ExtensionSandboxRejection;IIZILjava/lang/Object;)Ldev/agentrelay/provider/api/ExtensionExecutionEvidence;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getApproval ()Ldev/agentrelay/provider/api/ExtensionApprovalState;
+	public final fun getCancellationRequested ()Z
+	public final fun getExtensionId-5dQZfws ()Ljava/lang/String;
+	public final fun getIdempotencyKey ()Ljava/lang/String;
+	public final fun getInputBytes ()I
+	public final fun getInputDigest ()Ljava/lang/String;
+	public final fun getOutcome ()Ldev/agentrelay/provider/api/ExtensionExecutionOutcome;
+	public final fun getOutputBytes ()I
+	public final fun getOutputDigest ()Ljava/lang/String;
+	public final fun getPolicyDigest ()Ljava/lang/String;
+	public final fun getRejection ()Ldev/agentrelay/provider/api/ExtensionSandboxRejection;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/provider/api/ExtensionExecutionOutcome : java/lang/Enum {
+	public static final field ACCEPTED Ldev/agentrelay/provider/api/ExtensionExecutionOutcome;
+	public static final field CANCELLED Ldev/agentrelay/provider/api/ExtensionExecutionOutcome;
+	public static final field COMPLETED Ldev/agentrelay/provider/api/ExtensionExecutionOutcome;
+	public static final field FAILED Ldev/agentrelay/provider/api/ExtensionExecutionOutcome;
+	public static final field REJECTED Ldev/agentrelay/provider/api/ExtensionExecutionOutcome;
+	public static final field UNCERTAIN Ldev/agentrelay/provider/api/ExtensionExecutionOutcome;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/provider/api/ExtensionExecutionOutcome;
+	public static fun values ()[Ldev/agentrelay/provider/api/ExtensionExecutionOutcome;
 }
 
 public final class dev/agentrelay/provider/api/ExtensionField {
@@ -1077,6 +1216,22 @@ public final class dev/agentrelay/provider/api/ExtensionManifest {
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class dev/agentrelay/provider/api/ExtensionModelAccess : java/lang/Enum {
+	public static final field DECLARED Ldev/agentrelay/provider/api/ExtensionModelAccess;
+	public static final field NONE Ldev/agentrelay/provider/api/ExtensionModelAccess;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/provider/api/ExtensionModelAccess;
+	public static fun values ()[Ldev/agentrelay/provider/api/ExtensionModelAccess;
+}
+
+public final class dev/agentrelay/provider/api/ExtensionNetworkAccess : java/lang/Enum {
+	public static final field ALLOWLIST Ldev/agentrelay/provider/api/ExtensionNetworkAccess;
+	public static final field NONE Ldev/agentrelay/provider/api/ExtensionNetworkAccess;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/provider/api/ExtensionNetworkAccess;
+	public static fun values ()[Ldev/agentrelay/provider/api/ExtensionNetworkAccess;
+}
+
 public final class dev/agentrelay/provider/api/ExtensionPermission : java/lang/Enum {
 	public static final field PROPOSE_ACTIONS Ldev/agentrelay/provider/api/ExtensionPermission;
 	public static final field READ_FIELDS Ldev/agentrelay/provider/api/ExtensionPermission;
@@ -1153,6 +1308,84 @@ public final class dev/agentrelay/provider/api/ExtensionResourceBudget {
 	public final fun getMaxOutputBytes ()I
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/provider/api/ExtensionSandboxCoordinator {
+	public fun <init> ()V
+	public fun <init> (Ldev/agentrelay/provider/api/ExtensionInvocationLedger;)V
+	public synthetic fun <init> (Ldev/agentrelay/provider/api/ExtensionInvocationLedger;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun admit (Ldev/agentrelay/provider/api/ExtensionManifest;Ldev/agentrelay/provider/api/ExtensionAgentRequest;Ldev/agentrelay/provider/api/ExtensionApiVersion;ILjava/util/Set;JZZ)Ldev/agentrelay/provider/api/ExtensionAdmission;
+	public static synthetic fun admit$default (Ldev/agentrelay/provider/api/ExtensionSandboxCoordinator;Ldev/agentrelay/provider/api/ExtensionManifest;Ldev/agentrelay/provider/api/ExtensionAgentRequest;Ldev/agentrelay/provider/api/ExtensionApiVersion;ILjava/util/Set;JZZILjava/lang/Object;)Ldev/agentrelay/provider/api/ExtensionAdmission;
+	public final fun evidence (Ldev/agentrelay/provider/api/ExtensionAgentRequest;Ldev/agentrelay/provider/api/ExtensionAdmission;Ldev/agentrelay/provider/api/ExtensionAgentResult;Z)Ldev/agentrelay/provider/api/ExtensionExecutionEvidence;
+	public static synthetic fun evidence$default (Ldev/agentrelay/provider/api/ExtensionSandboxCoordinator;Ldev/agentrelay/provider/api/ExtensionAgentRequest;Ldev/agentrelay/provider/api/ExtensionAdmission;Ldev/agentrelay/provider/api/ExtensionAgentResult;ZILjava/lang/Object;)Ldev/agentrelay/provider/api/ExtensionExecutionEvidence;
+}
+
+public final class dev/agentrelay/provider/api/ExtensionSandboxLimits {
+	public fun <init> (JJJJIIILdev/agentrelay/provider/api/ExtensionNetworkAccess;Ljava/util/Set;ZLjava/lang/String;Ldev/agentrelay/provider/api/ExtensionModelAccess;)V
+	public synthetic fun <init> (JJJJIIILdev/agentrelay/provider/api/ExtensionNetworkAccess;Ljava/util/Set;ZLjava/lang/String;Ldev/agentrelay/provider/api/ExtensionModelAccess;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()J
+	public final fun component10 ()Z
+	public final fun component11 ()Ljava/lang/String;
+	public final fun component12 ()Ldev/agentrelay/provider/api/ExtensionModelAccess;
+	public final fun component2 ()J
+	public final fun component3 ()J
+	public final fun component4 ()J
+	public final fun component5 ()I
+	public final fun component6 ()I
+	public final fun component7 ()I
+	public final fun component8 ()Ldev/agentrelay/provider/api/ExtensionNetworkAccess;
+	public final fun component9 ()Ljava/util/Set;
+	public final fun copy (JJJJIIILdev/agentrelay/provider/api/ExtensionNetworkAccess;Ljava/util/Set;ZLjava/lang/String;Ldev/agentrelay/provider/api/ExtensionModelAccess;)Ldev/agentrelay/provider/api/ExtensionSandboxLimits;
+	public static synthetic fun copy$default (Ldev/agentrelay/provider/api/ExtensionSandboxLimits;JJJJIIILdev/agentrelay/provider/api/ExtensionNetworkAccess;Ljava/util/Set;ZLjava/lang/String;Ldev/agentrelay/provider/api/ExtensionModelAccess;ILjava/lang/Object;)Ldev/agentrelay/provider/api/ExtensionSandboxLimits;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAllowedHosts ()Ljava/util/Set;
+	public final fun getFilesystemRoot ()Ljava/lang/String;
+	public final fun getMaxCpuMillis ()J
+	public final fun getMaxInputBytes ()I
+	public final fun getMaxInvocations ()I
+	public final fun getMaxMemoryBytes ()J
+	public final fun getMaxOutputBytes ()I
+	public final fun getMaxStorageBytes ()J
+	public final fun getMaxWallMillis ()J
+	public final fun getModelAccess ()Ldev/agentrelay/provider/api/ExtensionModelAccess;
+	public final fun getNetworkAccess ()Ldev/agentrelay/provider/api/ExtensionNetworkAccess;
+	public final fun getSubprocessAllowed ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/provider/api/ExtensionSandboxPolicy {
+	public fun <init> (Ldev/agentrelay/provider/api/ExtensionExecutionClass;Ldev/agentrelay/provider/api/ExtensionSandboxLimits;ZZ)V
+	public synthetic fun <init> (Ldev/agentrelay/provider/api/ExtensionExecutionClass;Ldev/agentrelay/provider/api/ExtensionSandboxLimits;ZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ldev/agentrelay/provider/api/ExtensionExecutionClass;
+	public final fun component2 ()Ldev/agentrelay/provider/api/ExtensionSandboxLimits;
+	public final fun component3 ()Z
+	public final fun component4 ()Z
+	public final fun copy (Ldev/agentrelay/provider/api/ExtensionExecutionClass;Ldev/agentrelay/provider/api/ExtensionSandboxLimits;ZZ)Ldev/agentrelay/provider/api/ExtensionSandboxPolicy;
+	public static synthetic fun copy$default (Ldev/agentrelay/provider/api/ExtensionSandboxPolicy;Ldev/agentrelay/provider/api/ExtensionExecutionClass;Ldev/agentrelay/provider/api/ExtensionSandboxLimits;ZZILjava/lang/Object;)Ldev/agentrelay/provider/api/ExtensionSandboxPolicy;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAllowExternalEffects ()Z
+	public final fun getExecutionClass ()Ldev/agentrelay/provider/api/ExtensionExecutionClass;
+	public final fun getLimits ()Ldev/agentrelay/provider/api/ExtensionSandboxLimits;
+	public final fun getRequireApprovalForExternalEffects ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/provider/api/ExtensionSandboxRejection : java/lang/Enum {
+	public static final field APPROVAL_DENIED Ldev/agentrelay/provider/api/ExtensionSandboxRejection;
+	public static final field APPROVAL_REQUIRED Ldev/agentrelay/provider/api/ExtensionSandboxRejection;
+	public static final field CANCELLED Ldev/agentrelay/provider/api/ExtensionSandboxRejection;
+	public static final field FILESYSTEM_DENIED Ldev/agentrelay/provider/api/ExtensionSandboxRejection;
+	public static final field MODEL_ACCESS_DENIED Ldev/agentrelay/provider/api/ExtensionSandboxRejection;
+	public static final field NETWORK_DENIED Ldev/agentrelay/provider/api/ExtensionSandboxRejection;
+	public static final field POLICY_DENIED Ldev/agentrelay/provider/api/ExtensionSandboxRejection;
+	public static final field RESOURCE_LIMIT_EXCEEDED Ldev/agentrelay/provider/api/ExtensionSandboxRejection;
+	public static final field STALE_REVISION Ldev/agentrelay/provider/api/ExtensionSandboxRejection;
+	public static final field SUBPROCESS_DENIED Ldev/agentrelay/provider/api/ExtensionSandboxRejection;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/provider/api/ExtensionSandboxRejection;
+	public static fun values ()[Ldev/agentrelay/provider/api/ExtensionSandboxRejection;
 }
 
 public final class dev/agentrelay/provider/api/ExtensionSecretReference {
