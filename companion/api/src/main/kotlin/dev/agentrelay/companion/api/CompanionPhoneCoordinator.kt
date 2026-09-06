@@ -31,7 +31,10 @@ class CompanionPhoneCoordinator(
             CompanionEnrollmentState.REVOKED,
             current.generation + 1,
             changedAtEpochMillis,
-        ).also { enrollments[deviceId] = it; queues[deviceId]?.clear() }
+        ).also {
+            enrollments[deviceId] = it
+            queues[deviceId]?.clear()
+        }
     }
 
     fun setPreferences(deviceId: CompanionDeviceId, value: CompanionDevicePreferences) {
@@ -66,7 +69,9 @@ class CompanionPhoneCoordinator(
             ?: return CompanionReconciliationOutcome.REJECT_REVOKED
         if (enrollment.state != CompanionEnrollmentState.ENROLLED ||
             message.enrollmentGeneration != enrollment.generation
-        ) return CompanionReconciliationOutcome.REJECT_REVOKED
+        ) {
+            return CompanionReconciliationOutcome.REJECT_REVOKED
+        }
         if (!message.isReplayableAt(nowEpochMillis)) return CompanionReconciliationOutcome.IGNORE_STALE
         val ids = acceptedMessageIds.getOrPut(message.deviceId) { linkedSetOf() }
         if (!ids.add(message.messageId)) return CompanionReconciliationOutcome.IGNORE_DUPLICATE
