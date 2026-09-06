@@ -2,11 +2,12 @@ package com.example.agentrelay
 
 import android.content.Intent
 import android.net.Uri
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
 import dev.agentrelay.connection.api.PairingAppLinkCodec
 import kotlinx.coroutines.runBlocking
@@ -20,9 +21,10 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class PairingAppLinkJourneyTest {
 
-    @get:Rule val composeTestRule = createAndroidComposeRule<MainActivity>()
+    @get:Rule val composeTestRule = createEmptyComposeRule()
 
     private lateinit var enrollment: AndroidPairingAppLinkEnrollment
+    private lateinit var scenario: ActivityScenario<MainActivity>
     private var nowMillis = FIXTURE_NOW_MILLIS
 
     @Before
@@ -35,6 +37,7 @@ class PairingAppLinkJourneyTest {
 
     @After
     fun restoreClock() {
+        if (::scenario.isInitialized) scenario.close()
         MainActivity.nowMillisProvider = System::currentTimeMillis
     }
 
@@ -74,13 +77,7 @@ class PairingAppLinkJourneyTest {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(raw)).setPackage(
             InstrumentationRegistry.getInstrumentation().targetContext.packageName,
         )
-        composeTestRule.activityRule.scenario.onActivity { activity ->
-            val originalIntent = Intent(activity.intent)
-            val onNewIntent = MainActivity::class.java.getDeclaredMethod("onNewIntent", Intent::class.java)
-            onNewIntent.isAccessible = true
-            onNewIntent.invoke(activity, intent)
-            activity.setIntent(originalIntent)
-        }
+        scenario = ActivityScenario.launch(intent)
         composeTestRule.waitForIdle()
     }
 
