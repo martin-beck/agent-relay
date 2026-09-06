@@ -30,4 +30,4 @@ org.jetbrains.kotlin:kotlin-tooling-core:2.3.20=kotlinBuildToolsApiClasspath
 org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.8.0=kotlinBuildToolsApiClasspath
 org.jetbrains.kotlinx:kover-jvm-agent:0.9.9=koverJvmAgent,koverJvmReporter
 org.jetbrains:annotations:13.0=compileClasspath,kotlinBuildToolsApiClasspath,kotlinCompilerPluginClasspathMain,kotlinCompilerPluginClasspathTest,kotlinInternalAbiValidation,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
-empty=annotationProcessor,kotlinScriptDefExtensions,koverExternalArtifacts,testKotlinScriptDefExtensions
+empty=annotationProcessor,kotlinScriptDefExtensions,koverExternalArtifacts,testAnnotationProcessor,testKotlinScriptDefExtensions
