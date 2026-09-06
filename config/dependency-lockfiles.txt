@@ -33,3 +33,5 @@ ssh/gradle.lockfile
 ssh/jsch/gradle.lockfile
 storage/android/gradle.lockfile
 storage/gradle.lockfile
+workflow/api/gradle.lockfile
+workflow/gradle.lockfile
