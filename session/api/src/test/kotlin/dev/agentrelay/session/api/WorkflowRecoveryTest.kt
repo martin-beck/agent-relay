@@ -64,6 +64,37 @@ class WorkflowRecoveryTest {
     }
 
     @Test
+    fun restartDoesNotRepeatRecordedCompensationAndExhaustedRetriesNeedAttention() {
+        val store = InMemoryWorkflowCheckpointStore()
+        val cancelled = checkpoint.copy(cancellationRequested = true, effect = WorkflowEffectState.IDEMPOTENT)
+        val exhausted = checkpoint.copy(checkpointId = "checkpoint-2", attempt = 4)
+        store.capture(cancelled)
+        store.capture(exhausted)
+        val first = WorkflowRecoveryCoordinator(store).recordCompensation(cancelled, "compensation-1", 301)
+
+        val restarted = WorkflowRecoveryCoordinator(store)
+        val decisions = restarted.recover(300, 64).decisions.associateBy { it.checkpoint.checkpointId }
+
+        assertEquals(first, store.compensations().single())
+        assertEquals(WorkflowRecoveryAction.COMPENSATED, decisions["checkpoint-1"]?.action)
+        assertEquals("compensation-already-recorded", decisions["checkpoint-1"]?.reason)
+        assertEquals(WorkflowRecoveryAction.ATTENTION, decisions["checkpoint-2"]?.action)
+        assertEquals("retry-budget-exhausted", decisions["checkpoint-2"]?.reason)
+    }
+
+    @Test
+    fun retryPolicyIsBoundedAndDeterministic() {
+        val policy = WorkflowRetryPolicy(maxAttempts = 4, baseBackoffMillis = 100, maxBackoffMillis = 250)
+        assertTrue(policy.allows(4))
+        assertTrue(!policy.allows(5))
+        assertEquals(100, policy.delayBeforeAttempt(1))
+        assertEquals(200, policy.delayBeforeAttempt(2))
+        assertEquals(250, policy.delayBeforeAttempt(3))
+        assertFailsWith<IllegalArgumentException> { policy.delayBeforeAttempt(0) }
+        assertFailsWith<IllegalArgumentException> { policy.delayBeforeAttempt(5) }
+    }
+
+    @Test
     fun incompatibleCheckpointIsQuarantinedAndDoesNotResume() {
         val store = InMemoryWorkflowCheckpointStore()
         val incompatible = checkpoint.copy(schemaVersion = 2)
