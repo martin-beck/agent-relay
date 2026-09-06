@@ -35,8 +35,6 @@ class PairingAppLinkJourneyTest {
 
     @After
     fun restoreClock() {
-        composeTestRule.activityRule.scenario.onActivity { it.finish() }
-        composeTestRule.activityRule.scenario.close()
         MainActivity.nowMillisProvider = System::currentTimeMillis
     }
 
