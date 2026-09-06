@@ -2,6 +2,8 @@ app/gradle.lockfile
 backup/api/gradle.lockfile
 backup/gradle.lockfile
 buildSrc/gradle.lockfile
+companion/api/gradle.lockfile
+companion/gradle.lockfile
 connection/api/gradle.lockfile
 connection/gradle.lockfile
 connection/local/gradle.lockfile
