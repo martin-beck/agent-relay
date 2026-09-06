@@ -2,7 +2,9 @@ package dev.agentrelay.workflow.api
 
 @JvmInline
 value class WorkflowId(val value: String) {
-    init { require(value.matches(Regex("wf_v1_[a-z0-9-]{1,48}"))) { "Workflow id is invalid" } }
+    init {
+        require(value.matches(Regex("wf_v1_[a-z0-9-]{1,48}"))) { "Workflow id is invalid" }
+    }
 }
 
 enum class WorkflowTrigger { SCHEDULE, LOCATION, DEVICE_EVENT, POLL, MANUAL }
@@ -57,8 +59,10 @@ data class WorkflowDefinition(
         declaredSources.forEach { require(it.matches(Regex("[a-z][a-z0-9_.-]{0,63}"))) { "Source is invalid" } }
         require(steps.isNotEmpty() && steps.size <= MAX_STEPS) { "Workflow steps are invalid" }
         require(steps.map(WorkflowStep::id).toSet().size == steps.size) { "Workflow step ids must be unique" }
-        if (approvalRequired) require(steps.any { it.action == WorkflowAction.REQUEST_APPROVAL }) {
-            "Approval requirement must have an approval step"
+        if (approvalRequired) {
+            require(steps.any { it.action == WorkflowAction.REQUEST_APPROVAL }) {
+                "Approval requirement must have an approval step"
+            }
         }
     }
 }
