@@ -964,6 +964,78 @@ public final class dev/agentrelay/connection/api/DaemonTransportKind : java/lang
 	public static fun values ()[Ldev/agentrelay/connection/api/DaemonTransportKind;
 }
 
+public final class dev/agentrelay/connection/api/DisclosureLevel : java/lang/Enum {
+	public static final field CONNECTION Ldev/agentrelay/connection/api/DisclosureLevel;
+	public static final field HOST Ldev/agentrelay/connection/api/DisclosureLevel;
+	public static final field PROVIDER Ldev/agentrelay/connection/api/DisclosureLevel;
+	public static final field SESSION Ldev/agentrelay/connection/api/DisclosureLevel;
+	public static final field TERMINAL Ldev/agentrelay/connection/api/DisclosureLevel;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/connection/api/DisclosureLevel;
+	public static fun values ()[Ldev/agentrelay/connection/api/DisclosureLevel;
+}
+
+public final class dev/agentrelay/connection/api/DisclosureNode {
+	public synthetic fun <init> (Ljava/lang/String;Ldev/agentrelay/connection/api/DisclosureLevel;Ljava/lang/String;Ljava/lang/String;ILdev/agentrelay/connection/api/DisclosureStatus;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-ddx20Uw ()Ljava/lang/String;
+	public final fun component2 ()Ldev/agentrelay/connection/api/DisclosureLevel;
+	public final fun component3-nY9GgEo ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()I
+	public final fun component6 ()Ldev/agentrelay/connection/api/DisclosureStatus;
+	public final fun copy-jHMNA6Y (Ljava/lang/String;Ldev/agentrelay/connection/api/DisclosureLevel;Ljava/lang/String;Ljava/lang/String;ILdev/agentrelay/connection/api/DisclosureStatus;)Ldev/agentrelay/connection/api/DisclosureNode;
+	public static synthetic fun copy-jHMNA6Y$default (Ldev/agentrelay/connection/api/DisclosureNode;Ljava/lang/String;Ldev/agentrelay/connection/api/DisclosureLevel;Ljava/lang/String;Ljava/lang/String;ILdev/agentrelay/connection/api/DisclosureStatus;ILjava/lang/Object;)Ldev/agentrelay/connection/api/DisclosureNode;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getChildCount ()I
+	public final fun getId-ddx20Uw ()Ljava/lang/String;
+	public final fun getLevel ()Ldev/agentrelay/connection/api/DisclosureLevel;
+	public final fun getParentId-nY9GgEo ()Ljava/lang/String;
+	public final fun getRedactedLabel ()Ljava/lang/String;
+	public final fun getStatus ()Ldev/agentrelay/connection/api/DisclosureStatus;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/DisclosureNodeId {
+	public static final synthetic fun box-impl (Ljava/lang/String;)Ldev/agentrelay/connection/api/DisclosureNodeId;
+	public static fun constructor-impl (Ljava/lang/String;)Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/DisclosureQuery {
+	public fun <init> ()V
+	public fun <init> (Ljava/util/Set;I)V
+	public synthetic fun <init> (Ljava/util/Set;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/util/Set;
+	public final fun component2 ()I
+	public final fun copy (Ljava/util/Set;I)Ldev/agentrelay/connection/api/DisclosureQuery;
+	public static synthetic fun copy$default (Ldev/agentrelay/connection/api/DisclosureQuery;Ljava/util/Set;IILjava/lang/Object;)Ldev/agentrelay/connection/api/DisclosureQuery;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getExpanded ()Ljava/util/Set;
+	public final fun getMaxVisibleNodes ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/DisclosureStatus : java/lang/Enum {
+	public static final field ACTIVE Ldev/agentrelay/connection/api/DisclosureStatus;
+	public static final field AVAILABLE Ldev/agentrelay/connection/api/DisclosureStatus;
+	public static final field CONNECTING Ldev/agentrelay/connection/api/DisclosureStatus;
+	public static final field FAILED Ldev/agentrelay/connection/api/DisclosureStatus;
+	public static final field HIDDEN Ldev/agentrelay/connection/api/DisclosureStatus;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/connection/api/DisclosureStatus;
+	public static fun values ()[Ldev/agentrelay/connection/api/DisclosureStatus;
+}
+
 public final class dev/agentrelay/connection/api/EndpointIdentityModelsKt {
 	public static final fun stableEndpointIdentity (Ldev/agentrelay/connection/api/EndpointPublicKey;)Ljava/lang/String;
 }
@@ -1257,6 +1329,17 @@ public final class dev/agentrelay/connection/api/PairingScope : java/lang/Enum {
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/connection/api/PairingScope;
 	public static fun values ()[Ldev/agentrelay/connection/api/PairingScope;
+}
+
+public final class dev/agentrelay/connection/api/ProgressiveDisclosure {
+	public static final field Companion Ldev/agentrelay/connection/api/ProgressiveDisclosure$Companion;
+	public synthetic fun <init> (Ljava/util/List;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun project (Ldev/agentrelay/connection/api/DisclosureQuery;)Ljava/util/List;
+	public static synthetic fun project$default (Ldev/agentrelay/connection/api/ProgressiveDisclosure;Ldev/agentrelay/connection/api/DisclosureQuery;ILjava/lang/Object;)Ljava/util/List;
+}
+
+public final class dev/agentrelay/connection/api/ProgressiveDisclosure$Companion {
+	public final fun of (Ljava/util/List;)Ldev/agentrelay/connection/api/ProgressiveDisclosure;
 }
 
 public final class dev/agentrelay/connection/api/ProtocolFrameHeader {
