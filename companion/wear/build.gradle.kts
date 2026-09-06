@@ -28,6 +28,5 @@ android {
 
 dependencies {
     implementation(project(":companion:api"))
-    implementation(libs.androidx.core.ktx)
     testImplementation(libs.junit)
 }
