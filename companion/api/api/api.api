@@ -480,6 +480,146 @@ public final class dev/agentrelay/companion/api/WearSpeechCaptureState : java/la
 	public static fun values ()[Ldev/agentrelay/companion/api/WearSpeechCaptureState;
 }
 
+public final class dev/agentrelay/companion/api/WearSpeechOutputCapability {
+	public fun <init> (Ldev/agentrelay/companion/api/WearSpeechOutputTarget;ZLjava/lang/Integer;Z)V
+	public final fun component1 ()Ldev/agentrelay/companion/api/WearSpeechOutputTarget;
+	public final fun component2 ()Z
+	public final fun component3 ()Ljava/lang/Integer;
+	public final fun component4 ()Z
+	public final fun copy (Ldev/agentrelay/companion/api/WearSpeechOutputTarget;ZLjava/lang/Integer;Z)Ldev/agentrelay/companion/api/WearSpeechOutputCapability;
+	public static synthetic fun copy$default (Ldev/agentrelay/companion/api/WearSpeechOutputCapability;Ldev/agentrelay/companion/api/WearSpeechOutputTarget;ZLjava/lang/Integer;ZILjava/lang/Object;)Ldev/agentrelay/companion/api/WearSpeechOutputCapability;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBatteryPercent ()Ljava/lang/Integer;
+	public final fun getReachable ()Z
+	public final fun getSupportsInterruption ()Z
+	public final fun getTarget ()Ldev/agentrelay/companion/api/WearSpeechOutputTarget;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/companion/api/WearSpeechOutputContent {
+	public fun <init> (Ljava/lang/String;Ldev/agentrelay/companion/api/CompanionPrivacyClass;Z)V
+	public synthetic fun <init> (Ljava/lang/String;Ldev/agentrelay/companion/api/CompanionPrivacyClass;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ldev/agentrelay/companion/api/CompanionPrivacyClass;
+	public final fun component3 ()Z
+	public final fun copy (Ljava/lang/String;Ldev/agentrelay/companion/api/CompanionPrivacyClass;Z)Ldev/agentrelay/companion/api/WearSpeechOutputContent;
+	public static synthetic fun copy$default (Ldev/agentrelay/companion/api/WearSpeechOutputContent;Ljava/lang/String;Ldev/agentrelay/companion/api/CompanionPrivacyClass;ZILjava/lang/Object;)Ldev/agentrelay/companion/api/WearSpeechOutputContent;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getExplicitlySelected ()Z
+	public final fun getPrivacyClass ()Ldev/agentrelay/companion/api/CompanionPrivacyClass;
+	public final fun getText ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class dev/agentrelay/companion/api/WearSpeechOutputDecision {
+}
+
+public final class dev/agentrelay/companion/api/WearSpeechOutputDecision$Accepted : dev/agentrelay/companion/api/WearSpeechOutputDecision {
+	public fun <init> (Ldev/agentrelay/companion/api/WearSpeechOutputTarget;)V
+	public final fun component1 ()Ldev/agentrelay/companion/api/WearSpeechOutputTarget;
+	public final fun copy (Ldev/agentrelay/companion/api/WearSpeechOutputTarget;)Ldev/agentrelay/companion/api/WearSpeechOutputDecision$Accepted;
+	public static synthetic fun copy$default (Ldev/agentrelay/companion/api/WearSpeechOutputDecision$Accepted;Ldev/agentrelay/companion/api/WearSpeechOutputTarget;ILjava/lang/Object;)Ldev/agentrelay/companion/api/WearSpeechOutputDecision$Accepted;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getTarget ()Ldev/agentrelay/companion/api/WearSpeechOutputTarget;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/companion/api/WearSpeechOutputDecision$Rejected : dev/agentrelay/companion/api/WearSpeechOutputDecision {
+	public fun <init> (Ldev/agentrelay/companion/api/WearSpeechOutputRejection;)V
+	public final fun component1 ()Ldev/agentrelay/companion/api/WearSpeechOutputRejection;
+	public final fun copy (Ldev/agentrelay/companion/api/WearSpeechOutputRejection;)Ldev/agentrelay/companion/api/WearSpeechOutputDecision$Rejected;
+	public static synthetic fun copy$default (Ldev/agentrelay/companion/api/WearSpeechOutputDecision$Rejected;Ldev/agentrelay/companion/api/WearSpeechOutputRejection;ILjava/lang/Object;)Ldev/agentrelay/companion/api/WearSpeechOutputDecision$Rejected;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getReason ()Ldev/agentrelay/companion/api/WearSpeechOutputRejection;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/companion/api/WearSpeechOutputInterruption : java/lang/Enum {
+	public static final field AUDIO_FOCUS_LOST Ldev/agentrelay/companion/api/WearSpeechOutputInterruption;
+	public static final field DISCONNECTED Ldev/agentrelay/companion/api/WearSpeechOutputInterruption;
+	public static final field MODE_CHANGED Ldev/agentrelay/companion/api/WearSpeechOutputInterruption;
+	public static final field USER_STOP Ldev/agentrelay/companion/api/WearSpeechOutputInterruption;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/companion/api/WearSpeechOutputInterruption;
+	public static fun values ()[Ldev/agentrelay/companion/api/WearSpeechOutputInterruption;
+}
+
+public final class dev/agentrelay/companion/api/WearSpeechOutputMode : java/lang/Enum {
+	public static final field BEDTIME Ldev/agentrelay/companion/api/WearSpeechOutputMode;
+	public static final field NORMAL Ldev/agentrelay/companion/api/WearSpeechOutputMode;
+	public static final field SILENT Ldev/agentrelay/companion/api/WearSpeechOutputMode;
+	public static final field THEATER Ldev/agentrelay/companion/api/WearSpeechOutputMode;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/companion/api/WearSpeechOutputMode;
+	public static fun values ()[Ldev/agentrelay/companion/api/WearSpeechOutputMode;
+}
+
+public final class dev/agentrelay/companion/api/WearSpeechOutputRejection : java/lang/Enum {
+	public static final field LOW_BATTERY Ldev/agentrelay/companion/api/WearSpeechOutputRejection;
+	public static final field MODE_SUPPRESSED Ldev/agentrelay/companion/api/WearSpeechOutputRejection;
+	public static final field NO_REACHABLE_TARGET Ldev/agentrelay/companion/api/WearSpeechOutputRejection;
+	public static final field PRIVATE_CONTENT_NOT_SELECTED Ldev/agentrelay/companion/api/WearSpeechOutputRejection;
+	public static final field STALE_GENERATION Ldev/agentrelay/companion/api/WearSpeechOutputRejection;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/companion/api/WearSpeechOutputRejection;
+	public static fun values ()[Ldev/agentrelay/companion/api/WearSpeechOutputRejection;
+}
+
+public final class dev/agentrelay/companion/api/WearSpeechOutputRequest {
+	public fun <init> (Ljava/lang/String;JLdev/agentrelay/companion/api/WearSpeechOutputContent;Ldev/agentrelay/companion/api/WearSpeechOutputTarget;J)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()J
+	public final fun component3 ()Ldev/agentrelay/companion/api/WearSpeechOutputContent;
+	public final fun component4 ()Ldev/agentrelay/companion/api/WearSpeechOutputTarget;
+	public final fun component5 ()J
+	public final fun copy (Ljava/lang/String;JLdev/agentrelay/companion/api/WearSpeechOutputContent;Ldev/agentrelay/companion/api/WearSpeechOutputTarget;J)Ldev/agentrelay/companion/api/WearSpeechOutputRequest;
+	public static synthetic fun copy$default (Ldev/agentrelay/companion/api/WearSpeechOutputRequest;Ljava/lang/String;JLdev/agentrelay/companion/api/WearSpeechOutputContent;Ldev/agentrelay/companion/api/WearSpeechOutputTarget;JILjava/lang/Object;)Ldev/agentrelay/companion/api/WearSpeechOutputRequest;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getContent ()Ldev/agentrelay/companion/api/WearSpeechOutputContent;
+	public final fun getCreatedAtEpochMillis ()J
+	public final fun getGeneration ()J
+	public final fun getPreferredTarget ()Ldev/agentrelay/companion/api/WearSpeechOutputTarget;
+	public final fun getRequestId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/companion/api/WearSpeechOutputRouter {
+	public fun <init> ()V
+	public final fun chooseTarget (Ldev/agentrelay/companion/api/WearSpeechOutputRequest;Ljava/util/List;Ldev/agentrelay/companion/api/WearSpeechOutputMode;J)Ldev/agentrelay/companion/api/WearSpeechOutputDecision;
+}
+
+public final class dev/agentrelay/companion/api/WearSpeechOutputSession {
+	public fun <init> ()V
+	public final fun complete (J)Z
+	public final fun getState ()Ldev/agentrelay/companion/api/WearSpeechOutputState;
+	public final fun interrupt (JLdev/agentrelay/companion/api/WearSpeechOutputInterruption;)Z
+	public final fun start (Ldev/agentrelay/companion/api/WearSpeechOutputRequest;Ldev/agentrelay/companion/api/WearSpeechOutputDecision;)Z
+}
+
+public final class dev/agentrelay/companion/api/WearSpeechOutputState : java/lang/Enum {
+	public static final field COMPLETED Ldev/agentrelay/companion/api/WearSpeechOutputState;
+	public static final field IDLE Ldev/agentrelay/companion/api/WearSpeechOutputState;
+	public static final field INTERRUPTED Ldev/agentrelay/companion/api/WearSpeechOutputState;
+	public static final field PLAYING Ldev/agentrelay/companion/api/WearSpeechOutputState;
+	public static final field STOPPED Ldev/agentrelay/companion/api/WearSpeechOutputState;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/companion/api/WearSpeechOutputState;
+	public static fun values ()[Ldev/agentrelay/companion/api/WearSpeechOutputState;
+}
+
+public final class dev/agentrelay/companion/api/WearSpeechOutputTarget : java/lang/Enum {
+	public static final field PHONE Ldev/agentrelay/companion/api/WearSpeechOutputTarget;
+	public static final field WATCH Ldev/agentrelay/companion/api/WearSpeechOutputTarget;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/companion/api/WearSpeechOutputTarget;
+	public static fun values ()[Ldev/agentrelay/companion/api/WearSpeechOutputTarget;
+}
+
 public final class dev/agentrelay/companion/api/WearSpeechPermission : java/lang/Enum {
 	public static final field DENIED Ldev/agentrelay/companion/api/WearSpeechPermission;
 	public static final field GRANTED Ldev/agentrelay/companion/api/WearSpeechPermission;
