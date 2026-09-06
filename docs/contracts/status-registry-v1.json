@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "entries": [
+    {
+      "id": "connection-api",
+      "area": "Generic connection-provider API",
+      "status": "Implemented and unit tested"
+    },
+    {
+      "id": "local-provider",
+      "area": "Local device connection provider",
+      "status": "Implemented and unit tested"
+    },
+    {
+      "id": "ssh-provider",
+      "area": "SSH connection provider and profile setup",
+      "status": "Encrypted credentials, strict per-hop host keys, configured jump routes, persistent Android keys, confirmed public-key installation, and key-only probes implemented; final real-device evidence remains"
+    },
+    {
+      "id": "agent-adapters",
+      "area": "Codex, OpenCode, OpenDesk, Continue, Claude, Cline, and Aider adapters",
+      "status": "Implemented with contract tests; live checks where available"
+    },
+    {
+      "id": "session-hub",
+      "area": "Encrypted session hub and runtime coordinator",
+      "status": "Implemented and unit tested"
+    },
+    {
+      "id": "quality-gates",
+      "area": "Quality gates",
+      "status": "Detekt, Ruff, Radon, Lizard, Vale, strict compiler/lint checks, dependency analysis, 70% coverage, visual regression, property tests, and bounded fuzzing"
+    },
+    {
+      "id": "adaptive-ui",
+      "area": "Adaptive Compose UI and app integration",
+      "status": "Provider-neutral setup and session launch, typed timeline, durable text composer, capability-gated controls, risk-aware approvals/questions, adaptive-boundary tests, and deterministic UI baselines implemented"
+    },
+    {
+      "id": "safe-export",
+      "area": "Changed files and safe export",
+      "status": "Encrypted per-session shelf plus checked single-file export for local and SSH workspaces; previews, diffs, and batch export remain"
+    },
+    {
+      "id": "offline-speech",
+      "area": "Offline speech",
+      "status": "Verified model delivery/audio boundaries plus a pinned, source-built, TTS-free sherpa-onnx online-recognition adapter for four Android ABIs; the first admitted model, app composition/UI, and device evidence remain"
+    },
+    {
+      "id": "background-operation",
+      "area": "Background operation",
+      "status": "Durable privacy-safe alerts plus explicit sticky foreground connection mode and encrypted process-death recovery intent; final provider/device endurance evidence remains"
+    },
+    {
+      "id": "release",
+      "area": "Signed release build and distribution",
+      "status": "Not available"
+    }
+  ]
+}
