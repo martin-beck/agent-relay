@@ -449,6 +449,8 @@ public final class dev/agentrelay/companion/api/WearCompanionPackageState : java
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/companion/api/WearCompanionPackageState;
 	public static fun values ()[Ldev/agentrelay/companion/api/WearCompanionPackageState;
+}
+
 public final class dev/agentrelay/companion/api/WearControlAction : java/lang/Enum {
 	public static final field ACKNOWLEDGE Ldev/agentrelay/companion/api/WearControlAction;
 	public static final field DEFER Ldev/agentrelay/companion/api/WearControlAction;
@@ -969,3 +971,4 @@ public final class dev/agentrelay/companion/api/WearSpeechTranscriptReview {
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
+
