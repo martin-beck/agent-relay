@@ -1,6 +1,7 @@
 package com.example.agentrelay.widgets
 
 import dev.agentrelay.session.api.AttentionUrgency
+import dev.agentrelay.session.api.AttentionWidgetAction
 import dev.agentrelay.session.api.AttentionWidgetContent
 import dev.agentrelay.session.api.AttentionWidgetEntry
 import dev.agentrelay.session.api.AttentionWidgetSize
@@ -24,6 +25,8 @@ class HomeScreenAttentionWidgetProviderTest {
                     ageMillis = index.toLong(),
                     canOpen = true,
                     canAcknowledge = true,
+                    canDefer = true,
+                    canMute = true,
                 )
             },
             hasMore = true,
@@ -44,5 +47,15 @@ class HomeScreenAttentionWidgetProviderTest {
             listOf("Attention 1", "Attention 2", "Attention 3"),
             project(AttentionWidgetSize.EXPANDED).items,
         )
+        assertEquals(setOf(AttentionWidgetAction.OPEN_DETAILS), project(AttentionWidgetSize.COMPACT).actions)
+        assertEquals(
+            setOf(
+                AttentionWidgetAction.OPEN_DETAILS,
+                AttentionWidgetAction.ACKNOWLEDGE,
+                AttentionWidgetAction.DEFER,
+            ),
+            project(AttentionWidgetSize.MEDIUM).actions,
+        )
+        assertEquals(AttentionWidgetAction.entries.toSet(), project(AttentionWidgetSize.EXPANDED).actions)
     }
 }

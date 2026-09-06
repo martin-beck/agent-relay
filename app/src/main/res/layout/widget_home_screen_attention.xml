@@ -44,4 +44,35 @@
         android:layout_height="wrap_content"
         android:maxLines="1"
         android:textColor="@color/widget_primary_text" />
+
+    <LinearLayout
+        style="?android:attr/buttonBarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/home_widget_acknowledge"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/home_widget_action_acknowledge"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/home_widget_defer"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/home_widget_action_defer"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/home_widget_mute"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/home_widget_action_mute_confirm"
+            android:visibility="gone" />
+    </LinearLayout>
 </LinearLayout>

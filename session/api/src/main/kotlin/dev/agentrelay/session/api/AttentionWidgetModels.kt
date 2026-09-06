@@ -17,6 +17,8 @@ data class AttentionWidgetItem(
     val expiresAtEpochMillis: Long?,
     val canOpen: Boolean,
     val canAcknowledge: Boolean,
+    val canDefer: Boolean = false,
+    val canMute: Boolean = false,
 ) {
     init {
         require(id.isNotBlank() && id.length <= MAX_WIDGET_TEXT_CHARS) { "Widget item id is invalid" }
@@ -35,6 +37,8 @@ data class AttentionWidgetItem(
             "Closed widget items cannot be acknowledged"
         }
         require(state in ACTIVE_WIDGET_STATES || !canOpen) { "Closed widget items cannot be opened" }
+        require(state in ACTIVE_WIDGET_STATES || !canDefer) { "Closed widget items cannot be deferred" }
+        require(state in ACTIVE_WIDGET_STATES || !canMute) { "Closed widget items cannot be muted" }
     }
 
     fun isVisibleAt(nowEpochMillis: Long): Boolean =
@@ -83,6 +87,8 @@ data class AttentionWidgetSnapshot(
                 ageMillis = if (size == AttentionWidgetSize.COMPACT) null else nowEpochMillis - item.createdAtEpochMillis,
                 canOpen = surface == AttentionWidgetSurface.HOME_SCREEN && item.canOpen,
                 canAcknowledge = surface == AttentionWidgetSurface.HOME_SCREEN && item.canAcknowledge,
+                canDefer = surface == AttentionWidgetSurface.HOME_SCREEN && item.canDefer,
+                canMute = surface == AttentionWidgetSurface.HOME_SCREEN && item.canMute,
             )
         }
         return AttentionWidgetContent(
@@ -104,7 +110,16 @@ data class AttentionWidgetEntry(
     val ageMillis: Long?,
     val canOpen: Boolean,
     val canAcknowledge: Boolean,
-)
+    val canDefer: Boolean = false,
+    val canMute: Boolean = false,
+) {
+    fun permits(action: AttentionWidgetAction): Boolean = when (action) {
+        AttentionWidgetAction.OPEN_DETAILS -> canOpen
+        AttentionWidgetAction.ACKNOWLEDGE -> canAcknowledge
+        AttentionWidgetAction.DEFER -> canDefer
+        AttentionWidgetAction.MUTE -> canMute
+    }
+}
 
 data class AttentionWidgetContent(
     val revision: Long,

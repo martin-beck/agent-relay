@@ -38,6 +38,8 @@ class LockScreenAttentionWidgetProviderTest {
                     ageMillis = 4_000,
                     canOpen = false,
                     canAcknowledge = false,
+                    canDefer = false,
+                    canMute = false,
                 ),
             ),
             hasMore = false,
@@ -56,5 +58,7 @@ class LockScreenAttentionWidgetProviderTest {
         assertNull(content.entries.single().summary)
         assertEquals(false, content.entries.single().canOpen)
         assertEquals(false, content.entries.single().canAcknowledge)
+        assertEquals(false, content.entries.single().canDefer)
+        assertEquals(false, content.entries.single().canMute)
     }
 }
