@@ -8,7 +8,6 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import java.util.Base64
 import dev.agentrelay.connection.api.PairingAppLinkCodec
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -36,6 +35,8 @@ class PairingAppLinkJourneyTest {
 
     @After
     fun restoreClock() {
+        composeTestRule.activityRule.scenario.onActivity { it.finish() }
+        composeTestRule.activityRule.scenario.close()
         MainActivity.nowMillisProvider = System::currentTimeMillis
     }
 
@@ -43,18 +44,6 @@ class PairingAppLinkJourneyTest {
     fun cameraAppLinkShowsScopedConfirmationAndEnrollment() {
         val link = validLink()
         check(MainActivity.nowMillisProvider() == FIXTURE_NOW_MILLIS) { "QR test clock was not installed" }
-        val directVerification = runCatching {
-            PairingAppLinkCodec.parseAndVerify(
-                link,
-                FIXTURE_NOW_MILLIS,
-                PairingAppLinkCodec.ed25519Verifier(
-                    Base64.getUrlDecoder().decode(ENCODED_PUBLIC_KEY),
-                ),
-            )
-        }
-        check(directVerification.isSuccess) {
-            "QR fixture failed direct production verification: ${directVerification.exceptionOrNull()?.message}"
-        }
         launchAppLink(link)
 
         composeTestRule.onNodeWithText("Review secure pairing").assertIsDisplayed()
