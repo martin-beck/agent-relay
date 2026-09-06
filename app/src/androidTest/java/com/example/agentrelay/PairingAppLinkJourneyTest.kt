@@ -97,11 +97,11 @@ class PairingAppLinkJourneyTest {
             nonce = NONCE,
             signature = "AA",
         )
-        val keyFactory = KeyFactory.getInstance("Ed25519")
+        val keyFactory = KeyFactory.getInstance("Ed25519", "AndroidOpenSSL")
         val privateKey = keyFactory.generatePrivate(
             PKCS8EncodedKeySpec(Base64.getUrlDecoder().decode(ENCODED_PRIVATE_KEY)),
         )
-        return Signature.getInstance("Ed25519").run {
+        return Signature.getInstance("Ed25519", "AndroidOpenSSL").run {
             initSign(privateKey)
             update(unsigned.signingPayload())
             Base64.getUrlEncoder().withoutPadding().encodeToString(sign())
