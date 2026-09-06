@@ -54,6 +54,18 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/lock_screen_attention_widget_info" />
         </receiver>
+        <receiver
+            android:name=".widgets.HomeScreenAttentionWidgetProvider"
+            android:exported="false"
+            android:label="@string/home_widget_description">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.example.agentrelay.action.REFRESH_HOME_WIDGET" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/home_screen_attention_widget_info" />
+        </receiver>
     </application>
 
 </manifest>
