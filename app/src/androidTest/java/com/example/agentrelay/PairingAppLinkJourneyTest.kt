@@ -2,41 +2,40 @@ package com.example.agentrelay
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import dev.agentrelay.connection.api.PairingAppLink
 import dev.agentrelay.connection.api.PairingAppLinkCodec
+import dev.agentrelay.connection.api.StableEndpointIdentity
 import kotlinx.coroutines.runBlocking
-import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.security.KeyFactory
+import java.security.Signature
+import java.security.spec.PKCS8EncodedKeySpec
+import java.util.Base64
 
 /** Exercises the real Activity boundary used by a camera-launched pairing App Link. */
 @RunWith(AndroidJUnit4::class)
 class PairingAppLinkJourneyTest {
 
-    @get:Rule val composeTestRule = createEmptyComposeRule()
+    @get:Rule val composeTestRule = createAndroidComposeRule<MainActivity>()
 
     private lateinit var enrollment: AndroidPairingAppLinkEnrollment
-    private lateinit var scenario: ActivityScenario<MainActivity>
-    private var nowMillis = 1_700_000_000_000L
+    private var nowMillis = 0L
 
     @Before
     fun seedGrant() {
+        nowMillis = System.currentTimeMillis()
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         enrollment = AndroidPairingAppLinkEnrollment(context)
         runBlocking { enrollment.write(grantRecord()) }
-    }
-
-    @After
-    fun closeActivity() {
-        if (::scenario.isInitialized) scenario.close()
     }
 
     @Test
@@ -59,7 +58,6 @@ class PairingAppLinkJourneyTest {
 
     @Test
     fun expiredCameraAppLinkShowsExplicitRejection() {
-        nowMillis = 1_700_000_060_000L
         launchAppLink(validLink(expiresAtMillis = nowMillis - 1_000L))
 
         composeTestRule.onNodeWithText("Pairing link rejected").assertIsDisplayed()
@@ -75,14 +73,39 @@ class PairingAppLinkJourneyTest {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(raw)).setPackage(
             InstrumentationRegistry.getInstrumentation().targetContext.packageName,
         )
-        scenario = ActivityScenario.launch<MainActivity>(intent)
+        composeTestRule.activityRule.scenario.onActivity { activity ->
+            val originalIntent = Intent(activity.intent)
+            val onNewIntent = MainActivity::class.java.getDeclaredMethod("onNewIntent", Intent::class.java)
+            onNewIntent.isAccessible = true
+            onNewIntent.invoke(activity, intent)
+            activity.setIntent(originalIntent)
+        }
         composeTestRule.waitForIdle()
     }
 
     private fun validLink(expiresAtMillis: Long = nowMillis + 60_000L): String {
         return "https://${PairingAppLinkCodec.HOST}${PairingAppLinkCodec.PATH}" +
             "?a=${PairingAppLinkCodec.AUDIENCE}&d=$DAEMON_IDENTITY&e=$expiresAtMillis" +
-            "&g=$GRANT_REFERENCE&n=$NONCE&s=$VALID_SIGNATURE"
+            "&g=$GRANT_REFERENCE&n=$NONCE&s=${signatureFor(expiresAtMillis)}"
+    }
+
+    private fun signatureFor(expiresAtMillis: Long): String {
+        val unsigned = PairingAppLink(
+            expiresAtMillis = expiresAtMillis,
+            grantReference = GRANT_REFERENCE,
+            daemonIdentity = StableEndpointIdentity(DAEMON_IDENTITY),
+            nonce = NONCE,
+            signature = "AA",
+        )
+        val keyFactory = KeyFactory.getInstance("Ed25519")
+        val privateKey = keyFactory.generatePrivate(
+            PKCS8EncodedKeySpec(Base64.getUrlDecoder().decode(ENCODED_PRIVATE_KEY)),
+        )
+        return Signature.getInstance("Ed25519").run {
+            initSign(privateKey)
+            update(unsigned.signingPayload())
+            Base64.getUrlEncoder().withoutPadding().encodeToString(sign())
+        }
     }
 
     private fun grantRecord() = PairingLinkGrantRecord(
@@ -119,9 +142,8 @@ class PairingAppLinkJourneyTest {
         const val GRANT_REFERENCE = "grant-qr-12345678"
         const val NONCE = "nonce-qr-12345678"
         const val ENCODED_PUBLIC_KEY =
-            "MCowBQYDK2VwAyEA3VhLR9pAXsG" +
-                "PO" + "pfU4OzEQ4TNkP8rPVhLgJ_bn3YiYsk"
-        const val VALID_SIGNATURE =
-            "wjKKsA-CW4sWWOmKR23qzsogx-_aZZ9xJxLS4-6nemdz3JkqLP_wk-awG7PwgjTFCJyLV0_Svn6T4gHfdszRDw"
+            "MCowBQYDK2VwAyEAl0kjCTi6QUNeG1vAE2huS4nGw3tZjEiv3RvyMBKun-8"
+        const val ENCODED_PRIVATE_KEY =
+            "MC4CAQAwBQYDK2VwBCIEIOja0pTKciKvwmHw5mb9oM7caN-0WCmyoYFSKndu6vJA"
     }
 }
