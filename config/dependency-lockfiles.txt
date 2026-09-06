@@ -4,6 +4,7 @@ backup/gradle.lockfile
 buildSrc/gradle.lockfile
 companion/api/gradle.lockfile
 companion/gradle.lockfile
+companion/wear/gradle.lockfile
 connection/api/gradle.lockfile
 connection/gradle.lockfile
 connection/local/gradle.lockfile
