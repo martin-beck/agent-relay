@@ -8,6 +8,7 @@ import java.security.Security
 import java.security.Signature
 import java.util.Base64
 import java.security.spec.X509EncodedKeySpec
+import org.bouncycastle.jce.provider.BouncyCastleProvider
 
 /** A bounded, opaque handoff opened by a camera or QR reader. */
 data class PairingAppLink(
@@ -88,7 +89,7 @@ object PairingAppLinkCodec {
             val signature = runCatching { Base64.getUrlDecoder().decode(encodedSignature) }.getOrNull()
                 ?: return@PairingAppLinkSignatureVerifier false
             val keySpec = X509EncodedKeySpec(encodedPublicKey)
-            Security.getProviders().asSequence()
+            ed25519Providers()
                 .filterNot { it.name == "AndroidKeyStore" }
                 .any { provider ->
                     runCatching {
@@ -101,6 +102,15 @@ object PairingAppLinkCodec {
                     }.getOrDefault(false)
                 }
         }
+    }
+
+    private fun ed25519Providers() = sequence {
+        val bouncyCastle = Security.getProvider("BC") ?: runCatching {
+            Security.addProvider(BouncyCastleProvider())
+            Security.getProvider("BC")
+        }.getOrNull()
+        if (bouncyCastle != null) yield(bouncyCastle)
+        yieldAll(Security.getProviders().asSequence().filterNot { it.name == "BC" })
     }
 
     private fun parseQuery(query: String): Map<String, String> {

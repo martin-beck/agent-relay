@@ -14,6 +14,8 @@ kotlin {
 dependencies {
     api(project(":provider:api"))
     api(libs.kotlinx.coroutines.core)
+    // Portable Ed25519 verification for Android images whose platform providers omit it.
+    implementation("org.bouncycastle:bcprov-jdk18on:1.81")
 
     testImplementation(kotlin("test"))
     testImplementation(libs.junit)
