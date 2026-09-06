@@ -105,11 +105,9 @@ object PairingAppLinkCodec {
     }
 
     private fun ed25519Providers() = sequence {
-        val bouncyCastle = Security.getProvider("BC") ?: runCatching {
-            Security.addProvider(BouncyCastleProvider())
-            Security.getProvider("BC")
-        }.getOrNull()
-        if (bouncyCastle != null) yield(bouncyCastle)
+        // Android may already register a provider named BC without Ed25519 support.
+        // Use the bundled implementation directly instead of accepting that name collision.
+        yield(BouncyCastleProvider())
         yieldAll(Security.getProviders().asSequence().filterNot { it.name == "BC" })
     }
 
