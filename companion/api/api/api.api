@@ -238,6 +238,74 @@ public final class dev/agentrelay/companion/api/CompanionReconciliationOutcome :
 	public static fun values ()[Ldev/agentrelay/companion/api/CompanionReconciliationOutcome;
 }
 
+public abstract interface class dev/agentrelay/companion/api/CompanionRecoveryDecision {
+}
+
+public final class dev/agentrelay/companion/api/CompanionRecoveryDecision$Accepted : dev/agentrelay/companion/api/CompanionRecoveryDecision {
+	public static final field INSTANCE Ldev/agentrelay/companion/api/CompanionRecoveryDecision$Accepted;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/companion/api/CompanionRecoveryDecision$Rejected : dev/agentrelay/companion/api/CompanionRecoveryDecision {
+	public fun <init> (Ldev/agentrelay/companion/api/CompanionRecoveryRejection;)V
+	public final fun component1 ()Ldev/agentrelay/companion/api/CompanionRecoveryRejection;
+	public final fun copy (Ldev/agentrelay/companion/api/CompanionRecoveryRejection;)Ldev/agentrelay/companion/api/CompanionRecoveryDecision$Rejected;
+	public static synthetic fun copy$default (Ldev/agentrelay/companion/api/CompanionRecoveryDecision$Rejected;Ldev/agentrelay/companion/api/CompanionRecoveryRejection;ILjava/lang/Object;)Ldev/agentrelay/companion/api/CompanionRecoveryDecision$Rejected;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getReason ()Ldev/agentrelay/companion/api/CompanionRecoveryRejection;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/companion/api/CompanionRecoveryPolicy {
+	public fun <init> ()V
+	public fun <init> (JI)V
+	public synthetic fun <init> (JIILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()J
+	public final fun component2 ()I
+	public final fun copy (JI)Ldev/agentrelay/companion/api/CompanionRecoveryPolicy;
+	public static synthetic fun copy$default (Ldev/agentrelay/companion/api/CompanionRecoveryPolicy;JIILjava/lang/Object;)Ldev/agentrelay/companion/api/CompanionRecoveryPolicy;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getMaxClockSkewMillis ()J
+	public final fun getMaxReplayEntries ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/companion/api/CompanionRecoveryRejection : java/lang/Enum {
+	public static final field CLOCK_SKEW Ldev/agentrelay/companion/api/CompanionRecoveryRejection;
+	public static final field DUPLICATE_MESSAGE Ldev/agentrelay/companion/api/CompanionRecoveryRejection;
+	public static final field EXPIRED_MESSAGE Ldev/agentrelay/companion/api/CompanionRecoveryRejection;
+	public static final field GENERATION_MISMATCH Ldev/agentrelay/companion/api/CompanionRecoveryRejection;
+	public static final field REVOKED_DEVICE Ldev/agentrelay/companion/api/CompanionRecoveryRejection;
+	public static final field STALE_REVISION Ldev/agentrelay/companion/api/CompanionRecoveryRejection;
+	public static final field UNKNOWN_DEVICE Ldev/agentrelay/companion/api/CompanionRecoveryRejection;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/companion/api/CompanionRecoveryRejection;
+	public static fun values ()[Ldev/agentrelay/companion/api/CompanionRecoveryRejection;
+}
+
+public final class dev/agentrelay/companion/api/CompanionRecoverySnapshot {
+	public synthetic fun <init> (Ljava/lang/String;JJZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-30reNtw ()Ljava/lang/String;
+	public final fun component2 ()J
+	public final fun component3 ()J
+	public final fun component4 ()Z
+	public final fun component5 ()I
+	public final fun copy-JyPIAog (Ljava/lang/String;JJZI)Ldev/agentrelay/companion/api/CompanionRecoverySnapshot;
+	public static synthetic fun copy-JyPIAog$default (Ldev/agentrelay/companion/api/CompanionRecoverySnapshot;Ljava/lang/String;JJZIILjava/lang/Object;)Ldev/agentrelay/companion/api/CompanionRecoverySnapshot;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDeviceId-30reNtw ()Ljava/lang/String;
+	public final fun getEnrollmentGeneration ()J
+	public final fun getLastAcceptedRevision ()J
+	public final fun getReplayEntries ()I
+	public final fun getRevoked ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class dev/agentrelay/companion/api/CompanionSafeAction {
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J)V
 	public final fun component1 ()Ljava/lang/String;
@@ -253,6 +321,16 @@ public final class dev/agentrelay/companion/api/CompanionSafeAction {
 	public final fun getTarget ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/companion/api/CompanionSecurityRecoveryLedger {
+	public fun <init> ()V
+	public fun <init> (Ldev/agentrelay/companion/api/CompanionRecoveryPolicy;)V
+	public synthetic fun <init> (Ldev/agentrelay/companion/api/CompanionRecoveryPolicy;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun accept (Ldev/agentrelay/companion/api/CompanionMessageEnvelope;J)Ldev/agentrelay/companion/api/CompanionRecoveryDecision;
+	public final fun enroll-QhYPt48 (Ljava/lang/String;J)V
+	public final fun revoke-7hsfvl8 (Ljava/lang/String;)Z
+	public final fun snapshot-7hsfvl8 (Ljava/lang/String;)Ldev/agentrelay/companion/api/CompanionRecoverySnapshot;
 }
 
 public final class dev/agentrelay/companion/api/CompanionSpeechRequest {
