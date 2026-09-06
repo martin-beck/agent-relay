@@ -126,6 +126,11 @@ def bullets(items: list[str]) -> str:
 
 def status_text(scenario: dict[str, Any]) -> str:
     if scenario["status"] == "verified":
+        if scenario.get("verification_mode") == "synthetic-waiver":
+            return (
+                "**Status:** Verified from deterministic synthetic evidence under an explicitly "
+                "documented temporary waiver. These redacted image files are not real camera or device captures."
+            )
         return (
             "**Status:** Verified by the named Android emulator journey on every pull request "
             "and main-branch push."
@@ -194,6 +199,18 @@ def render_scenario(scenario: dict[str, Any]) -> str:
         ]
     )
     if scenario["status"] == "verified":
+        if scenario.get("verification_mode") == "synthetic-waiver":
+            lines.extend(
+                [
+                    "## Verification",
+                    "",
+                    "- Evidence mode: temporary synthetic-evidence waiver; not real camera/device verification",
+                    f"- Review manifest: `{scenario['verified_test']}`",
+                    "- Evidence: five deterministic redacted PNG review cards, explicitly labeled synthetic",
+                    "",
+                ]
+            )
+            return "\n".join(lines)
         lines.extend(
             [
                 "## Verification",

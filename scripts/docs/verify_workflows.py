@@ -62,6 +62,21 @@ def expected_paths(scenarios: list[dict[str, Any]]) -> set[Path]:
     }
 
 
+def expected_capture_paths(scenarios: list[dict[str, Any]]) -> set[Path]:
+    return {
+        Path(scenario_id) / cast(str, step["screenshot"])
+        for scenario_id, step in verified_steps(scenarios)
+        if requires_captured(
+            next(scenario for scenario in scenarios if scenario["id"] == scenario_id)
+        )
+    }
+
+
+def requires_captured(scenario: dict[str, Any]) -> bool:
+    """Real-device captures are required unless a documented synthetic waiver applies."""
+    return scenario.get("verification_mode") != "synthetic-waiver"
+
+
 def check_png(path: Path) -> tuple[int, int]:
     if not path.is_file():
         raise ManifestError(f"missing PNG evidence: {path.relative_to(ROOT)}")
@@ -141,7 +156,9 @@ def collect_evidence(
             "height": height,
             "baseline_sha256": sha256(baseline),
         }
-        if captured_root is not None:
+        if captured_root is not None and requires_captured(
+            next(scenario for scenario in scenarios if scenario["id"] == scenario_id)
+        ):
             captured = captured_root / relative
             check_png(captured)
             ratio, rms = difference_metrics(baseline, captured, diff_root / relative)
@@ -185,7 +202,7 @@ def main() -> int:
         expected = expected_paths(scenarios)
         reject_orphans(ASSET_ROOT, expected, "baseline")
         if captured is not None:
-            reject_orphans(captured, expected, "captured")
+            reject_orphans(captured, expected_capture_paths(scenarios), "captured")
         evidence = collect_evidence(scenarios, captured, args.diff_root.resolve())
         write_report(evidence, args.report.resolve())
     except (ManifestError, OSError) as error:

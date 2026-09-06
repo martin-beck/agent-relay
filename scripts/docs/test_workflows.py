@@ -15,7 +15,12 @@ from render_workflows import (
     validate_manifest,
     write_or_check,
 )
-from verify_workflows import check_png, difference_metrics, reject_orphans
+from verify_workflows import (
+    check_png,
+    difference_metrics,
+    expected_capture_paths,
+    reject_orphans,
+)
 
 
 def scenario(status: str = "verified") -> dict[str, Any]:
@@ -65,6 +70,13 @@ class RenderWorkflowsTest(unittest.TestCase):
         self.assertIn("Verified by the named Android emulator journey", rendered)
         self.assertIn("![Agent Relay showing", rendered)
         self.assertIn("example.UsageJourneyTest#captures", rendered)
+
+    def test_synthetic_waiver_excludes_real_capture_requirement(self) -> None:
+        manifest = scenario()
+        manifest["verification_mode"] = "synthetic-waiver"
+        validated = validate_manifest(manifest, Path("sample.yml"))
+
+        self.assertEqual(set(), expected_capture_paths([validated]))
 
     def test_planned_manifest_rejects_screenshot_claim(self) -> None:
         manifest = scenario("planned")
