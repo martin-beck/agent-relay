@@ -52,6 +52,35 @@ class AgentProviderRegistryTest {
         }
     }
 
+    @Test
+    fun providerDescriptorsRequireStableMetadata() {
+        assertFailsWith<IllegalArgumentException> {
+            AgentProviderDescriptor(
+                id = AgentProviderId("test.valid"),
+                displayName = " ",
+                providerVersion = "1.0.0",
+                capabilities = emptySet(),
+            )
+        }
+        assertFailsWith<IllegalArgumentException> {
+            AgentProviderDescriptor(
+                id = AgentProviderId("test.valid"),
+                displayName = "Valid",
+                providerVersion = "",
+                capabilities = emptySet(),
+            )
+        }
+        assertFailsWith<IllegalArgumentException> {
+            AgentProviderDescriptor(
+                id = AgentProviderId("test.valid"),
+                displayName = "Valid",
+                providerVersion = "1.0.0",
+                apiVersion = 0,
+                capabilities = emptySet(),
+            )
+        }
+    }
+
     private fun factory(
         id: String,
         name: String,
