@@ -138,6 +138,15 @@ An application-scoped graph owns encrypted store construction and registers both
 Local and Secure Shell plus all implemented agent factories. A navigation-scoped
 ViewModel combines coordinator and durable repository snapshots so destinations
 do not create duplicate runtimes or state authorities.
+
+Optional orchestration adapters are an explicit host-side boundary above the
+framework-neutral execution-engine contract. They receive only already
+delegated attempts, an explicitly enabled parallel or pipeline mode, and an
+allowlisted tool/model selection. They return a deterministic plan; workflow
+tasks, permissions, leases, scheduling, synchronization, execution, and
+completion remain owned by their existing authorities. The default policy is
+disabled, and Android does not depend on or discover an orchestration
+framework.
 Composer edits use an in-memory projection for immediate feedback while the
 ViewModel debounces writes to the encrypted session repository. Submission
 flushes the exact draft before provider I/O and clears it only after successful
