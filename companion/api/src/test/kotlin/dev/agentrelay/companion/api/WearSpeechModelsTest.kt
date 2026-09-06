@@ -7,8 +7,12 @@ import kotlin.test.assertFailsWith
 
 class WearSpeechModelsTest {
     private val capture = WearSpeechCapture(
-        "speech_v1_capture-1", 1, "en-US", WearSpeechPermission.GRANTED,
-        WearSpeechCaptureState.LISTENING, 100,
+        "speech_v1_capture-1",
+        1,
+        "en-US",
+        WearSpeechPermission.GRANTED,
+        WearSpeechCaptureState.LISTENING,
+        100,
     )
 
     @Test
