@@ -289,3 +289,57 @@ public final class dev/agentrelay/companion/api/CompanionSpeechResult {
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class dev/agentrelay/companion/api/WearCardState : java/lang/Enum {
+	public static final field ACTIVE Ldev/agentrelay/companion/api/WearCardState;
+	public static final field EXPIRED Ldev/agentrelay/companion/api/WearCardState;
+	public static final field RESOLVED Ldev/agentrelay/companion/api/WearCardState;
+	public static final field STALE Ldev/agentrelay/companion/api/WearCardState;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/companion/api/WearCardState;
+	public static fun values ()[Ldev/agentrelay/companion/api/WearCardState;
+}
+
+public final class dev/agentrelay/companion/api/WearCardUrgency : java/lang/Enum {
+	public static final field HIGH Ldev/agentrelay/companion/api/WearCardUrgency;
+	public static final field LOW Ldev/agentrelay/companion/api/WearCardUrgency;
+	public static final field NORMAL Ldev/agentrelay/companion/api/WearCardUrgency;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/companion/api/WearCardUrgency;
+	public static fun values ()[Ldev/agentrelay/companion/api/WearCardUrgency;
+}
+
+public final class dev/agentrelay/companion/api/WearNotificationCard {
+	public fun <init> (Ljava/lang/String;JLjava/lang/String;Ljava/lang/String;Ldev/agentrelay/companion/api/WearCardUrgency;Ldev/agentrelay/companion/api/WearCardState;Ljava/lang/String;Ldev/agentrelay/companion/api/CompanionSafeAction;J)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()J
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()Ldev/agentrelay/companion/api/WearCardUrgency;
+	public final fun component6 ()Ldev/agentrelay/companion/api/WearCardState;
+	public final fun component7 ()Ljava/lang/String;
+	public final fun component8 ()Ldev/agentrelay/companion/api/CompanionSafeAction;
+	public final fun component9 ()J
+	public final fun copy (Ljava/lang/String;JLjava/lang/String;Ljava/lang/String;Ldev/agentrelay/companion/api/WearCardUrgency;Ldev/agentrelay/companion/api/WearCardState;Ljava/lang/String;Ldev/agentrelay/companion/api/CompanionSafeAction;J)Ldev/agentrelay/companion/api/WearNotificationCard;
+	public static synthetic fun copy$default (Ldev/agentrelay/companion/api/WearNotificationCard;Ljava/lang/String;JLjava/lang/String;Ljava/lang/String;Ldev/agentrelay/companion/api/WearCardUrgency;Ldev/agentrelay/companion/api/WearCardState;Ljava/lang/String;Ldev/agentrelay/companion/api/CompanionSafeAction;JILjava/lang/Object;)Ldev/agentrelay/companion/api/WearNotificationCard;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCardId ()Ljava/lang/String;
+	public final fun getExpiresAtEpochMillis ()J
+	public final fun getPhoneDeepLink ()Ljava/lang/String;
+	public final fun getRedactedSummary ()Ljava/lang/String;
+	public final fun getRevision ()J
+	public final fun getSafeAction ()Ldev/agentrelay/companion/api/CompanionSafeAction;
+	public final fun getState ()Ldev/agentrelay/companion/api/WearCardState;
+	public final fun getTitle ()Ljava/lang/String;
+	public final fun getUrgency ()Ldev/agentrelay/companion/api/WearCardUrgency;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public final fun visibleAt (J)Z
+}
+
+public final class dev/agentrelay/companion/api/WearNotificationReconciler {
+	public fun <init> ()V
+	public final fun apply (Ldev/agentrelay/companion/api/WearNotificationCard;)Z
+	public final fun clearExpired (J)V
+	public final fun visible (J)Ljava/util/List;
+}
+
