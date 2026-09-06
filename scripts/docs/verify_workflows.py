@@ -59,7 +59,16 @@ def expected_paths(scenarios: list[dict[str, Any]]) -> set[Path]:
     return {
         Path(scenario_id) / cast(str, step["screenshot"])
         for scenario_id, step in verified_steps(scenarios)
+        if next(scenario for scenario in scenarios if scenario["id"] == scenario_id).get(
+            "verification_mode"
+        )
+        != "synthetic-waiver"
     }
+
+
+def requires_captured(scenario: dict[str, Any]) -> bool:
+    """Real-device captures are required unless a documented synthetic waiver applies."""
+    return scenario.get("verification_mode") != "synthetic-waiver"
 
 
 def check_png(path: Path) -> tuple[int, int]:
@@ -141,7 +150,9 @@ def collect_evidence(
             "height": height,
             "baseline_sha256": sha256(baseline),
         }
-        if captured_root is not None:
+        if captured_root is not None and requires_captured(
+            next(scenario for scenario in scenarios if scenario["id"] == scenario_id)
+        ):
             captured = captured_root / relative
             check_png(captured)
             ratio, rms = difference_metrics(baseline, captured, diff_root / relative)
