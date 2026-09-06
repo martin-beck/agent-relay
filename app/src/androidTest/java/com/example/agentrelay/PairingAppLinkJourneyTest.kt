@@ -124,6 +124,7 @@ class PairingAppLinkJourneyTest {
         const val NONCE = "nonce-qr-12345678"
         const val ENCODED_PUBLIC_KEY =
             "MCowBQYDK2VwAyEAl0kjCTi6QUNeG1vAE2huS4nGw3tZjEiv3RvyMBKun-8"
+
         // Keep the signed fixture deterministic while MainActivity uses the same injected test clock.
         const val FIXTURE_NOW_MILLIS = 4_102_444_740_000L
         const val VALID_SIGNATURE =
