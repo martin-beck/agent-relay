@@ -41,6 +41,49 @@ class CompanionModelsTest {
         assertFailsWith<IllegalArgumentException> { projection(expiresAt = 100) }
     }
 
+    @Test
+    fun messageEnvelopeRejectsExpiredOrOversizedReplayInputs() {
+        val message = CompanionMessageEnvelope(
+            deviceId = device.id,
+            enrollmentGeneration = 1,
+            revision = 2,
+            messageId = "message-1",
+            issuedAtEpochMillis = 100,
+            expiresAtEpochMillis = 200,
+            body = "opaque projection",
+            signature = "signature-1",
+        )
+        assertTrue(message.isReplayableAt(100))
+        assertFalse(message.isReplayableAt(200))
+        assertFailsWith<IllegalArgumentException> {
+            message.copy(body = "x".repeat(16_385))
+        }
+    }
+
+    @Test
+    fun sensitiveNotificationsAndSecretActionsAreRejected() {
+        assertFailsWith<IllegalArgumentException> {
+            CompanionNotificationSummary(
+                title = "Private",
+                summary = "redacted",
+                deepLink = "app://private",
+                privacyClass = CompanionPrivacyClass.SENSITIVE_REDACTED,
+            )
+        }
+        assertFailsWith<IllegalArgumentException> {
+            CompanionSafeAction("action-1", "Open", "token=secret", 200)
+        }
+    }
+
+    @Test
+    fun speechContractsBoundPayloadAndConfidence() {
+        val request = CompanionSpeechRequest("speech-1", "en-US", "Capture note", 200)
+        assertFailsWith<IllegalArgumentException> {
+            CompanionSpeechResult(request.requestId, "text", 101, 150)
+        }
+        CompanionSpeechResult(request.requestId, "text", 99, 150)
+    }
+
     private fun projection(
         actionClass: CompanionActionClass = CompanionActionClass.NOTIFICATION,
         payload: String = "build complete",

@@ -106,6 +106,98 @@ data class CompanionProjection(
 
 enum class CompanionDeliveryOutcome { ACCEPTED, DUPLICATE, STALE, EXPIRED, REVOKED, UNKNOWN }
 
+/** A signed message carries ordering and replay information, while its body stays opaque. */
+data class CompanionMessageEnvelope(
+    val deviceId: CompanionDeviceId,
+    val enrollmentGeneration: Long,
+    val revision: Long,
+    val messageId: String,
+    val issuedAtEpochMillis: Long,
+    val expiresAtEpochMillis: Long,
+    val body: String,
+    val signature: String,
+) {
+    init {
+        require(enrollmentGeneration > 0) { "Message enrollment generation must be positive" }
+        require(revision > 0) { "Message revision must be positive" }
+        requireBounded(messageId, "Message id", MAX_IDEMPOTENCY_CHARS)
+        require(issuedAtEpochMillis >= 0) { "Message issue time is invalid" }
+        require(expiresAtEpochMillis > issuedAtEpochMillis) { "Message expiry is invalid" }
+        require(body.isNotEmpty() && body.length <= MAX_PAYLOAD_CHARS) {
+            "Message body is invalid or too large"
+        }
+        requireBounded(signature, "Message signature", MAX_AUTH_TAG_CHARS)
+    }
+
+    fun isReplayableAt(epochMillis: Long): Boolean =
+        epochMillis in issuedAtEpochMillis until expiresAtEpochMillis
+}
+
+enum class CompanionReconciliationOutcome { APPLY, IGNORE_DUPLICATE, IGNORE_STALE, REJECT_REVOKED }
+
+data class CompanionNotificationSummary(
+    val title: String,
+    val summary: String,
+    val deepLink: String?,
+    val privacyClass: CompanionPrivacyClass,
+) {
+    init {
+        requireBounded(title, "Notification title", 120)
+        requireBounded(summary, "Notification summary", 500)
+        deepLink?.let { requireBounded(it, "Notification deep link", 256) }
+        require(privacyClass != CompanionPrivacyClass.SENSITIVE_REDACTED || deepLink == null) {
+            "Sensitive notification cannot expose a deep link"
+        }
+    }
+}
+
+data class CompanionSpeechRequest(
+    val requestId: String,
+    val localeTag: String,
+    val prompt: String,
+    val expiresAtEpochMillis: Long,
+) {
+    init {
+        requireBounded(requestId, "Speech request id", MAX_IDEMPOTENCY_CHARS)
+        requireBounded(localeTag, "Speech locale", 32)
+        requireBounded(prompt, "Speech prompt", 2_000)
+        require(expiresAtEpochMillis > 0) { "Speech request expiry is invalid" }
+    }
+}
+
+data class CompanionSpeechResult(
+    val requestId: String,
+    val transcript: String,
+    val confidencePercent: Int?,
+    val completedAtEpochMillis: Long,
+) {
+    init {
+        requireBounded(requestId, "Speech result id", MAX_IDEMPOTENCY_CHARS)
+        requireBounded(transcript, "Speech transcript", 4_000)
+        require(confidencePercent == null || confidencePercent in 0..100) {
+            "Speech confidence is invalid"
+        }
+        require(completedAtEpochMillis >= 0) { "Speech completion time is invalid" }
+    }
+}
+
+data class CompanionSafeAction(
+    val actionId: String,
+    val label: String,
+    val target: String,
+    val expiresAtEpochMillis: Long,
+) {
+    init {
+        requireBounded(actionId, "Safe action id", MAX_IDEMPOTENCY_CHARS)
+        requireBounded(label, "Safe action label", 120)
+        requireBounded(target, "Safe action target", 256)
+        require(expiresAtEpochMillis > 0) { "Safe action expiry is invalid" }
+        require(!target.contains("secret", true) && !target.contains("token", true)) {
+            "Safe action target cannot contain secret material"
+        }
+    }
+}
+
 private val ID_PATTERN = Regex("cd_v1_[A-Za-z0-9_-]{8,64}")
 private val TOKEN_PATTERN = Regex("[A-Za-z0-9._~-]{1,128}")
 private const val MAX_ALIAS_CHARS = 64
