@@ -28,6 +28,8 @@
   "counterexamples": {
     "policy": "named-traces-must-be-reproducible",
     "directory": "tests/formal/counterexamples",
-    "required": false
+    "schema_version": 1,
+    "verifier": "scripts/ci/verify_counterexamples.py",
+    "required": true
   }
 }

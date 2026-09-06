@@ -39,10 +39,35 @@ evidence class, records reviewed environmental assumptions, and defines the
 counterexample reproducibility policy. CI rejects stale model hashes or missing
 assumption metadata before running the bounded verifiers.
 
+## Counterexample interchange and replay
+
+Formal reports use the versioned JSON format in
+`tests/formal/counterexamples/`. Each fixture contains an opaque operation
+trace, its expected accepted or rejected outcome, an evidence class, and
+SHA-256 digests for both the canonical trace input and the replay
+implementation. The input digest is computed from the compact JSON trace, so
+whitespace or object-key changes cannot silently alter the replay input.
+
+The importer accepts only the bounded operations implemented by the
+concurrency model. It rejects paths, identifiers, and arbitrary payloads so
+counterexample traces cannot carry host, account, prompt, or provider data.
+Every retained trace is replayed before the formal evidence is accepted; a
+changed rejection, implementation, or trace digest fails the quality gate.
+
+```bash
+python scripts/ci/verify_counterexamples.py
+```
+
+These fixtures are regression evidence, not an unbounded proof. A fixture
+classified as a mechanical invariant or bounded model result remains limited
+to the declared finite model bounds, while `environmental-assumption` records
+conditions that the model does not establish.
+
 Run the model verifier with:
 
 ```bash
 python scripts/ci/verify_formal_models.py
 python scripts/ci/verify_workflow_concurrency.py
 python scripts/ci/verify_formal_evidence.py
+python scripts/ci/verify_counterexamples.py
 ```
