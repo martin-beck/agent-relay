@@ -37,7 +37,10 @@ class PairingAppLinkJourneyTest {
 
     @After
     fun restoreClock() {
-        if (::scenario.isInitialized) scenario.close()
+        if (::scenario.isInitialized) {
+            scenario.onActivity { it.finishAndRemoveTask() }
+            scenario.close()
+        }
         MainActivity.nowMillisProvider = System::currentTimeMillis
     }
 
