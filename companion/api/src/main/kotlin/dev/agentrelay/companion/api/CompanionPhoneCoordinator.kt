@@ -49,6 +49,11 @@ class CompanionPhoneCoordinator(
     fun enrollmentGeneration(deviceId: CompanionDeviceId): Long =
         enrollments[deviceId]?.generation ?: error("Unknown companion device")
 
+    fun acceptsControl(deviceId: CompanionDeviceId, generation: Long): Boolean =
+        enrollments[deviceId]?.let {
+            it.state == CompanionEnrollmentState.ENROLLED && it.generation == generation
+        } == true
+
     fun enqueue(projection: CompanionProjection): Boolean {
         val enrollment = enrollments[projection.deviceId]
         require(enrollment?.state == CompanionEnrollmentState.ENROLLED) {
