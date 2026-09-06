@@ -63,6 +63,20 @@ classified as a mechanical invariant or bounded model result remains limited
 to the declared finite model bounds, while `environmental-assumption` records
 conditions that the model does not establish.
 
+## FM-Agent pilot
+
+The FM-Agent pilot is a specification-only, privacy-safe experiment over one
+isolated Python verifier and one Java build-logic class. It runs with pinned
+checkout inputs, a per-module byte bound, no network access, and no source
+upload. The pilot records hashes and bounded syntax/structure observations;
+the independent validator recomputes every observation before accepting the
+report. It does not claim model-reasoning results, bug absence, or a security
+proof. Run it with:
+
+```bash
+python scripts/ci/verify_fm_agent_pilot.py
+```
+
 Run the model verifier with:
 
 ```bash
