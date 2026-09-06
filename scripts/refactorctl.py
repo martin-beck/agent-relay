@@ -19,9 +19,21 @@ class RefactorError(ValueError):
 
 
 REQUIRED_RECIPE_FIELDS = {
-    "id", "engine", "toolVersion", "risk", "languages", "include", "exclude",
-    "prohibitions", "preconditions", "invariants", "budgets", "fixtures",
-    "verification", "ownership", "compatibility",
+    "id",
+    "engine",
+    "toolVersion",
+    "risk",
+    "languages",
+    "include",
+    "exclude",
+    "prohibitions",
+    "preconditions",
+    "invariants",
+    "budgets",
+    "fixtures",
+    "verification",
+    "ownership",
+    "compatibility",
 }
 
 
@@ -48,11 +60,16 @@ def load_catalog(path: Path) -> dict[str, Any]:
             raise RefactorError("each recipe must have a string id")
         missing = REQUIRED_RECIPE_FIELDS - recipe.keys()
         if missing:
-            raise RefactorError(f"recipe {recipe.get('id', '<unknown>')} missing: {', '.join(sorted(missing))}")
+            raise RefactorError(
+                f"recipe {recipe.get('id', '<unknown>')} missing: {', '.join(sorted(missing))}"
+            )
         if recipe.get("risk") not in {"R0", "R1", "R2", "R3"}:
             raise RefactorError("recipe risk is invalid")
         budgets = recipe.get("budgets")
-        if not isinstance(budgets, dict) or not all(isinstance(budgets.get(key), int) for key in ("maxMatches", "maxFiles", "maxChangedLines")):
+        if not isinstance(budgets, dict) or not all(
+            isinstance(budgets.get(key), int)
+            for key in ("maxMatches", "maxFiles", "maxChangedLines")
+        ):
             raise RefactorError("recipe budgets are incomplete")
     return cast(dict[str, Any], catalog)
 
@@ -86,9 +103,14 @@ def eligible_files(root: Path, recipe: dict[str, Any]) -> list[Path]:
             if not candidate.is_file() or candidate.is_symlink():
                 continue
             relative = candidate.relative_to(root).as_posix()
-            if any(relative == item or relative.startswith(f"{item.rstrip('/')}/") for item in excluded):
+            if any(
+                relative == item or relative.startswith(f"{item.rstrip('/')}/") for item in excluded
+            ):
                 continue
-            if any(part in {"build", "generated", "vendor", "private"} for part in candidate.relative_to(root).parts):
+            if any(
+                part in {"build", "generated", "vendor", "private"}
+                for part in candidate.relative_to(root).parts
+            ):
                 continue
             try:
                 candidate.read_text(encoding="utf-8")
@@ -152,6 +174,17 @@ def base_commit(root: Path) -> str:
         raise RefactorError(f"cannot determine base commit: {error}") from error
 
 
+def content_digest(
+    root: Path, recipe: dict[str, Any], updates: dict[Path, str] | None = None
+) -> str:
+    """Hash the complete eligible input/output tree in a path-stable form."""
+    entries: list[dict[str, str]] = []
+    for path in eligible_files(root, recipe):
+        text = updates[path] if updates and path in updates else path.read_text(encoding="utf-8")
+        entries.append({"path": path.relative_to(root).as_posix(), "content": text})
+    return digest(entries)
+
+
 def build_plan(root: Path, recipe: dict[str, Any], catalog: dict[str, Any]) -> dict[str, Any]:
     found = matches(root, recipe)
     budgets = recipe.get("budgets", {})
@@ -180,6 +213,7 @@ def build_plan(root: Path, recipe: dict[str, Any], catalog: dict[str, Any]) -> d
                 tofile=f"b/{path.relative_to(root)}",
             )
         )
+    updates = {path: updated for path, _, updated, _ in found}
     return {
         "schemaVersion": 1,
         "recipeId": recipe["id"],
@@ -192,6 +226,8 @@ def build_plan(root: Path, recipe: dict[str, Any], catalog: dict[str, Any]) -> d
         "budgets": budgets,
         "patch": "".join(patch_lines),
         "catalogDigest": digest(catalog),
+        "inputDigest": content_digest(root, recipe),
+        "outputDigest": content_digest(root, recipe, updates),
     }
 
 
@@ -210,14 +246,26 @@ def require_claim(recipe: dict[str, Any], task: str | None, owner: str | None) -
         raise RefactorError("recipe is not allowlisted")
 
 
-def apply_recipe(root: Path, recipe: dict[str, Any], catalog: dict[str, Any], *, task: str | None, owner: str | None) -> dict[str, Any]:
+def apply_recipe(
+    root: Path,
+    recipe: dict[str, Any],
+    catalog: dict[str, Any],
+    *,
+    task: str | None,
+    owner: str | None,
+) -> dict[str, Any]:
     """Apply a bounded recipe to a clean claimed checkout and return its plan."""
     require_claim(recipe, task, owner)
     git = shutil.which("git")
     if git is None:
         raise RefactorError("git executable is unavailable")
     try:
-        status = subprocess.run([git, "-C", str(root), "status", "--porcelain"], check=True, capture_output=True, text=True)  # noqa: S603
+        status = subprocess.run(  # noqa: S603
+            [git, "-C", str(root), "status", "--porcelain"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
     except (OSError, subprocess.CalledProcessError) as error:
         raise RefactorError(f"cannot inspect worktree: {error}") from error
     if status.stdout:
@@ -225,18 +273,44 @@ def apply_recipe(root: Path, recipe: dict[str, Any], catalog: dict[str, Any], *,
     plan = build_plan(root, recipe, catalog)
     if not plan["affectedPaths"]:
         return plan
-    for path, _, updated, _ in matches(root, recipe):
-        path.write_text(updated, encoding="utf-8")
+    changes = matches(root, recipe)
+    originals = {path: path.read_bytes() for path, _, _, _ in changes}
+    try:
+        for path, _, updated, _ in changes:
+            path.write_text(updated, encoding="utf-8")
+    except (OSError, UnicodeError) as error:
+        try:
+            for path, original in originals.items():
+                path.write_bytes(original)
+        except OSError as rollback_error:
+            raise RefactorError(
+                f"application failed and rollback failed: {rollback_error}"
+            ) from error
+        raise RefactorError(f"application failed; changes rolled back: {error}") from error
     return plan
 
 
-def verify_convergence(root: Path, recipe: dict[str, Any], catalog: dict[str, Any], plan: dict[str, Any]) -> dict[str, Any]:
+def verify_convergence(
+    root: Path, recipe: dict[str, Any], catalog: dict[str, Any], plan: dict[str, Any]
+) -> dict[str, Any]:
     """Verify the plan is reproducible and a second application has no diff."""
     if base_commit(root) != plan.get("baseCommit"):
         raise RefactorError("plan base commit changed")
+    if digest(recipe) != plan.get("recipeDigest"):
+        raise RefactorError("plan recipe digest changed")
+    if digest(catalog) != plan.get("catalogDigest"):
+        raise RefactorError("plan catalog digest changed")
     if matches(root, recipe):
         raise RefactorError("application has not converged")
-    return {"planDigest": digest(plan), "converged": True, "baseCommit": plan["baseCommit"]}
+    actual_digest = content_digest(root, recipe)
+    if actual_digest != plan.get("outputDigest"):
+        raise RefactorError("working tree differs from planned output")
+    return {
+        "planDigest": digest(plan),
+        "converged": True,
+        "baseCommit": plan["baseCommit"],
+        "outputDigest": actual_digest,
+    }
 
 
 def main() -> int:
@@ -255,7 +329,12 @@ def main() -> int:
         recipe = recipe_for(catalog, args.recipe_id)
         if args.command == "scan":
             found = matches(root, recipe)
-            result = {"recipeId": recipe["id"], "recipeDigest": digest(recipe), "matchCount": sum(x[3] for x in found), "affectedPaths": [x[0].relative_to(root).as_posix() for x in found]}
+            result = {
+                "recipeId": recipe["id"],
+                "recipeDigest": digest(recipe),
+                "matchCount": sum(x[3] for x in found),
+                "affectedPaths": [x[0].relative_to(root).as_posix() for x in found],
+            }
         elif args.command == "plan":
             result = build_plan(root, recipe, catalog)
         elif args.command == "apply":
