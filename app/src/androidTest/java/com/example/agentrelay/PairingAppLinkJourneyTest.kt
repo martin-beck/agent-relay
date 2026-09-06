@@ -10,6 +10,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import dev.agentrelay.connection.api.PairingAppLinkCodec
 import kotlinx.coroutines.runBlocking
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -26,9 +27,15 @@ class PairingAppLinkJourneyTest {
 
     @Before
     fun seedGrant() {
+        MainActivity.nowMillisProvider = { FIXTURE_NOW_MILLIS }
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         enrollment = AndroidPairingAppLinkEnrollment(context)
         runBlocking { enrollment.write(grantRecord()) }
+    }
+
+    @After
+    fun restoreClock() {
+        MainActivity.nowMillisProvider = System::currentTimeMillis
     }
 
     @Test
@@ -117,8 +124,9 @@ class PairingAppLinkJourneyTest {
         const val NONCE = "nonce-qr-12345678"
         const val ENCODED_PUBLIC_KEY =
             "MCowBQYDK2VwAyEAl0kjCTi6QUNeG1vAE2huS4nGw3tZjEiv3RvyMBKun-8"
-        const val FIXTURE_NOW_MILLIS = 1_788_712_920_000L
+        // Keep the signed fixture deterministic while MainActivity uses the same injected test clock.
+        const val FIXTURE_NOW_MILLIS = 4_102_444_740_000L
         const val VALID_SIGNATURE =
-            "kux20imrkcLhIeiZYNXDhk9QJaz5V53XD97rARdbDozbdqlGQSc-avdic_wzM1YjA6WGZWBL670ORtuHMwRWCw"
+            "_1OZ9k9YbRfKC-yEbmANidwb5gW0mkNdIvppo_6JEqYuNDFXU3KnFQWKjf00LFIFQdWlQ4ROwEkYVE12xZuYAQ"
     }
 }
