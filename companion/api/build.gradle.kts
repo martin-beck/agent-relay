@@ -13,5 +13,5 @@ kotlin {
 
 dependencies {
     testImplementation(kotlin("test"))
-    testImplementation(libs.junit)
+    testCompileOnly(libs.junit)
 }
