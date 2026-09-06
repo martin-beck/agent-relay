@@ -68,8 +68,11 @@ class PairingAppLinkJourneyTest {
         )
         composeTestRule.activityRule.scenario.onActivity { activity ->
             activity.setIntent(intent)
+            MainActivity::class.java.getDeclaredMethod("onNewIntent", Intent::class.java).apply {
+                isAccessible = true
+                invoke(activity, intent)
+            }
         }
-        composeTestRule.activityRule.scenario.recreate()
         composeTestRule.waitForIdle()
     }
 
