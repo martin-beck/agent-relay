@@ -113,9 +113,14 @@ jobs:
             "$ANDROID_HOME/platform-tools/adb" pull /sdcard/Download/agent-relay-usage-guide/. \
               build/usage-guide/captured/
             mkdir -p build/qr-workflow/captured
-            "$ANDROID_HOME/platform-tools/adb" pull \
-              /sdcard/Android/data/com.example.agentrelay/files/qr-workflow/. \
-              build/qr-workflow/captured/
+            if "$ANDROID_HOME/platform-tools/adb" shell test -d \
+              /sdcard/Android/data/com.example.agentrelay/files/qr-workflow; then
+              "$ANDROID_HOME/platform-tools/adb" pull \
+                /sdcard/Android/data/com.example.agentrelay/files/qr-workflow/. \
+                build/qr-workflow/captured/
+            else
+              echo "QR evidence directory absent; capture produced no artifacts."
+            fi
           '
 
       - name: Verify connected-test evidence
