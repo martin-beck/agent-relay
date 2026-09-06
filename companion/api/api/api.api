@@ -109,6 +109,49 @@ public final class dev/agentrelay/companion/api/CompanionEnrollmentState : java/
 	public static fun values ()[Ldev/agentrelay/companion/api/CompanionEnrollmentState;
 }
 
+public final class dev/agentrelay/companion/api/CompanionMessageEnvelope {
+	public synthetic fun <init> (Ljava/lang/String;JJLjava/lang/String;JJLjava/lang/String;Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-30reNtw ()Ljava/lang/String;
+	public final fun component2 ()J
+	public final fun component3 ()J
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()J
+	public final fun component6 ()J
+	public final fun component7 ()Ljava/lang/String;
+	public final fun component8 ()Ljava/lang/String;
+	public final fun copy-7i3GmCw (Ljava/lang/String;JJLjava/lang/String;JJLjava/lang/String;Ljava/lang/String;)Ldev/agentrelay/companion/api/CompanionMessageEnvelope;
+	public static synthetic fun copy-7i3GmCw$default (Ldev/agentrelay/companion/api/CompanionMessageEnvelope;Ljava/lang/String;JJLjava/lang/String;JJLjava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ldev/agentrelay/companion/api/CompanionMessageEnvelope;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBody ()Ljava/lang/String;
+	public final fun getDeviceId-30reNtw ()Ljava/lang/String;
+	public final fun getEnrollmentGeneration ()J
+	public final fun getExpiresAtEpochMillis ()J
+	public final fun getIssuedAtEpochMillis ()J
+	public final fun getMessageId ()Ljava/lang/String;
+	public final fun getRevision ()J
+	public final fun getSignature ()Ljava/lang/String;
+	public fun hashCode ()I
+	public final fun isReplayableAt (J)Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/companion/api/CompanionNotificationSummary {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ldev/agentrelay/companion/api/CompanionPrivacyClass;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ldev/agentrelay/companion/api/CompanionPrivacyClass;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ldev/agentrelay/companion/api/CompanionPrivacyClass;)Ldev/agentrelay/companion/api/CompanionNotificationSummary;
+	public static synthetic fun copy$default (Ldev/agentrelay/companion/api/CompanionNotificationSummary;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ldev/agentrelay/companion/api/CompanionPrivacyClass;ILjava/lang/Object;)Ldev/agentrelay/companion/api/CompanionNotificationSummary;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDeepLink ()Ljava/lang/String;
+	public final fun getPrivacyClass ()Ldev/agentrelay/companion/api/CompanionPrivacyClass;
+	public final fun getSummary ()Ljava/lang/String;
+	public final fun getTitle ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class dev/agentrelay/companion/api/CompanionPrivacyClass : java/lang/Enum {
 	public static final field PRIVATE_SUMMARY Ldev/agentrelay/companion/api/CompanionPrivacyClass;
 	public static final field PUBLIC_SUMMARY Ldev/agentrelay/companion/api/CompanionPrivacyClass;
@@ -153,5 +196,66 @@ public final class dev/agentrelay/companion/api/CompanionReachability : java/lan
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/companion/api/CompanionReachability;
 	public static fun values ()[Ldev/agentrelay/companion/api/CompanionReachability;
+}
+
+public final class dev/agentrelay/companion/api/CompanionReconciliationOutcome : java/lang/Enum {
+	public static final field APPLY Ldev/agentrelay/companion/api/CompanionReconciliationOutcome;
+	public static final field IGNORE_DUPLICATE Ldev/agentrelay/companion/api/CompanionReconciliationOutcome;
+	public static final field IGNORE_STALE Ldev/agentrelay/companion/api/CompanionReconciliationOutcome;
+	public static final field REJECT_REVOKED Ldev/agentrelay/companion/api/CompanionReconciliationOutcome;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/companion/api/CompanionReconciliationOutcome;
+	public static fun values ()[Ldev/agentrelay/companion/api/CompanionReconciliationOutcome;
+}
+
+public final class dev/agentrelay/companion/api/CompanionSafeAction {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()J
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J)Ldev/agentrelay/companion/api/CompanionSafeAction;
+	public static synthetic fun copy$default (Ldev/agentrelay/companion/api/CompanionSafeAction;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JILjava/lang/Object;)Ldev/agentrelay/companion/api/CompanionSafeAction;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getActionId ()Ljava/lang/String;
+	public final fun getExpiresAtEpochMillis ()J
+	public final fun getLabel ()Ljava/lang/String;
+	public final fun getTarget ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/companion/api/CompanionSpeechRequest {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()J
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J)Ldev/agentrelay/companion/api/CompanionSpeechRequest;
+	public static synthetic fun copy$default (Ldev/agentrelay/companion/api/CompanionSpeechRequest;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JILjava/lang/Object;)Ldev/agentrelay/companion/api/CompanionSpeechRequest;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getExpiresAtEpochMillis ()J
+	public final fun getLocaleTag ()Ljava/lang/String;
+	public final fun getPrompt ()Ljava/lang/String;
+	public final fun getRequestId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/companion/api/CompanionSpeechResult {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;J)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/Integer;
+	public final fun component4 ()J
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;J)Ldev/agentrelay/companion/api/CompanionSpeechResult;
+	public static synthetic fun copy$default (Ldev/agentrelay/companion/api/CompanionSpeechResult;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;JILjava/lang/Object;)Ldev/agentrelay/companion/api/CompanionSpeechResult;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCompletedAtEpochMillis ()J
+	public final fun getConfidencePercent ()Ljava/lang/Integer;
+	public final fun getRequestId ()Ljava/lang/String;
+	public final fun getTranscript ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 
