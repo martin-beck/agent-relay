@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "cadence": {
+    "reviewIntervalDays": 90,
+    "minimumParticipants": 5,
+    "maximumJourneysPerParticipant": 5,
+    "retentionDays": 365,
+    "storage": "aggregate-only"
+  },
+  "journeys": [
+    {
+      "id": "fresh-start",
+      "successRateTarget": 0.8,
+      "medianTimeSecondsMax": 180,
+      "errorRateMax": 0.2,
+      "workloadScoreMax": 4,
+      "reviewPrompts": [
+        "Can a new user identify the safe next action?",
+        "What, if anything, made the first request difficult?"
+      ]
+    },
+    {
+      "id": "attention-resolution",
+      "successRateTarget": 0.9,
+      "medianTimeSecondsMax": 120,
+      "errorRateMax": 0.15,
+      "workloadScoreMax": 4,
+      "reviewPrompts": [
+        "Can the user explain what decision is required before answering?",
+        "Does the result state make the outcome and scope clear?"
+      ]
+    },
+    {
+      "id": "session-switch",
+      "successRateTarget": 0.9,
+      "medianTimeSecondsMax": 90,
+      "errorRateMax": 0.15,
+      "workloadScoreMax": 3,
+      "reviewPrompts": [
+        "Can the user find the intended session without searching raw identifiers?",
+        "Is the draft and session context visibly preserved?"
+      ]
+    },
+    {
+      "id": "connection-recovery",
+      "successRateTarget": 0.8,
+      "medianTimeSecondsMax": 240,
+      "errorRateMax": 0.25,
+      "workloadScoreMax": 4,
+      "reviewPrompts": [
+        "Can the user distinguish retryable failure from required reauthorization?",
+        "Does the recovery state offer one safe actionable next step?"
+      ]
+    },
+    {
+      "id": "artifact-export",
+      "successRateTarget": 0.9,
+      "medianTimeSecondsMax": 150,
+      "errorRateMax": 0.15,
+      "workloadScoreMax": 3,
+      "reviewPrompts": [
+        "Can the user identify the checked source and approved destination?",
+        "Is cancellation clearly safe and reversible?"
+      ]
+    }
+  ]
+}
