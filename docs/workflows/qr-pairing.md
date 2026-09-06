@@ -2,7 +2,7 @@
 
 # Pair the phone with a durable host
 
-**Status:** Planned. This page defines the intended attention contract; it does not claim that the workflow is implemented.
+**Status:** Verified from deterministic synthetic evidence under an explicitly documented temporary waiver. These redacted image files are not real camera or device captures.
 
 Scan one host-generated QR code and establish an authenticated route when both devices share a network.
 
@@ -36,25 +36,41 @@ Pair two devices that are not directly reachable from the internet with minimal 
 
 **Action:** Open pairing on the host daemon.
 
-**Expected result:** The host shows a QR code, expiry, and a human-readable authentication phrase.
+**Expected result:** The synthetic host fixture shows a QR code, expiry, and a human-readable authentication phrase.
+
+![Synthetic redacted host QR display showing a short-lived pairing code; not a real device capture.](../assets/workflows/qr-pairing/host-qr-display.png)
 
 ### 2. Scan and verify
 
 **Action:** Scan the code in Agent Relay and compare the authentication phrase.
 
-**Expected result:** Both devices prove the pinned identities before exchanging durable credentials.
+**Expected result:** The synthetic app fixture shows both devices proving pinned identities before exchanging durable credentials.
+
+![Synthetic redacted Agent Relay secure-pairing confirmation; not a real device capture.](../assets/workflows/qr-pairing/app-confirmation.png)
 
 ### 3. Confirm a camera App Link
 
 **Action:** Tap the camera preview link and review the verified daemon identity in Agent Relay.
 
-**Expected result:** Agent Relay rejects an unverified, expired or replayed link and otherwise enters the same confirmation and probe path as in-app scanning.
+**Expected result:** The synthetic camera-link fixture shows the verified HTTPS path; Agent Relay rejects an unverified, expired or replayed link and otherwise enters the same confirmation and probe path.
+
+![Synthetic redacted camera link preview opening Agent Relay; not a real camera capture.](../assets/workflows/qr-pairing/camera-link-preview.png)
 
 ### 4. Confirm the paired host
 
 **Action:** Name the host and approve the narrow capability set.
 
-**Expected result:** The host becomes available through the best shared-network route.
+**Expected result:** The synthetic fixture shows the host becoming available through the best shared-network route.
+
+![Synthetic redacted successful host enrollment result; not a real device capture.](../assets/workflows/qr-pairing/enrollment-complete.png)
+
+### 5. Reject an invalid or expired link
+
+**Action:** Return to the QR flow after an expired or replayed link is detected.
+
+**Expected result:** Agent Relay rejects the link and explains that a new code is required.
+
+![Synthetic redacted expired-link rejection state; not a real device capture.](../assets/workflows/qr-pairing/expired-rejection.png)
 
 ## Recovery and fault handling
 
@@ -62,3 +78,9 @@ Pair two devices that are not directly reachable from the internet with minimal 
 - A browser fallback never completes pairing and gives explicit return-to-app guidance.
 - Failed relay paths fall back to other advertised transports without weakening identity checks.
 - Removing a device revokes its durable credential without changing unrelated pairings.
+
+## Verification
+
+- Evidence mode: temporary synthetic-evidence waiver; not real camera/device verification
+- Review manifest: `SyntheticQrWorkflowEvidence#reviewedFiveStates`
+- Evidence: five deterministic redacted PNG review cards, explicitly labeled synthetic
