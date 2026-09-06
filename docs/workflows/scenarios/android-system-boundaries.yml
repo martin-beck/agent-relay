@@ -1,0 +1,37 @@
+id: android-system-boundaries
+title: Android system-boundary assurance
+status: planned
+summary: Exercise synthetic permission, lifecycle, companion, Wear, and form-factor boundaries.
+order: 19
+goal: Prove system-owned Android boundaries fail closed and recover without replaying revoked state.
+preconditions:
+  - Synthetic device records and disposable emulator fixtures are used; no personal data is collected.
+  - Exact-head device evidence is serialized and reviewed before this workflow becomes verified.
+automatic:
+  - Permission denial and lifecycle interruption remain explicit bounded states.
+  - Companion and Wear metadata is validated before crossing the device boundary.
+attention:
+  - Review redacted device traces and accessibility evidence before promoting any step to verified.
+  - Keep planned steps distinct from physical-device evidence and do not claim screenshots here.
+recovery:
+  - Revoke and re-enroll a device with a new generation before accepting new messages.
+  - Clean disposable emulator state and discard synthetic credentials after each run.
+evidence:
+  screenshots: []
+  note: Planned until exact-head device evidence is reviewed; no screenshot claim is made.
+steps:
+  - id: permission-boundary
+    title: Reject unavailable permission
+    status: planned
+    action: Exercise the synthetic permission-denied fixture without crossing into device data.
+    expected: A denied system permission produces a bounded, actionable state.
+  - id: lifecycle-recovery
+    title: Resume after process and connectivity interruption
+    status: planned
+    action: Restart the disposable fixture after an interruption and inspect its durable generation.
+    expected: Durable state resumes without replaying revoked or stale device messages.
+  - id: form-factor-boundary
+    title: Validate companion and Wear system limits
+    status: planned
+    action: Submit synthetic companion and Wear metadata through the bounded validation contracts.
+    expected: Unsupported or unauthorized device metadata fails closed.
