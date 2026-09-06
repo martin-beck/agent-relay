@@ -1,0 +1,63 @@
+name: Documentation maintenance
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "37 3 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: documentation-maintenance
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Documentation drift and evidence maintenance
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          version: "0.12.8"
+          enable-cache: false
+
+      - name: Install repository-check runner
+        run: uv sync --locked --only-group quality --only-group docs
+
+      - name: Verify generated documentation and evidence freshness
+        run: |
+          set -euo pipefail
+          uv run python scripts/docs/render_workflows.py --check
+          uv run python scripts/docs/verify_workflows.py
+          uv run python scripts/docs/verify_evidence_reproducibility.py \
+            --source-revision "${GITHUB_SHA}"
+          uv run python scripts/docs/verify_evidence_reproducibility.py --check
+          uv run python scripts/docs/verify_usability_review.py
+          uv run python scripts/docs/generate_extension_api.py --check
+          uv run python scripts/docs/generate_api_reference.py --check
+          uv run python scripts/docs/verify_extension_examples.py
+          uv run python scripts/docs/verify_documentation_authority.py
+          uv run python scripts/docs/verify_documentation_privacy.py
+          uv run python scripts/docs/render_status.py --check
+          uv run python scripts/docs/verify_documentation_consistency.py
+          uv run mkdocs build --strict
+
+      - name: Check external links with retries
+        run: uv run pre-commit run lychee-online --hook-stage manual --all-files
+
+      - name: Upload maintenance site
+        if: ${{ success() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: documentation-maintenance-site-${{ github.run_attempt }}
+          path: build/site
+          if-no-files-found: error
+          retention-days: 14

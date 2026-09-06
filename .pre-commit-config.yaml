@@ -115,7 +115,7 @@ repos:
           - --include-fragments
           - --no-progress
           - --exclude
-          - ^https://github\.com/martin-beck/agent-relay/(actions/workflows/verify\.yml(/badge\.svg)?|security/advisories/new)$
+          - ^(file:///.*/agent-relay-state/?|https://github\.com/martin-beck/agent-relay/(actions/workflows/(verify|ui)\.yml(/badge\.svg)?|security/advisories/new))$
         types: [markdown]
         stages: [manual]
 

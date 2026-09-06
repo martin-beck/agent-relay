@@ -355,6 +355,11 @@ the workflow captures with reviewed evidence, and builds the static guide. A
 successful compile, JVM test, or site build does not substitute for device
 execution.
 
+The scheduled `Documentation maintenance` workflow repeats generated-document,
+workflow-evidence, reproducibility, privacy, API, consistency, strict-site, and
+external-link checks. It uploads a browsable site only after every check passes;
+stale or missing evidence fails closed.
+
 ## CI
 
 `.github/workflows/verify.yml` runs the required quality/build and deterministic
