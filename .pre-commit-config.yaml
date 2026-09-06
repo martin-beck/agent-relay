@@ -222,6 +222,15 @@ repos:
           ^(docs/workflows/scenarios/.*\.ya?ml|
           scripts/docs/(render|verify)_workflows\.py|
           docs/assets/workflows/.*\.png)$
+      - id: verify-documentation-authority
+        name: Verify machine-readable documentation authority
+        entry: python scripts/docs/verify_documentation_authority.py
+        language: system
+        pass_filenames: false
+        files: >-
+          ^(docs/contracts/documentation-authority-v1\.json|
+          docs/(ARCHITECTURE|SOFTWARE_DESIGN|PRODUCT_ROADMAP|QUALITY|WORKFLOWS)\.md|
+          scripts/docs/verify_documentation_authority\.py)$
       - id: taplo-format
         name: Check TOML formatting with Taplo
         entry: taplo format
