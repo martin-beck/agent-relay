@@ -237,6 +237,9 @@ Validate the authored catalogue, reviewed images, and site without an emulator:
 ```bash
 uv run --only-group docs python scripts/docs/render_workflows.py --check
 uv run --only-group docs python scripts/docs/verify_workflows.py
+uv run --only-group docs python scripts/docs/verify_evidence_reproducibility.py \
+  --source-revision "$(git rev-parse HEAD)"
+uv run --only-group docs python scripts/docs/verify_evidence_reproducibility.py --check
 uv run --only-group docs mkdocs build --strict
 uv run --only-group docs mkdocs serve --strict
 ```
