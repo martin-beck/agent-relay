@@ -1,0 +1,34 @@
+id: diagnostic-privacy-lifecycle
+title: Capture and delete diagnostic evidence safely
+status: planned
+summary: Exercise synthetic diagnostic authorization, redaction, retention expiry, and deletion.
+order: 20
+goal: Prove diagnostic evidence remains bounded, redacted, expiring, and explicitly deletable.
+preconditions:
+  - Synthetic event identifiers and values are used; prompts, credentials, routes, and raw traces are absent.
+  - Exact-head device evidence is serialized and reviewed before any step becomes verified.
+automatic:
+  - Capture requires explicit authorization and component scope.
+  - Retention removes expired records and deletion removes the capture session.
+attention:
+  - Review the redacted evidence boundary and any data-loss counters before export.
+  - Planned steps do not claim screenshots or implemented physical-device behavior.
+recovery:
+  - Interrupted capture is discarded and the bounded rejection counter remains observable.
+  - Expired evidence is removed before a later query can expose it.
+steps:
+  - id: authorize-capture
+    title: Authorize a bounded capture
+    status: planned
+    action: Start a synthetic component-scoped capture with explicit authorization.
+    expected: Unauthorized or out-of-scope events are rejected without persistence.
+  - id: redact-evidence
+    title: Redact evidence before storage
+    status: planned
+    action: Append a synthetic event containing one allowed and one private attribute.
+    expected: Only the explicitly allowed attribute remains in the stored projection.
+  - id: expire-and-delete
+    title: Expire and delete the capture
+    status: planned
+    action: Advance the synthetic clock past retention and end the capture session.
+    expected: Expired records disappear, deletion is observable, and rejection or loss counters remain explicit.
