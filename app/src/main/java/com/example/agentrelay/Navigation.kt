@@ -101,42 +101,42 @@ internal fun MainNavigation(
             onBack = onBack,
             entryProvider =
             entryProvider {
-            entry<Main> {
-                MainScreen(
-                    viewModel = mainViewModel,
-                    onOpenSession = { key ->
-                        backStack.add(SessionDetails(key))
-                    },
-                    speechActions = speechActions,
-                    notificationPermissionState = notificationPermissionState,
-                    onRequestNotificationPermission = onRequestNotificationPermission,
-                    onOpenNotificationSettings = onOpenNotificationSettings,
-                    backgroundTransportState = backgroundTransportState,
-                    onStartBackgroundTransport = application.backgroundTransport::start,
-                    onStopBackgroundTransport = application.backgroundTransport::stop,
-                    onSaveArtifact = saveArtifact,
-                    modifier = Modifier.safeDrawingPadding().padding(16.dp),
-                )
-            }
-            entry<SessionDetails> { route ->
-                LaunchedEffect(route.sessionKey) {
-                    mainViewModel.selectSession(route.sessionKey)
+                entry<Main> {
+                    MainScreen(
+                        viewModel = mainViewModel,
+                        onOpenSession = { key ->
+                            backStack.add(SessionDetails(key))
+                        },
+                        speechActions = speechActions,
+                        notificationPermissionState = notificationPermissionState,
+                        onRequestNotificationPermission = onRequestNotificationPermission,
+                        onOpenNotificationSettings = onOpenNotificationSettings,
+                        backgroundTransportState = backgroundTransportState,
+                        onStartBackgroundTransport = application.backgroundTransport::start,
+                        onStopBackgroundTransport = application.backgroundTransport::stop,
+                        onSaveArtifact = saveArtifact,
+                        modifier = Modifier.safeDrawingPadding().padding(16.dp),
+                    )
                 }
-                SessionDetailRoute(
-                    state = uiState,
-                    onBack = onBack,
-                    onDraftChanged = mainViewModel::updateSessionDraft,
-                    onSubmitDraft = mainViewModel::submitSessionDraft,
-                    onResumeSession = mainViewModel::resumeSession,
-                    onInterruptSession = mainViewModel::interruptSession,
-                    onRespondToAction = mainViewModel::respondToAction,
-                    onRefreshArtifacts = mainViewModel.artifactInteractions::refreshArtifacts,
-                    onSaveArtifact = saveArtifact,
-                    onCancelArtifact = mainViewModel.artifactInteractions::cancelArtifactExport,
-                    speechActions = speechActions,
-                    modifier = Modifier.safeDrawingPadding(),
-                )
-            }
+                entry<SessionDetails> { route ->
+                    LaunchedEffect(route.sessionKey) {
+                        mainViewModel.selectSession(route.sessionKey)
+                    }
+                    SessionDetailRoute(
+                        state = uiState,
+                        onBack = onBack,
+                        onDraftChanged = mainViewModel::updateSessionDraft,
+                        onSubmitDraft = mainViewModel::submitSessionDraft,
+                        onResumeSession = mainViewModel::resumeSession,
+                        onInterruptSession = mainViewModel::interruptSession,
+                        onRespondToAction = mainViewModel::respondToAction,
+                        onRefreshArtifacts = mainViewModel.artifactInteractions::refreshArtifacts,
+                        onSaveArtifact = saveArtifact,
+                        onCancelArtifact = mainViewModel.artifactInteractions::cancelArtifactExport,
+                        speechActions = speechActions,
+                        modifier = Modifier.safeDrawingPadding(),
+                    )
+                }
             },
         )
         when (val state = pairingState) {
