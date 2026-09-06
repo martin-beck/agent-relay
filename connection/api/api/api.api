@@ -1193,6 +1193,42 @@ public abstract interface class dev/agentrelay/connection/api/ManagedConnection 
 	public abstract fun suspendForBackground (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
+public final class dev/agentrelay/connection/api/PairingAppLink {
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2-J8HH09g ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()J
+	public final fun component5 ()Ljava/lang/String;
+	public final fun copy-mBKB4O0 (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;)Ldev/agentrelay/connection/api/PairingAppLink;
+	public static synthetic fun copy-mBKB4O0$default (Ldev/agentrelay/connection/api/PairingAppLink;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;ILjava/lang/Object;)Ldev/agentrelay/connection/api/PairingAppLink;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDaemonIdentity-J8HH09g ()Ljava/lang/String;
+	public final fun getExpiresAtMillis ()J
+	public final fun getGrantReference ()Ljava/lang/String;
+	public final fun getNonce ()Ljava/lang/String;
+	public final fun getSignature ()Ljava/lang/String;
+	public fun hashCode ()I
+	public final fun signingPayload ()[B
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/PairingAppLinkCodec {
+	public static final field AUDIENCE Ljava/lang/String;
+	public static final field HOST Ljava/lang/String;
+	public static final field INSTANCE Ldev/agentrelay/connection/api/PairingAppLinkCodec;
+	public static final field PATH Ljava/lang/String;
+	public final fun ed25519Verifier ([B)Ldev/agentrelay/connection/api/PairingAppLinkSignatureVerifier;
+	public final fun parse (Ljava/lang/String;JLjava/lang/String;)Ldev/agentrelay/connection/api/PairingAppLink;
+	public static synthetic fun parse$default (Ldev/agentrelay/connection/api/PairingAppLinkCodec;Ljava/lang/String;JLjava/lang/String;ILjava/lang/Object;)Ldev/agentrelay/connection/api/PairingAppLink;
+	public final fun parseAndVerify (Ljava/lang/String;JLdev/agentrelay/connection/api/PairingAppLinkSignatureVerifier;Ljava/lang/String;)Ldev/agentrelay/connection/api/PairingAppLink;
+	public static synthetic fun parseAndVerify$default (Ldev/agentrelay/connection/api/PairingAppLinkCodec;Ljava/lang/String;JLdev/agentrelay/connection/api/PairingAppLinkSignatureVerifier;Ljava/lang/String;ILjava/lang/Object;)Ldev/agentrelay/connection/api/PairingAppLink;
+}
+
+public abstract interface class dev/agentrelay/connection/api/PairingAppLinkSignatureVerifier {
+	public abstract fun verify ([BLjava/lang/String;)Z
+}
+
 public final class dev/agentrelay/connection/api/PairingCeremony {
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Set;JJJLdev/agentrelay/connection/api/PairingCeremonyState;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Set;JJJLdev/agentrelay/connection/api/PairingCeremonyState;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -1243,6 +1279,47 @@ public final class dev/agentrelay/connection/api/PairingCeremonyState : java/lan
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/connection/api/PairingCeremonyState;
 	public static fun values ()[Ldev/agentrelay/connection/api/PairingCeremonyState;
+}
+
+public final class dev/agentrelay/connection/api/PairingEnrollmentCoordinator {
+	public fun <init> (Ldev/agentrelay/connection/api/PairingEnrollmentStore;Ldev/agentrelay/connection/api/PairingEnrollmentProfileFactory;Ldev/agentrelay/connection/api/PairingEnrollmentProbe;)V
+	public final fun enroll (Ldev/agentrelay/connection/api/PairingAppLink;)Z
+}
+
+public abstract interface class dev/agentrelay/connection/api/PairingEnrollmentProbe {
+	public abstract fun verify (Ldev/agentrelay/connection/api/PairingEnrollmentProfile;)Z
+}
+
+public final class dev/agentrelay/connection/api/PairingEnrollmentProfile {
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-J8HH09g ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()J
+	public final fun copy-X-dKT6k (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J)Ldev/agentrelay/connection/api/PairingEnrollmentProfile;
+	public static synthetic fun copy-X-dKT6k$default (Ldev/agentrelay/connection/api/PairingEnrollmentProfile;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JILjava/lang/Object;)Ldev/agentrelay/connection/api/PairingEnrollmentProfile;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCredentialReference ()Ljava/lang/String;
+	public final fun getDaemonIdentity-J8HH09g ()Ljava/lang/String;
+	public final fun getExpiresAtMillis ()J
+	public final fun getGrantReference ()Ljava/lang/String;
+	public final fun getRouteReference ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class dev/agentrelay/connection/api/PairingEnrollmentProfileFactory {
+	public abstract fun create (Ldev/agentrelay/connection/api/PairingAppLink;)Ldev/agentrelay/connection/api/PairingEnrollmentProfile;
+}
+
+public abstract interface class dev/agentrelay/connection/api/PairingEnrollmentStore {
+	public abstract fun begin (Ldev/agentrelay/connection/api/PairingEnrollmentProfile;)Ldev/agentrelay/connection/api/PairingEnrollmentTransaction;
+}
+
+public abstract interface class dev/agentrelay/connection/api/PairingEnrollmentTransaction {
+	public abstract fun commit ()V
+	public abstract fun rollback ()V
 }
 
 public final class dev/agentrelay/connection/api/PairingGrant {
