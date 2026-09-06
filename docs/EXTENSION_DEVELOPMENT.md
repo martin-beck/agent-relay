@@ -10,8 +10,7 @@ versioned proposal, never a second scheduler or policy engine.
 An extension declares a lowercase stable `id`, display name, API and schema
 versions, one or more capabilities, requested fields, triggers, actions,
 permissions, lifecycle hooks, and resource budgets. The machine-readable
-contract is [extension-manifest.schema.json](../config/extension-manifest.schema.json)
-and the Kotlin API is described in the generated
+contract is `config/extension-manifest.schema.json` and the Kotlin API is described in the generated
 [extension API reference](generated/extension-api.md).
 
 `apiVersion.major` changes require a migration and compatibility review;
