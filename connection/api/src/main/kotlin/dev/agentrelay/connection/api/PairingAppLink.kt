@@ -3,8 +3,11 @@ package dev.agentrelay.connection.api
 import java.net.URI
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
+import java.security.KeyFactory
+import java.security.Security
 import java.security.Signature
 import java.util.Base64
+import java.security.spec.X509EncodedKeySpec
 
 /** A bounded, opaque handoff opened by a camera or QR reader. */
 data class PairingAppLink(
@@ -82,17 +85,21 @@ object PairingAppLinkCodec {
     fun ed25519Verifier(encodedPublicKey: ByteArray): PairingAppLinkSignatureVerifier {
         require(encodedPublicKey.size <= 64) { "Pairing public key is too large" }
         return PairingAppLinkSignatureVerifier { payload, encodedSignature ->
-            runCatching {
-                Signature.getInstance("Ed25519").run {
-                    initVerify(
-                        java.security.KeyFactory.getInstance("Ed25519").generatePublic(
-                            java.security.spec.X509EncodedKeySpec(encodedPublicKey),
-                        ),
-                    )
-                    update(payload)
-                    verify(Base64.getUrlDecoder().decode(encodedSignature))
+            val signature = runCatching { Base64.getUrlDecoder().decode(encodedSignature) }.getOrNull()
+                ?: return@PairingAppLinkSignatureVerifier false
+            val keySpec = X509EncodedKeySpec(encodedPublicKey)
+            Security.getProviders().asSequence()
+                .filterNot { it.name == "AndroidKeyStore" }
+                .any { provider ->
+                    runCatching {
+                        val key = KeyFactory.getInstance("Ed25519", provider).generatePublic(keySpec)
+                        Signature.getInstance("Ed25519", provider).run {
+                            initVerify(key)
+                            update(payload)
+                            verify(signature)
+                        }
+                    }.getOrDefault(false)
                 }
-            }.getOrDefault(false)
         }
     }
 
