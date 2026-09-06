@@ -5,6 +5,11 @@ terminology, document links, decision status, and traceability. It does not
 duplicate subsystem contracts: each linked document remains authoritative for
 its own boundary.
 
+The machine-readable source and claim registry is
+[documentation-authority-v1.json](contracts/documentation-authority-v1.json).
+The repository validator checks that every registered source and evidence path
+exists before documentation is published.
+
 ## System context
 
 Agent Relay is an Android client for supervising local and remote coding-agent

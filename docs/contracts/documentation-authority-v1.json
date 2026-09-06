@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "authority": "docs/contracts/documentation-authority-v1.json",
+  "sources": [
+    {
+      "id": "architecture",
+      "path": "docs/ARCHITECTURE.md",
+      "kind": "design",
+      "status": "authoritative"
+    },
+    {
+      "id": "software-design",
+      "path": "docs/SOFTWARE_DESIGN.md",
+      "kind": "integration",
+      "status": "authoritative"
+    },
+    {
+      "id": "product-roadmap",
+      "path": "docs/PRODUCT_ROADMAP.md",
+      "kind": "product",
+      "status": "authoritative"
+    },
+    {
+      "id": "workflows",
+      "path": "docs/WORKFLOWS.md",
+      "kind": "generated-index",
+      "status": "generated"
+    },
+    {
+      "id": "workflow-scenarios",
+      "path": "docs/workflows/scenarios",
+      "kind": "contract",
+      "status": "authoritative"
+    },
+    {
+      "id": "quality",
+      "path": "docs/QUALITY.md",
+      "kind": "verification-policy",
+      "status": "authoritative"
+    }
+  ],
+  "claims": [
+    {
+      "id": "module-direction",
+      "authority": "architecture",
+      "evidence": ["docs/ARCHITECTURE.md", "docs/DEVELOPMENT.md"]
+    },
+    {
+      "id": "workflow-status",
+      "authority": "workflow-scenarios",
+      "evidence": ["scripts/docs/render_workflows.py", "scripts/docs/verify_workflows.py"]
+    },
+    {
+      "id": "quality-gates",
+      "authority": "quality",
+      "evidence": [".pre-commit-config.yaml", ".github/workflows/verify.yml"]
+    }
+  ]
+}
