@@ -16,6 +16,7 @@ org.jetbrains.kotlin:kotlin-daemon-client:2.3.20=kotlinBuildToolsApiClasspath
 org.jetbrains.kotlin:kotlin-daemon-embeddable:2.3.20=kotlinBuildToolsApiClasspath
 org.jetbrains.kotlin:kotlin-klib-abi-reader:2.3.20=kotlinInternalAbiValidation
 org.jetbrains.kotlin:kotlin-metadata-jvm:2.3.20=kotlinInternalAbiValidation
+org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.10=dependencyAnalysisKotlinMetadataClasspath
 org.jetbrains.kotlin:kotlin-reflect:1.6.10=kotlinBuildToolsApiClasspath
 org.jetbrains.kotlin:kotlin-script-runtime:2.3.20=kotlinBuildToolsApiClasspath,kotlinCompilerPluginClasspathMain,kotlinCompilerPluginClasspathTest
 org.jetbrains.kotlin:kotlin-scripting-common:2.3.20=kotlinCompilerPluginClasspathMain,kotlinCompilerPluginClasspathTest
