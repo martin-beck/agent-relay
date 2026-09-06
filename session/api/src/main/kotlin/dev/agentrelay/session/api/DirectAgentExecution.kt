@@ -60,7 +60,11 @@ class DirectAgentExecutionAdapter(
             }
         } catch (failure: RuntimeException) {
             finish(request.requestId, DirectAgentExecutionState.RECOVERABLE)
-            ExecutionEngineResult(ExecutionEngineOutcome.UNKNOWN, "Direct execution requires recovery")
+            val detail = failure.message?.takeIf { it.isNotBlank() } ?: failure::class.simpleName
+            ExecutionEngineResult(
+                ExecutionEngineOutcome.UNKNOWN,
+                "Direct execution requires recovery${detail?.let { ": $it" }.orEmpty()}",
+            )
         }
     }
 

@@ -30,7 +30,10 @@ class DirectAgentExecutionTest {
     fun driverFailureRequiresExplicitRecoveryEvidence() {
         val adapter = adapter { _, _, _ -> error("process lost") }
 
-        assertEquals(ExecutionEngineOutcome.UNKNOWN, adapter.execute(request()).outcome)
+        val result = adapter.execute(request())
+
+        assertEquals(ExecutionEngineOutcome.UNKNOWN, result.outcome)
+        assertEquals("Direct execution requires recovery: process lost", result.summary)
         assertEquals(DirectAgentExecutionState.RECOVERABLE, adapter.state())
         assertEquals("request-1", adapter.recover("request-1", DIGEST).requestId)
         assertEquals(DirectAgentExecutionState.IDLE, adapter.state())
