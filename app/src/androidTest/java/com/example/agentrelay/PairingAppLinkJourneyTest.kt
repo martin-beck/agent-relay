@@ -119,7 +119,6 @@ class PairingAppLinkJourneyTest {
             "MCowBQYDK2VwAyEAl0kjCTi6QUNeG1vAE2huS4nGw3tZjEiv3RvyMBKun-8"
         const val FIXTURE_NOW_MILLIS = 1_788_712_920_000L
         const val VALID_SIGNATURE =
-            "YdHRLuFbqUR3sFMKvzB7-IbL-SuONRbjTO8mCSOtmKOZpla1HHJm2gws" +
-                "O" + "tQ6ftLAfu5lpLyq1LQ2gNy8-aXUAw"
+            "kSybIjJ5iFeajolgf_E3wiE_CbNbhSnD8KkGE0ezKwqFujjkaZJ8m4HvLW08cRffYtFah8QYVSDtY3ywCpv1DA"
     }
 }
