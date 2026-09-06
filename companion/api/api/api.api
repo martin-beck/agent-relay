@@ -451,6 +451,27 @@ public final class dev/agentrelay/companion/api/WearCompanionPackageState : java
 	public static fun values ()[Ldev/agentrelay/companion/api/WearCompanionPackageState;
 }
 
+public final class dev/agentrelay/companion/api/WearConsentedInstallOutcome : java/lang/Enum {
+	public static final field CANCELLED Ldev/agentrelay/companion/api/WearConsentedInstallOutcome;
+	public static final field CONSENT_EXPIRED Ldev/agentrelay/companion/api/WearConsentedInstallOutcome;
+	public static final field CONSENT_REQUIRED Ldev/agentrelay/companion/api/WearConsentedInstallOutcome;
+	public static final field INSTALLED Ldev/agentrelay/companion/api/WearConsentedInstallOutcome;
+	public static final field REQUEST_REJECTED Ldev/agentrelay/companion/api/WearConsentedInstallOutcome;
+	public static final field ROLLBACK_FAILED Ldev/agentrelay/companion/api/WearConsentedInstallOutcome;
+	public static final field ROLLED_BACK Ldev/agentrelay/companion/api/WearConsentedInstallOutcome;
+	public static final field VERIFICATION_FAILED Ldev/agentrelay/companion/api/WearConsentedInstallOutcome;
+	public static final field WRONG_DEVICE Ldev/agentrelay/companion/api/WearConsentedInstallOutcome;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/companion/api/WearConsentedInstallOutcome;
+	public static fun values ()[Ldev/agentrelay/companion/api/WearConsentedInstallOutcome;
+}
+
+public final class dev/agentrelay/companion/api/WearConsentedInstallationCoordinator {
+	public fun <init> (Ldev/agentrelay/companion/api/WearInstallTransport;)V
+	public final fun install-2v4T3FU (Ldev/agentrelay/companion/api/WearInstallConsent;Ljava/lang/String;Ldev/agentrelay/companion/api/WearInstallationRequest;JZ)Ldev/agentrelay/companion/api/WearConsentedInstallOutcome;
+	public static synthetic fun install-2v4T3FU$default (Ldev/agentrelay/companion/api/WearConsentedInstallationCoordinator;Ldev/agentrelay/companion/api/WearInstallConsent;Ljava/lang/String;Ldev/agentrelay/companion/api/WearInstallationRequest;JZILjava/lang/Object;)Ldev/agentrelay/companion/api/WearConsentedInstallOutcome;
+}
+
 public final class dev/agentrelay/companion/api/WearControlAction : java/lang/Enum {
 	public static final field ACKNOWLEDGE Ldev/agentrelay/companion/api/WearControlAction;
 	public static final field DEFER Ldev/agentrelay/companion/api/WearControlAction;
@@ -670,6 +691,26 @@ public final class dev/agentrelay/companion/api/WearDispatchResult {
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class dev/agentrelay/companion/api/WearInstallConsent {
+	public synthetic fun <init> (Ljava/lang/String;Ldev/agentrelay/companion/api/WearInstallPolicy;ZJJLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-30reNtw ()Ljava/lang/String;
+	public final fun component2 ()Ldev/agentrelay/companion/api/WearInstallPolicy;
+	public final fun component3 ()Z
+	public final fun component4 ()J
+	public final fun component5 ()J
+	public final fun copy-JyPIAog (Ljava/lang/String;Ldev/agentrelay/companion/api/WearInstallPolicy;ZJJ)Ldev/agentrelay/companion/api/WearInstallConsent;
+	public static synthetic fun copy-JyPIAog$default (Ldev/agentrelay/companion/api/WearInstallConsent;Ljava/lang/String;Ldev/agentrelay/companion/api/WearInstallPolicy;ZJJILjava/lang/Object;)Ldev/agentrelay/companion/api/WearInstallConsent;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAccepted ()Z
+	public final fun getDeviceId-30reNtw ()Ljava/lang/String;
+	public final fun getExpiresAtEpochMillis ()J
+	public final fun getIssuedAtEpochMillis ()J
+	public final fun getPolicy ()Ldev/agentrelay/companion/api/WearInstallPolicy;
+	public fun hashCode ()I
+	public final fun isValidAt (J)Z
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class dev/agentrelay/companion/api/WearInstallDecision {
 	public synthetic fun <init> (Ljava/lang/String;Ldev/agentrelay/companion/api/WearInstallPolicy;Ldev/agentrelay/companion/api/WearInstallDecisionState;JLkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1-30reNtw ()Ljava/lang/String;
@@ -742,6 +783,28 @@ public final class dev/agentrelay/companion/api/WearInstallPolicy {
 	public final fun getVersionCode ()J
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/companion/api/WearInstallReceipt {
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-30reNtw ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()J
+	public final fun component4 ()Ljava/lang/String;
+	public final fun copy-kKVEODM (Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;)Ldev/agentrelay/companion/api/WearInstallReceipt;
+	public static synthetic fun copy-kKVEODM$default (Ldev/agentrelay/companion/api/WearInstallReceipt;Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;ILjava/lang/Object;)Ldev/agentrelay/companion/api/WearInstallReceipt;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDeviceId-30reNtw ()Ljava/lang/String;
+	public final fun getPackageName ()Ljava/lang/String;
+	public final fun getSigningFingerprint ()Ljava/lang/String;
+	public final fun getVersionCode ()J
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class dev/agentrelay/companion/api/WearInstallTransport {
+	public abstract fun install-QhYPt48 (Ljava/lang/String;Ldev/agentrelay/companion/api/WearInstallationRequest;)Ldev/agentrelay/companion/api/WearInstallReceipt;
+	public abstract fun rollback-7hsfvl8 (Ljava/lang/String;)Z
 }
 
 public final class dev/agentrelay/companion/api/WearInstallationFailure : java/lang/Enum {
