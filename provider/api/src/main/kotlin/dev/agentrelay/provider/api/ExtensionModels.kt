@@ -22,6 +22,10 @@ enum class ExtensionCapability { CONNECTOR, AGENT, WORKFLOW, PRESENTATION }
 
 enum class ExtensionPermission { READ_FIELDS, PROPOSE_ACTIONS, REQUEST_APPROVAL, WRITE_FIELDS }
 
+enum class ExtensionPrivacyClass { PUBLIC, PRIVATE, SENSITIVE }
+
+enum class ExtensionDataSource { SESSION, NOTIFICATION, SPEECH, LOCATION, MICROPHONE, FILE }
+
 @JvmInline
 value class ExtensionField(val value: String) {
     init {
@@ -61,6 +65,49 @@ data class ExtensionLifecycle(
     val shutdown: Boolean = true,
     val health: Boolean = true,
 )
+
+data class ExtensionPermissionGrant(
+    val extensionId: ExtensionId,
+    val workflowId: String,
+    val permissions: Set<ExtensionPermission>,
+    val sources: Set<ExtensionDataSource>,
+    val privacyClass: ExtensionPrivacyClass,
+    val grantedAtEpochMillis: Long,
+    val expiresAtEpochMillis: Long,
+    val consentToken: String,
+) {
+    init {
+        require(workflowId.matches(Regex("[a-z][a-z0-9._-]{1,63}"))) { "Workflow id is invalid" }
+        require(permissions.isNotEmpty() && sources.isNotEmpty()) { "Grant scope cannot be empty" }
+        require(grantedAtEpochMillis >= 0 && expiresAtEpochMillis > grantedAtEpochMillis) {
+            "Grant lifetime is invalid"
+        }
+        require(consentToken.matches(Regex("[A-Za-z0-9._~-]{16,128}"))) { "Consent token is invalid" }
+    }
+
+    fun activeAt(epochMillis: Long): Boolean = epochMillis in grantedAtEpochMillis until expiresAtEpochMillis
+}
+
+@JvmInline
+value class ExtensionSecretReference(val value: String) {
+    init {
+        require(value.matches(Regex("secret_v1_[A-Za-z0-9_-]{8,64}"))) { "Secret reference is invalid" }
+    }
+}
+
+data class ExtensionDataPolicy(
+    val source: ExtensionDataSource,
+    val privacyClass: ExtensionPrivacyClass,
+    val retentionMillis: Long,
+    val externalEffectsAllowed: Boolean = false,
+) {
+    init {
+        require(retentionMillis in 1..86_400_000) { "Retention must be at most one day" }
+        require(!externalEffectsAllowed || privacyClass != ExtensionPrivacyClass.SENSITIVE) {
+            "Sensitive data cannot authorize external effects"
+        }
+    }
+}
 
 data class ExtensionManifest(
     val id: ExtensionId,

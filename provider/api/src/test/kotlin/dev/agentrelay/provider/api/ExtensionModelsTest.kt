@@ -68,6 +68,32 @@ class ExtensionModelsTest {
         assertEquals(ExtensionRejection.INVOCATION_BUDGET_EXCEEDED, rejected(ledger, base.copy(idempotencyKey = "third-key")))
     }
 
+    @Test
+    fun `permission grants are scoped to workflow and bounded lifetime`() {
+        val grant = ExtensionPermissionGrant(
+            manifest.id,
+            "workflow-1",
+            setOf(ExtensionPermission.READ_FIELDS),
+            setOf(ExtensionDataSource.SESSION),
+            ExtensionPrivacyClass.PRIVATE,
+            100,
+            200,
+            "consent-token-0001",
+        )
+        assertTrue(grant.activeAt(100))
+        assertTrue(!grant.activeAt(200))
+        assertFailsWith<IllegalArgumentException> { grant.copy(consentToken = "short") }
+    }
+
+    @Test
+    fun `secret references and sensitive external effects fail closed`() {
+        assertFailsWith<IllegalArgumentException> { ExtensionSecretReference("raw-secret") }
+        assertFailsWith<IllegalArgumentException> {
+            ExtensionDataPolicy(ExtensionDataSource.FILE, ExtensionPrivacyClass.SENSITIVE, 1000, true)
+        }
+        ExtensionDataPolicy(ExtensionDataSource.SESSION, ExtensionPrivacyClass.PRIVATE, 1000)
+    }
+
     private fun invocation(
         input: Map<ExtensionField, String> = mapOf(ExtensionField("calendar.events") to "opaque"),
         revision: Long = 7,
