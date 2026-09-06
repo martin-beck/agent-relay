@@ -27,6 +27,7 @@ A **verified** page is backed by a semantic Android emulator journey and reviewe
 - [Complete one bounded local production graph](workflows/production-graph-journey.md) - **Planned.** Trace a disposable local task from admission through durable result and restart recovery.
 - [Android system-boundary assurance](workflows/android-system-boundaries.md) - **Planned.** Exercise synthetic permission, lifecycle, companion, Wear, and form-factor boundaries.
 - [Capture and delete diagnostic evidence safely](workflows/diagnostic-privacy-lifecycle.md) - **Planned.** Exercise synthetic diagnostic authorization, redaction, retention expiry, and deletion.
+- [Reproduce replay evidence before diagnosis](workflows/replay-diagnosis-conformance.md) - **Planned.** Re-run bounded counterexamples and reject stale or uncertain diagnosis claims.
 - [Verify companion device recovery safely](workflows/companion-device-verification.md) - **Planned.** Review notification, speech, and reconnect evidence across a phone and a companion watch.
 
 ## Evidence policy

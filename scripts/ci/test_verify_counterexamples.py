@@ -8,8 +8,8 @@ from verify_counterexamples import verify_counterexamples
 class CounterexampleTest(unittest.TestCase):
     def test_retained_counterexamples_replay_deterministically(self) -> None:
         count = verify_counterexamples(Path(__file__).resolve().parents[2])
-        if count != 3:
-            raise AssertionError(f"expected three retained traces, got {count}")
+        if count != 4:
+            raise AssertionError(f"expected four retained traces, got {count}")
 
     def test_input_hash_detects_fixture_drift(self) -> None:
         with TemporaryDirectory() as directory:
