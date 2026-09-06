@@ -49,7 +49,10 @@ class OrchestrationAdapterModelsTest {
     @Test
     fun duplicateAttemptsAndOverlargeDelegationAreRejected() {
         assertFailsWith<IllegalArgumentException> {
-            input(attempts = listOf(attempt("attempt-a"), attempt("attempt-a")), policy = policy(enabled = true, modes = setOf(OrchestrationMode.PARALLEL)))
+            input(
+                attempts = listOf(attempt("attempt-a"), attempt("attempt-a")),
+                policy = policy(enabled = true, modes = setOf(OrchestrationMode.PARALLEL)),
+            )
         }
         assertFailsWith<IllegalArgumentException> {
             input(attempts = emptyList(), policy = policy(enabled = true, modes = setOf(OrchestrationMode.PARALLEL)))
