@@ -50,4 +50,25 @@ class PairingAppLinkTest {
             PairingAppLinkCodec.parse(link.replace("https://", "http://"), 500)
         }
     }
+
+    @Test
+    fun encodedEd25519FixtureVerifiesThroughAvailableSoftwareProvider() {
+        val expiry = 1_788_712_980_000L
+        val identity = StableEndpointIdentity("ari_v1_" + "A".repeat(43))
+        val raw = "https://${PairingAppLinkCodec.HOST}${PairingAppLinkCodec.PATH}" +
+            "?a=${PairingAppLinkCodec.AUDIENCE}&d=${identity.value}&e=$expiry" +
+            "&g=grant-qr-12345678&n=nonce-qr-12345678" +
+            "&s=kux20imrkcLhIeiZYNXDhk9QJaz5V53XD97rARdbDozbdqlGQSc-avdic_wzM1YjA6WGZWBL670ORtuHMwRWCw"
+        assertTrue(
+            PairingAppLinkCodec.parseAndVerify(
+                raw,
+                nowMillis = 1_788_712_920_000L,
+                verifier = PairingAppLinkCodec.ed25519Verifier(
+                    java.util.Base64.getUrlDecoder().decode(
+                        "MCowBQYDK2VwAyEAl0kjCTi6QUNeG1vAE2huS4nGw3tZjEiv3RvyMBKun-8",
+                    ),
+                ),
+            ).daemonIdentity == identity,
+        )
+    }
 }

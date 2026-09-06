@@ -113,7 +113,7 @@ class MainActivity : ComponentActivity() {
         pairingIntentJob?.cancel()
         pairingHandoffState.value = null
         pairingIntentJob = lifecycleScope.launch {
-            val verified = pairingEnrollment.resolveAndVerifyLink(rawLink, System.currentTimeMillis())
+            val verified = pairingEnrollment.resolveAndVerifyLink(rawLink, nowMillisProvider())
             if (generation != pairingIntentGeneration) return@launch
             pairingHandoffState.value = verified?.let(PairingHandoffUiState::Review)
                 ?: PairingHandoffUiState.Rejected
@@ -191,7 +191,8 @@ class MainActivity : ComponentActivity() {
             checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) ==
             PackageManager.PERMISSION_GRANTED
 
-    private companion object {
+    internal companion object {
+        internal var nowMillisProvider: () -> Long = System::currentTimeMillis
         const val NOTIFICATION_PERMISSION_PREFERENCES = "notification-permission"
         const val NOTIFICATION_PERMISSION_REQUESTED = "requested"
     }

@@ -105,12 +105,22 @@ jobs:
           export EMULATOR_AVD_NAME="test-${{ github.run_id }}-${{ github.run_attempt }}"
           EMULATOR_PORT=5582 bash scripts/ci/run_android_emulator_tests.sh -- bash -c '
             ./gradlew :app:connectedDebugAndroidTest :ssh:android:connectedDebugAndroidTest \
-              :storage:android:connectedDebugAndroidTest --stacktrace
+              :storage:android:connectedDebugAndroidTest \
+              -Pandroid.testInstrumentationRunnerArguments.captureQrEvidence=true --stacktrace
             bash scripts/ci/verify_background_process_recovery.sh
             test -s app/build/outputs/apk/debug/app-debug.apk
             mkdir -p build/usage-guide/captured
             "$ANDROID_HOME/platform-tools/adb" pull /sdcard/Download/agent-relay-usage-guide/. \
               build/usage-guide/captured/
+            mkdir -p build/qr-workflow/captured
+            if "$ANDROID_HOME/platform-tools/adb" shell test -d \
+              /sdcard/Android/data/com.example.agentrelay/files/qr-workflow; then
+              "$ANDROID_HOME/platform-tools/adb" pull \
+                /sdcard/Android/data/com.example.agentrelay/files/qr-workflow/. \
+                build/qr-workflow/captured/
+            else
+              echo "QR evidence directory absent; capture produced no artifacts."
+            fi
           '
 
       - name: Verify connected-test evidence
@@ -148,6 +158,7 @@ jobs:
             build/reports/problems/**
             build/emulator/**
             build/usage-guide/**
+            build/qr-workflow/**
           if-no-files-found: error
           retention-days: 14
 
