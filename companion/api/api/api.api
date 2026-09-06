@@ -173,8 +173,10 @@ public final class dev/agentrelay/companion/api/CompanionPhoneCoordinator {
 	public fun <init> ()V
 	public fun <init> (I)V
 	public synthetic fun <init> (IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun acknowledge-QhYPt48 (Ljava/lang/String;J)I
 	public final fun enqueue (Ldev/agentrelay/companion/api/CompanionProjection;)Z
 	public final fun enroll (Ldev/agentrelay/companion/api/CompanionEnrollment;)Ldev/agentrelay/companion/api/CompanionEnrollment;
+	public final fun enrollmentGeneration-7hsfvl8 (Ljava/lang/String;)J
 	public final fun pending-QhYPt48 (Ljava/lang/String;J)Ljava/util/List;
 	public final fun preferences-7hsfvl8 (Ljava/lang/String;)Ldev/agentrelay/companion/api/CompanionDevicePreferences;
 	public final fun reconcile (Ldev/agentrelay/companion/api/CompanionMessageEnvelope;J)Ldev/agentrelay/companion/api/CompanionReconciliationOutcome;
@@ -479,6 +481,23 @@ public final class dev/agentrelay/companion/api/WearDeviceProfile {
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class dev/agentrelay/companion/api/WearDispatchResult {
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/util/Map;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-30reNtw ()Ljava/lang/String;
+	public final fun component2 ()Ljava/util/List;
+	public final fun component3 ()Ljava/util/List;
+	public final fun component4 ()Ljava/util/Map;
+	public final fun copy-kKVEODM (Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/util/Map;)Ldev/agentrelay/companion/api/WearDispatchResult;
+	public static synthetic fun copy-kKVEODM$default (Ldev/agentrelay/companion/api/WearDispatchResult;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/util/Map;ILjava/lang/Object;)Ldev/agentrelay/companion/api/WearDispatchResult;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAttemptedRevisions ()Ljava/util/List;
+	public final fun getDeliveredRevisions ()Ljava/util/List;
+	public final fun getDeviceId-30reNtw ()Ljava/lang/String;
+	public final fun getOutcomes ()Ljava/util/Map;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class dev/agentrelay/companion/api/WearInstallationFailure : java/lang/Enum {
 	public static final field ABI_INCOMPATIBLE Ldev/agentrelay/companion/api/WearInstallationFailure;
 	public static final field API_INCOMPATIBLE Ldev/agentrelay/companion/api/WearInstallationFailure;
@@ -510,6 +529,10 @@ public final class dev/agentrelay/companion/api/WearInstallationRequest {
 	public fun hashCode ()I
 	public final fun isInstallable ()Z
 	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class dev/agentrelay/companion/api/WearMessageTransport {
+	public abstract fun send (Ldev/agentrelay/companion/api/CompanionMessageEnvelope;)Ldev/agentrelay/companion/api/CompanionDeliveryOutcome;
 }
 
 public final class dev/agentrelay/companion/api/WearNotificationCard {
@@ -545,6 +568,11 @@ public final class dev/agentrelay/companion/api/WearNotificationReconciler {
 	public final fun apply (Ldev/agentrelay/companion/api/WearNotificationCard;)Z
 	public final fun clearExpired (J)V
 	public final fun visible (J)Ljava/util/List;
+}
+
+public final class dev/agentrelay/companion/api/WearProjectionDispatcher {
+	public fun <init> (Ldev/agentrelay/companion/api/CompanionPhoneCoordinator;Ldev/agentrelay/companion/api/WearMessageTransport;)V
+	public final fun dispatch-QhYPt48 (Ljava/lang/String;J)Ldev/agentrelay/companion/api/WearDispatchResult;
 }
 
 public final class dev/agentrelay/companion/api/WearSpeechAudioChunk {
