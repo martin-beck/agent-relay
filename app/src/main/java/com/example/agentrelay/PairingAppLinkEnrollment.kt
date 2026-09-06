@@ -65,7 +65,10 @@ internal class AndroidPairingAppLinkEnrollment(
     suspend fun consume(grantReference: String): Boolean = mutex.withLock {
         val record = read(grantReference) ?: return@withLock false
         if (record.consumed) return@withLock false
-        documents.write(documentId(grantReference), json.encodeToString(PairingLinkGrantRecord.serializer(), record.copy(consumed = true)).toByteArray())
+        documents.write(
+            documentId(grantReference),
+            json.encodeToString(PairingLinkGrantRecord.serializer(), record.copy(consumed = true)).toByteArray(),
+        )
         true
     }
 
