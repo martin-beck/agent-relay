@@ -154,3 +154,4 @@ public final class dev/agentrelay/companion/api/CompanionReachability : java/lan
 	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/companion/api/CompanionReachability;
 	public static fun values ()[Ldev/agentrelay/companion/api/CompanionReachability;
 }
+
