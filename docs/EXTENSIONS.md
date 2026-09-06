@@ -1,5 +1,10 @@
 # Extension platform
 
+For implementation and publication rules, use the [canonical extension
+development guide](EXTENSION_DEVELOPMENT.md). This overview describes the
+platform boundary; the guide is the authority for manifests, examples, and
+evidence.
+
 Agent Relay extensions are declarative, versioned capabilities. They add
 providers, workflows, presentation modules, or bounded phone and Wear
 projections without creating a second authority. The phone and daemon remain

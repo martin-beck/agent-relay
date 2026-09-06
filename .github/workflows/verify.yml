@@ -164,6 +164,8 @@ jobs:
           uv run python scripts/docs/render_workflows.py --check
           uv run python scripts/docs/verify_workflows.py
           uv run python scripts/docs/verify_usability_review.py
+          uv run python scripts/docs/generate_extension_api.py --check
+          uv run python scripts/docs/verify_extension_examples.py
           uv run python scripts/docs/verify_documentation_authority.py
           uv run python scripts/docs/verify_documentation_privacy.py
           uv run python scripts/docs/render_status.py --check
