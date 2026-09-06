@@ -14,16 +14,19 @@ Pair two devices that are not directly reachable from the internet with minimal 
 
 - The phone and host can both reach the same LAN, public rendezvous service, or VPN.
 - The host daemon displays a short-lived, single-use pairing QR code.
+- A camera may open the same code as a verified HTTPS App Link.
 
 ## Handled automatically
 
 - The QR payload carries rendezvous information, protocol versions, and a pinned host identity.
 - Both endpoints establish an encrypted channel and prove possession of their pairing keys.
 - Successful pairing rotates bootstrap material into durable device credentials.
+- Camera App Links and in-app scans use the same encrypted enrollment path.
 
 ## Your attention is needed
 
 - Scan the QR code displayed by the intended host.
+- If the camera opens a link, confirm the daemon identity and requested scope in Agent Relay.
 - Compare the short authentication phrase on both devices when required.
 - Name the paired host and approve its requested capabilities.
 
@@ -41,7 +44,13 @@ Pair two devices that are not directly reachable from the internet with minimal 
 
 **Expected result:** Both devices prove the pinned identities before exchanging durable credentials.
 
-### 3. Confirm the paired host
+### 3. Confirm a camera App Link
+
+**Action:** Tap the camera preview link and review the verified daemon identity in Agent Relay.
+
+**Expected result:** Agent Relay rejects an unverified, expired or replayed link and otherwise enters the same confirmation and probe path as in-app scanning.
+
+### 4. Confirm the paired host
 
 **Action:** Name the host and approve the narrow capability set.
 
@@ -50,5 +59,6 @@ Pair two devices that are not directly reachable from the internet with minimal 
 ## Recovery and fault handling
 
 - Expired or consumed QR payloads cannot be replayed.
+- A browser fallback never completes pairing and gives explicit return-to-app guidance.
 - Failed relay paths fall back to other advertised transports without weakening identity checks.
 - Removing a device revokes its durable credential without changing unrelated pairings.
