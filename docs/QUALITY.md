@@ -373,6 +373,14 @@ least 33 discovered and 33 executed tests. This prevents a missing device,
 missing module report, skipped accessibility audit, or accidentally empty suite
 from appearing green.
 
+Each device job keeps its Gradle daemon registry and authenticated sockets in a
+fresh job-private directory under `RUNNER_TEMP`. It may link the shared
+dependency and wrapper caches into that directory, but it never shares daemon
+state. The runner stops only that private daemon during bounded cleanup after
+the final build request; it never stops a shared daemon immediately before a
+build. This prevents stale socket tokens from turning a successful emulator
+boot into a missing-test-report failure.
+
 That API 36 job also captures the six verified usage journeys, requires all 14
 reviewed screenshots to remain within the documented thresholds, and performs a
 strict static-site build. It retains captures, metrics, diffs, reports, and the
