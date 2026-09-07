@@ -3,6 +3,7 @@ package dev.agentrelay.buildlogic;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -40,12 +41,14 @@ class NativeBuildLogicTest {
         List.of(
             file("CMakeLists.txt", "root"),
             file("LICENSE", "license"),
+            file("cmake/", ""),
             file("cmake/show-info.cmake", "info"),
             file("sherpa-onnx/CMakeLists.txt", "sherpa"),
             file("sherpa-onnx/csrc/CMakeLists.txt", "csrc"),
             file("sherpa-onnx/jni/CMakeLists.txt", "jni"),
             file("sherpa-onnx/kotlin-api/OnlineStream.kt", "api"),
-            file("docs/ignored.txt", "ignored")));
+            file("docs/ignored.txt", "ignored"),
+            file("cmake\\ignored.txt", "ignored")));
 
     Path output = temporaryDirectory.resolve("output");
     sourceExtractTask(archive, output).extract();
@@ -55,6 +58,51 @@ class NativeBuildLogicTest {
     try (var paths = Files.walk(output)) {
       assertFalse(paths.anyMatch(Files::isSymbolicLink));
     }
+
+    writeArchive(
+        archive,
+        List.of(
+            file("CMakeLists.txt", "root-v2"),
+            file("LICENSE", "license"),
+            file("cmake/show-info.cmake", "info"),
+            file("sherpa-onnx/CMakeLists.txt", "sherpa"),
+            file("sherpa-onnx/csrc/CMakeLists.txt", "csrc"),
+            file("sherpa-onnx/jni/CMakeLists.txt", "jni"),
+            file("sherpa-onnx/kotlin-api/OnlineStream.kt", "api-v2")));
+    sourceExtractTask(archive, output).extract();
+
+    assertEquals(
+        "api-v2", Files.readString(output.resolve("sherpa-onnx/kotlin-api/OnlineStream.kt")));
+    assertFalse(Files.exists(output.resolve("docs/ignored.txt")));
+  }
+
+  @Test
+  void failedDirectoryReplacementRestoresVerifiedOutput() throws Exception {
+    Path output = Files.createDirectory(temporaryDirectory.resolve("replace-output"));
+    Files.writeString(output.resolve("verified.txt"), "verified");
+    Path missingStaging = temporaryDirectory.resolve("missing-staging");
+
+    assertThrows(
+        IOException.class, () -> SherpaSourceExtractTask.replaceDirectory(missingStaging, output));
+
+    assertEquals("verified", Files.readString(output.resolve("verified.txt")));
+    try (var paths = Files.list(temporaryDirectory)) {
+      assertFalse(
+          paths.anyMatch(
+              path -> path.getFileName().toString().startsWith("replace-output.backup-")));
+    }
+
+    Path absentOutput = temporaryDirectory.resolve("absent-output");
+    assertThrows(
+        IOException.class,
+        () -> SherpaSourceExtractTask.replaceDirectory(missingStaging, absentOutput));
+    assertFalse(Files.exists(absentOutput));
+
+    Path filesystemRoot = temporaryDirectory.toAbsolutePath().getRoot();
+    assertNotNull(filesystemRoot);
+    assertThrows(
+        IOException.class,
+        () -> SherpaSourceExtractTask.replaceDirectory(missingStaging, filesystemRoot));
   }
 
   @Test
@@ -111,7 +159,7 @@ class NativeBuildLogicTest {
   }
 
   @Test
-  void rejectsTruncatedAndIncompleteArchivesAndCleansOldOutput() throws Exception {
+  void rejectsTruncatedAndIncompleteArchivesAndPreservesVerifiedOutput() throws Exception {
     Path truncated = temporaryDirectory.resolve("truncated.tar.gz");
     writeArchive(truncated, List.of(file("CMakeLists.txt", "root")));
     byte[] archiveBytes = Files.readAllBytes(truncated);
@@ -127,7 +175,7 @@ class NativeBuildLogicTest {
     Files.createDirectories(output);
     Files.writeString(output.resolve("stale.txt"), "stale");
     assertThrows(IOException.class, () -> sourceExtractTask(incomplete, output).extract());
-    assertFalse(Files.exists(output.resolve("stale.txt")));
+    assertEquals("stale", Files.readString(output.resolve("stale.txt")));
   }
 
   @Test
