@@ -18,7 +18,7 @@ repos:
       - id: destroyed-symlinks
       - id: detect-private-key
       - id: end-of-file-fixer
-        exclude: ^(companion|connection|provider|workflow)/api/api/api\.api$
+        exclude: ^(companion|connection|provider|session|workflow)/api/api/api\.api$
       - id: forbid-submodules
       - id: mixed-line-ending
         args: ["--fix=lf"]
