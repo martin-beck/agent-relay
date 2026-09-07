@@ -68,6 +68,12 @@ prices are rejected or require explicit approval according to the policy; the
 Kotlin race tests provide the finite executable evidence for serialized
 reservations.
 
+`CollaborationAuthority.tla` captures shared-project authority: compare-and-set
+mutations advance one durable revision, audit entries never disappear, and a
+revoked lease remains unable to authorize later work. `CollaborationModelsTest`
+provides executable evidence for scope-limited delegation, stale conflicts,
+expiry, revocation, and redacted audit comments.
+
 ```bash
 python scripts/ci/verify_counterexamples.py
 ```
