@@ -388,4 +388,22 @@
     <string name="session_action_title_review_required">L’azione dell’agente richiede una verifica.</string>
     <string name="session_question_prompt_fallback">Domanda dell’agente</string>
     <string name="connection_failure_profile_preparation">Impossibile preparare il profilo di connessione.</string>
+    <string name="lock_widget_description">Riepilogo dell’attenzione nella schermata di blocco</string>
+    <string name="lock_widget_no_attention">Nessun intervento richiesto</string>
+    <string name="lock_widget_status_quiet">Agent Relay</string>
+    <string name="lock_widget_status_attention">Richiede attenzione</string>
+    <string name="lock_widget_status_refresh">Aggiorna nell’app</string>
+    <string name="lock_widget_loading">Verifica in corso…</string>
+    <string name="lock_widget_error">Stato non disponibile</string>
+    <string name="home_widget_description">Riepilogo dell’attenzione nella schermata Home</string>
+    <string name="home_widget_no_attention">Nessun intervento richiesto</string>
+    <string name="home_widget_status_quiet">Agent Relay</string>
+    <string name="home_widget_status_attention">Richiede attenzione</string>
+    <string name="home_widget_status_refresh">Aggiorna nell’app</string>
+    <string name="home_widget_loading">Verifica in corso…</string>
+    <string name="home_widget_error">Stato non disponibile</string>
+    <string name="home_widget_action_open_details_for">Apri i dettagli: %1$s</string>
+    <string name="home_widget_action_acknowledge">Conferma</string>
+    <string name="home_widget_action_defer">Rimanda</string>
+    <string name="home_widget_action_mute_confirm">Disattiva audio…</string>
 </resources>

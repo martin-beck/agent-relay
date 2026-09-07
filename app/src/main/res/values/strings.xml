@@ -421,4 +421,22 @@
     <string name="session_action_title_review_required">Agent action requires review.</string>
     <string name="session_question_prompt_fallback">Agent question</string>
     <string name="connection_failure_profile_preparation">Connection profile could not be prepared.</string>
+    <string name="lock_widget_description">Attention-first lock-screen summary</string>
+    <string name="lock_widget_no_attention">No attention needed</string>
+    <string name="lock_widget_status_quiet">Agent Relay</string>
+    <string name="lock_widget_status_attention">Needs attention</string>
+    <string name="lock_widget_status_refresh">Refresh in the app</string>
+    <string name="lock_widget_loading">Checking attention…</string>
+    <string name="lock_widget_error">Attention unavailable</string>
+    <string name="home_widget_description">Attention-first home-screen summary</string>
+    <string name="home_widget_no_attention">No attention needed</string>
+    <string name="home_widget_status_quiet">Agent Relay</string>
+    <string name="home_widget_status_attention">Needs attention</string>
+    <string name="home_widget_status_refresh">Refresh in the app</string>
+    <string name="home_widget_loading">Checking attention…</string>
+    <string name="home_widget_error">Attention unavailable</string>
+    <string name="home_widget_action_open_details_for">Open attention details: %1$s</string>
+    <string name="home_widget_action_acknowledge">Acknowledge</string>
+    <string name="home_widget_action_defer">Defer</string>
+    <string name="home_widget_action_mute_confirm">Mute…</string>
 </resources>

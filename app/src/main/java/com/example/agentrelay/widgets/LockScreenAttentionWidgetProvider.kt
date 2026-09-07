@@ -35,9 +35,13 @@ class LockScreenAttentionWidgetProvider : AppWidgetProvider() {
 object LockScreenAttentionWidgetRenderer {
     fun empty(context: Context): RemoteViews = render(context, null)
 
-    fun render(context: Context, content: AttentionWidgetContent?): RemoteViews {
+    fun render(
+        context: Context,
+        content: AttentionWidgetContent?,
+        phase: AttentionWidgetRenderPhase = AttentionWidgetRenderPhase.READY,
+    ): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.widget_lock_screen_attention)
-        val state = state(context, content)
+        val state = state(context, content, phase)
         views.setTextViewText(R.id.lock_widget_title, state.title)
         views.setTextViewText(R.id.lock_widget_status, state.status)
         // Lock-screen projections intentionally omit summaries, ages, and all action intents.
@@ -46,13 +50,20 @@ object LockScreenAttentionWidgetRenderer {
         return views
     }
 
-    fun state(context: Context, content: AttentionWidgetContent?): LockScreenWidgetState {
+    fun state(
+        context: Context,
+        content: AttentionWidgetContent?,
+        phase: AttentionWidgetRenderPhase = AttentionWidgetRenderPhase.READY,
+    ): LockScreenWidgetState {
         return state(
             content,
             context.getString(R.string.lock_widget_no_attention),
             context.getString(R.string.lock_widget_status_quiet),
             context.getString(R.string.lock_widget_status_attention),
             context.getString(R.string.lock_widget_status_refresh),
+            context.getString(R.string.lock_widget_loading),
+            context.getString(R.string.lock_widget_error),
+            phase,
         )
     }
 
@@ -62,13 +73,22 @@ object LockScreenAttentionWidgetRenderer {
         quiet: String,
         attention: String,
         refresh: String,
+        loading: String = "Checking attention…",
+        error: String = "Attention unavailable",
+        phase: AttentionWidgetRenderPhase = AttentionWidgetRenderPhase.READY,
     ): LockScreenWidgetState {
-        val entry = content?.entries?.firstOrNull()
+        val entry = content?.entries?.firstOrNull().takeIf { phase == AttentionWidgetRenderPhase.READY }
         return LockScreenWidgetState(
-            title = entry?.title ?: noAttention,
+            title = when (phase) {
+                AttentionWidgetRenderPhase.LOADING -> loading
+                AttentionWidgetRenderPhase.ERROR -> error
+                AttentionWidgetRenderPhase.READY -> entry?.title ?: noAttention
+            },
             status = when {
+                phase == AttentionWidgetRenderPhase.LOADING -> quiet
+                phase == AttentionWidgetRenderPhase.ERROR -> refresh
                 entry == null -> quiet
-                content.stale -> refresh
+                content?.stale == true -> refresh
                 else -> attention
             },
         )

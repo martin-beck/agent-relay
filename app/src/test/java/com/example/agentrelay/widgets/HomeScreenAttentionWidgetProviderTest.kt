@@ -58,4 +58,48 @@ class HomeScreenAttentionWidgetProviderTest {
         )
         assertEquals(AttentionWidgetAction.entries.toSet(), project(AttentionWidgetSize.EXPANDED).actions)
     }
+
+    @Test
+    fun loadingAndErrorNeverExposeStaleEntriesOrActions() {
+        val content = content()
+
+        listOf(AttentionWidgetRenderPhase.LOADING, AttentionWidgetRenderPhase.ERROR).forEach { phase ->
+            val state = HomeScreenAttentionWidgetRenderer.state(
+                content = content,
+                size = AttentionWidgetSize.EXPANDED,
+                noAttention = "No attention",
+                quiet = "Agent Relay",
+                attention = "Needs attention",
+                refresh = "Refresh",
+                loading = "Checking attention",
+                error = "Attention unavailable",
+                phase = phase,
+            )
+
+            assertEquals(emptyList<String>(), state.items)
+            assertEquals(emptySet<AttentionWidgetAction>(), state.actions)
+            assertEquals(null, state.primaryEntry)
+        }
+    }
+
+    private fun content() = AttentionWidgetContent(
+        revision = 4,
+        size = AttentionWidgetSize.EXPANDED,
+        surface = AttentionWidgetSurface.HOME_SCREEN,
+        entries = listOf(
+            AttentionWidgetEntry(
+                id = "item-1",
+                title = "Stale attention",
+                summary = "Stale context",
+                urgency = AttentionUrgency.HIGH,
+                ageMillis = 1,
+                canOpen = true,
+                canAcknowledge = true,
+                canDefer = true,
+                canMute = true,
+            ),
+        ),
+        hasMore = false,
+        stale = false,
+    )
 }

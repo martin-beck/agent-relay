@@ -380,4 +380,22 @@
     <string name="session_action_title_review_required">एजेंट की कार्रवाई की समीक्षा आवश्यक है।</string>
     <string name="session_question_prompt_fallback">एजेंट का प्रश्न</string>
     <string name="connection_failure_profile_preparation">कनेक्शन प्रोफ़ाइल तैयार नहीं की जा सकी।</string>
+    <string name="lock_widget_description">लॉक स्क्रीन पर ध्यान देने योग्य मदों का सारांश</string>
+    <string name="lock_widget_no_attention">किसी ध्यान की आवश्यकता नहीं</string>
+    <string name="lock_widget_status_quiet">Agent Relay</string>
+    <string name="lock_widget_status_attention">ध्यान देना आवश्यक</string>
+    <string name="lock_widget_status_refresh">ऐप में रीफ़्रेश करें</string>
+    <string name="lock_widget_loading">ध्यान देने योग्य मदों की जाँच हो रही है…</string>
+    <string name="lock_widget_error">ध्यान की स्थिति उपलब्ध नहीं है</string>
+    <string name="home_widget_description">होम स्क्रीन पर ध्यान देने योग्य मदों का सारांश</string>
+    <string name="home_widget_no_attention">किसी ध्यान की आवश्यकता नहीं</string>
+    <string name="home_widget_status_quiet">Agent Relay</string>
+    <string name="home_widget_status_attention">ध्यान देना आवश्यक</string>
+    <string name="home_widget_status_refresh">ऐप में रीफ़्रेश करें</string>
+    <string name="home_widget_loading">ध्यान देने योग्य मदों की जाँच हो रही है…</string>
+    <string name="home_widget_error">ध्यान की स्थिति उपलब्ध नहीं है</string>
+    <string name="home_widget_action_open_details_for">ध्यान का विवरण खोलें: %1$s</string>
+    <string name="home_widget_action_acknowledge">पुष्टि करें</string>
+    <string name="home_widget_action_defer">स्थगित करें</string>
+    <string name="home_widget_action_mute_confirm">म्यूट करें…</string>
 </resources>

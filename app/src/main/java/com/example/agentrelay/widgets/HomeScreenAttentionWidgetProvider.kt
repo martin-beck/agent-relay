@@ -40,9 +40,10 @@ object HomeScreenAttentionWidgetRenderer {
         content: AttentionWidgetContent?,
         size: AttentionWidgetSize,
         actionIssuer: AttentionWidgetActionRequestIssuer? = null,
+        phase: AttentionWidgetRenderPhase = AttentionWidgetRenderPhase.READY,
     ): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.widget_home_screen_attention)
-        val state = state(context, content, size)
+        val state = state(context, content, size, phase)
         views.setTextViewText(R.id.home_widget_status, state.status)
         views.setTextViewText(R.id.home_widget_title, state.title)
         listOf(R.id.home_widget_item_one, R.id.home_widget_item_two, R.id.home_widget_item_three)
@@ -64,6 +65,11 @@ object HomeScreenAttentionWidgetRenderer {
     ) {
         val entry = state.primaryEntry
         val factory = actionIssuer?.let { AttentionWidgetPendingIntentFactory(context, it) }
+        val hasButtonAction = factory != null && state.actions.any { it != AttentionWidgetAction.OPEN_DETAILS }
+        views.setViewVisibility(
+            R.id.home_widget_actions,
+            if (hasButtonAction) android.view.View.VISIBLE else android.view.View.GONE,
+        )
         configureAction(
             context,
             views,
@@ -104,7 +110,7 @@ object HomeScreenAttentionWidgetRenderer {
             )
             views.setContentDescription(
                 R.id.home_widget_title,
-                context.getString(R.string.home_widget_action_open_details),
+                context.getString(R.string.home_widget_action_open_details_for, state.title),
             )
         }
     }
@@ -135,6 +141,7 @@ object HomeScreenAttentionWidgetRenderer {
         context: Context,
         content: AttentionWidgetContent?,
         size: AttentionWidgetSize,
+        phase: AttentionWidgetRenderPhase = AttentionWidgetRenderPhase.READY,
     ): HomeScreenWidgetState {
         return state(
             content,
@@ -143,6 +150,9 @@ object HomeScreenAttentionWidgetRenderer {
             context.getString(R.string.home_widget_status_quiet),
             context.getString(R.string.home_widget_status_attention),
             context.getString(R.string.home_widget_status_refresh),
+            context.getString(R.string.home_widget_loading),
+            context.getString(R.string.home_widget_error),
+            phase,
         )
     }
 
@@ -153,6 +163,9 @@ object HomeScreenAttentionWidgetRenderer {
         quiet: String,
         attention: String,
         refresh: String,
+        loading: String = "Checking attention…",
+        error: String = "Attention unavailable",
+        phase: AttentionWidgetRenderPhase = AttentionWidgetRenderPhase.READY,
     ): HomeScreenWidgetState {
         val entries = content?.entries.orEmpty()
         val limit = when (size) {
@@ -160,18 +173,26 @@ object HomeScreenAttentionWidgetRenderer {
             AttentionWidgetSize.MEDIUM -> 2
             AttentionWidgetSize.EXPANDED -> 3
         }
+        val ready = phase == AttentionWidgetRenderPhase.READY
+        val primaryEntry = entries.firstOrNull().takeIf { ready }
         return HomeScreenWidgetState(
-            status = if (entries.isEmpty()) {
-                quiet
-            } else if (content?.stale == true) {
-                refresh
-            } else {
-                attention
+            status = when (phase) {
+                AttentionWidgetRenderPhase.LOADING -> quiet
+                AttentionWidgetRenderPhase.ERROR -> refresh
+                AttentionWidgetRenderPhase.READY -> when {
+                    entries.isEmpty() -> quiet
+                    content?.stale == true -> refresh
+                    else -> attention
+                }
             },
-            title = entries.firstOrNull()?.title ?: noAttention,
-            items = entries.take(limit).map { it.title },
-            primaryEntry = entries.firstOrNull(),
-            actions = entries.firstOrNull()?.permittedActions().orEmpty().filterTo(linkedSetOf()) { action ->
+            title = when (phase) {
+                AttentionWidgetRenderPhase.LOADING -> loading
+                AttentionWidgetRenderPhase.ERROR -> error
+                AttentionWidgetRenderPhase.READY -> primaryEntry?.title ?: noAttention
+            },
+            items = if (ready) entries.take(limit).map { it.title } else emptyList(),
+            primaryEntry = primaryEntry,
+            actions = primaryEntry?.permittedActions().orEmpty().filterTo(linkedSetOf()) { action ->
                 when (size) {
                     AttentionWidgetSize.COMPACT -> action == AttentionWidgetAction.OPEN_DETAILS
                     AttentionWidgetSize.MEDIUM -> action != AttentionWidgetAction.MUTE
@@ -181,6 +202,9 @@ object HomeScreenAttentionWidgetRenderer {
         )
     }
 }
+
+/** Explicit non-content states prevent stale attention and controls leaking during refresh failures. */
+enum class AttentionWidgetRenderPhase { READY, LOADING, ERROR }
 
 data class HomeScreenWidgetState(
     val status: String,
