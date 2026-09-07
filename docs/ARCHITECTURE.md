@@ -32,6 +32,21 @@ this boundary.
 
 ## Phone-local AI evidence boundary
 
+## Debug-only phone/Wear transport
+
+The debug builds expose a narrow ADB intent endpoint for deterministic phone/Wear
+contract tests. It accepts only a versioned, bounded, redacted packet and reports
+the receiver outcome; it never creates a pairing grant and never uses or proves
+the authenticated Google Data Layer. The endpoint is absent from release source
+sets and cannot be used as OEM-pairing evidence.
+
+For local emulator tests, encode a packet with `DebugWearPacketCodec`, then inject
+it with an explicit component and the `packet` extra. The phone component is
+`com.example.agentrelay/.debug.DebugWearAdbActivity`; the Wear component is
+`dev.agentrelay.wear.app/.debug.DebugWearAdbActivity`. Keep packets synthetic and
+credential-free. Official pairing remains required for Data Layer and production
+companion validation.
+
 Phone-local model discovery reports capability and validation evidence separately from
 the model itself. API availability, model metadata, loadability, mocks, and virtual-device
 checks are useful validation signals but do not prove physical on-device inference. Only a

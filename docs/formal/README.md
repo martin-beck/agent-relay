@@ -110,3 +110,10 @@ python scripts/ci/verify_workflow_concurrency.py
 python scripts/ci/verify_formal_evidence.py
 python scripts/ci/verify_counterexamples.py
 ```
+
+## Debug Wear transport
+
+`DebugWearTransport.tla` states the noninterference boundary for the
+unauthenticated emulator harness: it is permitted only in debug builds and
+cannot create a pairing grant or claim authenticated Google Data Layer
+evidence. Official OEM pairing remains required for production communication.
