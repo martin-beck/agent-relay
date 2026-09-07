@@ -357,8 +357,11 @@ execution.
 
 The scheduled `Documentation maintenance` workflow repeats generated-document,
 workflow-evidence, reproducibility, privacy, API, consistency, strict-site, and
-external-link checks. It uploads a browsable site only after every check passes;
-stale or missing evidence fails closed.
+external-link checks on the dedicated build runner pool. Stale or missing evidence
+fails closed. After every authoritative check passes, the workflow attempts to
+upload a browsable site for three days. That upload is optional evidence transport:
+quota failure emits a warning and job-summary record without changing the validation
+result. Explicit public or external publication paths remain strict.
 
 ## CI
 
