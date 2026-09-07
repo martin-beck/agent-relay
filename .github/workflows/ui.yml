@@ -148,7 +148,9 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload UI test evidence
+        id: upload_ui_evidence
         if: ${{ always() }}
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ui-test-results-current-phone-${{ github.run_attempt }}
@@ -163,13 +165,26 @@ jobs:
           retention-days: 14
 
       - name: Upload browsable usage guide
+        id: upload_usage_guide
         if: ${{ success() }}
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: usage-guide-site-${{ github.run_attempt }}
           path: build/site
           if-no-files-found: error
           retention-days: 14
+
+      - name: Report unavailable optional UI artifacts
+        if: >-
+          ${{ always() &&
+              (steps.upload_ui_evidence.outcome == 'failure' ||
+              steps.upload_usage_guide.outcome == 'failure') }}
+        run: |
+          echo "::warning::One or more optional UI artifact uploads failed;" \
+            "inspect the upload step for the original error."
+          echo "Optional UI evidence could not be uploaded; connected tests and workflow checks retain their result." \
+            >> "$GITHUB_STEP_SUMMARY"
 
       - name: Configure explicitly enabled public Pages
         if: >-
@@ -328,7 +343,9 @@ jobs:
             --require-module storage/android | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Upload UI test evidence
+        id: upload_ui_evidence
         if: ${{ always() }}
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ui-test-results-${{ matrix.name }}-${{ github.run_attempt }}
@@ -339,3 +356,11 @@ jobs:
             build/emulator/**
           if-no-files-found: error
           retention-days: 14
+
+      - name: Report unavailable optional UI artifacts
+        if: ${{ always() && steps.upload_ui_evidence.outcome == 'failure' }}
+        run: |
+          echo "::warning::Optional UI evidence upload failed;" \
+            "inspect the upload step for the original error."
+          echo "Optional UI evidence could not be uploaded; connected tests retain their result." \
+            >> "$GITHUB_STEP_SUMMARY"
