@@ -1,3 +1,12 @@
+public final class dev/agentrelay/workflow/api/AtomicResourceLedger {
+	public fun <init> (Ldev/agentrelay/workflow/api/ResourceControlPolicy;)V
+	public final fun isHardStopped ()Z
+	public final fun reconcile (Ljava/lang/String;Ldev/agentrelay/workflow/api/MeterReport;)Ldev/agentrelay/workflow/api/ReconciliationOutcome;
+	public final fun reserve (Ljava/lang/String;Ldev/agentrelay/workflow/api/ResourceEstimate;Z)Ldev/agentrelay/workflow/api/ReservationOutcome;
+	public static synthetic fun reserve$default (Ldev/agentrelay/workflow/api/AtomicResourceLedger;Ljava/lang/String;Ldev/agentrelay/workflow/api/ResourceEstimate;ZILjava/lang/Object;)Ldev/agentrelay/workflow/api/ReservationOutcome;
+	public final fun snapshot ()Ljava/util/Map;
+}
+
 public final class dev/agentrelay/workflow/api/AuthoredWorkflowStep {
 	public fun <init> (Ljava/lang/String;Ldev/agentrelay/workflow/api/WorkflowAction;Ljava/util/Set;Ldev/agentrelay/workflow/api/WorkflowPermission;)V
 	public synthetic fun <init> (Ljava/lang/String;Ldev/agentrelay/workflow/api/WorkflowAction;Ljava/util/Set;Ldev/agentrelay/workflow/api/WorkflowPermission;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -65,6 +74,17 @@ public final class dev/agentrelay/workflow/api/AutonomyPolicyEvaluator {
 	public static synthetic fun evaluate$default (Ldev/agentrelay/workflow/api/AutonomyPolicyEvaluator;Ldev/agentrelay/workflow/api/AutonomyPolicy;Ldev/agentrelay/workflow/api/PolicyLease;Ldev/agentrelay/workflow/api/PolicyEffect;JIZILjava/lang/Object;)Ldev/agentrelay/workflow/api/PolicyDecision;
 }
 
+public final class dev/agentrelay/workflow/api/MeterReport {
+	public fun <init> (Ljava/util/Map;)V
+	public final fun component1 ()Ljava/util/Map;
+	public final fun copy (Ljava/util/Map;)Ldev/agentrelay/workflow/api/MeterReport;
+	public static synthetic fun copy$default (Ldev/agentrelay/workflow/api/MeterReport;Ljava/util/Map;ILjava/lang/Object;)Ldev/agentrelay/workflow/api/MeterReport;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getUnits ()Ljava/util/Map;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class dev/agentrelay/workflow/api/PolicyDecision {
 	public fun <init> (ZLdev/agentrelay/workflow/api/PolicyDecisionReason;ILjava/lang/String;)V
 	public final fun component1 ()Z
@@ -124,6 +144,115 @@ public final class dev/agentrelay/workflow/api/PolicyLease {
 	public fun hashCode ()I
 	public final fun revoke ()Ldev/agentrelay/workflow/api/PolicyLease;
 	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class dev/agentrelay/workflow/api/ReconciliationOutcome {
+}
+
+public final class dev/agentrelay/workflow/api/ReconciliationOutcome$HardStopped : dev/agentrelay/workflow/api/ReconciliationOutcome {
+	public fun <init> (Ljava/util/Set;)V
+	public final fun component1 ()Ljava/util/Set;
+	public final fun copy (Ljava/util/Set;)Ldev/agentrelay/workflow/api/ReconciliationOutcome$HardStopped;
+	public static synthetic fun copy$default (Ldev/agentrelay/workflow/api/ReconciliationOutcome$HardStopped;Ljava/util/Set;ILjava/lang/Object;)Ldev/agentrelay/workflow/api/ReconciliationOutcome$HardStopped;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getExceeded ()Ljava/util/Set;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/workflow/api/ReconciliationOutcome$Reconciled : dev/agentrelay/workflow/api/ReconciliationOutcome {
+	public static final field INSTANCE Ldev/agentrelay/workflow/api/ReconciliationOutcome$Reconciled;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/workflow/api/ReconciliationOutcome$UnknownOperation : dev/agentrelay/workflow/api/ReconciliationOutcome {
+	public static final field INSTANCE Ldev/agentrelay/workflow/api/ReconciliationOutcome$UnknownOperation;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class dev/agentrelay/workflow/api/ReservationOutcome {
+}
+
+public final class dev/agentrelay/workflow/api/ReservationOutcome$Rejected : dev/agentrelay/workflow/api/ReservationOutcome {
+	public fun <init> (Ldev/agentrelay/workflow/api/ReservationRejection;)V
+	public final fun component1 ()Ldev/agentrelay/workflow/api/ReservationRejection;
+	public final fun copy (Ldev/agentrelay/workflow/api/ReservationRejection;)Ldev/agentrelay/workflow/api/ReservationOutcome$Rejected;
+	public static synthetic fun copy$default (Ldev/agentrelay/workflow/api/ReservationOutcome$Rejected;Ldev/agentrelay/workflow/api/ReservationRejection;ILjava/lang/Object;)Ldev/agentrelay/workflow/api/ReservationOutcome$Rejected;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getReason ()Ldev/agentrelay/workflow/api/ReservationRejection;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/workflow/api/ReservationOutcome$Reserved : dev/agentrelay/workflow/api/ReservationOutcome {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Ldev/agentrelay/workflow/api/ReservationOutcome$Reserved;
+	public static synthetic fun copy$default (Ldev/agentrelay/workflow/api/ReservationOutcome$Reserved;Ljava/lang/String;ILjava/lang/Object;)Ldev/agentrelay/workflow/api/ReservationOutcome$Reserved;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getOperationId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/workflow/api/ReservationRejection : java/lang/Enum {
+	public static final field BUDGET_EXHAUSTED Ldev/agentrelay/workflow/api/ReservationRejection;
+	public static final field DUPLICATE_OPERATION Ldev/agentrelay/workflow/api/ReservationRejection;
+	public static final field UNKNOWN_PRICE Ldev/agentrelay/workflow/api/ReservationRejection;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/workflow/api/ReservationRejection;
+	public static fun values ()[Ldev/agentrelay/workflow/api/ReservationRejection;
+}
+
+public final class dev/agentrelay/workflow/api/ResourceControlPolicy {
+	public fun <init> (Ljava/util/Map;Ldev/agentrelay/workflow/api/UnknownPricePolicy;)V
+	public synthetic fun <init> (Ljava/util/Map;Ldev/agentrelay/workflow/api/UnknownPricePolicy;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/util/Map;
+	public final fun component2 ()Ldev/agentrelay/workflow/api/UnknownPricePolicy;
+	public final fun copy (Ljava/util/Map;Ldev/agentrelay/workflow/api/UnknownPricePolicy;)Ldev/agentrelay/workflow/api/ResourceControlPolicy;
+	public static synthetic fun copy$default (Ldev/agentrelay/workflow/api/ResourceControlPolicy;Ljava/util/Map;Ldev/agentrelay/workflow/api/UnknownPricePolicy;ILjava/lang/Object;)Ldev/agentrelay/workflow/api/ResourceControlPolicy;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getLimits ()Ljava/util/Map;
+	public final fun getUnknownPricePolicy ()Ldev/agentrelay/workflow/api/UnknownPricePolicy;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/workflow/api/ResourceEstimate {
+	public fun <init> (Ljava/util/Map;Z)V
+	public synthetic fun <init> (Ljava/util/Map;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/util/Map;
+	public final fun component2 ()Z
+	public final fun copy (Ljava/util/Map;Z)Ldev/agentrelay/workflow/api/ResourceEstimate;
+	public static synthetic fun copy$default (Ldev/agentrelay/workflow/api/ResourceEstimate;Ljava/util/Map;ZILjava/lang/Object;)Ldev/agentrelay/workflow/api/ResourceEstimate;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getHasUnknownPrice ()Z
+	public final fun getUnits ()Ljava/util/Map;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/workflow/api/ResourceKind : java/lang/Enum {
+	public static final field COMPUTE_MILLIS Ldev/agentrelay/workflow/api/ResourceKind;
+	public static final field MONEY_MICROS Ldev/agentrelay/workflow/api/ResourceKind;
+	public static final field NETWORK_BYTES Ldev/agentrelay/workflow/api/ResourceKind;
+	public static final field STORAGE_BYTES Ldev/agentrelay/workflow/api/ResourceKind;
+	public static final field TIME_MILLIS Ldev/agentrelay/workflow/api/ResourceKind;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/workflow/api/ResourceKind;
+	public static fun values ()[Ldev/agentrelay/workflow/api/ResourceKind;
+}
+
+public final class dev/agentrelay/workflow/api/UnknownPricePolicy : java/lang/Enum {
+	public static final field REJECT Ldev/agentrelay/workflow/api/UnknownPricePolicy;
+	public static final field REQUIRE_APPROVAL Ldev/agentrelay/workflow/api/UnknownPricePolicy;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/workflow/api/UnknownPricePolicy;
+	public static fun values ()[Ldev/agentrelay/workflow/api/UnknownPricePolicy;
 }
 
 public final class dev/agentrelay/workflow/api/WorkflowAction : java/lang/Enum {
