@@ -74,6 +74,11 @@ revoked lease remains unable to authorize later work. `CollaborationModelsTest`
 provides executable evidence for scope-limited delegation, stale conflicts,
 expiry, revocation, and redacted audit comments.
 
+`PrivacyLifecycle.tla` captures the privacy boundary: retention expiry is
+terminal deletion, credential versions only advance, and every lifecycle
+mutation appends audit evidence. `PrivacyLifecycleModelsTest` provides the
+executable checks for redacted exports, deletion, retention, and rotation.
+
 ```bash
 python scripts/ci/verify_counterexamples.py
 ```
