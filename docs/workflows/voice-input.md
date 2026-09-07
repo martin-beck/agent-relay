@@ -2,7 +2,7 @@
 
 # Capture and review offline voice input
 
-**Status:** Planned. This page defines the intended attention contract; it does not claim that the workflow is implemented.
+**Status:** Verified by the named Android emulator journey on every pull request and main-branch push.
 
 Turn speech into a draft locally, then let the user review it before any agent receives it.
 
@@ -33,22 +33,43 @@ Create session input hands-free without sending microphone data to a cloud servi
 
 **Action:** Select voice input when no compatible verified model is installed.
 
-**Expected result:** The app explains the model size and asks before acquiring it.
+**Expected result:** The app requires an explicit install for the selected offline model.
 
-### 2. Record with visible control
+![Agent Relay offers explicit selection and installation of an offline speech model.](../assets/workflows/voice-input/select-offline-model.png)
+
+### 2. Authorize an explicit recording
+
+**Action:** Select Start voice input for the current session.
+
+**Expected result:** The app states that voice input stays on the device before Android handles microphone permission.
+
+![Agent Relay offers a permission-gated voice input action and states that input remains on the device.](../assets/workflows/voice-input/permission-gated-start.png)
+
+### 3. Record with visible control
 
 **Action:** Start recording, speak the instruction, and stop recording.
 
 **Expected result:** A foreground indicator remains visible and audio stays on the device.
 
-### 3. Review before delivery
+![Agent Relay visibly listens on device with explicit stop and cancel recording controls.](../assets/workflows/voice-input/visible-local-recording.png)
+
+### 4. Review before delivery
 
 **Action:** Edit the generated draft and select Send or Steer active turn.
 
 **Expected result:** Only the reviewed text reaches the selected agent session.
+
+![Agent Relay presents an offline transcript with explicit use and discard actions before delivery.](../assets/workflows/voice-input/review-transcript.png)
 
 ## Recovery and fault handling
 
 - Interrupted capture leaves the previous draft intact.
 - A failed model verification removes the unusable partial artifact.
 - Denied microphone permission keeps keyboard input fully usable.
+
+## Verification
+
+- Instrumented test: `com.example.agentrelay.ui.main.UsageJourneyTest#capturesVerifiedJourneys`
+- Canonical device: Pixel 7 Pro profile, Android API 36
+- Locale, time zone, and theme: English (United States), UTC, light theme, normal font scale
+- Evidence: reviewed PNG baselines plus current-run captures and image diffs

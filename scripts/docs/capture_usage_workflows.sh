@@ -82,9 +82,16 @@ mkdir -p "$capture_root"
 
 uv run --only-group docs python scripts/docs/render_workflows.py --check
 if [[ "$mode" == "--record" ]]; then
-  rm -rf "$baseline_root"
   mkdir -p "$baseline_root"
-  cp -a "$capture_root/." "$baseline_root/"
+  # A capture test owns only the workflow directories that it produced. Other
+  # tests (for example, the QR journey) retain their independently reviewed
+  # evidence when this recorder refreshes UsageJourneyTest baselines.
+  while IFS= read -r -d "" captured_workflow; do
+    workflow_name="${captured_workflow##*/}"
+    baseline_workflow="$baseline_root/$workflow_name"
+    rm -rf "$baseline_workflow"
+    cp -a "$captured_workflow" "$baseline_workflow"
+  done < <(find "$capture_root" -mindepth 1 -maxdepth 1 -type d -print0)
 fi
 uv run --only-group docs python scripts/docs/verify_workflows.py \
   --captured "$capture_root"
