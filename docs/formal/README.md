@@ -54,6 +54,12 @@ counterexample traces cannot carry host, account, prompt, or provider data.
 Every retained trace is replayed before the formal evidence is accepted; a
 changed rejection, implementation, or trace digest fails the quality gate.
 
+`CrossDeviceContinuity.tla` captures the companion-device safety boundary:
+the authority sequence only advances, acknowledgements cannot move backwards
+or beyond authority, and revocation prevents later acceptance. The executable
+connection API tests cover the same finite transitions, including offline
+replay, reconnect, and replacement enrollment.
+
 `ResourceBudget.tla` states the companion resource-control invariants used by
 the executable workflow API contract: reservations are admitted only while
 the projected usage fits every declared dimension, reconciliation is
