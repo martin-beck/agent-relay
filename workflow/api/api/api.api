@@ -16,6 +16,116 @@ public final class dev/agentrelay/workflow/api/AuthoredWorkflowStep {
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class dev/agentrelay/workflow/api/AutonomyControlState {
+	public fun <init> ()V
+	public fun <init> (Z)V
+	public synthetic fun <init> (ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Z
+	public final fun copy (Z)Ldev/agentrelay/workflow/api/AutonomyControlState;
+	public static synthetic fun copy$default (Ldev/agentrelay/workflow/api/AutonomyControlState;ZILjava/lang/Object;)Ldev/agentrelay/workflow/api/AutonomyControlState;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getPaused ()Z
+	public fun hashCode ()I
+	public final fun pauseAll ()Ldev/agentrelay/workflow/api/AutonomyControlState;
+	public final fun resume ()Ldev/agentrelay/workflow/api/AutonomyControlState;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/workflow/api/AutonomyMode : java/lang/Enum {
+	public static final field APPROVE_SENSITIVE Ldev/agentrelay/workflow/api/AutonomyMode;
+	public static final field REVIEW_EVERY_EFFECT Ldev/agentrelay/workflow/api/AutonomyMode;
+	public static final field TRUST_SAFE Ldev/agentrelay/workflow/api/AutonomyMode;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/workflow/api/AutonomyMode;
+	public static fun values ()[Ldev/agentrelay/workflow/api/AutonomyMode;
+}
+
+public final class dev/agentrelay/workflow/api/AutonomyPolicy {
+	public fun <init> (ILdev/agentrelay/workflow/api/AutonomyMode;Ljava/util/Set;IJ)V
+	public final fun component1 ()I
+	public final fun component2 ()Ldev/agentrelay/workflow/api/AutonomyMode;
+	public final fun component3 ()Ljava/util/Set;
+	public final fun component4 ()I
+	public final fun component5 ()J
+	public final fun copy (ILdev/agentrelay/workflow/api/AutonomyMode;Ljava/util/Set;IJ)Ldev/agentrelay/workflow/api/AutonomyPolicy;
+	public static synthetic fun copy$default (Ldev/agentrelay/workflow/api/AutonomyPolicy;ILdev/agentrelay/workflow/api/AutonomyMode;Ljava/util/Set;IJILjava/lang/Object;)Ldev/agentrelay/workflow/api/AutonomyPolicy;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAllowedEffects ()Ljava/util/Set;
+	public final fun getMaxEffects ()I
+	public final fun getMaxRuntimeSeconds ()J
+	public final fun getMode ()Ldev/agentrelay/workflow/api/AutonomyMode;
+	public final fun getVersion ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/workflow/api/AutonomyPolicyEvaluator {
+	public static final field INSTANCE Ldev/agentrelay/workflow/api/AutonomyPolicyEvaluator;
+	public final fun evaluate (Ldev/agentrelay/workflow/api/AutonomyPolicy;Ldev/agentrelay/workflow/api/PolicyLease;Ldev/agentrelay/workflow/api/PolicyEffect;JIZ)Ldev/agentrelay/workflow/api/PolicyDecision;
+	public static synthetic fun evaluate$default (Ldev/agentrelay/workflow/api/AutonomyPolicyEvaluator;Ldev/agentrelay/workflow/api/AutonomyPolicy;Ldev/agentrelay/workflow/api/PolicyLease;Ldev/agentrelay/workflow/api/PolicyEffect;JIZILjava/lang/Object;)Ldev/agentrelay/workflow/api/PolicyDecision;
+}
+
+public final class dev/agentrelay/workflow/api/PolicyDecision {
+	public fun <init> (ZLdev/agentrelay/workflow/api/PolicyDecisionReason;ILjava/lang/String;)V
+	public final fun component1 ()Z
+	public final fun component2 ()Ldev/agentrelay/workflow/api/PolicyDecisionReason;
+	public final fun component3 ()I
+	public final fun component4 ()Ljava/lang/String;
+	public final fun copy (ZLdev/agentrelay/workflow/api/PolicyDecisionReason;ILjava/lang/String;)Ldev/agentrelay/workflow/api/PolicyDecision;
+	public static synthetic fun copy$default (Ldev/agentrelay/workflow/api/PolicyDecision;ZLdev/agentrelay/workflow/api/PolicyDecisionReason;ILjava/lang/String;ILjava/lang/Object;)Ldev/agentrelay/workflow/api/PolicyDecision;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAllowed ()Z
+	public final fun getLeaseId ()Ljava/lang/String;
+	public final fun getPolicyVersion ()I
+	public final fun getReason ()Ldev/agentrelay/workflow/api/PolicyDecisionReason;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/workflow/api/PolicyDecisionReason : java/lang/Enum {
+	public static final field ALLOWED Ldev/agentrelay/workflow/api/PolicyDecisionReason;
+	public static final field EFFECT_BUDGET_EXHAUSTED Ldev/agentrelay/workflow/api/PolicyDecisionReason;
+	public static final field EFFECT_NOT_ALLOWED Ldev/agentrelay/workflow/api/PolicyDecisionReason;
+	public static final field LEASE_EXPIRED Ldev/agentrelay/workflow/api/PolicyDecisionReason;
+	public static final field LEASE_REVOKED Ldev/agentrelay/workflow/api/PolicyDecisionReason;
+	public static final field PAUSED Ldev/agentrelay/workflow/api/PolicyDecisionReason;
+	public static final field POLICY_VERSION_MISMATCH Ldev/agentrelay/workflow/api/PolicyDecisionReason;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/workflow/api/PolicyDecisionReason;
+	public static fun values ()[Ldev/agentrelay/workflow/api/PolicyDecisionReason;
+}
+
+public final class dev/agentrelay/workflow/api/PolicyEffect : java/lang/Enum {
+	public static final field EXTERNAL_WRITE Ldev/agentrelay/workflow/api/PolicyEffect;
+	public static final field NOTIFY_USER Ldev/agentrelay/workflow/api/PolicyEffect;
+	public static final field READ_CONTEXT Ldev/agentrelay/workflow/api/PolicyEffect;
+	public static final field RUN_SAFE_COMMAND Ldev/agentrelay/workflow/api/PolicyEffect;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/workflow/api/PolicyEffect;
+	public static fun values ()[Ldev/agentrelay/workflow/api/PolicyEffect;
+}
+
+public final class dev/agentrelay/workflow/api/PolicyLease {
+	public fun <init> (Ljava/lang/String;IJJZ)V
+	public synthetic fun <init> (Ljava/lang/String;IJJZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()I
+	public final fun component3 ()J
+	public final fun component4 ()J
+	public final fun component5 ()Z
+	public final fun copy (Ljava/lang/String;IJJZ)Ldev/agentrelay/workflow/api/PolicyLease;
+	public static synthetic fun copy$default (Ldev/agentrelay/workflow/api/PolicyLease;Ljava/lang/String;IJJZILjava/lang/Object;)Ldev/agentrelay/workflow/api/PolicyLease;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getExpiresAtSeconds ()J
+	public final fun getId ()Ljava/lang/String;
+	public final fun getIssuedAtSeconds ()J
+	public final fun getPolicyVersion ()I
+	public final fun getRevoked ()Z
+	public fun hashCode ()I
+	public final fun revoke ()Ldev/agentrelay/workflow/api/PolicyLease;
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class dev/agentrelay/workflow/api/WorkflowAction : java/lang/Enum {
 	public static final field NOTIFY Ldev/agentrelay/workflow/api/WorkflowAction;
 	public static final field PROPOSE Ldev/agentrelay/workflow/api/WorkflowAction;
