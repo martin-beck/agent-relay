@@ -45,8 +45,8 @@ representative physical-device release evidence.
 
 ### Cross-language assurance contract
 
-The machine-readable [language assurance contract](../config/language-assurance-contract.json)
-keeps the Java, Bash, dependency, Python, and Kotlin signals comparable. Each gate names
+The machine-readable `config/language-assurance-contract.json` keeps the Java, Bash,
+dependency, Python, and Kotlin signals comparable. Each gate names
 its coordinator owner, exact command, report location, invariant, and remediation path.
 The contract verifier checks that every required language is represented, evidence paths
 stay below the quality-report directory, and every gate points at a declared invariant.
