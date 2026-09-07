@@ -1,3 +1,21 @@
+public final class dev/agentrelay/workflow/api/AuthoredWorkflowStep {
+	public fun <init> (Ljava/lang/String;Ldev/agentrelay/workflow/api/WorkflowAction;Ljava/util/Set;Ldev/agentrelay/workflow/api/WorkflowPermission;)V
+	public synthetic fun <init> (Ljava/lang/String;Ldev/agentrelay/workflow/api/WorkflowAction;Ljava/util/Set;Ldev/agentrelay/workflow/api/WorkflowPermission;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ldev/agentrelay/workflow/api/WorkflowAction;
+	public final fun component3 ()Ljava/util/Set;
+	public final fun component4 ()Ldev/agentrelay/workflow/api/WorkflowPermission;
+	public final fun copy (Ljava/lang/String;Ldev/agentrelay/workflow/api/WorkflowAction;Ljava/util/Set;Ldev/agentrelay/workflow/api/WorkflowPermission;)Ldev/agentrelay/workflow/api/AuthoredWorkflowStep;
+	public static synthetic fun copy$default (Ldev/agentrelay/workflow/api/AuthoredWorkflowStep;Ljava/lang/String;Ldev/agentrelay/workflow/api/WorkflowAction;Ljava/util/Set;Ldev/agentrelay/workflow/api/WorkflowPermission;ILjava/lang/Object;)Ldev/agentrelay/workflow/api/AuthoredWorkflowStep;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAction ()Ldev/agentrelay/workflow/api/WorkflowAction;
+	public final fun getDependsOn ()Ljava/util/Set;
+	public final fun getId ()Ljava/lang/String;
+	public final fun getPermission ()Ldev/agentrelay/workflow/api/WorkflowPermission;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class dev/agentrelay/workflow/api/WorkflowAction : java/lang/Enum {
 	public static final field NOTIFY Ldev/agentrelay/workflow/api/WorkflowAction;
 	public static final field PROPOSE Ldev/agentrelay/workflow/api/WorkflowAction;
@@ -6,6 +24,60 @@ public final class dev/agentrelay/workflow/api/WorkflowAction : java/lang/Enum {
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/workflow/api/WorkflowAction;
 	public static fun values ()[Ldev/agentrelay/workflow/api/WorkflowAction;
+}
+
+public final class dev/agentrelay/workflow/api/WorkflowAuthoringDraft {
+	public fun <init> (Ldev/agentrelay/workflow/api/WorkflowDefinition;Ljava/util/List;Ljava/util/Set;Ldev/agentrelay/workflow/api/WorkflowCompletionContract;Ljava/lang/String;Z)V
+	public synthetic fun <init> (Ldev/agentrelay/workflow/api/WorkflowDefinition;Ljava/util/List;Ljava/util/Set;Ldev/agentrelay/workflow/api/WorkflowCompletionContract;Ljava/lang/String;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun approve ()Ldev/agentrelay/workflow/api/WorkflowAuthoringDraft;
+	public final fun component1 ()Ldev/agentrelay/workflow/api/WorkflowDefinition;
+	public final fun component2 ()Ljava/util/List;
+	public final fun component3 ()Ljava/util/Set;
+	public final fun component4 ()Ldev/agentrelay/workflow/api/WorkflowCompletionContract;
+	public final fun component5 ()Ljava/lang/String;
+	public final fun component6 ()Z
+	public final fun copy (Ldev/agentrelay/workflow/api/WorkflowDefinition;Ljava/util/List;Ljava/util/Set;Ldev/agentrelay/workflow/api/WorkflowCompletionContract;Ljava/lang/String;Z)Ldev/agentrelay/workflow/api/WorkflowAuthoringDraft;
+	public static synthetic fun copy$default (Ldev/agentrelay/workflow/api/WorkflowAuthoringDraft;Ldev/agentrelay/workflow/api/WorkflowDefinition;Ljava/util/List;Ljava/util/Set;Ldev/agentrelay/workflow/api/WorkflowCompletionContract;Ljava/lang/String;ZILjava/lang/Object;)Ldev/agentrelay/workflow/api/WorkflowAuthoringDraft;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun executionPlan ()Ldev/agentrelay/workflow/api/WorkflowExecutionPlan;
+	public final fun getCompletion ()Ldev/agentrelay/workflow/api/WorkflowCompletionContract;
+	public final fun getPermissions ()Ljava/util/Set;
+	public final fun getPreview ()Ljava/lang/String;
+	public final fun getReviewed ()Z
+	public final fun getSteps ()Ljava/util/List;
+	public final fun getWorkflow ()Ldev/agentrelay/workflow/api/WorkflowDefinition;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/workflow/api/WorkflowAuthoringParser {
+	public static final field INSTANCE Ldev/agentrelay/workflow/api/WorkflowAuthoringParser;
+	public final fun parse (Ljava/lang/String;)Ldev/agentrelay/workflow/api/WorkflowAuthoringResult;
+}
+
+public final class dev/agentrelay/workflow/api/WorkflowAuthoringResult {
+	public fun <init> (Ldev/agentrelay/workflow/api/WorkflowAuthoringStatus;Ldev/agentrelay/workflow/api/WorkflowAuthoringDraft;Ljava/util/List;)V
+	public synthetic fun <init> (Ldev/agentrelay/workflow/api/WorkflowAuthoringStatus;Ldev/agentrelay/workflow/api/WorkflowAuthoringDraft;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ldev/agentrelay/workflow/api/WorkflowAuthoringStatus;
+	public final fun component2 ()Ldev/agentrelay/workflow/api/WorkflowAuthoringDraft;
+	public final fun component3 ()Ljava/util/List;
+	public final fun copy (Ldev/agentrelay/workflow/api/WorkflowAuthoringStatus;Ldev/agentrelay/workflow/api/WorkflowAuthoringDraft;Ljava/util/List;)Ldev/agentrelay/workflow/api/WorkflowAuthoringResult;
+	public static synthetic fun copy$default (Ldev/agentrelay/workflow/api/WorkflowAuthoringResult;Ldev/agentrelay/workflow/api/WorkflowAuthoringStatus;Ldev/agentrelay/workflow/api/WorkflowAuthoringDraft;Ljava/util/List;ILjava/lang/Object;)Ldev/agentrelay/workflow/api/WorkflowAuthoringResult;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDraft ()Ldev/agentrelay/workflow/api/WorkflowAuthoringDraft;
+	public final fun getQuestions ()Ljava/util/List;
+	public final fun getStatus ()Ldev/agentrelay/workflow/api/WorkflowAuthoringStatus;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/workflow/api/WorkflowAuthoringStatus : java/lang/Enum {
+	public static final field AMBIGUOUS Ldev/agentrelay/workflow/api/WorkflowAuthoringStatus;
+	public static final field READY Ldev/agentrelay/workflow/api/WorkflowAuthoringStatus;
+	public static final field REJECTED Ldev/agentrelay/workflow/api/WorkflowAuthoringStatus;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/workflow/api/WorkflowAuthoringStatus;
+	public static fun values ()[Ldev/agentrelay/workflow/api/WorkflowAuthoringStatus;
 }
 
 public final class dev/agentrelay/workflow/api/WorkflowBudget {
@@ -19,6 +91,20 @@ public final class dev/agentrelay/workflow/api/WorkflowBudget {
 	public final fun getMaxActivations ()I
 	public final fun getMaxRuntimeSeconds ()J
 	public final fun getRetentionSeconds ()J
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/workflow/api/WorkflowCompletionContract {
+	public fun <init> (Ljava/util/Set;Ljava/util/Set;)V
+	public synthetic fun <init> (Ljava/util/Set;Ljava/util/Set;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/util/Set;
+	public final fun component2 ()Ljava/util/Set;
+	public final fun copy (Ljava/util/Set;Ljava/util/Set;)Ldev/agentrelay/workflow/api/WorkflowCompletionContract;
+	public static synthetic fun copy$default (Ldev/agentrelay/workflow/api/WorkflowCompletionContract;Ljava/util/Set;Ljava/util/Set;ILjava/lang/Object;)Ldev/agentrelay/workflow/api/WorkflowCompletionContract;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getFailureSignals ()Ljava/util/Set;
+	public final fun getRequiredSignals ()Ljava/util/Set;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
@@ -47,6 +133,21 @@ public final class dev/agentrelay/workflow/api/WorkflowDefinition {
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class dev/agentrelay/workflow/api/WorkflowExecutionPlan {
+	public fun <init> (Ldev/agentrelay/workflow/api/WorkflowDefinition;Ljava/util/List;Ldev/agentrelay/workflow/api/WorkflowCompletionContract;)V
+	public final fun component1 ()Ldev/agentrelay/workflow/api/WorkflowDefinition;
+	public final fun component2 ()Ljava/util/List;
+	public final fun component3 ()Ldev/agentrelay/workflow/api/WorkflowCompletionContract;
+	public final fun copy (Ldev/agentrelay/workflow/api/WorkflowDefinition;Ljava/util/List;Ldev/agentrelay/workflow/api/WorkflowCompletionContract;)Ldev/agentrelay/workflow/api/WorkflowExecutionPlan;
+	public static synthetic fun copy$default (Ldev/agentrelay/workflow/api/WorkflowExecutionPlan;Ldev/agentrelay/workflow/api/WorkflowDefinition;Ljava/util/List;Ldev/agentrelay/workflow/api/WorkflowCompletionContract;ILjava/lang/Object;)Ldev/agentrelay/workflow/api/WorkflowExecutionPlan;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCompletion ()Ldev/agentrelay/workflow/api/WorkflowCompletionContract;
+	public final fun getSteps ()Ljava/util/List;
+	public final fun getWorkflow ()Ldev/agentrelay/workflow/api/WorkflowDefinition;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class dev/agentrelay/workflow/api/WorkflowId {
 	public static final synthetic fun box-impl (Ljava/lang/String;)Ldev/agentrelay/workflow/api/WorkflowId;
 	public static fun constructor-impl (Ljava/lang/String;)Ljava/lang/String;
@@ -59,6 +160,16 @@ public final class dev/agentrelay/workflow/api/WorkflowId {
 	public fun toString ()Ljava/lang/String;
 	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
 	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/workflow/api/WorkflowPermission : java/lang/Enum {
+	public static final field NOTIFY_USER Ldev/agentrelay/workflow/api/WorkflowPermission;
+	public static final field READ_CONTEXT Ldev/agentrelay/workflow/api/WorkflowPermission;
+	public static final field REQUEST_APPROVAL Ldev/agentrelay/workflow/api/WorkflowPermission;
+	public static final field RUN_SAFE_COMMAND Ldev/agentrelay/workflow/api/WorkflowPermission;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/workflow/api/WorkflowPermission;
+	public static fun values ()[Ldev/agentrelay/workflow/api/WorkflowPermission;
 }
 
 public final class dev/agentrelay/workflow/api/WorkflowRisk : java/lang/Enum {
