@@ -54,6 +54,14 @@ counterexample traces cannot carry host, account, prompt, or provider data.
 Every retained trace is replayed before the formal evidence is accepted; a
 changed rejection, implementation, or trace digest fails the quality gate.
 
+`ResourceBudget.tla` states the companion resource-control invariants used by
+the executable workflow API contract: reservations are admitted only while
+the projected usage fits every declared dimension, reconciliation is
+monotonic, and an observed overrun enters a terminal hard stop. Unknown money
+prices are rejected or require explicit approval according to the policy; the
+Kotlin race tests provide the finite executable evidence for serialized
+reservations.
+
 ```bash
 python scripts/ci/verify_counterexamples.py
 ```
