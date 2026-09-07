@@ -120,6 +120,19 @@ reports and the policy whenever the result set changes.
 
 ## Offline speech native build
 
+## Manual external documentation publication
+
+The repository does not publish documentation externally during pushes,
+schedules, or pull requests. An owner may configure a repository variable
+`DOCS_PUBLICATION_URL` and secret `DOCS_PUBLICATION_TOKEN`, then explicitly
+dispatch the `External documentation publication` workflow with `confirm=true`.
+The workflow rebuilds the strict documentation site, creates a deterministic
+archive, sends it only to the configured HTTPS destination, and retains its
+SHA-256 checksum in the job summary. Missing configuration, a
+non-HTTPS destination, an oversized archive, or a token found in the archive
+fails closed before upload. No endpoint, credential, or account identifier is
+stored in the repository.
+
 The debug build includes a source-built sherpa-onnx online-recognition runtime.
 Confirm the exact native tools before building:
 
