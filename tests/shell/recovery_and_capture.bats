@@ -17,6 +17,7 @@ make_adb() {
   mkdir -p "$TEST_ROOT/sdk/platform-tools"
   cat > "$TEST_ROOT/sdk/platform-tools/adb" <<EOF
 #!/usr/bin/env bash
+printf '%s\n' "\$*" >> "$TEST_ROOT/adb.calls"
 case "\$*" in
   devices)
     printf 'List of devices attached\\n'
@@ -52,6 +53,14 @@ EOF
   [[ "$output" == *"Application install failed"* ]]
 }
 
+@test "recovery force-stops the app after an install failure" {
+  make_adb 1 1 1 23
+  run env ADB_BIN="$TEST_ROOT/sdk/platform-tools/adb" "$RECOVERY" "$APK"
+  [ "$status" -eq 1 ]
+  run grep -F "shell -n am force-stop com.example.agentrelay" "$TEST_ROOT/adb.calls"
+  [ "$status" -eq 0 ]
+}
+
 @test "capture rejects hostile command-line input before device access" {
   run "$CAPTURE" --delete-baselines
   [ "$status" -eq 2 ]
@@ -62,6 +71,13 @@ EOF
   run env -u ANDROID_HOME -u ANDROID_SDK_ROOT "$CAPTURE"
   [ "$status" -eq 2 ]
   [[ "$output" == *"Set ANDROID_SDK_ROOT or ANDROID_HOME"* ]]
+}
+
+@test "capture rejects an SDK without an executable adb" {
+  mkdir -p "$TEST_ROOT/sdk/platform-tools"
+  run env ANDROID_SDK_ROOT="$TEST_ROOT/sdk" ANDROID_HOME= "$CAPTURE"
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"adb is not executable"* ]]
 }
 
 @test "capture rejects multiple attached devices" {

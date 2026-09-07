@@ -22,6 +22,13 @@ setup() {
   [ ! -e "$AGENT_RELAY_HOME" ]
 }
 
+@test "preview rejects a missing manifest before reading bundle state" {
+  run "$BOOTSTRAP" preview --manifest "$TEST_ROOT/missing-manifest"
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"manifest"* ]]
+  [ ! -e "$AGENT_RELAY_HOME" ]
+}
+
 @test "install requires explicit consent and pinned signature key" {
   run "$BOOTSTRAP" install --manifest "$TEST_ROOT/manifest" --bundle "$TEST_ROOT/daemon.tar.gz"
   [ "$status" -ne 0 ]
