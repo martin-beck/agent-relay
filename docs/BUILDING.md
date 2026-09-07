@@ -391,3 +391,26 @@ validation.
 
 If a CI-only failure occurs, download the relevant report artifact from the
 workflow run and reproduce the exact failing Gradle task locally.
+
+## Actions artifact retention
+
+The manual `Actions artifact retention` workflow inventories Actions artifacts
+on the dedicated build runner and produces a deterministic dry-run plan by
+default. It protects active runs, current main, open pull-request heads,
+release/publication outputs, recent evidence, and artifacts with incomplete
+provenance. Age, duplicate source heads, size, and explicit quota hysteresis
+rank the remaining candidates.
+
+The repository owner must supply the account's current artifact quota and a
+maximum deletion count for every dispatch. Applying a reviewed plan additionally
+requires the exact confirmation `DELETE_ACTIONS_ARTIFACTS`; the tool rejects
+more than 100 deletions per invocation. The workflow has no schedule, does not
+upload another artifact, and writes its counts to the job summary. A dry run or
+source test never authorizes deletion.
+
+Run the same planner locally with a token provided only through the environment:
+
+```bash
+uv run python scripts/ci/actions_artifact_retention.py \
+  --repository owner/name --quota-mib 500 --max-deletions 25
+```

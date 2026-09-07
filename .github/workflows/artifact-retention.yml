@@ -1,0 +1,67 @@
+name: Actions artifact retention
+
+on:
+  workflow_dispatch:
+    inputs:
+      quota_mib:
+        description: Account artifact quota in MiB, used only for deterministic planning
+        required: true
+        type: number
+      max_deletions:
+        description: Maximum artifacts in this bounded plan or apply operation
+        required: true
+        default: 25
+        type: number
+      apply:
+        description: Apply the reviewed plan instead of producing a dry run
+        required: true
+        default: false
+        type: boolean
+      confirmation:
+        description: For apply only, enter DELETE_ACTIONS_ARTIFACTS exactly
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  actions: write
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: actions-artifact-retention
+  cancel-in-progress: false
+
+jobs:
+  retention:
+    name: Plan or apply bounded artifact retention
+    runs-on: [self-hosted, linux, x64, agent-relay-build-ci]
+    timeout-minutes: 10
+    env:
+      RETENTION_APPLY: ${{ inputs.apply }}
+      RETENTION_CONFIRMATION: ${{ inputs.confirmation }}
+      RETENTION_MAX_DELETIONS: ${{ inputs.max_deletions }}
+      RETENTION_QUOTA_MIB: ${{ inputs.quota_mib }}
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Plan or apply bounded retention
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          arguments=(
+            --repository "${GITHUB_REPOSITORY}"
+            --quota-mib "${RETENTION_QUOTA_MIB}"
+            --max-deletions "${RETENTION_MAX_DELETIONS}"
+            --output "${RUNNER_TEMP}/actions-artifact-retention.json"
+            --summary-output "${GITHUB_STEP_SUMMARY}"
+          )
+          if [[ "${RETENTION_APPLY}" == "true" ]]; then
+            arguments+=(--apply --confirm "${RETENTION_CONFIRMATION}")
+          fi
+          python3 scripts/ci/actions_artifact_retention.py "${arguments[@]}"
