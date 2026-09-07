@@ -858,6 +858,57 @@ public final class dev/agentrelay/connection/api/ContinuityController {
 	public final fun suspend (J)Ldev/agentrelay/connection/api/ContinuitySnapshot;
 }
 
+public final class dev/agentrelay/connection/api/ContinuityCursor {
+	public fun <init> (JJ)V
+	public final fun component1 ()J
+	public final fun component2 ()J
+	public final fun copy (JJ)Ldev/agentrelay/connection/api/ContinuityCursor;
+	public static synthetic fun copy$default (Ldev/agentrelay/connection/api/ContinuityCursor;JJILjava/lang/Object;)Ldev/agentrelay/connection/api/ContinuityCursor;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getGeneration ()J
+	public final fun getSequence ()J
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ContinuityDeviceId {
+	public static final synthetic fun box-impl (Ljava/lang/String;)Ldev/agentrelay/connection/api/ContinuityDeviceId;
+	public static fun constructor-impl (Ljava/lang/String;)Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ContinuityDeviceSnapshot {
+	public synthetic fun <init> (Ljava/lang/String;Ldev/agentrelay/connection/api/ContinuityDeviceState;Ldev/agentrelay/connection/api/ContinuityCursor;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-R0W_Idc ()Ljava/lang/String;
+	public final fun component2 ()Ldev/agentrelay/connection/api/ContinuityDeviceState;
+	public final fun component3 ()Ldev/agentrelay/connection/api/ContinuityCursor;
+	public final fun copy-CX9gXGc (Ljava/lang/String;Ldev/agentrelay/connection/api/ContinuityDeviceState;Ldev/agentrelay/connection/api/ContinuityCursor;)Ldev/agentrelay/connection/api/ContinuityDeviceSnapshot;
+	public static synthetic fun copy-CX9gXGc$default (Ldev/agentrelay/connection/api/ContinuityDeviceSnapshot;Ljava/lang/String;Ldev/agentrelay/connection/api/ContinuityDeviceState;Ldev/agentrelay/connection/api/ContinuityCursor;ILjava/lang/Object;)Ldev/agentrelay/connection/api/ContinuityDeviceSnapshot;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAcknowledged ()Ldev/agentrelay/connection/api/ContinuityCursor;
+	public final fun getDevice-R0W_Idc ()Ljava/lang/String;
+	public final fun getState ()Ldev/agentrelay/connection/api/ContinuityDeviceState;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ContinuityDeviceState : java/lang/Enum {
+	public static final field OFFLINE Ldev/agentrelay/connection/api/ContinuityDeviceState;
+	public static final field REVOKED Ldev/agentrelay/connection/api/ContinuityDeviceState;
+	public static final field TRUSTED Ldev/agentrelay/connection/api/ContinuityDeviceState;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/connection/api/ContinuityDeviceState;
+	public static fun values ()[Ldev/agentrelay/connection/api/ContinuityDeviceState;
+}
+
 public final class dev/agentrelay/connection/api/ContinuitySnapshot {
 	public fun <init> (Ldev/agentrelay/connection/api/ContinuityState;Ldev/agentrelay/connection/api/DaemonTransportKind;JI)V
 	public final fun component1 ()Ldev/agentrelay/connection/api/ContinuityState;
@@ -907,6 +958,31 @@ public final class dev/agentrelay/connection/api/ContinuityToken {
 	public final fun getTokenDigest ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/ContinuityUpdate {
+	public fun <init> (Ldev/agentrelay/connection/api/ContinuityCursor;Ljava/lang/String;)V
+	public final fun component1 ()Ldev/agentrelay/connection/api/ContinuityCursor;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ldev/agentrelay/connection/api/ContinuityCursor;Ljava/lang/String;)Ldev/agentrelay/connection/api/ContinuityUpdate;
+	public static synthetic fun copy$default (Ldev/agentrelay/connection/api/ContinuityUpdate;Ldev/agentrelay/connection/api/ContinuityCursor;Ljava/lang/String;ILjava/lang/Object;)Ldev/agentrelay/connection/api/ContinuityUpdate;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAttentionDigest ()Ljava/lang/String;
+	public final fun getCursor ()Ldev/agentrelay/connection/api/ContinuityCursor;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/connection/api/CrossDeviceContinuityLedger {
+	public fun <init> (Ljava/lang/String;J)V
+	public synthetic fun <init> (Ljava/lang/String;JILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun acknowledge-a3GXlsk (Ljava/lang/String;Ldev/agentrelay/connection/api/ContinuityCursor;)Ldev/agentrelay/connection/api/ContinuityDeviceSnapshot;
+	public final fun enroll-0pIXfhE (Ljava/lang/String;)Ldev/agentrelay/connection/api/ContinuityDeviceSnapshot;
+	public final fun markOffline-0pIXfhE (Ljava/lang/String;)Ldev/agentrelay/connection/api/ContinuityDeviceSnapshot;
+	public final fun pendingFor-0pIXfhE (Ljava/lang/String;)Ljava/util/List;
+	public final fun publish (Ljava/lang/String;)Ldev/agentrelay/connection/api/ContinuityUpdate;
+	public final fun reconnect-a3GXlsk (Ljava/lang/String;Ldev/agentrelay/connection/api/ContinuityCursor;)Ljava/util/List;
+	public final fun revoke-0pIXfhE (Ljava/lang/String;)Ldev/agentrelay/connection/api/ContinuityDeviceSnapshot;
 }
 
 public final class dev/agentrelay/connection/api/DaemonProtocolCapability : java/lang/Enum {
