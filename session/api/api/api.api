@@ -1723,6 +1723,87 @@ public final class dev/agentrelay/session/api/PolicyOrchestrationAdapter : dev/a
 	public fun plan (Ldev/agentrelay/session/api/OrchestrationAdapterInput;)Ldev/agentrelay/session/api/OrchestrationAdapterPlan;
 }
 
+public final class dev/agentrelay/session/api/PrivacyAuditEntry {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;J)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()J
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;J)Ldev/agentrelay/session/api/PrivacyAuditEntry;
+	public static synthetic fun copy$default (Ldev/agentrelay/session/api/PrivacyAuditEntry;Ljava/lang/String;Ljava/lang/String;JILjava/lang/Object;)Ldev/agentrelay/session/api/PrivacyAuditEntry;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAction ()Ljava/lang/String;
+	public final fun getCredentialVersion ()J
+	public final fun getRecordId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/session/api/PrivacyExportDecision {
+	public fun <init> (Ljava/lang/String;Ldev/agentrelay/session/api/PrivacyProjection;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ldev/agentrelay/session/api/PrivacyProjection;
+	public final fun copy (Ljava/lang/String;Ldev/agentrelay/session/api/PrivacyProjection;)Ldev/agentrelay/session/api/PrivacyExportDecision;
+	public static synthetic fun copy$default (Ldev/agentrelay/session/api/PrivacyExportDecision;Ljava/lang/String;Ldev/agentrelay/session/api/PrivacyProjection;ILjava/lang/Object;)Ldev/agentrelay/session/api/PrivacyExportDecision;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getProjection ()Ldev/agentrelay/session/api/PrivacyProjection;
+	public final fun getRecordId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/session/api/PrivacyLifecycleLedger {
+	public fun <init> ()V
+	public final fun auditTrail ()Ljava/util/List;
+	public final fun delete (Ljava/lang/String;)Z
+	public final fun expire (J)I
+	public final fun export (Ljava/lang/String;Z)Ldev/agentrelay/session/api/PrivacyExportDecision;
+	public final fun isCredentialRevoked (Ljava/lang/String;J)Z
+	public final fun put (Ldev/agentrelay/session/api/PrivacyRecord;)V
+	public final fun rotateCredential (Ljava/lang/String;J)Z
+}
+
+public final class dev/agentrelay/session/api/PrivacyProjection : java/lang/Enum {
+	public static final field DELETED Ldev/agentrelay/session/api/PrivacyProjection;
+	public static final field DENIED Ldev/agentrelay/session/api/PrivacyProjection;
+	public static final field FULL Ldev/agentrelay/session/api/PrivacyProjection;
+	public static final field REDACTED Ldev/agentrelay/session/api/PrivacyProjection;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/session/api/PrivacyProjection;
+	public static fun values ()[Ldev/agentrelay/session/api/PrivacyProjection;
+}
+
+public final class dev/agentrelay/session/api/PrivacyRecord {
+	public fun <init> (Ljava/lang/String;Ldev/agentrelay/session/api/PrivacySensitivity;Ljava/lang/String;JLjava/lang/String;J)V
+	public synthetic fun <init> (Ljava/lang/String;Ldev/agentrelay/session/api/PrivacySensitivity;Ljava/lang/String;JLjava/lang/String;JILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ldev/agentrelay/session/api/PrivacySensitivity;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()J
+	public final fun component5 ()Ljava/lang/String;
+	public final fun component6 ()J
+	public final fun copy (Ljava/lang/String;Ldev/agentrelay/session/api/PrivacySensitivity;Ljava/lang/String;JLjava/lang/String;J)Ldev/agentrelay/session/api/PrivacyRecord;
+	public static synthetic fun copy$default (Ldev/agentrelay/session/api/PrivacyRecord;Ljava/lang/String;Ldev/agentrelay/session/api/PrivacySensitivity;Ljava/lang/String;JLjava/lang/String;JILjava/lang/Object;)Ldev/agentrelay/session/api/PrivacyRecord;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getContentDigest ()Ljava/lang/String;
+	public final fun getCredentialVersion ()J
+	public final fun getId ()Ljava/lang/String;
+	public final fun getPurpose ()Ljava/lang/String;
+	public final fun getRetentionUntilMillis ()J
+	public final fun getSensitivity ()Ldev/agentrelay/session/api/PrivacySensitivity;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/agentrelay/session/api/PrivacySensitivity : java/lang/Enum {
+	public static final field INTERNAL Ldev/agentrelay/session/api/PrivacySensitivity;
+	public static final field PUBLIC Ldev/agentrelay/session/api/PrivacySensitivity;
+	public static final field SECRET Ldev/agentrelay/session/api/PrivacySensitivity;
+	public static final field SENSITIVE Ldev/agentrelay/session/api/PrivacySensitivity;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/agentrelay/session/api/PrivacySensitivity;
+	public static fun values ()[Ldev/agentrelay/session/api/PrivacySensitivity;
+}
+
 public final class dev/agentrelay/session/api/ProjectId {
 	public static final synthetic fun box-impl (Ljava/lang/String;)Ldev/agentrelay/session/api/ProjectId;
 	public static fun constructor-impl (Ljava/lang/String;)Ljava/lang/String;
