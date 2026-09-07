@@ -102,6 +102,7 @@ dependencies {
     // Provider-neutral connection and session runtime
     implementation(project(":connection:api"))
     implementation(project(":connection:local"))
+    implementation(project(":companion:api"))
     implementation(project(":provider:api"))
     implementation(project(":provider:aider"))
     implementation(project(":provider:claude"))

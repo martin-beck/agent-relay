@@ -38,6 +38,29 @@
         Open notification settings
     </string>
     <string name="notification_permission_allow">Allow notifications</string>
+    <string name="wear_install_offer_title">Set up %1$s</string>
+    <string name="wear_install_offer_explanation">
+        Install the Agent Relay companion on this watch to receive attention-first updates and use
+        safe remote controls. Installation applies only to this device.
+    </string>
+    <string name="wear_install_action">Install on watch</string>
+    <string name="wear_install_not_now">Not now</string>
+    <string name="wear_install_progress_title">Setting up %1$s</string>
+    <string name="wear_install_progress_explanation">
+        Keep this watch connected while Agent Relay verifies and installs the companion.
+    </string>
+    <string name="wear_install_cancel">Cancel installation</string>
+    <string name="wear_install_recovery_title">Couldn’t set up %1$s</string>
+    <string name="wear_install_recovery_authorization">
+        Authorize this watch for installation, then try again.
+    </string>
+    <string name="wear_install_recovery_installation">
+        The verified companion could not be installed. Check the watch and try again.
+    </string>
+    <string name="wear_install_recovery_connection">
+        The watch disconnected during setup. Reconnect it and try again.
+    </string>
+    <string name="wear_install_retry">Try again</string>
     <string name="background_transport_channel_name">Background connection</string>
     <string name="background_transport_channel_description">
         Keeps explicitly enabled remote agent connections active
