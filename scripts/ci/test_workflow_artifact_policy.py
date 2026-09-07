@@ -6,7 +6,11 @@ from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
-WORKFLOWS = (ROOT / ".github/workflows/verify.yml", ROOT / ".github/workflows/ui.yml")
+WORKFLOWS = (
+    ROOT / ".github/workflows/verify.yml",
+    ROOT / ".github/workflows/ui.yml",
+    ROOT / ".github/workflows/docs-maintenance.yml",
+)
 UPLOAD_ACTION = "actions/upload-artifact@"
 PAGES_UPLOAD_ACTION = "actions/upload-pages-artifact@"
 
@@ -36,7 +40,7 @@ class WorkflowArtifactPolicyTest(unittest.TestCase):
                 and ".outcome" in str(step.get("if", ""))
             )
 
-        self.assertEqual(len(uploads), 8)
+        self.assertEqual(len(uploads), 9)
         self.assertTrue(all(step.get("continue-on-error") is True for step in uploads))
         self.assertTrue(all(step.get("id") for step in uploads))
         referenced_outcomes = "\n".join(str(step.get("if", "")) for step in reporters)
@@ -54,3 +58,18 @@ class WorkflowArtifactPolicyTest(unittest.TestCase):
         self.assertTrue(all("continue-on-error" not in step for step in command_steps))
         self.assertEqual(len(pages_uploads), 1)
         self.assertNotIn("continue-on-error", pages_uploads[0])
+
+    def test_documentation_maintenance_uses_build_pool_and_short_optional_retention(self) -> None:
+        workflow = yaml.safe_load(WORKFLOWS[-1].read_text(encoding="utf-8"))
+        job = workflow["jobs"]["verify"]
+        upload = next(
+            step for step in job["steps"] if str(step.get("uses", "")).startswith(UPLOAD_ACTION)
+        )
+
+        self.assertEqual(
+            ["self-hosted", "linux", "x64", "agent-relay-build-ci"],
+            job["runs-on"],
+        )
+        self.assertEqual(3, upload["with"]["retention-days"])
+        self.assertEqual("error", upload["with"]["if-no-files-found"])
+        self.assertIs(upload["continue-on-error"], True)
