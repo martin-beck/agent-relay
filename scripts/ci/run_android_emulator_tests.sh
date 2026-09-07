@@ -8,12 +8,14 @@ set -euo pipefail
 : "${EMULATOR_TARGET:=default}"
 : "${EMULATOR_ARCH:=x86_64}"
 : "${EMULATOR_PROFILE:=pixel_7_pro}"
+: "${AVDMANAGER_BIN:=}"
 ANDROID_AVD_HOME="${ANDROID_AVD_HOME:-${HOME:-$RUNNER_TEMP}/.android/avd}"
 echo "Android SDK: ${ANDROID_HOME:-<unset>}"
 echo "AVD home: $ANDROID_AVD_HOME"
 echo "Runner temp: ${RUNNER_TEMP:-<unset>}"
 echo "Emulator port: $EMULATOR_PORT"
 test -n "$ANDROID_HOME" -a -n "$ANDROID_AVD_HOME" -a -n "$RUNNER_TEMP"
+mkdir -p "$RUNNER_TEMP"
 XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-$RUNNER_TEMP/android-runtime}"
 mkdir -p "$XDG_RUNTIME_DIR"
 chmod 0700 "$XDG_RUNTIME_DIR"
@@ -24,8 +26,12 @@ export ANDROID_SERIAL="${ANDROID_SERIAL:-emulator-$EMULATOR_PORT}"
 if [[ "${1:-}" == -- ]]; then shift; fi
 adb_bin="$ANDROID_HOME/platform-tools/adb"
 emulator_bin="$ANDROID_HOME/emulator/emulator"
-avdmanager_bin="$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager"
-test -x "$adb_bin" -a -x "$emulator_bin" -a -x "$avdmanager_bin"
+avdmanager_bin="${AVDMANAGER_BIN:-$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager}"
+test -x "$adb_bin" -a -x "$emulator_bin"
+if [[ ! -x "$avdmanager_bin" ]]; then
+  echo "avdmanager is not executable at $avdmanager_bin" >&2
+  exit 2
+fi
 android_config_dir="${HOME:-$RUNNER_TEMP}/.android"
 adb_private_key="$android_config_dir/adbkey"
 adb_public_key="$adb_private_key.pub"

@@ -4,6 +4,7 @@ setup() {
   REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/../.." && pwd -P)"
   INSTALLER="$REPO_ROOT/scripts/ci/install_shell_quality_tools.sh"
   RUNNER="$REPO_ROOT/scripts/ci/run_shell_quality.sh"
+  EMULATOR_RUNNER="$REPO_ROOT/scripts/ci/run_android_emulator_tests.sh"
   SOURCE_TOOL_ROOT="${SHELL_QUALITY_TOOL_ROOT:-$REPO_ROOT/build/tools/shell-quality}"
   TEST_ROOT="$(mktemp -d "${BATS_TEST_TMPDIR}/tooling.XXXXXX")"
   TOOL_ROOT="$TEST_ROOT/tools"
@@ -13,6 +14,24 @@ setup() {
     aarch64 | arm64) SHELLCHECK_PLATFORM=linux.aarch64 ;;
     *) SHELLCHECK_PLATFORM=unsupported ;;
   esac
+}
+
+@test "emulator runner validates an explicit avdmanager before touching adb" {
+  mkdir -p "$TEST_ROOT/sdk/platform-tools" "$TEST_ROOT/sdk/emulator"
+  printf '#!/usr/bin/env bash\nexit 99\n' > "$TEST_ROOT/sdk/platform-tools/adb"
+  printf '#!/usr/bin/env bash\nexit 99\n' > "$TEST_ROOT/sdk/emulator/emulator"
+  chmod +x "$TEST_ROOT/sdk/platform-tools/adb" "$TEST_ROOT/sdk/emulator/emulator"
+
+  run env \
+    ANDROID_HOME="$TEST_ROOT/sdk" \
+    ANDROID_AVD_HOME="$TEST_ROOT/avd" \
+    RUNNER_TEMP="$TEST_ROOT/runner-temp" \
+    AVDMANAGER_BIN="$TEST_ROOT/missing-avdmanager" \
+    "$EMULATOR_RUNNER" true
+
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"avdmanager is not executable at $TEST_ROOT/missing-avdmanager"* ]]
+  [ -d "$TEST_ROOT/runner-temp" ]
 }
 
 teardown() {

@@ -96,6 +96,23 @@ internal fun deliveringActionHub(): SessionHubUiModel {
     )
 }
 
+internal fun reconnectingRecoveryHub(): SessionHubUiModel {
+    val hub = actionHub()
+    val connection = hub.connections.first().copy(
+        label = "Workshop host",
+        target = "workshop.example.test:22",
+        status = ConnectionStatus.RECONNECTING,
+        statusDetail = UiMessage.Verbatim("Network unavailable. Retrying 2 of 4 in 8 seconds."),
+        connectedAgentCount = 0,
+        agentCount = 1,
+        unavailableAgentCount = 0,
+        canConnect = false,
+        canDisconnect = true,
+        isBusy = true,
+    )
+    return hub.copy(connections = listOf(connection))
+}
+
 internal fun twoSessionHub(): SessionHubUiModel {
     val hub = testHub()
     val connection = hub.connections.first().copy(
