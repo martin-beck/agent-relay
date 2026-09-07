@@ -82,6 +82,9 @@ jobs:
             --json --output-file build/reports/quality/radon-maintainability.json
           uv run lizard --CCN 20 --xml --output_file build/reports/quality/lizard.xml .
 
+      - name: Verify cross-language assurance contract
+        run: uv run python scripts/ci/verify_language_assurance.py
+
       - name: Install pinned OSV-Scanner
         shell: bash
         run: |
