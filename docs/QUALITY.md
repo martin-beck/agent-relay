@@ -359,6 +359,13 @@ reviewed screenshots to remain within the documented thresholds, and performs a
 strict static-site build. It retains captures, metrics, diffs, reports, and the
 downloadable browsable guide for 14 days.
 
+Build, test, emulator, accessibility, workflow, and visual assertions are the
+authoritative CI result. GitHub artifact uploads are optional evidence transport:
+an upload failure remains visible as a warning and job-summary entry, but cannot
+turn otherwise successful authoritative checks red. The workflows never hide or
+reinterpret a test failure, never claim that an unavailable artifact was
+uploaded, and keep explicitly enabled public Pages publication strict.
+
 The workflow invokes those three device-test tasks explicitly. Native-only and
 no-test Android modules remain covered by the quality and build workflow without
 spending the bounded emulator job compiling unrelated native runtimes before

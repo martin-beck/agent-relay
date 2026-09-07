@@ -97,6 +97,7 @@ class UsageJourneyTest {
         captureSessionJourney()
         captureFileJourney()
         captureAttentionOverview()
+        captureDurableRecoveryJourney()
         publishCaptures()
     }
 
@@ -184,6 +185,23 @@ class UsageJourneyTest {
         showHub(actionHub())
         scrollToText("Needs attention")
         capture("attention-overview", "attention-overview.png")
+    }
+
+    private fun captureDurableRecoveryJourney() {
+        showHub(reconnectingRecoveryHub())
+        scrollToText("Network unavailable. Retrying 2 of 4 in 8 seconds.")
+        capture("durable-recovery", "bounded-reconnect.png")
+
+        showDetail(deliveringActionHub())
+        scrollToText(
+            "Response delivery is awaiting provider confirmation. Do not retry this request; " +
+                "wait for a newly identified provider request or verify its state independently.",
+        )
+        capture("durable-recovery", "uncertain-effect.png")
+
+        showDetail(actionHub())
+        composeTestRule.onNodeWithText("Submit answers").performScrollTo().assertIsDisplayed()
+        capture("durable-recovery", "reconciled-request.png")
     }
 
     private fun showHub(hub: SessionHubUiModel) {
@@ -303,8 +321,8 @@ class UsageJourneyTest {
             .lineSequence()
             .filter(String::isNotBlank)
             .toList()
-        check(capturedFiles.size == 14) {
-            "Expected 14 published usage-guide screenshots, found ${capturedFiles.size}"
+        check(capturedFiles.size == 17) {
+            "Expected 17 published usage-guide screenshots, found ${capturedFiles.size}"
         }
     }
 

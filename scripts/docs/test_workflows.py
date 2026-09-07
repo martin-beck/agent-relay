@@ -51,6 +51,22 @@ def scenario(status: str = "verified") -> dict[str, Any]:
 
 
 class RenderWorkflowsTest(unittest.TestCase):
+    def test_durable_recovery_is_backed_by_named_emulator_evidence(self) -> None:
+        source = SCENARIO_DIR / "durable-recovery.yml"
+        manifest = yaml.safe_load(source.read_text(encoding="utf-8"))
+
+        validated = validate_manifest(manifest, source)
+
+        self.assertEqual("verified", validated["status"])
+        self.assertEqual(
+            "com.example.agentrelay.ui.main.UsageJourneyTest#capturesVerifiedJourneys",
+            validated["verified_test"],
+        )
+        self.assertEqual(
+            ["bounded-reconnect.png", "uncertain-effect.png", "reconciled-request.png"],
+            [step["screenshot"] for step in validated["steps"]],
+        )
+
     def test_companion_device_evidence_stays_planned_until_backed_by_hardware(self) -> None:
         source = SCENARIO_DIR / "companion-device-verification.yml"
         manifest = yaml.safe_load(source.read_text(encoding="utf-8"))

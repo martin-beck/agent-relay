@@ -2,7 +2,7 @@
 
 # Recover after network, process, or device interruption
 
-**Status:** Planned. This page defines the intended attention contract; it does not claim that the workflow is implemented.
+**Status:** Verified by the named Android emulator journey on every pull request and main-branch push.
 
 Restore useful state automatically and surface only recovery decisions that need a person.
 
@@ -35,20 +35,33 @@ Continue durable work after interruption without duplicate commands, lost drafts
 
 **Expected result:** The app preserves the session and reports reconnecting without inventing progress.
 
+![Agent Relay shows the Workshop host reconnecting with a bounded retry attempt and delay.](../assets/workflows/durable-recovery/bounded-reconnect.png)
+
 ### 2. Reconcile after reachability returns
 
 **Action:** Restore the shared network or restart the stopped endpoint.
 
-**Expected result:** The app resumes from durable state and suppresses duplicate events and actions.
+**Expected result:** The app resumes from durable state, suppresses duplicate delivery, and keeps an uncertain response visible.
+
+![Agent Relay keeps an uncertain provider response visible and explicitly blocks unsafe retry.](../assets/workflows/durable-recovery/uncertain-effect.png)
 
 ### 3. Handle the remaining exception
 
-**Action:** Open an item that cannot be reconciled safely in the background.
+**Action:** Inspect the uncertain response and wait for a newly identified provider request.
 
-**Expected result:** The app explains the uncertainty and offers only safe next actions.
+**Expected result:** The uncertainty clears only when the new request appears with safe response controls.
+
+![Agent Relay shows a newly identified approval request after the uncertain response is reconciled.](../assets/workflows/durable-recovery/reconciled-request.png)
 
 ## Recovery and fault handling
 
 - Exhausted retries move the item to an actionable failed state instead of looping forever.
 - Restarting either side resumes from durable cursors and operation identifiers.
 - Manual retry is available only when the operation is safe to repeat.
+
+## Verification
+
+- Instrumented test: `com.example.agentrelay.ui.main.UsageJourneyTest#capturesVerifiedJourneys`
+- Canonical device: Pixel 7 Pro profile, Android API 36
+- Locale, time zone, and theme: English (United States), UTC, light theme, normal font scale
+- Evidence: reviewed PNG baselines plus current-run captures and image diffs

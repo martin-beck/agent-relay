@@ -14,7 +14,7 @@ A **verified** page is backed by a semantic Android emulator journey and reviewe
 - [Switch sessions and steer active work](workflows/session-switching-steering.md) - **Verified.** Move between concurrent sessions without losing drafts, unread state, or active-turn controls.
 - [Inspect and save a changed file](workflows/changed-file-export.md) - **Verified.** Export one provider-reported workspace file through Android's document picker.
 - [Follow a notification to the required action](workflows/notification-attention.md) - **Planned.** Open the exact session and request that needs attention without searching through background work.
-- [Recover after network, process, or device interruption](workflows/durable-recovery.md) - **Planned.** Restore useful state automatically and surface only recovery decisions that need a person.
+- [Recover after network, process, or device interruption](workflows/durable-recovery.md) - **Verified.** Restore useful state automatically and surface only recovery decisions that need a person.
 - [Pair the phone with a durable host](workflows/qr-pairing.md) - **Verified.** Scan one host-generated QR code and establish an authenticated route when both devices share a network.
 - [Capture and review offline voice input](workflows/voice-input.md) - **Planned.** Turn speech into a draft locally, then let the user review it before any agent receives it.
 - [Review what needs attention across hosts](workflows/attention-overview.md) - **Verified.** See exceptional work first while healthy sessions and connections continue quietly.
