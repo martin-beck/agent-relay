@@ -104,13 +104,13 @@ session runtime 83% (83.47%), speech API 74% (74.34%), and SSH API 86% (86.85%).
 These checks run through each module's normal `koverVerify` task and do not
 replace or reduce the aggregate 70% rule.
 
-The provider and connection API modules enable the experimental ABI validator
-shipped in the pinned Kotlin Gradle plugin 2.3.20. `checkKotlinAbi` compares the
-compiled public contracts with the reviewable dumps under each module's `api`
-directory. Run `updateKotlinAbi` only for an intentional compatible API change,
-then review every dump line. A green check means the compiled ABI matches the
-committed reference; it does not promise source compatibility, behavioral
-compatibility, or semantic-versioning policy.
+The provider, connection, and session API modules enable the experimental ABI
+validator shipped in the pinned Kotlin Gradle plugin 2.3.20. `checkKotlinAbi`
+compares the compiled public contracts with the reviewable dumps under each
+module's `api` directory. Run `updateKotlinAbi` only for an intentional
+compatible API change, then review every dump line. A green check means the
+compiled ABI matches the committed reference; it does not promise source
+compatibility, behavioral compatibility, or semantic-versioning policy.
 
 Run the full local gate:
 

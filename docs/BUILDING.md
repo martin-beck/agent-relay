@@ -321,11 +321,11 @@ scripts/ci/run_shell_quality.sh test
 ./gradlew checkKotlinAbi
 ```
 
-The last command checks the committed public provider and connection API dumps.
-After an intentional compatible contract change, run
-`./gradlew :provider:api:updateKotlinAbi :connection:api:updateKotlinAbi` and
-review the generated text before committing it. Never update a dump merely to
-silence an unexplained compatibility failure.
+The last command checks the committed public provider, connection, and session
+API dumps. After an intentional compatible contract change, run
+`./gradlew :provider:api:updateKotlinAbi :connection:api:updateKotlinAbi
+:session:api:updateKotlinAbi` and review the generated text before committing
+it. Never update a dump merely to silence an unexplained compatibility failure.
 
 The opt-in provider and SSH live checks are disabled in normal builds. Their
 private environment variables and prerequisites are documented in
