@@ -43,6 +43,25 @@ representative physical-device release evidence.
 | Kotlin ABI validation | Public provider and connection contracts from the pinned Kotlin Gradle plugin | Any unreviewed difference from the committed ABI dumps fails |
 | Debug assembly | Packaging and resource integration | Any failure fails |
 
+### Cross-language assurance contract
+
+The machine-readable `config/language-assurance-contract.json` keeps the Java, Bash,
+dependency, Python, and Kotlin signals comparable. Each gate names
+its coordinator owner, exact command, report location, invariant, and remediation path.
+The contract verifier checks that every required language is represented, evidence paths
+stay below the quality-report directory, and every gate points at a declared invariant.
+It validates the contract shape; it does not substitute for running the underlying gates.
+
+Run the shape check locally with:
+
+```bash
+uv run python scripts/ci/verify_language_assurance.py
+```
+
+Missing or stale evidence remains a failure of the owning gate. The aggregate contract is
+fail-closed: a new assurance signal must add an owner, invariant, evidence location, and
+repair instruction before it can be published.
+
 The dependency-analysis exception for `:session:api` is intentionally narrow:
 its public ABI exposes identifiers from `:connection:api`, so that project
 dependency must remain `api` even though bytecode-only analysis recommends
