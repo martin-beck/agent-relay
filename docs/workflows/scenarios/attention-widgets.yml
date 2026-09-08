@@ -1,0 +1,36 @@
+id: attention-widgets
+title: Triage attention from home and lock-screen widgets
+summary: Surface the smallest useful attention signal while preserving privacy and safe actions.
+status: planned
+order: 22
+goal: Decide whether an attention item needs action without opening the full app.
+preconditions:
+  - The phone has at least one pending action, unread failure, or unread session activity.
+  - Home-screen and lock-screen hosts expose their supported widget sizes and privacy state.
+automatic:
+  - The home widget ranks pending actions before failures and unread activity.
+  - Compact, medium, and expanded hosts receive bounded projections appropriate to their size.
+  - Lock-screen content is redacted and never exposes an action control.
+  - A refresh or session transition replaces stale content with a loading or error state safely.
+attention:
+  - Open the highest-priority item from the home widget when the authenticated action is current.
+  - Confirm that protected titles and lock-screen projections remain redacted.
+  - Use the full app when the widget reports stale or unavailable attention data.
+recovery:
+  - Process death fails closed until the app-owned widget runtime is installed again.
+  - Expired or stale action requests are ignored and do not navigate.
+  - Unsupported host or lock-screen behavior remains planned rather than inferred from JVM tests.
+steps:
+  - id: review-size-ranked-attention
+    title: Review ranked attention at each size
+    action: Place the widget at compact, medium, and expanded sizes and inspect the ranked projection.
+    expected: Each size shows only the amount of attention it can safely communicate, with protected content redacted.
+  - id: verify-safe-interaction
+    title: Verify safe widget interaction
+    action: Open a current home-screen item, then retry an expired action and inspect the lock-screen widget.
+    expected: The current item opens the app, stale actions fail closed, and lock-screen content has no action control.
+  - id: exercise-refresh-and-recovery
+    title: Exercise refresh and recovery
+    action: Trigger a session transition, refresh, and process restart while observing both widget surfaces.
+    expected: Content revisions advance durably, loading or error states contain no stale controls,
+      and recovery remains available in the app.

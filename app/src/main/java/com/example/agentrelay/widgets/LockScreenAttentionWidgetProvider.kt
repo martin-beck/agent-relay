@@ -5,14 +5,21 @@ import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
+import com.example.agentrelay.AgentRelayApplication
 import com.example.agentrelay.R
 import dev.agentrelay.session.api.AttentionWidgetContent
 
 /** A privacy-first widget host for lock-screen capable Android launchers. */
 class LockScreenAttentionWidgetProvider : AppWidgetProvider() {
     override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) {
-        val fallback = LockScreenAttentionWidgetRenderer.empty(context)
-        ids.forEach { manager.updateAppWidget(it, fallback) }
+        val application = context.applicationContext as? AgentRelayApplication
+        if (application == null) {
+            val fallback = LockScreenAttentionWidgetRenderer.empty(context)
+            ids.forEach { manager.updateAppWidget(it, fallback) }
+            return
+        }
+        val pendingResult = goAsync()
+        application.attentionWidgets.updateLock(manager, ids) { pendingResult.finish() }
     }
 
     override fun onReceive(context: Context, intent: Intent) {

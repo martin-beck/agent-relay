@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
+import com.example.agentrelay.AgentRelayApplication
 import com.example.agentrelay.R
 import dev.agentrelay.session.api.AttentionWidgetAction
 import dev.agentrelay.session.api.AttentionWidgetContent
@@ -14,8 +15,14 @@ import dev.agentrelay.session.api.AttentionWidgetSize
 /** Adaptive home-screen projection for ranked attention items. */
 class HomeScreenAttentionWidgetProvider : AppWidgetProvider() {
     override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) {
-        val views = HomeScreenAttentionWidgetRenderer.empty(context)
-        ids.forEach { manager.updateAppWidget(it, views) }
+        val application = context.applicationContext as? AgentRelayApplication
+        if (application == null) {
+            val views = HomeScreenAttentionWidgetRenderer.empty(context)
+            ids.forEach { manager.updateAppWidget(it, views) }
+            return
+        }
+        val pendingResult = goAsync()
+        application.attentionWidgets.updateHome(manager, ids) { pendingResult.finish() }
     }
 
     override fun onReceive(context: Context, intent: Intent) {
