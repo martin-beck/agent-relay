@@ -4,39 +4,39 @@
 
 | Symbol | Source | Description |
 | --- | --- | --- |
-| `Accepted` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:174` | Contract symbol; see source implementation. |
-| `Accepted` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:122` | Contract symbol; see source implementation. |
-| `ExtensionAction` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:40` | Contract symbol; see source implementation. |
-| `ExtensionAdmission` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:121` | Contract symbol; see source implementation. |
-| `ExtensionAgentAdapter` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:131` | Provider-neutral adapter seam for optional extension-backed agent execution. |
-| `ExtensionAgentRequest` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:106` | Contract symbol; see source implementation. |
-| `ExtensionAgentResult` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:135` | Contract symbol; see source implementation. |
-| `ExtensionApiVersion` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:14` | Contract symbol; see source implementation. |
-| `ExtensionApprovalState` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:77` | Contract symbol; see source implementation. |
-| `ExtensionCapability` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:21` | Contract symbol; see source implementation. |
-| `ExtensionDataPolicy` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:98` | Contract symbol; see source implementation. |
-| `ExtensionDataSource` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:27` | Contract symbol; see source implementation. |
-| `ExtensionExecutionClass` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:6` | Whether extension code is supplied by the signed host or must be isolated. |
-| `ExtensionExecutionEvidence` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:158` | Redacted, deterministic evidence; raw prompts, credentials and content never enter this record. |
-| `ExtensionExecutionOutcome` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:84` | Contract symbol; see source implementation. |
-| `ExtensionField` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:30` | Contract symbol; see source implementation. |
-| `ExtensionId` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:4` | Contract symbol; see source implementation. |
-| `ExtensionInvocation` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:158` | Contract symbol; see source implementation. |
-| `ExtensionInvocationDecision` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:173` | Contract symbol; see source implementation. |
-| `ExtensionInvocationLedger` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:178` | Contract symbol; see source implementation. |
-| `ExtensionLifecycle` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:63` | Contract symbol; see source implementation. |
-| `ExtensionManifest` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:112` | Contract symbol; see source implementation. |
-| `ExtensionModelAccess` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:16` | Contract symbol; see source implementation. |
-| `ExtensionNetworkAccess` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:11` | Contract symbol; see source implementation. |
-| `ExtensionPermission` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:23` | Contract symbol; see source implementation. |
-| `ExtensionPermissionGrant` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:69` | Contract symbol; see source implementation. |
-| `ExtensionPrivacyClass` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:25` | Contract symbol; see source implementation. |
-| `ExtensionRejection` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:145` | Contract symbol; see source implementation. |
-| `ExtensionResourceBudget` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:49` | Contract symbol; see source implementation. |
-| `ExtensionSandboxCoordinator` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:187` | Admission and evidence coordinator. It never executes code itself, and therefore cannot |
-| `ExtensionSandboxLimits` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:22` | Hard resource and authority limits applied before extension code is started. |
-| `ExtensionSandboxPolicy` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:61` | Policy is an admission boundary; it is not an authorization to bypass the host. |
-| `ExtensionSandboxRejection` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:93` | Contract symbol; see source implementation. |
-| `ExtensionSecretReference` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:92` | Contract symbol; see source implementation. |
-| `Rejected` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:175` | Contract symbol; see source implementation. |
-| `Rejected` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:127` | Contract symbol; see source implementation. |
+| `Accepted` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:179` | Contract symbol; see source implementation. |
+| `Accepted` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:127` | Contract symbol; see source implementation. |
+| `ExtensionAction` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:45` | Contract symbol; see source implementation. |
+| `ExtensionAdmission` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:126` | Contract symbol; see source implementation. |
+| `ExtensionAgentAdapter` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:136` | Provider-neutral adapter seam for optional extension-backed agent execution. |
+| `ExtensionAgentRequest` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:111` | Contract symbol; see source implementation. |
+| `ExtensionAgentResult` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:140` | Contract symbol; see source implementation. |
+| `ExtensionApiVersion` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:19` | Contract symbol; see source implementation. |
+| `ExtensionApprovalState` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:82` | Contract symbol; see source implementation. |
+| `ExtensionCapability` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:26` | Contract symbol; see source implementation. |
+| `ExtensionDataPolicy` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:103` | Contract symbol; see source implementation. |
+| `ExtensionDataSource` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:32` | Contract symbol; see source implementation. |
+| `ExtensionExecutionClass` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:11` | Whether extension code is supplied by the signed host or must be isolated. |
+| `ExtensionExecutionEvidence` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:163` | Redacted, deterministic evidence; raw prompts, credentials and content never enter this record. |
+| `ExtensionExecutionOutcome` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:89` | Contract symbol; see source implementation. |
+| `ExtensionField` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:35` | Contract symbol; see source implementation. |
+| `ExtensionId` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:9` | Contract symbol; see source implementation. |
+| `ExtensionInvocation` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:163` | Contract symbol; see source implementation. |
+| `ExtensionInvocationDecision` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:178` | Contract symbol; see source implementation. |
+| `ExtensionInvocationLedger` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:183` | Contract symbol; see source implementation. |
+| `ExtensionLifecycle` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:68` | Contract symbol; see source implementation. |
+| `ExtensionManifest` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:117` | Contract symbol; see source implementation. |
+| `ExtensionModelAccess` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:21` | Contract symbol; see source implementation. |
+| `ExtensionNetworkAccess` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:16` | Contract symbol; see source implementation. |
+| `ExtensionPermission` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:28` | Contract symbol; see source implementation. |
+| `ExtensionPermissionGrant` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:74` | Contract symbol; see source implementation. |
+| `ExtensionPrivacyClass` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:30` | Contract symbol; see source implementation. |
+| `ExtensionRejection` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:150` | Contract symbol; see source implementation. |
+| `ExtensionResourceBudget` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:54` | Contract symbol; see source implementation. |
+| `ExtensionSandboxCoordinator` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:192` | Admission and evidence coordinator. It never executes code itself, and therefore cannot |
+| `ExtensionSandboxLimits` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:27` | Hard resource and authority limits applied before extension code is started. |
+| `ExtensionSandboxPolicy` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:66` | Policy is an admission boundary; it is not an authorization to bypass the host. |
+| `ExtensionSandboxRejection` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:98` | Contract symbol; see source implementation. |
+| `ExtensionSecretReference` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:97` | Contract symbol; see source implementation. |
+| `Rejected` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:180` | Contract symbol; see source implementation. |
+| `Rejected` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:132` | Contract symbol; see source implementation. |

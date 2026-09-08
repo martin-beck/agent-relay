@@ -17,11 +17,11 @@ C_STYLE = {".kt", ".kts", ".java", ".css"}
 EXCLUDED = {"gradlew", "gradlew.bat"}
 
 
-def kind(path: PurePosixPath) -> str | None:
+def kind(path: PurePosixPath, executable: bool = False) -> str | None:
     name = path.as_posix()
     if name in EXCLUDED or name.startswith("gradle/wrapper/"):
         return None
-    if name == "tools/awq" or path.suffix in HASH:
+    if executable or path.suffix in HASH:
         return "hash"
     if path.suffix in C_STYLE:
         return "c"
@@ -76,15 +76,23 @@ def with_header(text: str, header_kind: str) -> str:
     return "\n".join(lines) + ("\n" if text.endswith("\n") else "")
 
 
-def tracked(root: Path) -> list[PurePosixPath]:
-    value = subprocess.check_output(["/usr/bin/git", "ls-files", "-z"], cwd=root, text=True)
-    return [PurePosixPath(item) for item in value.split("\0") if item]
+def tracked(root: Path) -> list[tuple[PurePosixPath, bool]]:
+    value = subprocess.check_output(
+        ["/usr/bin/git", "ls-files", "--stage", "-z"], cwd=root, text=True
+    )
+    entries: list[tuple[PurePosixPath, bool]] = []
+    for item in value.split("\0"):
+        if not item:
+            continue
+        metadata, name = item.split("\t", 1)
+        entries.append((PurePosixPath(name), metadata.startswith("100755 ")))
+    return entries
 
 
 def verify(root: Path, fix: bool) -> list[str]:
     findings: list[str] = []
-    for relative in tracked(root):
-        header_kind = kind(relative)
+    for relative, executable in tracked(root):
+        header_kind = kind(relative, executable)
         if header_kind is None:
             continue
         path = root / relative
