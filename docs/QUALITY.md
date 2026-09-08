@@ -199,6 +199,14 @@ retains the current images, metrics, and diffs, and publishes a downloadable
 static-site artifact. A planned workflow remains text-only until its semantic
 journey passes and its screenshots receive explicit review.
 
+The machine-readable user-satisfaction authority binds the ten outcome-management child
+contracts to their production sources, focused tests, formal models where available, and
+truthful limitations. Its generated status page may list a journey as Android-verified only
+when the referenced workflow scenario is verified and contains a semantic test plus reviewed,
+accessible screenshot evidence. The full JVM gate executes every child test; the documentation
+validator proves coverage and evidence shape without pretending that file presence is a passing
+test result or that contract evidence is human usability evidence.
+
 ## Format-specific policy
 
 The rules follow conventions used by mature Android, Python, and documentation

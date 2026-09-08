@@ -45,6 +45,7 @@ nav:
       - Offline voice input: workflows/voice-input.md
       - Attention overview: workflows/attention-overview.md
   - Usage: USAGE.md
+  - User satisfaction: USER_SATISFACTION.md
   - Install: INSTALLING.md
   - Build: BUILDING.md
   - Development process: DEVELOPMENT.md

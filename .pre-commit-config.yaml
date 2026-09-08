@@ -229,6 +229,27 @@ repos:
           ^(docs/contracts/documentation-authority-v1\.json|
           docs/(ARCHITECTURE|SOFTWARE_DESIGN|PRODUCT_ROADMAP|QUALITY|WORKFLOWS)\.md|
           scripts/docs/verify_documentation_authority\.py)$
+      - id: verify-user-satisfaction
+        name: Verify user-satisfaction evidence boundaries
+        entry: python scripts/docs/verify_satisfaction_assurance.py
+        language: system
+        pass_filenames: false
+        files: >-
+          ^(docs/contracts/user-satisfaction-v1(\.schema)?\.json|
+          docs/workflows/scenarios/.*\.ya?ml|
+          docs/assets/workflows/.*\.png|
+          scripts/docs/verify_satisfaction_assurance\.py|
+          (app|connection|provider|session|workflow)/.*(src/(main|test)|docs/formal)/.*)$
+      - id: render-user-satisfaction
+        name: Render user-satisfaction status
+        entry: python scripts/docs/render_satisfaction.py --check
+        language: system
+        pass_filenames: false
+        files: >-
+          ^(docs/contracts/user-satisfaction-v1(\.schema)?\.json|
+          docs/USER_SATISFACTION\.md|
+          docs/workflows/scenarios/.*\.ya?ml|
+          scripts/docs/(render_satisfaction|verify_satisfaction_assurance)\.py)$
       - id: taplo-format
         name: Check TOML formatting with Taplo
         entry: taplo format

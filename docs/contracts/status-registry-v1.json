@@ -52,6 +52,11 @@
       "status": "Durable privacy-safe alerts plus explicit sticky foreground connection mode and encrypted process-death recovery intent; final provider/device endurance evidence remains"
     },
     {
+      "id": "outcome-management-satisfaction",
+      "area": "Outcome-first workflow management",
+      "status": "Four semantic Android journeys are verified and ten satisfaction child contracts are test-gated; the generated satisfaction page preserves contract-only and live-evidence limitations"
+    },
+    {
       "id": "release",
       "area": "Signed release build and distribution",
       "status": "Not available"

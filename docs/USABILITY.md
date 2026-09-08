@@ -10,6 +10,8 @@ record alongside the versioned journey contracts.
 The [usability review contract](contracts/usability-review-v1.json) defines the
 review cadence, aggregate retention boundary, and thresholds for the same five
 representative journeys in [`user-journeys-v1.json`](contracts/user-journeys-v1.json).
+The generated [user-satisfaction status](USER_SATISFACTION.md) separately identifies which
+journeys have semantic Android evidence and which newer capabilities remain contract-only.
 Each review records only:
 
 - journey id and contract revision;
