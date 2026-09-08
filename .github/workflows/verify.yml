@@ -171,6 +171,8 @@ jobs:
             --source-revision "${GITHUB_SHA}"
           uv run python scripts/docs/verify_evidence_reproducibility.py --check
           uv run python scripts/docs/verify_usability_review.py
+          uv run python scripts/docs/verify_satisfaction_assurance.py
+          uv run python scripts/docs/render_satisfaction.py --check
           uv run python scripts/docs/generate_extension_api.py --check
           uv run python scripts/docs/generate_api_reference.py --check
           uv run python scripts/docs/verify_extension_examples.py
