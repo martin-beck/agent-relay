@@ -1,3 +1,6 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 extends: metric
 message: "Try to keep the Gunning-Fog index (%s) below 10."
 link: https://en.wikipedia.org/wiki/Gunning_fog_index

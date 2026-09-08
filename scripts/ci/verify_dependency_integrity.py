@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 """Verify committed Gradle integrity metadata, locks, and OSV exceptions offline."""
 
 from __future__ import annotations

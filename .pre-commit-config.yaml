@@ -1,3 +1,6 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 minimum_pre_commit_version: "4.6.2"
 fail_fast: false
 
@@ -181,6 +184,12 @@ repos:
         language: system
         pass_filenames: false
         files: \.(java|kt|kts|py)$
+      - id: verify-source-headers
+        name: Verify Huawei and MIT source headers
+        entry: python scripts/ci/verify_source_headers.py
+        language: system
+        pass_filenames: false
+        always_run: true
       - id: verify-android-locales
         name: Verify Android locale resources
         entry: python scripts/ci/verify_android_locales.py

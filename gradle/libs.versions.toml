@@ -1,3 +1,6 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 [versions]
 accessibilityTestFramework = "4.1.1"
 androidGradlePlugin = "9.0.1"

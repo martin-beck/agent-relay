@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.speech.android
 
 import dev.agentrelay.speech.api.MAX_SPEECH_TRANSCRIPT_CHARS

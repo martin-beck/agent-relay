@@ -1,3 +1,6 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 id: changed-file-export
 title: Inspect and save a changed file
 summary: Export one provider-reported workspace file through Android's document picker.

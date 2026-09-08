@@ -1,3 +1,6 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 """Tests for deterministic and bounded Actions artifact retention."""
 
 from __future__ import annotations

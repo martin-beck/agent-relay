@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 """Fail CI unless connected Android tests produced complete, clean JUnit evidence."""
 
 from __future__ import annotations

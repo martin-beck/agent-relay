@@ -1,3 +1,6 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 """Tests for the pinned structural-engine boundary."""
 
 # Dynamic module loading and assert-based pytest checks are intentional here.

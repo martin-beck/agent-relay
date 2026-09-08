@@ -1,4 +1,7 @@
 module WorkflowConcurrency
+// Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+// SPDX-License-Identifier: MIT
+
 
 abstract sig Step, Worker {}
 abstract sig Effect {}

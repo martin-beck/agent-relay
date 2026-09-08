@@ -1,3 +1,6 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 """Run a privacy-safe, deterministic FM-Agent specification pilot."""
 
 from __future__ import annotations

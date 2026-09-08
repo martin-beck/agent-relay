@@ -1,3 +1,6 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 id: incident-evidence-review
 title: Capture and review an incident bundle
 summary: Collect a bounded, redacted incident bundle that explains a failure and its recovery state.

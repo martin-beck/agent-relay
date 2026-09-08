@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.workflow.api
 
 enum class WorkflowProgressStatus { RUNNING, BLOCKED, FAILED, RECOVERED, COMPLETE, UNCERTAIN }

@@ -1,3 +1,6 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 id: voice-input
 title: Capture and review offline voice input
 summary: Turn speech into a draft locally, then let the user review it before any agent receives it.

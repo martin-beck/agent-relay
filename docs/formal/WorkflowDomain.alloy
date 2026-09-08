@@ -1,4 +1,7 @@
 module WorkflowDomain
+// Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+// SPDX-License-Identifier: MIT
+
 
 // Finite bounds are supplied by `for` in the verifier configuration.
 abstract sig Task, Run, Step, Event, Attention, Projection {}

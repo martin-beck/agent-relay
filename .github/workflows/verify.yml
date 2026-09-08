@@ -1,3 +1,6 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 name: Android verification
 
 on:
@@ -63,6 +66,9 @@ jobs:
           tar --extract --gzip --file "${vale_archive}" \
             --directory "${vale_dir}/bin" vale
           echo "${vale_dir}/bin" >> "${GITHUB_PATH}"
+
+      - name: Verify Huawei and MIT source headers
+        run: uv run python scripts/ci/verify_source_headers.py
 
       - name: Check every tracked source and document format
         env:

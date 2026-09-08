@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 """Plan and explicitly apply bounded GitHub Actions artifact retention."""
 
 from __future__ import annotations
