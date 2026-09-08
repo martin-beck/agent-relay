@@ -1,19 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="widget_primary_text">#FFFFFF</color>
-    <color name="widget_secondary_text">#D0D4DC</color>
-    <string name="lock_widget_description" translatable="false">Attention-first lock-screen summary</string>
-    <string name="lock_widget_no_attention" translatable="false">No attention needed</string>
-    <string name="lock_widget_status_quiet" translatable="false">Agent Relay</string>
-    <string name="lock_widget_status_attention" translatable="false">Needs attention</string>
-    <string name="lock_widget_status_refresh" translatable="false">Refresh in the app</string>
-    <string name="home_widget_description" translatable="false">Attention-first home-screen summary</string>
-    <string name="home_widget_no_attention" translatable="false">No attention needed</string>
-    <string name="home_widget_status_quiet" translatable="false">Agent Relay</string>
-    <string name="home_widget_status_attention" translatable="false">Needs attention</string>
-    <string name="home_widget_status_refresh" translatable="false">Refresh in the app</string>
-    <string name="home_widget_action_open_details" translatable="false">Open attention details</string>
-    <string name="home_widget_action_acknowledge" translatable="false">Acknowledge</string>
-    <string name="home_widget_action_defer" translatable="false">Defer</string>
-    <string name="home_widget_action_mute_confirm" translatable="false">Mute…</string>
+    <color name="widget_background">#F7F9FC</color>
+    <color name="widget_primary_text">#1B1B1F</color>
+    <color name="widget_secondary_text">#45464F</color>
+    <color name="widget_action_text">#173F7A</color>
 </resources>

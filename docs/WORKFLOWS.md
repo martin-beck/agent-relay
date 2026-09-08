@@ -28,6 +28,7 @@ A **verified** page is backed by a semantic Android emulator journey and reviewe
 - [Android system-boundary assurance](workflows/android-system-boundaries.md) - **Planned.** Exercise synthetic permission, lifecycle, companion, Wear, and form-factor boundaries.
 - [Capture and delete diagnostic evidence safely](workflows/diagnostic-privacy-lifecycle.md) - **Planned.** Exercise synthetic diagnostic authorization, redaction, retention expiry, and deletion.
 - [Reproduce replay evidence before diagnosis](workflows/replay-diagnosis-conformance.md) - **Planned.** Re-run bounded counterexamples and reject stale or uncertain diagnosis claims.
+- [Triage attention from home and lock-screen widgets](workflows/attention-widgets.md) - **Planned.** Surface the smallest useful attention signal while preserving privacy and safe actions.
 - [Verify companion device recovery safely](workflows/companion-device-verification.md) - **Planned.** Review notification, speech, and reconnect evidence across a phone and a companion watch.
 
 ## Evidence policy

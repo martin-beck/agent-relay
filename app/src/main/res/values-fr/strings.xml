@@ -388,4 +388,22 @@
     <string name="session_action_title_review_required">L’action de l’agent doit être examinée.</string>
     <string name="session_question_prompt_fallback">Question de l’agent</string>
     <string name="connection_failure_profile_preparation">Le profil de connexion n’a pas pu être préparé.</string>
+    <string name="lock_widget_description">Résumé des éléments à traiter sur l’écran de verrouillage</string>
+    <string name="lock_widget_no_attention">Aucune attention requise</string>
+    <string name="lock_widget_status_quiet">Agent Relay</string>
+    <string name="lock_widget_status_attention">Attention requise</string>
+    <string name="lock_widget_status_refresh">Actualiser dans l’application</string>
+    <string name="lock_widget_loading">Vérification en cours…</string>
+    <string name="lock_widget_error">État indisponible</string>
+    <string name="home_widget_description">Résumé des éléments à traiter sur l’écran d’accueil</string>
+    <string name="home_widget_no_attention">Aucune attention requise</string>
+    <string name="home_widget_status_quiet">Agent Relay</string>
+    <string name="home_widget_status_attention">Attention requise</string>
+    <string name="home_widget_status_refresh">Actualiser dans l’application</string>
+    <string name="home_widget_loading">Vérification en cours…</string>
+    <string name="home_widget_error">État indisponible</string>
+    <string name="home_widget_action_open_details_for">Ouvrir les détails : %1$s</string>
+    <string name="home_widget_action_acknowledge">Confirmer</string>
+    <string name="home_widget_action_defer">Reporter</string>
+    <string name="home_widget_action_mute_confirm">Mettre en sourdine…</string>
 </resources>

@@ -61,4 +61,50 @@ class LockScreenAttentionWidgetProviderTest {
         assertEquals(false, content.entries.single().canDefer)
         assertEquals(false, content.entries.single().canMute)
     }
+
+    @Test
+    fun loadingAndErrorNeverExposeAPreviouslyVisibleTitle() {
+        val content = AttentionWidgetContent(
+            revision = 3,
+            size = AttentionWidgetSize.EXPANDED,
+            surface = AttentionWidgetSurface.LOCK_SCREEN,
+            entries = listOf(
+                AttentionWidgetEntry(
+                    id = "attention-1",
+                    title = "Previously visible attention",
+                    summary = "Private upstream context",
+                    urgency = AttentionUrgency.HIGH,
+                    ageMillis = 4_000,
+                    canOpen = true,
+                    canAcknowledge = true,
+                    canDefer = true,
+                    canMute = true,
+                ),
+            ),
+            hasMore = false,
+            stale = false,
+        )
+
+        val loading = state(content, AttentionWidgetRenderPhase.LOADING)
+        val error = state(content, AttentionWidgetRenderPhase.ERROR)
+
+        assertEquals("Checking attention", loading.title)
+        assertEquals("Agent Relay", loading.status)
+        assertEquals("Attention unavailable", error.title)
+        assertEquals("Refresh", error.status)
+    }
+
+    private fun state(
+        content: AttentionWidgetContent,
+        phase: AttentionWidgetRenderPhase,
+    ) = LockScreenAttentionWidgetRenderer.state(
+        content = content,
+        noAttention = "No attention needed",
+        quiet = "Agent Relay",
+        attention = "Needs attention",
+        refresh = "Refresh",
+        loading = "Checking attention",
+        error = "Attention unavailable",
+        phase = phase,
+    )
 }

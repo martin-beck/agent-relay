@@ -1,9 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- App-widget hosts do not paint the application's window background; this root owns its surface. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/widget_background"
+    android:importantForAccessibility="yes"
     android:orientation="vertical"
-    android:padding="12dp">
+    android:paddingStart="12dp"
+    android:paddingTop="12dp"
+    android:paddingEnd="12dp"
+    android:paddingBottom="12dp"
+    tools:ignore="Overdraw">
 
     <TextView
         android:id="@+id/home_widget_status"
@@ -11,6 +19,7 @@
         android:layout_height="wrap_content"
         android:text="@string/home_widget_status_quiet"
         android:textColor="@color/widget_secondary_text"
+        android:textDirection="locale"
         android:textSize="12sp" />
 
     <TextView
@@ -21,6 +30,7 @@
         android:maxLines="2"
         android:text="@string/home_widget_no_attention"
         android:textColor="@color/widget_primary_text"
+        android:textDirection="locale"
         android:textSize="16sp"
         android:textStyle="bold" />
 
@@ -29,6 +39,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:maxLines="1"
+        android:textDirection="locale"
         android:textColor="@color/widget_primary_text" />
 
     <TextView
@@ -36,6 +47,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:maxLines="1"
+        android:textDirection="locale"
         android:textColor="@color/widget_primary_text" />
 
     <TextView
@@ -43,9 +55,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:maxLines="1"
+        android:textDirection="locale"
         android:textColor="@color/widget_primary_text" />
 
     <LinearLayout
+        android:id="@+id/home_widget_actions"
         style="?android:attr/buttonBarStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -57,6 +71,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/home_widget_action_acknowledge"
+            android:textColor="@color/widget_action_text"
             android:visibility="gone" />
 
         <Button
@@ -65,6 +80,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/home_widget_action_defer"
+            android:textColor="@color/widget_action_text"
             android:visibility="gone" />
 
         <Button
@@ -73,6 +89,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/home_widget_action_mute_confirm"
+            android:textColor="@color/widget_action_text"
             android:visibility="gone" />
     </LinearLayout>
 </LinearLayout>

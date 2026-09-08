@@ -372,4 +372,22 @@
     <string name="session_action_title_review_required">Tindakan agen perlu ditinjau.</string>
     <string name="session_question_prompt_fallback">Pertanyaan agen</string>
     <string name="connection_failure_profile_preparation">Profil koneksi tidak dapat disiapkan.</string>
+    <string name="lock_widget_description">Ringkasan perhatian di layar kunci</string>
+    <string name="lock_widget_no_attention">Tidak ada yang perlu diperhatikan</string>
+    <string name="lock_widget_status_quiet">Agent Relay</string>
+    <string name="lock_widget_status_attention">Perlu perhatian</string>
+    <string name="lock_widget_status_refresh">Segarkan di aplikasi</string>
+    <string name="lock_widget_loading">Memeriksa perhatian…</string>
+    <string name="lock_widget_error">Perhatian tidak tersedia</string>
+    <string name="home_widget_description">Ringkasan perhatian di layar utama</string>
+    <string name="home_widget_no_attention">Tidak ada yang perlu diperhatikan</string>
+    <string name="home_widget_status_quiet">Agent Relay</string>
+    <string name="home_widget_status_attention">Perlu perhatian</string>
+    <string name="home_widget_status_refresh">Segarkan di aplikasi</string>
+    <string name="home_widget_loading">Memeriksa perhatian…</string>
+    <string name="home_widget_error">Perhatian tidak tersedia</string>
+    <string name="home_widget_action_open_details_for">Buka detail perhatian: %1$s</string>
+    <string name="home_widget_action_acknowledge">Konfirmasi</string>
+    <string name="home_widget_action_defer">Tunda</string>
+    <string name="home_widget_action_mute_confirm">Bisukan…</string>
 </resources>
