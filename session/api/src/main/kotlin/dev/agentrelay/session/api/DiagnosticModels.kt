@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.session.api
 
 enum class DiagnosticSeverity { TRACE, DEBUG, INFO, WARN, ERROR, FATAL }

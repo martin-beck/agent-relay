@@ -1,3 +1,6 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 """Bounded, deterministic workflow concurrency and recovery model.
 
 This is an executable specification, not an unbounded proof.  The model keeps

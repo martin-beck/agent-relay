@@ -10,10 +10,10 @@
     "alloy": {"name": "declaration-and-bounded-verifier", "version": "1.0.0"}
   },
   "models": [
-    {"path": "docs/formal/WorkflowDomain.tla", "sha256": "d29436fecf49bcd37f5912c6ae76c98d620815153e13a5fd449b029d806ca172"},
-    {"path": "docs/formal/WorkflowDomain.alloy", "sha256": "87ed044098f75aee65586b2cdea50aae872056ffde796b4fd235c17eeb0ef16c"},
-    {"path": "docs/formal/WorkflowConcurrency.tla", "sha256": "441911e26dde88035fae0b3a41c12ab695d1ab5994ea9625e16388d1a7b02ead"},
-    {"path": "docs/formal/WorkflowConcurrency.alloy", "sha256": "f602726ea6dd44bef60490c49368b6fd1e63f0df1172d6a3234aa57a328ff5a4"}
+    {"path": "docs/formal/WorkflowDomain.tla", "sha256": "d7b2694f632c3302ea0e5f59e51dd4992782c9f1cce5ab0ea56a0bea24b0ae1f"},
+    {"path": "docs/formal/WorkflowDomain.alloy", "sha256": "21592edcf32f2f2db4552b9fc85dd8d2cedb1a6465ae967e14612ed9f080ba37"},
+    {"path": "docs/formal/WorkflowConcurrency.tla", "sha256": "7f9f47406a9607504d4515e3d769d3159321f0a90fe5245d2543968cab58ce3a"},
+    {"path": "docs/formal/WorkflowConcurrency.alloy", "sha256": "3014934b437614d7e3d19212bc48a6894bb231d8c55e8978522e6d8632ba0fb1"}
   ],
   "obligations": [
     {"id": "domain-safety", "evidence": "mechanical-invariant", "verifier": "verify_formal_models.py"},

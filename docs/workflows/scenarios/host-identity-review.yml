@@ -1,3 +1,6 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 id: host-identity-review
 title: Review an unknown or changed host identity
 summary: Keep a remote connection closed until its cryptographic host identity is explicitly reviewed.

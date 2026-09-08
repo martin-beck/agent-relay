@@ -1,3 +1,6 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 # Exact vulnerability IDs accepted only for coordinates independently constrained
 # to assurance-only Gradle configurations by the offline verifier.
 

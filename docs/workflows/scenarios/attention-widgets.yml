@@ -1,3 +1,6 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 id: attention-widgets
 title: Triage attention from home and lock-screen widgets
 summary: Surface the smallest useful attention signal while preserving privacy and safe actions.

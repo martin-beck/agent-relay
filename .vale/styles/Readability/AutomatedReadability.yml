@@ -1,3 +1,6 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 extends: metric
 message: "Try to keep the Automated Readability Index (%s) below 8."
 link: https://en.wikipedia.org/wiki/Automated_readability_index

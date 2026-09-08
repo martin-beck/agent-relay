@@ -1,3 +1,6 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 """Independently reproduce and validate the FM-Agent pilot report."""
 
 from __future__ import annotations
