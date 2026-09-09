@@ -21,6 +21,19 @@ dependencyLocking {
     lockMode.set(LockMode.STRICT)
 }
 
+val secureNettyVersion = libs.versions.netty.get()
+
+allprojects {
+    configurations.configureEach {
+        resolutionStrategy.eachDependency {
+            if (requested.group == "io.netty" && requested.version?.startsWith("4.1.") == true) {
+                useVersion(secureNettyVersion)
+                because("Netty 4.1.137 fixes GHSA-c4c3-7fpv-j4q5 and GHSA-fccg-mwvh-qqg4")
+            }
+        }
+    }
+}
+
 val ktlintEditorConfig = mapOf(
     "ij_kotlin_allow_trailing_comma" to "true",
     "ij_kotlin_allow_trailing_comma_on_call_site" to "true",

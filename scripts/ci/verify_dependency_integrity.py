@@ -29,6 +29,8 @@ LOCK_HEADER = (
     "# This file is expected to be part of source control.",
 )
 ROOT_LOCKFILE = Path("gradle.lockfile")
+NETTY_VERSION = re.compile(r"(\d+)\.(\d+)\.(\d+)\.Final")
+MINIMUM_SAFE_NETTY = (4, 1, 137)
 
 
 class IntegrityError(RuntimeError):
@@ -82,6 +84,16 @@ def read_locks(root: Path, manifest: Path) -> dict[tuple[str, str], set[str]]:
             package = f"{parts[0]}:{parts[1]}"
             configurations[(package, parts[2])].update(configuration_list.split(","))
     return configurations
+
+
+def verify_netty_versions(locked: dict[tuple[str, str], set[str]]) -> None:
+    for package, version in locked:
+        if not package.startswith("io.netty:"):
+            continue
+        match = NETTY_VERSION.fullmatch(version)
+        parsed = tuple(int(part) for part in match.groups()) if match is not None else None
+        if parsed is None or parsed < MINIMUM_SAFE_NETTY:
+            raise IntegrityError(f"{package}:{version}: Netty must be at least 4.1.137.Final")
 
 
 def verify_gradle_metadata(path: Path) -> None:
@@ -276,6 +288,7 @@ def verify_osv_findings(path: Path, accepted: set[OsvFinding]) -> None:
 
 def verify_repository(root: Path, today: datetime.date | None = None) -> None:
     locked = read_locks(root, root / "config/dependency-lockfiles.txt")
+    verify_netty_versions(locked)
     verify_gradle_metadata(root / "gradle/verification-metadata.xml")
     verify_scanner_release(root / "config/osv-scanner-release.json")
     _, expected_exceptions = read_osv_policy(

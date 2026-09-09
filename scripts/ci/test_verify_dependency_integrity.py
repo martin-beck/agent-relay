@@ -173,6 +173,17 @@ class DependencyIntegrityVerifierTest(unittest.TestCase):
         with self.assertRaisesRegex(VERIFY.IntegrityError, "root project"):
             VERIFY.verify_repository(self.root, self.TODAY)
 
+    def test_accepts_netty_at_reviewed_safe_floor(self) -> None:
+        locked = {("io.netty:netty-handler", "4.1.137.Final"): {"testRuntimeClasspath"}}
+        VERIFY.verify_netty_versions(locked)
+
+    def test_rejects_netty_below_reviewed_safe_floor(self) -> None:
+        for version in ("4.1.93.Final", "4.1.110.Final"):
+            with self.subTest(version=version):
+                locked = {("io.netty:netty-handler", version): {"testRuntimeClasspath"}}
+                with self.assertRaisesRegex(VERIFY.IntegrityError, "at least 4.1.137.Final"):
+                    VERIFY.verify_netty_versions(locked)
+
     def test_rejects_exception_that_reaches_production(self) -> None:
         self.write_lock("releaseRuntimeClasspath")
         with self.assertRaisesRegex(VERIFY.IntegrityError, "ignored in production"):
