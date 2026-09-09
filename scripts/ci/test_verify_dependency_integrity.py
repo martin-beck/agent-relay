@@ -173,8 +173,8 @@ class DependencyIntegrityVerifierTest(unittest.TestCase):
         with self.assertRaisesRegex(VERIFY.IntegrityError, "root project"):
             VERIFY.verify_repository(self.root, self.TODAY)
 
-    def test_accepts_netty_at_each_reviewed_safe_floor(self) -> None:
-        for version in ("4.1.137.Final", "4.2.17.Final"):
+    def test_accepts_netty_at_or_above_each_reviewed_safe_floor(self) -> None:
+        for version in ("4.1.137.Final", "4.1.138.Final", "4.2.17.Final", "4.2.18.Final"):
             with self.subTest(version=version):
                 locked = {("io.netty:netty-handler", version): {"testRuntimeClasspath"}}
                 VERIFY.verify_netty_versions(locked)

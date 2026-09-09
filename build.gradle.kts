@@ -31,12 +31,23 @@ allprojects {
         resolutionStrategy.eachDependency {
             if (requested.group == "io.netty") {
                 val requestedVersion = requested.version
-                val secureVersion = secureNettyVersions.entries.singleOrNull { (releaseLine, _) ->
-                    requestedVersion?.startsWith(releaseLine) == true
-                }?.value
-                if (secureVersion != null) {
-                    useVersion(secureVersion)
-                    because("Reviewed Netty release-line floors fix known security advisories")
+                if (requestedVersion != null) {
+                    secureNettyVersions.entries
+                        .singleOrNull { (releaseLine, _) -> requestedVersion.startsWith(releaseLine) }
+                        ?.let { (releaseLine, secureVersion) ->
+                            val requestedPatch = requestedVersion
+                                .removePrefix(releaseLine)
+                                .removeSuffix(".Final")
+                                .toIntOrNull()
+                            val securePatch = secureVersion
+                                .removePrefix(releaseLine)
+                                .removeSuffix(".Final")
+                                .toIntOrNull()
+                            if (requestedPatch != null && securePatch != null && requestedPatch < securePatch) {
+                                useVersion(secureVersion)
+                                because("Reviewed Netty release-line floors fix known security advisories")
+                            }
+                        }
                 }
             }
         }
