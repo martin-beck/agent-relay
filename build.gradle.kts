@@ -21,6 +21,39 @@ dependencyLocking {
     lockMode.set(LockMode.STRICT)
 }
 
+val secureNettyVersions = mapOf(
+    "4.1." to libs.versions.netty.get(),
+    "4.2." to libs.versions.netty42.get(),
+)
+
+allprojects {
+    configurations.configureEach {
+        resolutionStrategy.eachDependency {
+            if (requested.group == "io.netty") {
+                val requestedVersion = requested.version
+                if (requestedVersion != null) {
+                    secureNettyVersions.entries
+                        .singleOrNull { (releaseLine, _) -> requestedVersion.startsWith(releaseLine) }
+                        ?.let { (releaseLine, secureVersion) ->
+                            val requestedPatch = requestedVersion
+                                .removePrefix(releaseLine)
+                                .removeSuffix(".Final")
+                                .toIntOrNull()
+                            val securePatch = secureVersion
+                                .removePrefix(releaseLine)
+                                .removeSuffix(".Final")
+                                .toIntOrNull()
+                            if (requestedPatch != null && securePatch != null && requestedPatch < securePatch) {
+                                useVersion(secureVersion)
+                                because("Reviewed Netty release-line floors fix known security advisories")
+                            }
+                        }
+                }
+            }
+        }
+    }
+}
+
 val ktlintEditorConfig = mapOf(
     "ij_kotlin_allow_trailing_comma" to "true",
     "ij_kotlin_allow_trailing_comma_on_call_site" to "true",
