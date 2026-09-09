@@ -21,16 +21,16 @@ The review was refreshed on 2026-09-09 against Agent Relay main
 `6806a8876107b9b2091df0f3e6832bdd77123421`. Implementation tasks must repin these fast-moving
 projects and recheck licenses, releases, checksums, behavior, and security.
 
-| Source | Reviewed revision | Relevant advertised surface |
+| Source | Reviewed revision | Relevant advertised surface and exact evidence |
 | --- | --- | --- |
-| [MockAgents](https://github.com/mockagents/mockagents) | `6ddb03e54a14484e5929a19673f0cfd8a1975f07` | Static Go server; OpenAI, Anthropic, Gemini, SSE, tools, faults, replay, contracts, and MCP |
-| [CopilotKit aimock](https://github.com/CopilotKit/aimock) | `7323e819bce1b971dc2b7907407401b7d65bbe8c` | Node server; broad LLM APIs, MCP, A2A, AG-UI, timing-aware replay, drift, and chaos |
-| [llmock](https://github.com/larsakerlund/llmock) | `bac44e693616254b08fcaa4ddd71cc735d5ee9f6` | Rust server; provider SDK wire shapes, SSE timing and faults, deterministic mode, and byte replay |
-| [Ollama](https://github.com/ollama/ollama) | `86f72929348d384336b6f0adc129e71b2122abdc` | Local model lifecycle and partial OpenAI-compatible chat, responses, streaming, and tools |
-| [llama.cpp](https://github.com/ggml-org/llama.cpp) | `1945e092030f8668ff93382799502d01490e564d` | Lightweight CPU/GPU inference and OpenAI/Anthropic-compatible serving |
-| [vLLM](https://github.com/vllm-project/vllm) | `385dce36bcee42309924a5ece951a96db3dce7f2` | Accelerator-oriented offline inference and OpenAI-compatible serving |
-| [LocalAI](https://github.com/mudler/LocalAI) | `bf93008ef3d6662d6a69447ca121a2af14c741f9` | Multi-backend local engine with OpenAI, Anthropic, and Ollama-compatible APIs |
-| [TapeAgents](https://github.com/ServiceNow/TapeAgents) | `e22d5e39ee043fcfe759902df4748d7e937d8aa0` | Structured replayable tapes used as resumable state and audit material |
+| [MockAgents](https://github.com/mockagents/mockagents/tree/6ddb03e54a14484e5929a19673f0cfd8a1975f07) | [`6ddb03e`](https://github.com/mockagents/mockagents/commit/6ddb03e54a14484e5929a19673f0cfd8a1975f07) | Go binary; OpenAI, Anthropic, Gemini, SSE, tools, and faults ([README lines 10-20](https://github.com/mockagents/mockagents/blob/6ddb03e54a14484e5929a19673f0cfd8a1975f07/README.md#L10-L20)); replay and contracts ([263-267](https://github.com/mockagents/mockagents/blob/6ddb03e54a14484e5929a19673f0cfd8a1975f07/README.md#L263-L267)) |
+| [CopilotKit aimock](https://github.com/CopilotKit/aimock/tree/7323e819bce1b971dc2b7907407401b7d65bbe8c) | [`7323e81`](https://github.com/CopilotKit/aimock/commit/7323e819bce1b971dc2b7907407401b7d65bbe8c) | LLM APIs, MCP, A2A, AG-UI, replay, drift, and chaos ([README lines 61-82](https://github.com/CopilotKit/aimock/blob/7323e819bce1b971dc2b7907407401b7d65bbe8c/README.md#L61-L82)) |
+| [llmock](https://github.com/larsakerlund/llmock/tree/bac44e693616254b08fcaa4ddd71cc735d5ee9f6) | [`bac44e6`](https://github.com/larsakerlund/llmock/commit/bac44e693616254b08fcaa4ddd71cc735d5ee9f6) | Provider wire shapes, SSE timing and faults, deterministic mode, and byte replay ([README lines 26-37](https://github.com/larsakerlund/llmock/blob/bac44e693616254b08fcaa4ddd71cc735d5ee9f6/README.md#L26-L37)) |
+| [Ollama](https://github.com/ollama/ollama/tree/86f72929348d384336b6f0adc129e71b2122abdc) | [`86f7292`](https://github.com/ollama/ollama/commit/86f72929348d384336b6f0adc129e71b2122abdc) | OpenAI-compatible responses, streaming, and tools with statefulness limits ([compatibility lines 282-306](https://github.com/ollama/ollama/blob/86f72929348d384336b6f0adc129e71b2122abdc/docs/api/openai-compatibility.mdx#L282-L306)) |
+| [llama.cpp](https://github.com/ggml-org/llama.cpp/tree/1945e092030f8668ff93382799502d01490e564d) | [`1945e09`](https://github.com/ggml-org/llama.cpp/commit/1945e092030f8668ff93382799502d01490e564d) | Quantized inference ([README lines 35-61](https://github.com/ggml-org/llama.cpp/blob/1945e092030f8668ff93382799502d01490e564d/README.md#L35-L61)) and OpenAI/Anthropic-compatible serving ([server lines 9-18](https://github.com/ggml-org/llama.cpp/blob/1945e092030f8668ff93382799502d01490e564d/tools/server/README.md#L9-L18)) |
+| [vLLM](https://github.com/vllm-project/vllm/tree/385dce36bcee42309924a5ece951a96db3dce7f2) | [`385dce3`](https://github.com/vllm-project/vllm/commit/385dce36bcee42309924a5ece951a96db3dce7f2) | Multi-accelerator inference ([README lines 24-51](https://github.com/vllm-project/vllm/blob/385dce36bcee42309924a5ece951a96db3dce7f2/README.md#L24-L51)) and OpenAI-compatible serving ([server lines 1-28](https://github.com/vllm-project/vllm/blob/385dce36bcee42309924a5ece951a96db3dce7f2/docs/serving/online_serving/openai_compatible_server.md#L1-L28)) |
+| [LocalAI](https://github.com/mudler/LocalAI/tree/bf93008ef3d6662d6a69447ca121a2af14c741f9) | [`bf93008`](https://github.com/mudler/LocalAI/commit/bf93008ef3d6662d6a69447ca121a2af14c741f9) | Multi-backend local engine with compatible API surfaces ([README lines 41-54](https://github.com/mudler/LocalAI/blob/bf93008ef3d6662d6a69447ca121a2af14c741f9/README.md#L41-L54)) |
+| [TapeAgents](https://github.com/ServiceNow/TapeAgents/tree/e22d5e39ee043fcfe759902df4748d7e937d8aa0) | [`e22d5e3`](https://github.com/ServiceNow/TapeAgents/commit/e22d5e39ee043fcfe759902df4748d7e937d8aa0) | Structured replayable tapes used as resumable state and audit material ([README lines 15-31](https://github.com/ServiceNow/TapeAgents/blob/e22d5e39ee043fcfe759902df4748d7e937d8aa0/README.md#L15-L31)) |
 
 Literature inputs are
 [TapeAgents](https://arxiv.org/abs/2412.08445v1),
@@ -55,6 +55,9 @@ LLM API emulation is useful only when a real CLI supports a loopback endpoint an
 traverses its normal Agent Relay adapter.
 
 ## Public mock assessment
+
+The comparisons below are Agent Relay-specific inferences from the exact, immutable evidence linked
+in the table above. They are recommendations to validate in the follow-on ARs, not upstream claims.
 
 MockAgents is the strongest initial Linux CI pilot when a static checksum-pinned binary is
 preferred. Its scenarios, tool calls, SSE, failure injection, replay, and contract extraction map
