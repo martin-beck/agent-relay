@@ -30,7 +30,10 @@ LOCK_HEADER = (
 )
 ROOT_LOCKFILE = Path("gradle.lockfile")
 NETTY_VERSION = re.compile(r"(\d+)\.(\d+)\.(\d+)\.Final")
-MINIMUM_SAFE_NETTY = (4, 1, 137)
+MINIMUM_SAFE_NETTY_BY_RELEASE_LINE = {
+    (4, 1): 137,
+    (4, 2): 17,
+}
 
 
 class IntegrityError(RuntimeError):
@@ -91,9 +94,23 @@ def verify_netty_versions(locked: dict[tuple[str, str], set[str]]) -> None:
         if not package.startswith("io.netty:"):
             continue
         match = NETTY_VERSION.fullmatch(version)
-        parsed = tuple(int(part) for part in match.groups()) if match is not None else None
-        if parsed is None or parsed < MINIMUM_SAFE_NETTY:
-            raise IntegrityError(f"{package}:{version}: Netty must be at least 4.1.137.Final")
+        if match is None:
+            raise IntegrityError(f"{package}:{version}: unsupported Netty version format")
+        major, minor, patch = (int(part) for part in match.groups())
+        minimum_patch = MINIMUM_SAFE_NETTY_BY_RELEASE_LINE.get((major, minor))
+        if minimum_patch is None:
+            supported = ", ".join(
+                f"{line_major}.{line_minor}"
+                for line_major, line_minor in MINIMUM_SAFE_NETTY_BY_RELEASE_LINE
+            )
+            raise IntegrityError(
+                f"{package}:{version}: unsupported Netty release line; expected one of {supported}"
+            )
+        if patch < minimum_patch:
+            raise IntegrityError(
+                f"{package}:{version}: Netty {major}.{minor} must be at least "
+                f"{major}.{minor}.{minimum_patch}.Final"
+            )
 
 
 def verify_gradle_metadata(path: Path) -> None:

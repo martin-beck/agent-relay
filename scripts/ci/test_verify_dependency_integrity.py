@@ -173,16 +173,28 @@ class DependencyIntegrityVerifierTest(unittest.TestCase):
         with self.assertRaisesRegex(VERIFY.IntegrityError, "root project"):
             VERIFY.verify_repository(self.root, self.TODAY)
 
-    def test_accepts_netty_at_reviewed_safe_floor(self) -> None:
-        locked = {("io.netty:netty-handler", "4.1.137.Final"): {"testRuntimeClasspath"}}
-        VERIFY.verify_netty_versions(locked)
-
-    def test_rejects_netty_below_reviewed_safe_floor(self) -> None:
-        for version in ("4.1.93.Final", "4.1.110.Final"):
+    def test_accepts_netty_at_each_reviewed_safe_floor(self) -> None:
+        for version in ("4.1.137.Final", "4.2.17.Final"):
             with self.subTest(version=version):
                 locked = {("io.netty:netty-handler", version): {"testRuntimeClasspath"}}
-                with self.assertRaisesRegex(VERIFY.IntegrityError, "at least 4.1.137.Final"):
+                VERIFY.verify_netty_versions(locked)
+
+    def test_rejects_netty_below_reviewed_safe_floor(self) -> None:
+        for version, expected_floor in (
+            ("4.1.93.Final", "4.1.137.Final"),
+            ("4.1.110.Final", "4.1.137.Final"),
+            ("4.2.0.Final", "4.2.17.Final"),
+            ("4.2.16.Final", "4.2.17.Final"),
+        ):
+            with self.subTest(version=version):
+                locked = {("io.netty:netty-handler", version): {"testRuntimeClasspath"}}
+                with self.assertRaisesRegex(VERIFY.IntegrityError, f"at least {expected_floor}"):
                     VERIFY.verify_netty_versions(locked)
+
+    def test_rejects_unreviewed_netty_release_line(self) -> None:
+        locked = {("io.netty:netty-handler", "5.0.0.Final"): {"testRuntimeClasspath"}}
+        with self.assertRaisesRegex(VERIFY.IntegrityError, "unsupported Netty release line"):
+            VERIFY.verify_netty_versions(locked)
 
     def test_rejects_exception_that_reaches_production(self) -> None:
         self.write_lock("releaseRuntimeClasspath")

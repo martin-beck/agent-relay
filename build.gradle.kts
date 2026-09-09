@@ -21,14 +21,23 @@ dependencyLocking {
     lockMode.set(LockMode.STRICT)
 }
 
-val secureNettyVersion = libs.versions.netty.get()
+val secureNettyVersions = mapOf(
+    "4.1." to libs.versions.netty.get(),
+    "4.2." to libs.versions.netty42.get(),
+)
 
 allprojects {
     configurations.configureEach {
         resolutionStrategy.eachDependency {
-            if (requested.group == "io.netty" && requested.version?.startsWith("4.1.") == true) {
-                useVersion(secureNettyVersion)
-                because("Netty 4.1.137 fixes GHSA-c4c3-7fpv-j4q5 and GHSA-fccg-mwvh-qqg4")
+            if (requested.group == "io.netty") {
+                val requestedVersion = requested.version
+                val secureVersion = secureNettyVersions.entries.singleOrNull { (releaseLine, _) ->
+                    requestedVersion?.startsWith(releaseLine) == true
+                }?.value
+                if (secureVersion != null) {
+                    useVersion(secureVersion)
+                    because("Reviewed Netty release-line floors fix known security advisories")
+                }
             }
         }
     }
