@@ -1677,7 +1677,6 @@ public final class dev/agentrelay/session/api/OrchestrationMode : java/lang/Enum
 
 public final class dev/agentrelay/session/api/PersistentSessionHubRepository : dev/agentrelay/session/api/SessionHubRepository {
 	public static final field Companion Ldev/agentrelay/session/api/PersistentSessionHubRepository$Companion;
-	public synthetic fun <init> (Ldev/agentrelay/session/api/SessionHubSnapshot;Ldev/agentrelay/session/api/SessionHubStore;Ldev/agentrelay/session/api/SessionRetentionPolicy;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun acknowledgeCommand (Ldev/agentrelay/session/api/SessionLocator;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun applyEvent (Ldev/agentrelay/session/api/SessionEventUpdate;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun beginActionResponse (Ldev/agentrelay/session/api/SessionLocator;Ljava/lang/String;Ldev/agentrelay/provider/api/AgentApprovalDecision;Ljava/util/Set;ZJLkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -3649,7 +3648,6 @@ public final class dev/agentrelay/session/api/WorkflowRecoveryReport {
 
 public final class dev/agentrelay/session/api/WorkflowReplay {
 	public static final field Companion Ldev/agentrelay/session/api/WorkflowReplay$Companion;
-	public synthetic fun <init> (Ldev/agentrelay/session/api/ReplayHistory;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun compatibility (ILjava/util/Set;)Ldev/agentrelay/session/api/ReplayCompatibility;
 	public final fun fork-8Fz_usU (JLjava/lang/String;JLjava/util/Map;)Ldev/agentrelay/session/api/ReplayFork;
 	public static synthetic fun fork-8Fz_usU$default (Ldev/agentrelay/session/api/WorkflowReplay;JLjava/lang/String;JLjava/util/Map;ILjava/lang/Object;)Ldev/agentrelay/session/api/ReplayFork;
