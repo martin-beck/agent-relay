@@ -7,8 +7,10 @@ from __future__ import annotations
 import json
 import os
 import re
+import signal
 import subprocess
 import tempfile
+from contextlib import suppress
 from math import isfinite
 from pathlib import Path
 from typing import Any
@@ -383,6 +385,33 @@ def validate_driver_provenance(evidence: dict[str, Any], staged: dict[str, Any])
             raise ConformanceBlocked(f"driver evidence does not match staged provenance: {field}")
 
 
+def terminate_driver_group(process: subprocess.Popen[bytes]) -> None:
+    with suppress(ProcessLookupError):
+        os.killpg(process.pid, signal.SIGKILL)
+    process.wait()
+
+
+def execute_driver(
+    command: list[str], environment: dict[str, str], timeout: int
+) -> subprocess.CompletedProcess[bytes]:
+    process = subprocess.Popen(  # noqa: S603
+        command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        env=environment,
+        start_new_session=True,
+    )
+    try:
+        stdout, stderr = process.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired as error:
+        terminate_driver_group(process)
+        raise ConformanceBlocked("the conformance driver exceeded its time budget") from error
+    completed = subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
+    if process.returncode != 0:
+        terminate_driver_group(process)
+    return completed
+
+
 def run() -> dict[str, Any]:
     document = load_manifest()
     validate_manifest(document)
@@ -398,19 +427,9 @@ def run() -> dict[str, Any]:
         evidence_path = Path(temporary) / "evidence.json"
         environment = os.environ.copy()
         environment["AGENT_RELAY_LOCAL_INFERENCE_EVIDENCE"] = str(evidence_path)
-        try:
-            # The command is an explicit trusted-runner input, parsed as argv and
-            # constrained to an absolute executable; no shell is involved.
-            completed = subprocess.run(  # noqa: S603
-                command,
-                check=False,
-                capture_output=True,
-                env=environment,
-                text=False,
-                timeout=timeout,
-            )
-        except subprocess.TimeoutExpired as error:
-            raise ConformanceBlocked("the conformance driver exceeded its time budget") from error
+        # The command is an explicit trusted-runner input, parsed as argv and
+        # constrained to an absolute executable; no shell is involved.
+        completed = execute_driver(command, environment, timeout)
         if (
             len(completed.stdout) > MAX_COMMAND_OUTPUT_BYTES
             or len(completed.stderr) > MAX_COMMAND_OUTPUT_BYTES

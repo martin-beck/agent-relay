@@ -8,6 +8,7 @@ import copy
 import json
 import os
 import tempfile
+import time
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -224,3 +225,27 @@ class LocalInferenceConformanceTest(unittest.TestCase):
                 ),
             ):
                 self.assertEqual("passed", run()["result"])
+
+    def test_run_terminates_a_timed_out_driver_group(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            driver = Path(temporary) / "slow-driver"
+            driver.write_text("#!/bin/sh\nsleep 30\n", encoding="utf-8")
+            driver.chmod(0o700)
+            env = {
+                "AGENT_RELAY_LOCAL_INFERENCE_ENABLE": "1",
+                "AGENT_RELAY_OUTBOUND_NETWORK": "deny",
+                "AGENT_RELAY_HARDWARE_CLASS": "self-hosted-cpu-x86_64",
+                "AGENT_RELAY_LOCAL_INFERENCE_TUPLE_JSON": json.dumps(staged_tuple()),
+                "AGENT_RELAY_LOCAL_INFERENCE_COMMAND_JSON": json.dumps([str(driver)]),
+                "AGENT_RELAY_LOCAL_INFERENCE_TIMEOUT": "1",
+            }
+            started = time.monotonic()
+            with (
+                patch.dict(os.environ, env, clear=True),
+                patch(
+                    "run_local_inference_conformance.require_network_namespace", return_value=None
+                ),
+                self.assertRaisesRegex(ConformanceBlocked, "time budget"),
+            ):
+                run()
+            self.assertLess(time.monotonic() - started, 5)
