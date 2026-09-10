@@ -1,4 +1,4 @@
-# Third-party speech runtime
+# Third-party components
 
 ## Scope
 
@@ -11,6 +11,14 @@ disabled and must remain absent from the packaged artifact.
 This document explains the dependency and notice boundary. It is not a
 replacement for the complete license files embedded in the generated AAR, and
 it does not grant a license to Agent Relay itself.
+
+The development APK separately packages Agent Relay's canonical MIT text at
+`assets/licenses/AGENT_RELAY_LICENSE.txt`. This first-party license copy does
+not replace or alter any upstream notice described below.
+
+The source distribution includes the Gradle Wrapper bootstrap JAR. Its embedded
+`META-INF/LICENSE` and manifest preserve the upstream Apache-2.0 license. The
+wrapper is build tooling and is not packaged in the development APK.
 
 ## Pinned top-level inputs
 

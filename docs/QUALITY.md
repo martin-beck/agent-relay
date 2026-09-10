@@ -28,6 +28,7 @@ representative physical-device release evidence.
 | yamllint, Taplo, and schema checks | Deterministic YAML/TOML style and valid GitHub workflow, issue-form, and Dependabot structure | Any finding fails |
 | actionlint and zizmor | GitHub Actions expressions, graph semantics, permissions, injection, and supply-chain safety | Any finding fails; audits run offline on pull requests |
 | Typos and Gitleaks | Source-aware spelling and hard-coded secret detection across tracked text | Any finding fails; suppressions must identify a reviewed false positive narrowly |
+| License metadata | Exact Huawei 2026 MIT license copies, first-party copyright/SPDX consistency, public-facing wording, and retained third-party attribution | Any drift, missing license copy, private-only wording, or removed attribution fails |
 | Build logic | Google Java Format, `javac -Xlint:all -Werror`, PMD, SpotBugs, Gradle plugin validation, JUnit 5, TestKit, and JaCoCo | Any finding or test failure fails; line coverage below 93% or branch coverage below 82% fails |
 | Kotlin compiler | Type safety and compiler diagnostics | All warnings are errors |
 | Detekt | Kotlin correctness plus cyclomatic, cognitive, nesting, length, parameter, and size limits | Any configured finding fails; cognitive complexity is ratcheted below 34 and no baseline is used |
@@ -273,9 +274,8 @@ and [Lychee link checking](https://lychee.cli.rs/).
 Pull requests verify local Markdown paths and fragments without network access.
 The scheduled `External documentation links` workflow checks remote links so a
 temporary third-party outage cannot block an otherwise valid source change.
-It excludes only this private repository's Actions page, workflow badge, and
-security-advisory form because GitHub returns 404 for anonymous requests to
-those authentication-gated endpoints.
+It excludes only authentication-gated Actions or security-advisory endpoints
+that return 404 for anonymous requests.
 Run that same network check explicitly with:
 
 ```bash
@@ -311,8 +311,8 @@ Actions logs with file and line information.
 
 The repository contains a SonarQube-compatible project definition and a
 SHA-pinned scanner step. Analysis is disabled by default. This is deliberate:
-enabling a hosted analyzer for a private repository sends source and metrics to
-another service and therefore requires an explicit repository-owner decision.
+enabling a hosted analyzer sends source and metrics to another service and
+therefore requires an explicit repository-owner decision.
 
 To enable either SonarQube Server or SonarQube Cloud, configure these trusted
 repository settings:
@@ -556,8 +556,8 @@ integrated; avoid broad targets whose setup dominates the short fuzzing budget.
 
 ## Security-analysis boundaries
 
-Detekt and Android lint emit SARIF. The private repository's workflow retains
-SARIF as a downloadable artifact. Uploading SARIF or running CodeQL through
+Detekt and Android lint emit SARIF. The repository workflow retains SARIF as a
+downloadable artifact. Uploading SARIF or running CodeQL through
 GitHub code scanning requires the repository's GitHub Code Security entitlement;
 the current workflow does not claim that unavailable check.
 

@@ -13,8 +13,7 @@ and must not be used as a trusted production control surface.
 
 ## Report a vulnerability
 
-Do not open a public issue or include sensitive details in a pull request. An
-invited collaborator should use a
+Do not open a public issue or include sensitive details in a pull request. Use a
 [private security advisory](https://github.com/martin-beck/agent-relay/security/advisories/new)
 for the repository. Include the affected commit, impact, reproduction steps, and
 a minimal redacted proof of concept.
