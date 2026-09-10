@@ -29,24 +29,55 @@ class WorkBuddyContractTest(unittest.TestCase):
         self.assertEqual(document["api_version"], "/openapi/v2")
         sources = document["authoritative_sources"]
         self.assertEqual(len(sources), 2)
-        self.assertTrue(all(source["url"].startswith("https://open.workbuddy.cn/") for source in sources))
+        self.assertTrue(
+            all(source["url"].startswith("https://open.workbuddy.cn/") for source in sources)
+        )
         self.assertTrue(all(SHA256.fullmatch(source["revision"]) for source in sources))
 
     def test_capabilities_are_explicit_and_unique(self) -> None:
         capabilities = load_contract()["capabilities"]
         ids = [item["id"] for item in capabilities]
         self.assertEqual(len(ids), len(set(ids)))
-        self.assertTrue({item["status"] for item in capabilities} <= {"supported", "conditional", "unsupported"})
-        self.assertTrue(all(item["evidence"] and item["relay_mapping"] and item["unsupported_outcome"] for item in capabilities))
+        self.assertTrue(
+            {item["status"] for item in capabilities} <= {"supported", "conditional", "unsupported"}
+        )
+        self.assertTrue(
+            all(
+                item["evidence"] and item["relay_mapping"] and item["unsupported_outcome"]
+                for item in capabilities
+            )
+        )
         self.assertGreaterEqual(sum(item["status"] == "unsupported" for item in capabilities), 4)
 
     def test_security_and_delivery_invariants_are_present(self) -> None:
         invariants = {item["id"] for item in load_contract()["invariants"]}
-        self.assertTrue({"least-privilege", "bounded-config", "redacted-events", "text-only", "bounded-history", "uncertain-delivery", "authority-separation"} <= invariants)
+        self.assertTrue(
+            {
+                "least-privilege",
+                "bounded-config",
+                "redacted-events",
+                "text-only",
+                "bounded-history",
+                "uncertain-delivery",
+                "authority-separation",
+            }
+            <= invariants
+        )
 
     def test_negative_and_private_test_plan_is_present(self) -> None:
         scenarios = {item["id"] for item in load_contract()["deterministic_test_plan"]}
-        self.assertTrue({"source-pins", "capability-matrix", "hostile-options", "message-boundary", "history-replay", "uncertain-delivery", "privacy-fixture"} <= scenarios)
+        self.assertTrue(
+            {
+                "source-pins",
+                "capability-matrix",
+                "hostile-options",
+                "message-boundary",
+                "history-replay",
+                "uncertain-delivery",
+                "privacy-fixture",
+            }
+            <= scenarios
+        )
 
     def test_contract_is_not_an_adapter_claim(self) -> None:
         document = load_contract()
