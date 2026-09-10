@@ -83,6 +83,33 @@ Android lint, and debug APK assembly. The APK is written to:
 app/build/outputs/apk/debug/app-debug.apk
 ```
 
+### Development APK identity and metadata
+
+Every Android configuration derives a development version from the checked-out
+Git commit. `versionCode` is `1000000` plus that commit's first-parent count;
+`versionName` is `0.1.0-dev.COUNT+gSHORT_SHA`. This policy is monotonic only
+for development artifacts selected in main's first-parent order. It does not
+define a production-release version.
+
+After `assembleDebug`, inspect and package the APK with the pinned Android
+`aapt2` from the selected build-tools directory:
+
+```bash
+uv run python scripts/ci/development_apk.py package \
+  --repository . \
+  --apk app/build/outputs/apk/debug/app-debug.apk \
+  --aapt2 "$ANDROID_SDK_ROOT/build-tools/36.0.0/aapt2" \
+  --output-directory build/development-apk
+```
+
+The command rejects an APK whose application ID, version, minimum SDK, or
+target SDK differs from the source contract. It emits a canonical APK name
+containing the development version and full source commit, a sorted JSON
+manifest, and `SHA256SUMS`. A trusted GitHub workflow also supplies positive
+`--workflow-run-id` and `--workflow-run-attempt` values. Local output records
+both as null; it never substitutes a machine, account, path, branch, timestamp,
+credential, prompt, transcript, or provider value.
+
 The repository gate invokes pinned Pytest, Hypothesis, Coverage.py, Radon, and
 Lizard versions through uv and Vale 3.19.0 through pre-commit. The Python suite
 uses deterministic property examples and rejects branch-aware coverage below
