@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "fixtureId": "basic-tool-round",
+  "evidence": {"tier": "synthetic-runtime", "synthetic": true, "sourceRevision": "0123456789abcdef"},
+  "limits": {"maxBodyBytes": 4096, "maxFrames": 8, "maxEvents": 8, "maxVirtualMillis": 5000, "maxRetries": 1},
+  "matching": {
+    "requestFields": ["operation", "tool.name", "tool.arguments"],
+    "normalization": [
+      {"field": "operation", "operation": "exact"},
+      {"field": "tool.name", "operation": "exact"},
+      {"field": "tool.arguments", "operation": "sort-keys"}
+    ]
+  },
+  "timeline": [
+    {"atMillis": 0, "direction": "request", "kind": "tool-call", "payload": {"name": "clock", "arguments": {"zone": "UTC"}}},
+    {"atMillis": 4, "direction": "response", "kind": "tool-result", "payload": {"name": "clock", "result": {"epoch": 1700000000}}},
+    {"atMillis": 5, "direction": "response", "kind": "terminal", "payload": {"status": "success"}}
+  ],
+  "faults": [],
+  "outcome": {"status": "success", "consumedFrames": 3, "consumedEvents": 2}
+}
