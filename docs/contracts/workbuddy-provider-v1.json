@@ -21,7 +21,7 @@
     {"id":"file-changes","status":"unsupported","evidence":"No revisioned changed-file manifest is established","relay_mapping":"FILE_CHANGES","unsupported_outcome":"UNSUPPORTED; never infer changes from message text."}
   ],
   "invariants": [
-    {"id":"least-privilege","rule":"Request only user.localassistant.readable and/or user.localassistant.invokable."},
+    {"id":"least-privilege","rule":"Request only user.localassistant.readable and/or user.localassistant.invocable."},
     {"id":"bounded-config","rule":"Endpoint, content, page size, offset, poll interval, and timeouts are finite and bounded before I/O."},
     {"id":"redacted-events","rule":"Events contain opaque message references and bounded text; tokens, prompts, routes, and raw payloads are excluded."},
     {"id":"text-only","rule":"Only msg_type=text is forwarded; permission_response and unknown types fail closed."},
