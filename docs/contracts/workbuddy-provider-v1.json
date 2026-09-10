@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "provider_id": "workbuddy.localassistant",
+  "display_name": "WorkBuddy Local Assistant",
+  "contract_status": "planned",
+  "implementation_status": "contract_only",
+  "api_version": "/openapi/v2",
+  "authoritative_sources": [
+    {"id":"open-api-reference-en","url":"https://open.workbuddy.cn/en/docs/openapi","revision":"sha256:94b236a4465e91d0a9c43117dd9582acbaf780a29543c9fd7896c32dd947d52e","retrieved":"2026-09-10","evidence":["OAuth 2.1","Local Assistant API","openapi/v2"]},
+    {"id":"third-party-app-en","url":"https://open.workbuddy.cn/en/docs/third-party-app","revision":"sha256:70cb159236628cd43550c4ad872e02dfbcb0836f1834fbf87d0f61d010265a9b","retrieved":"2026-09-10","evidence":["OAuth scopes","least privilege","token lifetime"]}
+  ],
+  "boundary": {"adapter_layer":"provider","authority":"Agent Relay owns identity, leases, policy, approvals, persistence, retries, cancellation, and completion.","transport":"HTTPS Open API v2 only; no undocumented gateway is assumed.","credentials":"OAuth tokens are opaque approved-store references.","network":"Live network access is disabled by default; tests use deterministic fixtures."},
+  "capabilities": [
+    {"id":"online-status","status":"conditional","evidence":"GET /openapi/v2/localassistant requires user.localassistant.readable and returns online","relay_mapping":"SESSION_DISCOVERY","unsupported_outcome":"UNAVAILABLE when authorization or endpoint evidence is absent."},
+    {"id":"text-submission","status":"conditional","evidence":"POST /openapi/v2/localassistant/message accepts content and msg_type=text and returns message_id","relay_mapping":"SESSION_START","unsupported_outcome":"UNSUPPORTED for non-text or permission_response messages."},
+    {"id":"history-polling","status":"conditional","evidence":"GET /openapi/v2/localassistant/message supports bounded pagination and message_id incremental queries","relay_mapping":"SESSION_HISTORY","unsupported_outcome":"UNSUPPORTED until bounded cursor and terminal semantics are verified."},
+    {"id":"session-identity","status":"unsupported","evidence":"The API documents messages but no stable external session identifier","relay_mapping":"SESSION_RESUME","unsupported_outcome":"UNSUPPORTED; do not derive identity from content or timestamps."},
+    {"id":"live-streaming","status":"unsupported","evidence":"The API documents polling, not a streaming endpoint or ordered event protocol","relay_mapping":"LIVE_STREAMING","unsupported_outcome":"UNSUPPORTED."},
+    {"id":"actions-and-approvals","status":"unsupported","evidence":"permission_response is rejected and no compatible approval handshake is documented","relay_mapping":"APPROVALS","unsupported_outcome":"UNSUPPORTED; effects fail closed."},
+    {"id":"cancellation","status":"unsupported","evidence":"No cancellation endpoint or delivery token is documented","relay_mapping":"TURN_INTERRUPT","unsupported_outcome":"UNKNOWN_OUTCOME; never replay automatically."},
+    {"id":"file-changes","status":"unsupported","evidence":"No revisioned changed-file manifest is established","relay_mapping":"FILE_CHANGES","unsupported_outcome":"UNSUPPORTED; never infer changes from message text."}
+  ],
+  "invariants": [
+    {"id":"least-privilege","rule":"Request only user.localassistant.readable and/or user.localassistant.invokable."},
+    {"id":"bounded-config","rule":"Endpoint, content, page size, offset, poll interval, and timeouts are finite and bounded before I/O."},
+    {"id":"redacted-events","rule":"Events contain opaque message references and bounded text; tokens, prompts, routes, and raw payloads are excluded."},
+    {"id":"text-only","rule":"Only msg_type=text is forwarded; permission_response and unknown types fail closed."},
+    {"id":"bounded-history","rule":"Pages are at most 100 messages and cursors are size and shape validated."},
+    {"id":"uncertain-delivery","rule":"A timeout after submission is UNKNOWN_OUTCOME and never automatically replayed."},
+    {"id":"authority-separation","rule":"WorkBuddy responses are adapter observations; Agent Relay owns durable state."}
+  ],
+  "deterministic_test_plan": [
+    {"id":"source-pins","scenario":"Validate official URLs, hashes, retrieval date, and /openapi/v2."},
+    {"id":"capability-matrix","scenario":"Reject duplicate IDs, unknown statuses, and claims without evidence."},
+    {"id":"hostile-options","scenario":"Reject non-HTTPS endpoints, oversized content/cursors, invalid limits, and token material."},
+    {"id":"message-boundary","scenario":"Accept synthetic text and reject permission_response, unknown types, and malformed IDs."},
+    {"id":"history-replay","scenario":"Replay bounded pages and incremental replies, duplicate IDs, gaps, and malformed fields."},
+    {"id":"uncertain-delivery","scenario":"Preserve a post-submit timeout as non-retryable UNKNOWN_OUTCOME."},
+    {"id":"privacy-fixture","scenario":"Assert fixtures contain no secrets, private paths, addresses, or real transcripts."}
+  ]
+}

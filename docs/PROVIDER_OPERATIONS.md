@@ -4,6 +4,10 @@ This document records how Agent Relay's provider integrations are verified
 against real command-line agents. It is evidence for readiness and protocol
 work, not a claim that every advertised provider capability is implemented.
 
+The planned WorkBuddy integration has a separate evidence boundary and
+capability matrix in [`WORKBUDDY_PROVIDER.md`](WORKBUDDY_PROVIDER.md). It is
+contract-only until its adapter and conformance evidence are published.
+
 ## Verification policy
 
 - Run on the remote host in a disposable directory, never in the Agent Relay
