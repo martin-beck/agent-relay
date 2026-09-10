@@ -65,7 +65,10 @@ class ScriptedRemoteAgentRuntime(
     }
     private suspend fun collect(frames: List<ScriptedFrame>): String {
         val builder = StringBuilder()
-        frames.forEach { frame -> delay(frame.delay); builder.append(frame.text) }
+        frames.forEach { frame ->
+            delay(frame.delay)
+            builder.append(frame.text)
+        }
         return builder.toString()
     }
 }
@@ -88,6 +91,9 @@ private class ScriptedRemoteDuplexProcess(private val script: ScriptedCommand) :
         mutableExitCode.value = script.closeExitCode ?: script.exitCode
     }
     private fun frames(values: List<ScriptedFrame>): Flow<String> = flow {
-        values.forEach { frame -> delay(frame.delay); emit(frame.text) }
+        values.forEach { frame ->
+            delay(frame.delay)
+            emit(frame.text)
+        }
     }
 }
