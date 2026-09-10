@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "status": "pilot_pending_cli_e2e",
+  "selected": "mockagents",
+  "optional_dependency": true,
+  "providers": [
+    {"id":"mockagents","revision":"6ddb03e54a14484e5929a19673f0cfd8a1975f07","license":"Apache-2.0","role":"selected-candidate"},
+    {"id":"aimock","revision":"7323e819bce1b971dc2b7907407401b7d65bbe8c","license":"MIT","role":"evaluated-not-selected"},
+    {"id":"llmock","revision":"bac44e693616254b08fcaa4ddd71cc735d5ee9f6","license":"MIT","role":"evaluated-not-selected"}
+  ],
+  "requirements": ["loopback-only", "outbound-denied", "synthetic-fixtures", "bounded-lifecycle", "no-real-key", "real-cli-required"],
+  "scenarios": ["tool-round", "streaming", "rate-limit", "malformed", "truncate", "hang", "cancel", "uncertain-delivery"]
+}

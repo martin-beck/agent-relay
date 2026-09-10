@@ -4,8 +4,8 @@ This document records how Agent Relay's provider integrations are verified
 against real command-line agents. It is evidence for readiness and protocol
 work, not a claim that every advertised provider capability is implemented.
 
-The planned OpenJiuwen integration has a separate evidence boundary and
-capability matrix in [`OPENJIUWEN_PROVIDER.md`](OPENJIUWEN_PROVIDER.md). It is
+The planned WorkBuddy integration has a separate evidence boundary and
+capability matrix in [`WORKBUDDY_PROVIDER.md`](WORKBUDDY_PROVIDER.md). It is
 contract-only until its adapter and conformance evidence are published.
 
 ## Verification policy
