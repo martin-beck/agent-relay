@@ -67,15 +67,19 @@ Required tools:
 - uv for the locked cross-language repository checks; and
 - Git with access to this private repository.
 
-On Linux or macOS:
+On Linux x86_64:
 
 ```bash
 git clone https://github.com/martin-beck/agent-relay.git
 cd agent-relay
-uv sync --locked --only-group quality --only-group docs
-uv run pre-commit run --all-files --show-diff-on-failure
-./gradlew spotlessCheck detekt buildHealth test koverXmlReport koverVerify lintDebug assembleDebug
+python3 scripts/bootstrap.py --target build --install --yes \
+  --accept-android-sdk-license
+scripts/with-toolchain ./gradlew assembleDebug --stacktrace
 ```
+
+The bootstrap path currently supports Linux x86_64. It installs only below the
+checkout and uses pinned, checksum-verified artifacts. See
+[Repository-local toolchain](docs/BOOTSTRAP.md) for quality and offline targets.
 
 On Windows, replace `./gradlew` with `.\gradlew.bat`. The debug APK is
 written to `app/build/outputs/apk/debug/app-debug.apk`.

@@ -1,0 +1,249 @@
+{
+  "schema_version": 1,
+  "revision": "linux-x86_64-v1",
+  "supported_hosts": [
+    "Linux:x86_64",
+    "Linux:amd64"
+  ],
+  "minimum_free_bytes": 12884901888,
+  "android_license": {
+    "id": "android-sdk-license",
+    "review_url": "https://developer.android.com/studio/terms",
+    "revision": "2026-09-10",
+    "accepted_hashes": [
+      "24333f8a63b6825ea9c5514f83c2829b004d1fee"
+    ]
+  },
+  "artifacts": [
+    {
+      "id": "jdk",
+      "version": "17.0.20.1+1",
+      "url": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.20.1%2B1/OpenJDK17U-jdk_x64_linux_hotspot_17.0.20.1_1.tar.gz",
+      "filename": "OpenJDK17U-jdk_x64_linux_hotspot_17.0.20.1_1.tar.gz",
+      "size": 193252603,
+      "sha256": "3808d1d15e3ec6bd5b84057fb5d84c33d8a1536a258146bcea2e603fc726e08e",
+      "format": "tar.gz",
+      "strip_components": 1,
+      "destination": "components/jdk",
+      "max_expanded_bytes": 1610612736,
+      "targets": ["build", "device", "quality"],
+      "checks": [
+        {"kind": "command", "path": "bin/java", "args": ["-version"], "contains": "17.0.20.1"}
+      ]
+    },
+    {
+      "id": "android-command-line-tools",
+      "version": "22.0",
+      "url": "https://dl.google.com/android/repository/commandlinetools-linux-15859902_latest.zip",
+      "filename": "commandlinetools-linux-15859902_latest.zip",
+      "size": 181833628,
+      "sha256": "4e4c464f145a7512b57d088ac6c278c03c9eea610886b35a5e0804e74eedf583",
+      "format": "zip",
+      "strip_components": 1,
+      "destination": "android-sdk/cmdline-tools/latest",
+      "max_expanded_bytes": 1073741824,
+      "targets": ["build", "device", "quality"],
+      "checks": [
+        {"kind": "file-contains", "path": "source.properties", "contains": "Pkg.Revision=22.0"},
+        {"kind": "executable", "path": "bin/sdkmanager"}
+      ]
+    },
+    {
+      "id": "android-platform",
+      "version": "36-r2",
+      "url": "https://dl.google.com/android/repository/platform-36_r02.zip",
+      "filename": "platform-36_r02.zip",
+      "size": 65878410,
+      "sha256": "37607369a28c5b640b3a7998868d45898ebcb777565a0e85f9acf36f29631d2e",
+      "format": "zip",
+      "strip_components": 1,
+      "destination": "android-sdk/platforms/android-36",
+      "max_expanded_bytes": 536870912,
+      "targets": ["build", "device", "quality"],
+      "checks": [
+        {"kind": "file-contains", "path": "source.properties", "contains": "AndroidVersion.ApiLevel=36"},
+        {"kind": "file", "path": "android.jar"}
+      ]
+    },
+    {
+      "id": "android-platform-tools",
+      "version": "37.0.1",
+      "url": "https://dl.google.com/android/repository/platform-tools_r37.0.1-linux.zip",
+      "filename": "platform-tools_r37.0.1-linux.zip",
+      "size": 9054187,
+      "sha256": "d230f13842f60f782a8645f9c813f8f845bf36089ea7289f28c48f17979313f1",
+      "format": "zip",
+      "strip_components": 1,
+      "destination": "android-sdk/platform-tools",
+      "max_expanded_bytes": 209715200,
+      "targets": ["build", "device", "quality"],
+      "checks": [
+        {"kind": "file-contains", "path": "source.properties", "contains": "Pkg.Revision=37.0.1"},
+        {"kind": "executable", "path": "adb"}
+      ]
+    },
+    {
+      "id": "android-build-tools",
+      "version": "36.0.0",
+      "url": "https://dl.google.com/android/repository/build-tools_r36_linux.zip",
+      "filename": "build-tools_r36_linux.zip",
+      "size": 63737259,
+      "sha256": "5d9ac77fb6ff43d9da518a337b4fcf8f9097113df531d99ccefe80ef7ce8250b",
+      "format": "zip",
+      "strip_components": 1,
+      "destination": "android-sdk/build-tools/36.0.0",
+      "max_expanded_bytes": 1073741824,
+      "targets": ["build", "device", "quality"],
+      "checks": [
+        {"kind": "file-contains", "path": "source.properties", "contains": "Pkg.Revision=36.0.0"},
+        {"kind": "executable", "path": "aapt2"}
+      ]
+    },
+    {
+      "id": "android-ndk",
+      "version": "28.2.13676358",
+      "url": "https://dl.google.com/android/repository/android-ndk-r28c-linux.zip",
+      "filename": "android-ndk-r28c-linux.zip",
+      "size": 722261334,
+      "sha256": "dfb20d396df28ca02a8c708314b814a4d961dc9074f9a161932746f815aa552f",
+      "format": "zip",
+      "strip_components": 1,
+      "destination": "android-sdk/ndk/28.2.13676358",
+      "max_expanded_bytes": 6442450944,
+      "targets": ["build", "device", "quality"],
+      "checks": [
+        {"kind": "file-contains", "path": "source.properties", "contains": "Pkg.Revision = 28.2.13676358"},
+        {"kind": "executable", "path": "toolchains/llvm/prebuilt/linux-x86_64/bin/clang"}
+      ]
+    },
+    {
+      "id": "cmake",
+      "version": "3.28.3",
+      "url": "https://github.com/Kitware/CMake/releases/download/v3.28.3/cmake-3.28.3-linux-x86_64.tar.gz",
+      "filename": "cmake-3.28.3-linux-x86_64.tar.gz",
+      "size": 52618129,
+      "sha256": "804d231460ab3c8b556a42d2660af4ac7a0e21c98a7f8ee3318a74b4a9a187a6",
+      "format": "tar.gz",
+      "strip_components": 1,
+      "destination": "components/cmake",
+      "max_expanded_bytes": 1073741824,
+      "targets": ["build", "device", "quality"],
+      "checks": [
+        {"kind": "command", "path": "bin/cmake", "args": ["--version"], "contains": "cmake version 3.28.3"}
+      ]
+    },
+    {
+      "id": "ninja",
+      "version": "1.11.1",
+      "url": "https://github.com/ninja-build/ninja/releases/download/v1.11.1/ninja-linux.zip",
+      "filename": "ninja-linux.zip",
+      "size": 119463,
+      "sha256": "b901ba96e486dce377f9a070ed4ef3f79deb45f4ffe2938f8e7ddc69cfb3df77",
+      "format": "zip",
+      "strip_components": 0,
+      "destination": "components/ninja",
+      "max_expanded_bytes": 10485760,
+      "targets": ["build", "device", "quality"],
+      "checks": [
+        {"kind": "command", "path": "ninja", "args": ["--version"], "contains": "1.11.1"}
+      ]
+    },
+    {
+      "id": "uv",
+      "version": "0.12.12",
+      "url": "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-x86_64-unknown-linux-gnu.tar.gz",
+      "filename": "uv-x86_64-unknown-linux-gnu.tar.gz",
+      "size": 19401972,
+      "sha256": "ab9b309d4586403f024e100abaceb396616e178a553e2500c36087d180f09509",
+      "format": "tar.gz",
+      "strip_components": 1,
+      "destination": "components/uv",
+      "max_expanded_bytes": 104857600,
+      "targets": ["build", "device", "quality"],
+      "checks": [
+        {"kind": "command", "path": "uv", "args": ["--version"], "contains": "uv 0.12.12"}
+      ]
+    },
+    {
+      "id": "gradle-wrapper-distribution",
+      "version": "9.7.1",
+      "url": "https://services.gradle.org/distributions/gradle-9.7.1-bin.zip",
+      "filename": "gradle-9.7.1-bin.zip",
+      "size": 151433392,
+      "sha256": "acd53f1edaf02f1a8ff99879f8a34b302661a057d9b063ae9e35b552f804d20a",
+      "format": "zip",
+      "strip_components": 1,
+      "destination": "@gradle-wrapper",
+      "max_expanded_bytes": 536870912,
+      "targets": ["build", "device", "quality"],
+      "checks": [
+        {"kind": "executable", "path": "bin/gradle"}
+      ]
+    },
+    {
+      "id": "shellcheck",
+      "version": "0.11.0",
+      "url": "https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.x86_64.tar.xz",
+      "filename": "shellcheck-v0.11.0.linux.x86_64.tar.xz",
+      "size": 2559196,
+      "sha256": "8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198",
+      "format": "tar.xz",
+      "strip_components": 1,
+      "destination": "quality/shellcheck",
+      "max_expanded_bytes": 52428800,
+      "targets": ["quality"],
+      "checks": [
+        {"kind": "command", "path": "shellcheck", "args": ["--version"], "contains": "version: 0.11.0"}
+      ]
+    },
+    {
+      "id": "shfmt",
+      "version": "3.14.0",
+      "url": "https://github.com/mvdan/sh/releases/download/v3.14.0/shfmt_v3.14.0_linux_amd64",
+      "filename": "shfmt_v3.14.0_linux_amd64",
+      "size": 3567776,
+      "sha256": "fe42021c7272ef2d67ea36cbc3031683c625d0badec733ef3a57b567246a0b66",
+      "format": "file",
+      "strip_components": 0,
+      "destination": "quality/shfmt",
+      "raw_name": "shfmt",
+      "max_expanded_bytes": 10485760,
+      "targets": ["quality"],
+      "checks": [
+        {"kind": "command", "path": "shfmt", "args": ["--version"], "contains": "v3.14.0"}
+      ]
+    },
+    {
+      "id": "bats",
+      "version": "1.14.0",
+      "url": "https://github.com/bats-core/bats-core/archive/eb7f42f8d608ac693d7a4b67474f6714ea68cfc5.tar.gz",
+      "filename": "bats-core-eb7f42f8d608ac693d7a4b67474f6714ea68cfc5.tar.gz",
+      "size": 183454,
+      "sha256": "845574549f4c9777bf02fcdf307f1bf347d40c66920fb6b47dcc8fdfa065ac39",
+      "format": "tar.gz",
+      "strip_components": 1,
+      "destination": "quality/bats",
+      "max_expanded_bytes": 104857600,
+      "targets": ["quality"],
+      "checks": [
+        {"kind": "command", "path": "bin/bats", "args": ["--version"], "contains": "Bats 1.14.0"}
+      ]
+    },
+    {
+      "id": "vale",
+      "version": "3.19.0",
+      "url": "https://github.com/errata-ai/vale/releases/download/v3.19.0/vale_3.19.0_Linux_64-bit.tar.gz",
+      "filename": "vale_3.19.0_Linux_64-bit.tar.gz",
+      "size": 11709019,
+      "sha256": "c8f9d6c8055442bc7e9c121b2498e6f0e3fb670f4665e6ee577f1897f7665cf6",
+      "format": "tar.gz",
+      "strip_components": 0,
+      "destination": "quality/vale",
+      "max_expanded_bytes": 104857600,
+      "targets": ["quality"],
+      "checks": [
+        {"kind": "command", "path": "vale", "args": ["--version"], "contains": "3.19.0"}
+      ]
+    }
+  ]
+}
