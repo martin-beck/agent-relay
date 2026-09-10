@@ -335,7 +335,6 @@ public abstract interface class dev/agentrelay/connection/api/ConnectionProfileF
 
 public final class dev/agentrelay/connection/api/ConnectionProfileFieldInput$Secret : dev/agentrelay/connection/api/ConnectionProfileFieldInput {
 	public static final field Companion Ldev/agentrelay/connection/api/ConnectionProfileFieldInput$Secret$Companion;
-	public synthetic fun <init> ([CLkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun close ()V
 	public final fun getLength ()I
 	public final fun isEmpty ()Z
@@ -1486,7 +1485,6 @@ public final class dev/agentrelay/connection/api/PairingScope : java/lang/Enum {
 
 public final class dev/agentrelay/connection/api/ProgressiveDisclosure {
 	public static final field Companion Ldev/agentrelay/connection/api/ProgressiveDisclosure$Companion;
-	public synthetic fun <init> (Ljava/util/List;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun project (Ldev/agentrelay/connection/api/DisclosureQuery;)Ljava/util/List;
 	public static synthetic fun project$default (Ldev/agentrelay/connection/api/ProgressiveDisclosure;Ldev/agentrelay/connection/api/DisclosureQuery;ILjava/lang/Object;)Ljava/util/List;
 }
