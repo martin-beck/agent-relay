@@ -11,9 +11,10 @@ import signal
 import subprocess
 import tempfile
 from contextlib import suppress
+from hashlib import sha256
 from math import isfinite
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / "config/local-inference-conformance-v1.json"
@@ -112,6 +113,60 @@ REQUIRED_LIMITATIONS = {
     "tool-call",
     "vllm",
 }
+MATRIX_OBSERVATION_FIELDS = {
+    "adapter",
+    "cli",
+    "cliDigest",
+    "cliRevision",
+    "cliVersion",
+    "configDigest",
+    "determinismClaimed",
+    "directApiChecks",
+    "engine",
+    "engineBackendRevision",
+    "engineDigest",
+    "engineRevision",
+    "engineRuntimeDigest",
+    "engineVersion",
+    "evidenceLabel",
+    "hardwareClass",
+    "id",
+    "limitations",
+    "model",
+    "modelDigest",
+    "modelRevision",
+    "network",
+    "performanceSmoke",
+    "protocol",
+    "quantization",
+    "result",
+    "sampling",
+    "source",
+    "templateDigest",
+    "verifiedChecks",
+}
+MATRIX_SOURCE = {
+    "implementationCommit": "c697ec91bbe53abc808cbf275d13d2e0dd610ec4",
+    "mergeCommit": "130b947e6e42225b63977fe4e96db4730d7d1c7e",
+    "pullRequest": 212,
+}
+MATRIX_OBSERVATION_DIGESTS = {
+    "aider-vllm-qwen3-0.6b-float32-cpu-v1": (
+        "42635a1e21cc2dd4413337f0d0d63a5e956824b7afca5600f87e7d54c39f914c"
+    ),
+    "opencode-llamacpp-qwen3-0.6b-q4-k-m-cpu-v1": (
+        "f00a592a8d9c0d78be37b0439422da66813474d2d9cad95c9469c2c5ea94a961"
+    ),
+    "opencode-localai-qwen3-0.6b-q4-k-m-cpu-v1": (
+        "db671df281bba3d9184fc0a8b95e23138fd2ddd33acfb47973b2e527fa0473dc"
+    ),
+    "opencode-ollama-qwen3-0.6b-q4-k-m-cpu-v2": (
+        "b0ff59a635fe38e9b5535f7d04fee6ed2a6b2dedfaddbe0935bc066901159035"
+    ),
+    "opencode-vllm-qwen3-0.6b-float32-cpu-v1": (
+        "1d8f0a6e20242c7e8894d8498170ffbe6bd82c59595671fcc4ecf1bf1fcab951"
+    ),
+}
 
 
 class ConformanceBlocked(RuntimeError):
@@ -147,6 +202,139 @@ def validate_manifest(document: dict[str, Any]) -> None:
         raise ValueError("exactly one admitted observation is required")
     for observation in observations:
         validate_observation(observation, engine_ids)
+    validate_matrix_observations(document.get("matrixObservations"), engine_ids, document)
+
+
+def validate_matrix_observations(
+    observations: Any, engine_ids: set[str], document: dict[str, Any]
+) -> None:
+    if not isinstance(observations, list) or len(observations) != len(MATRIX_OBSERVATION_DIGESTS):
+        raise ValueError("the complete five-tuple matrix observation set is required")
+    observed_ids: set[str] = set()
+    for observation in observations:
+        observation_id = validate_matrix_observation(observation, engine_ids, document)
+        if observation_id in observed_ids:
+            raise ValueError("matrix observation ids must be unique")
+        observed_ids.add(observation_id)
+    if observed_ids != set(MATRIX_OBSERVATION_DIGESTS):
+        raise ValueError("matrix observation ids differ from the reviewed evidence")
+
+
+def validate_matrix_observation(
+    observation: Any, engine_ids: set[str], document: dict[str, Any]
+) -> str:
+    if not isinstance(observation, dict) or set(observation) != MATRIX_OBSERVATION_FIELDS:
+        raise ValueError("matrix observation fields must match the privacy-reviewed schema")
+    observation_id = require_string(observation, "id")
+    if require_string(observation, "engine") not in engine_ids:
+        raise ValueError("matrix observation references an unknown engine")
+    validate_matrix_claims(observation, set(document.get("checks", [])))
+    validate_matrix_provenance(observation)
+    expected_digest = MATRIX_OBSERVATION_DIGESTS.get(observation_id)
+    actual_digest = sha256(
+        json.dumps(observation, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    if actual_digest != expected_digest:
+        raise ValueError("matrix observation differs from the reviewed evidence")
+    return observation_id
+
+
+def validate_matrix_claims(observation: dict[str, Any], declared_checks: set[Any]) -> None:
+    if observation.get("evidenceLabel") != "local-model" or observation.get("result") != "passed":
+        raise ValueError("matrix observation has an invalid evidence label or result")
+    if observation.get("determinismClaimed") is not False:
+        raise ValueError("matrix observation cannot claim determinism")
+    if observation.get("hardwareClass") != "self-hosted-cpu-x86_64":
+        raise ValueError("matrix observation has an unreviewed hardware class")
+    if observation.get("network") != "fresh-netns-loopback-only-no-default-route":
+        raise ValueError("matrix observation lacks the reviewed network isolation")
+    validate_matrix_check_lists(observation, declared_checks)
+    limitations = require_unique_strings(observation.get("limitations"), "limitations")
+    if (
+        not {
+            "approval",
+            "malformed",
+            "timeout",
+            "comparative-performance",
+        }
+        <= limitations
+    ):
+        raise ValueError("matrix observation omits required limitations")
+
+
+def validate_matrix_check_lists(observation: dict[str, Any], declared_checks: set[Any]) -> None:
+    verified = require_unique_strings(observation.get("verifiedChecks"), "checks")
+    direct = require_unique_strings(observation.get("directApiChecks"), "checks", allow_empty=True)
+    if not verified <= declared_checks or not direct <= declared_checks:
+        raise ValueError("matrix observation checks exceed the declared boundary")
+    if verified & direct:
+        raise ValueError("direct API checks cannot be claimed as adapter checks")
+
+
+def require_unique_strings(values: Any, label: str, *, allow_empty: bool = False) -> set[str]:
+    if not isinstance(values, list) or (not values and not allow_empty):
+        raise ValueError(f"matrix observation {label} must be unique strings")
+    if not all(isinstance(value, str) and value for value in values):
+        raise ValueError(f"matrix observation {label} must be unique strings")
+    result = set(cast(list[str], values))
+    if len(result) != len(values):
+        raise ValueError(f"matrix observation {label} must be unique strings")
+    return result
+
+
+def validate_matrix_provenance(observation: dict[str, Any]) -> None:
+    for field in (
+        "cliDigest",
+        "configDigest",
+        "engineDigest",
+        "engineRuntimeDigest",
+        "modelDigest",
+        "templateDigest",
+    ):
+        if not SHA256.fullmatch(require_string(observation, field)):
+            raise ValueError(f"invalid matrix observation digest: {field}")
+    for field in ("cliRevision", "engineBackendRevision", "engineRevision", "modelRevision"):
+        revision = observation.get(field)
+        if revision is not None and (
+            not isinstance(revision, str) or not REVISION.fullmatch(revision)
+        ):
+            raise ValueError(f"invalid matrix observation revision: {field}")
+    if observation.get("source") != MATRIX_SOURCE:
+        raise ValueError("matrix observation source differs from reviewed public revisions")
+    validate_performance_smoke(observation.get("performanceSmoke"))
+
+
+def validate_performance_smoke(smoke: Any) -> None:
+    if smoke is None:
+        return
+    if not isinstance(smoke, dict) or set(smoke) != {
+        "comparisonClaimed",
+        "completionTokens",
+        "medianSeconds",
+        "networkIsolation",
+    }:
+        raise ValueError("matrix performance smoke fields are invalid")
+    validate_performance_smoke_values(smoke)
+
+
+def validate_performance_smoke_values(smoke: dict[str, Any]) -> None:
+    tokens = smoke.get("completionTokens")
+    if smoke.get("comparisonClaimed") is not False or smoke.get("networkIsolation") != "not-proven":
+        raise ValueError("matrix performance smoke exceeds the reviewed evidence boundary")
+    median = smoke.get("medianSeconds")
+    if (
+        isinstance(median, bool)
+        or not isinstance(median, (int, float))
+        or not isfinite(median)
+        or median <= 0
+    ):
+        raise ValueError("matrix performance smoke exceeds the reviewed evidence boundary")
+    if not isinstance(tokens, list) or len(tokens) != 3:
+        raise ValueError("matrix performance smoke exceeds the reviewed evidence boundary")
+    if not all(
+        isinstance(token, int) and not isinstance(token, bool) and token > 0 for token in tokens
+    ):
+        raise ValueError("matrix performance smoke exceeds the reviewed evidence boundary")
 
 
 def require_string(record: dict[str, Any], field: str) -> str:

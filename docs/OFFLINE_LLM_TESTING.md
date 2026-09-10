@@ -184,6 +184,32 @@ repository variables supply the driver argument array and staged tuple JSON, so 
 download a model nor execute local inference. A scheduled run defaults to CPU; a maintainer may
 select the GPU-labelled pool manually.
 
+### Admitted CPU matrix
+
+The manifest records five exact local-model observations in addition to the earlier bounded Ollama
+observation. Each matrix engine and CLI ran together in a fresh network namespace with loopback and
+no default route. The observations bind the engine, backend where applicable, CLI, model, template,
+configuration, sampling, hardware class, source revision, and content digests. The broad engine
+declarations remain `unverified`; an observation proves only its named tuple.
+
+| Engine | Model | CLI and adapter | Verified through the adapter |
+| --- | --- | --- | --- |
+| Ollama 0.33.1 | Qwen3 0.6B, Q4_K_M | OpenCode 1.18.23, `anomaly.opencode` | Basic prompt, stream, cancellation, history/resume, teardown |
+| llama.cpp build 1 | Qwen3 0.6B, Q4_K_M | OpenCode 1.18.23, `anomaly.opencode` | Basic prompt, stream, cancellation, history/resume, teardown |
+| LocalAI `bf93008` | Qwen3 0.6B, Q4_K_M | OpenCode 1.18.23, `anomaly.opencode` | Basic prompt, stream, cancellation, history/resume, teardown |
+| vLLM 0.28.1 development build | Qwen3 0.6B, float32 | OpenCode 1.18.23, `anomaly.opencode` | Basic prompt, stream, cancellation, history/resume, teardown |
+| vLLM 0.28.1 development build | Qwen3 0.6B, float32 | Aider 0.86.2, `aider.cli` | Basic prompt and no-file-change teardown |
+
+A direct vLLM API request produced the expected tool-call shape, but OpenCode did not complete the
+tool/approval path within the bound. The manifest therefore records that API-shape check separately
+and does not claim adapter tool or approval support. Real malformed-output and timeout traversal,
+cloud behavior, mobile execution, accelerator execution, and prompt quality remain unverified.
+Seeds and zero-temperature settings do not support a determinism claim.
+
+The retained timing values are smoke metadata from earlier runs whose network isolation was not
+proven. Their output token counts differ, so they are not comparative performance evidence. Raw
+prompts, transcripts, logs, machine identities, addresses, and private paths are not admitted.
+
 Evidence labels must identify the boundary: `synthetic-runtime`, `mock-llm-wire`,
 `sanitized-replay`, `local-model`, or `live-provider`. Mock or local-model success cannot
 satisfy cloud authentication, general model quality, physical-device inference, or untested
