@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[2]
 CONTRACT = ROOT / "docs/contracts/llm-mock-pilot-v1.json"
 SHA = re.compile(r"^[0-9a-f]{40}$")
 
+
 class LlmMockPilotTest(unittest.TestCase):
     def load(self):
         return json.loads(CONTRACT.read_text(encoding="utf-8"))
@@ -21,10 +22,32 @@ class LlmMockPilotTest(unittest.TestCase):
         self.assertEqual(sum(x["role"] == "selected-candidate" for x in candidates), 1)
 
     def test_safety_requirements_are_closed_world(self):
-        self.assertTrue({"loopback-only", "outbound-denied", "synthetic-fixtures", "bounded-lifecycle", "no-real-key", "real-cli-required"} <= set(self.load()["requirements"]))
+        self.assertTrue(
+            {
+                "loopback-only",
+                "outbound-denied",
+                "synthetic-fixtures",
+                "bounded-lifecycle",
+                "no-real-key",
+                "real-cli-required",
+            }
+            <= set(self.load()["requirements"])
+        )
 
     def test_fault_scenarios_are_present(self):
-        self.assertTrue({"tool-round", "streaming", "rate-limit", "malformed", "truncate", "hang", "cancel", "uncertain-delivery"} <= set(self.load()["scenarios"]))
+        self.assertTrue(
+            {
+                "tool-round",
+                "streaming",
+                "rate-limit",
+                "malformed",
+                "truncate",
+                "hang",
+                "cancel",
+                "uncertain-delivery",
+            }
+            <= set(self.load()["scenarios"])
+        )
 
     def test_dependency_is_optional(self):
         self.assertTrue(self.load()["optional_dependency"])
