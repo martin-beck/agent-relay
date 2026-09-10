@@ -12,6 +12,7 @@ import dev.agentrelay.provider.api.AgentSessionState
 import dev.agentrelay.provider.api.StartSessionOptions
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 import kotlinx.coroutines.CoroutineStart
@@ -56,6 +57,9 @@ class OpenCodeAgentConnectionTest {
                 providerOptions = mapOf("title" to "New work"),
             ),
         )
+        val create = client.posts.last { it.path == "/session" }
+        assertTrue(create.body.toString().contains("New work"))
+        assertFalse("model" in create.body.jsonObject)
         connection.sendInput(started.id, "Return READY")
         val prompt = client.posts.last { it.path.endsWith("/prompt_async") }
         assertEquals("/other", prompt.directory)
@@ -209,6 +213,14 @@ class OpenCodeAgentConnectionTest {
         assertFailsWith<IllegalStateException> {
             connection.changedFiles(connection.sessions.value.single().id)
         }
+        connection.startSession(
+            StartSessionOptions(
+                workingDirectory = "/other",
+                model = "example-provider/example-model",
+            ),
+        )
+        val create = client.posts.last { it.path == "/session" }
+        assertTrue(create.body.toString().contains("example-model"))
         connection.close()
     }
 

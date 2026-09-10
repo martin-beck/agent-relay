@@ -153,7 +153,9 @@ internal class OpenCodeAgentConnection private constructor(
     override suspend fun startSession(options: StartSessionOptions): AgentSession {
         val body = buildJsonObject {
             options.providerOptions["title"]?.let { put("title", it) }
-            options.model?.toModelJson()?.let { put("model", it) }
+            if (dialect == OpenCodeProtocolDialect.OPENDESK) {
+                options.model?.toModelJson()?.let { put("model", it) }
+            }
         }
         val raw = client.post("/session", body, options.workingDirectory).objectOrNull()
             ?: error(providerName + " session creation returned a non-object result")
