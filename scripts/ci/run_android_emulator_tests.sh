@@ -79,6 +79,9 @@ if [[ ! -d "$avd_dir" ]]; then
 fi
 if [[ -f "$avd_dir/config.ini" ]]; then
   echo 'hw.cpu.ncore=2' >> "$avd_dir/config.ini"
+  # Keep the ephemeral CI userdata image within the runner disk budget.
+  sed -i '/^disk.dataPartition.size=/d' "$avd_dir/config.ini"
+  echo 'disk.dataPartition.size=6G' >> "$avd_dir/config.ini"
 else
   echo "avdmanager created no config.ini; writing minimal x86_64 configuration" >&2
   cat > "$avd_dir/config.ini" << EOF
