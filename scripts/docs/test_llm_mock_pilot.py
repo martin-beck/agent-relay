@@ -6,7 +6,7 @@ import json
 import re
 import unittest
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 ROOT = Path(__file__).resolve().parents[2]
 CONTRACT = ROOT / "docs/contracts/llm-mock-pilot-v1.json"
@@ -15,7 +15,7 @@ SHA = re.compile(r"^[0-9a-f]{40}$")
 
 class LlmMockPilotTest(unittest.TestCase):
     def load(self) -> dict[str, Any]:
-        return json.loads(CONTRACT.read_text(encoding="utf-8"))
+        return cast(dict[str, Any], json.loads(CONTRACT.read_text(encoding="utf-8")))
 
     def test_candidates_are_pinned_and_unique(self) -> None:
         candidates = self.load()["providers"]
