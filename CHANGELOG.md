@@ -11,6 +11,8 @@ supported release.
   plus an APK inspection tool that emits canonical names, SHA-256 checksums,
   privacy-safe provenance, and explicit unsupported/debug limitations.
 
+- Canonical Huawei Technologies 2026 MIT licensing, public contribution and
+  conduct guidance, and an Agent Relay license copy in development APK assets.
 - Generic connection-provider contract with SSH and local implementations.
 - Agent adapters for Codex, OpenCode, OpenDesk, Continue, Claude, Cline, and Aider.
 - Encrypted session hub and provider-neutral runtime coordinator.

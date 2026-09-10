@@ -37,7 +37,7 @@ and data removal.
 
 Never commit a keystore, signing password, service-account credential, or
 generated signed package. Release signing must use an external secret store and
-least-privilege CI environment after the repository's private controls are
+least-privilege CI environment after the repository's publication controls are
 reviewed.
 
 The existing debug key and debug APK are development artifacts only.

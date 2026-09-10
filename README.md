@@ -25,8 +25,9 @@ is another, and future connection types can implement the same boundary.
 > A native speech runtime is present but is not yet exposed in the app.
 > The APK is not yet a supported release.
 
-This is a private, invite-only project. Access to the repository does not grant
-permission to redistribute source code, APKs, or project artifacts.
+Agent Relay is open source under the MIT License. It remains an unsupported
+development project: source availability and development APKs do not make the
+application a production-ready or supported release.
 
 ## Current status
 
@@ -65,7 +66,7 @@ Required tools:
 - Bash plus standard POSIX build tools;
 - Vale 3.19.0 for Markdown terminology and readability checks;
 - uv for the locked cross-language repository checks; and
-- Git with access to this private repository.
+- Git.
 
 On Linux x86_64:
 
@@ -167,5 +168,11 @@ deterministic visual regression, and debug assembly before merge.
 
 ## License and support
 
-No public license or supported release is currently offered. This repository is
-private and provided only to invited collaborators for development.
+Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+SPDX-License-Identifier: MIT
+
+Agent Relay is licensed under the [MIT License](LICENSE). Third-party components
+retain their own terms and attribution; see
+[Third-party runtime notices](docs/THIRD_PARTY.md). The project and its
+development APKs are provided without a support or production-readiness
+guarantee.

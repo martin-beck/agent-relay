@@ -65,9 +65,13 @@ adb install -r agent-relay-development-*-debug.apk
 ```
 
 GitHub artifacts are ZIP archives, not releases, and are not directly
-installable APKs. A future GitHub development prerelease may retain the same
-inspected files longer and make them easier to discover, but remains an
-unsupported debug build. Neither channel is a supported release.
+installable APKs; access may require GitHub authentication. A future GitHub
+development prerelease may retain the same inspected files longer and make them
+easier to discover, but remains an
+unsupported debug build. Neither channel is a supported release. Verify that
+the associated workflow and exact source commit succeeded. A later publication
+task owns anonymous APK delivery; the source-clearance change does not publish
+an artifact.
 
 ## Remove the development build
 
@@ -84,3 +88,7 @@ A future supported release requires a stable production application ID and
 version policy, complete P0 UI, device testing, external signing configuration,
 and a completed security review. Development metadata does not close those
 blockers. See [Releasing](RELEASING.md).
+
+The development APK and its embedded Agent Relay license are covered by the
+repository's [MIT License](../LICENSE). Packaged third-party components retain
+their own terms and notices.

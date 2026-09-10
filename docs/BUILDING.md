@@ -18,7 +18,6 @@ integration. On Linux x86_64, the supported setup is the
 - Git
 - Vale 3.19.0, installed from the official checksum-verified release archive
 - uv, used to install the repository's locked cross-language check runner
-- An account invited to the private repository
 
 The repository bootstrap can supply every listed build and quality tool without
 machine-global installation. The Gradle wrapper uses the locally provisioned,
@@ -331,9 +330,9 @@ places:
 3. the GitHub Pages URL only when the repository owner has approved public
    publication, configured Pages, and set `ENABLE_PUBLIC_PAGES=true`.
 
-The Pages path is deliberately opt-in because this private personal repository
-cannot use access-controlled Pages. All screenshots and fixtures remain
-synthetic even when public publication is approved.
+The Pages path is deliberately opt-in and requires explicit repository-owner
+approval. All screenshots and fixtures remain synthetic even when public
+publication is approved.
 
 ## Android Studio
 
@@ -435,9 +434,10 @@ SHA-256 checksum. Its additional GPG verification is disabled on the self-hosted
 pools because the action creates agent socket paths longer than Linux permits
 under their runner temporary directories. Re-enable that layer when the action
 or runner layout uses a shorter socket path.
-Sonar analysis is present but opt-in because a hosted service receives private
-source. See [Quality and safety](QUALITY.md#optional-centralized-analysis) for
-the required trusted variables, secret, and fail-safe behavior.
+Sonar analysis is present but opt-in because a hosted service receives
+repository source and metrics. See
+[Quality and safety](QUALITY.md#optional-centralized-analysis) for the required
+trusted variables, secret, and fail-safe behavior.
 
 The scheduled `.github/workflows/links.yml` workflow performs the networked
 external-link check; pull requests use deterministic offline path and fragment
