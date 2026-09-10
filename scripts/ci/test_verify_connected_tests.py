@@ -1,3 +1,6 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 from __future__ import annotations
 
 import importlib.util
@@ -5,6 +8,8 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+
+import yaml
 
 SCRIPT_PATH = Path(__file__).with_name("verify_connected_tests.py")
 SPEC = importlib.util.spec_from_file_location("verify_connected_tests", SCRIPT_PATH)
@@ -101,6 +106,54 @@ class ConnectedTestEvidenceTest(unittest.TestCase):
         report.write_text("not XML", encoding="utf-8")
         with self.assertRaisesRegex(VERIFY.EvidenceError, "could not be parsed"):
             VERIFY.collect_evidence(self.root)
+
+    def test_rejects_xml_entities(self) -> None:
+        self.write_report("app", tests=1)
+        report = next(self.root.rglob("TEST-*.xml"))
+        report.write_text(
+            '<!DOCTYPE testsuite [<!ENTITY count "1">]>'
+            '<testsuite tests="&count;" failures="0" errors="0" skipped="0" />',
+            encoding="utf-8",
+        )
+
+        with self.assertRaisesRegex(VERIFY.EvidenceError, "could not be parsed"):
+            VERIFY.collect_evidence(self.root)
+
+    def test_ui_workflow_runs_verifier_in_locked_uv_environment(self) -> None:
+        repository_root = SCRIPT_PATH.parents[2]
+        workflow = yaml.safe_load(
+            (repository_root / ".github/workflows/ui.yml").read_text(encoding="utf-8")
+        )
+        jobs = workflow["jobs"]
+        expected_groups = {
+            "current-phone": ("quality", "docs"),
+            "extended-matrix": ("quality",),
+        }
+
+        for job_name, groups in expected_groups.items():
+            steps = jobs[job_name]["steps"]
+            setup_step = next(step for step in steps if step.get("name") == "Set up uv")
+            self.assertEqual(
+                "astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d",
+                setup_step["uses"],
+            )
+            self.assertFalse(setup_step["with"]["enable-cache"])
+
+            install_step = next(
+                step for step in steps if step.get("name") == "Install UI verification dependencies"
+            )
+            install_command = install_step["run"]
+            self.assertIn("uv sync --locked", install_command)
+            for group in groups:
+                self.assertIn(f"--only-group {group}", install_command)
+
+            verify_step = next(
+                step for step in steps if step.get("name") == "Verify connected-test evidence"
+            )
+            self.assertIn(
+                "uv run --only-group quality python scripts/ci/verify_connected_tests.py",
+                verify_step["run"],
+            )
 
 
 if __name__ == "__main__":

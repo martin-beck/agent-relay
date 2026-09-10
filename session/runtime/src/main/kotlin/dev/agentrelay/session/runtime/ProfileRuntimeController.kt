@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.session.runtime
 
 import dev.agentrelay.connection.api.ConnectionChallengeId
@@ -18,6 +23,8 @@ import dev.agentrelay.provider.api.AgentTranscriptEntry
 import dev.agentrelay.provider.api.ProviderReadiness
 import dev.agentrelay.provider.api.RemoteAgentRuntime
 import dev.agentrelay.session.api.SessionActivity
+import dev.agentrelay.session.api.SessionActivitySummary
+import dev.agentrelay.session.api.SessionActivitySummaryKind
 import dev.agentrelay.session.api.SessionActivityType
 import dev.agentrelay.session.api.SessionEventUpdate
 import dev.agentrelay.session.api.SessionHubRepository
@@ -367,7 +374,7 @@ internal class ProfileRuntimeController(
                 profile = profile,
                 descriptor = descriptor,
                 locator = locator,
-                preview = projection.preview ?: "Agent session activity",
+                preview = projection.preview.orEmpty(),
                 now = now,
             )
             val observation = base.copy(
@@ -410,7 +417,10 @@ internal class ProfileRuntimeController(
                                 id = "reconnected:" + now + ":" + runtimeGeneration,
                                 locator = record.locator,
                                 type = SessionActivityType.RECONNECTED,
-                                summary = (profile.label.take(16_000) + " reconnected").trim(),
+                                summary = SessionActivitySummary.Generated(
+                                    SessionActivitySummaryKind.CONNECTION_RECONNECTED,
+                                    profile.label.take(256),
+                                ),
                                 eventAnchorId = anchor,
                                 occurredAtEpochMillis = now,
                             ),
@@ -477,7 +487,10 @@ internal class ProfileRuntimeController(
                 kind = SessionCoordinatorIssueKind.PROVIDER_SYNCHRONIZATION,
                 connection = key,
                 agentProviderId = descriptor.id,
-                actionableMessage = descriptor.displayName + " could not be synchronized on " + profile.label.take(256),
+                connectionLabel = profile.label.take(256),
+                agentProviderLabel = descriptor.displayName
+                    .takeIf(String::isNotBlank)?.take(256)
+                    ?: descriptor.id.value.take(256),
                 recoverable = true,
                 occurredAtEpochMillis = now(),
             ),
@@ -497,7 +510,9 @@ internal class ProfileRuntimeController(
                 kind = SessionCoordinatorIssueKind.SESSION_PERSISTENCE,
                 connection = key,
                 agentProviderId = descriptor.id,
-                actionableMessage = "Session state could not be saved for " + descriptor.displayName,
+                agentProviderLabel = descriptor.displayName
+                    .takeIf(String::isNotBlank)?.take(256)
+                    ?: descriptor.id.value.take(256),
                 recoverable = true,
                 occurredAtEpochMillis = now(),
             ),

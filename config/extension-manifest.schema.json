@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Agent Relay extension manifest",
+  "type": "object",
+  "required": ["id", "displayName", "apiVersion", "schemaVersion", "capabilities", "permissions", "requestedFields", "triggers", "actions", "budget"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9.-]{1,63}$" },
+    "displayName": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "apiVersion": {
+      "type": "object", "required": ["major", "minor"], "additionalProperties": false,
+      "properties": { "major": { "type": "integer", "minimum": 1 }, "minor": { "type": "integer", "minimum": 0 } }
+    },
+    "schemaVersion": { "type": "integer", "minimum": 1 },
+    "capabilities": { "type": "array", "minItems": 1, "items": { "enum": ["CONNECTOR", "AGENT", "WORKFLOW", "PRESENTATION"] } },
+    "permissions": { "type": "array", "items": { "enum": ["READ_FIELDS", "PROPOSE_ACTIONS", "REQUEST_APPROVAL", "WRITE_FIELDS"] } },
+    "requestedFields": { "type": "array", "items": { "type": "string", "pattern": "^[a-z][a-z0-9_.-]{0,63}$" } },
+    "triggers": { "type": "array", "items": { "type": "string", "pattern": "^[a-z][a-z0-9_.-]{0,63}$" } },
+    "actions": { "type": "array", "items": { "type": "string", "pattern": "^[a-z][a-z0-9_.-]{0,63}$" } },
+    "budget": {
+      "type": "object", "required": ["maxInputBytes", "maxOutputBytes", "maxInvocations", "maxDurationMillis"], "additionalProperties": false,
+      "properties": {
+        "maxInputBytes": { "type": "integer", "minimum": 1, "maximum": 1048576 },
+        "maxOutputBytes": { "type": "integer", "minimum": 1, "maximum": 1048576 },
+        "maxInvocations": { "type": "integer", "minimum": 1, "maximum": 10000 },
+        "maxDurationMillis": { "type": "integer", "minimum": 1, "maximum": 300000 }
+      }
+    }
+  },
+  "additionalProperties": false
+}

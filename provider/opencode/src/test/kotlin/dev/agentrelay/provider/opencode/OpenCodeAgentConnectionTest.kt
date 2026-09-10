@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.provider.opencode
 
 import dev.agentrelay.provider.api.AgentApprovalDecision
@@ -6,6 +11,7 @@ import dev.agentrelay.provider.api.AgentFileChangeKind
 import dev.agentrelay.provider.api.AgentSessionState
 import dev.agentrelay.provider.api.StartSessionOptions
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 import kotlinx.coroutines.CoroutineStart
@@ -133,6 +139,79 @@ class OpenCodeAgentConnectionTest {
         connection.close()
     }
 
+    @Test
+    fun openDeskRoutesPermissionAndQuestionRepliesToImplementedEndpoints() = runTest {
+        val client = FakeOpenCodeClient()
+        val connection = OpenCodeAgentConnection.create(
+            descriptor = OpenCodeAgentProviderFactory().descriptor,
+            client = client,
+            dialect = OpenCodeProtocolDialect.OPENDESK,
+            providerName = "OpenDesk",
+            metadataNamespace = "opendesk",
+            dispatcher = UnconfinedTestDispatcher(testScheduler),
+        )
+        val eventFlow = client.event("/workspace")
+
+        val permissionEvent = backgroundScope.async(start = CoroutineStart.UNDISPATCHED) {
+            connection.events.first { it is AgentEvent.ApprovalRequested }
+        }
+        eventFlow.emit(
+            objectFrom(
+                """
+                {
+                  "type":"permission.asked",
+                  "properties":{
+                    "id":"permission-1",
+                    "sessionID":"ses-existing",
+                    "permission":"bash",
+                    "metadata":{"input":{"command":"./gradlew test"}}
+                  }
+                }
+                """,
+            ),
+        )
+        val permission = assertIs<AgentEvent.ApprovalRequested>(permissionEvent.await()).approval
+        connection.respondToApproval(permission.id, AgentApprovalDecision.APPROVE_ONCE)
+        assertEquals("/permission/permission-1/reply", client.posts.last().path)
+        assertTrue(client.posts.last().body.toString().contains("\"reply\":\"once\""))
+
+        val questionEvent = backgroundScope.async(start = CoroutineStart.UNDISPATCHED) {
+            connection.events.first { it is AgentEvent.ApprovalRequested }
+        }
+        eventFlow.emit(
+            objectFrom(
+                """
+                {
+                  "type":"question.asked",
+                  "properties":{
+                    "id":"question-1",
+                    "sessionID":"ses-existing",
+                    "questions":[{
+                      "question":"Which mode?",
+                      "header":"Mode",
+                      "options":[{"label":"Fast"}],
+                      "multiple":false,
+                      "custom":true
+                    }]
+                  }
+                }
+                """,
+            ),
+        )
+        val question = assertIs<AgentEvent.ApprovalRequested>(questionEvent.await()).approval
+        connection.respondToApproval(
+            question.id,
+            AgentApprovalDecision.SUBMIT,
+            mapOf("question-1:0" to listOf("Fast")),
+        )
+        assertEquals("/question/question-1/reply", client.posts.last().path)
+        assertTrue(client.posts.last().body.toString().contains("[[\"Fast\"]]"))
+        assertFailsWith<IllegalStateException> {
+            connection.changedFiles(connection.sessions.value.single().id)
+        }
+        connection.close()
+    }
+
     private data class PostCall(
         val path: String,
         val body: JsonElement,
@@ -146,6 +225,9 @@ class OpenCodeAgentConnectionTest {
         var closed = false
 
         override suspend fun get(path: String, directory: String?): JsonElement = when {
+            path == "/experimental/session?scope=project" -> element(
+                "[" + existingSession + "]",
+            )
             path == "/project" -> element(
                 """[{"id":"project-1","worktree":"/workspace"}]""",
             )

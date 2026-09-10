@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.speech.android
 
 import dev.agentrelay.speech.api.SpeechModelDescriptor
@@ -8,7 +13,6 @@ import java.io.OutputStream
 import java.net.IDN
 import java.net.URI
 import javax.net.ssl.HttpsURLConnection
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
@@ -26,7 +30,7 @@ class HttpsSpeechPackageDownloader internal constructor(
     private val readTimeoutMillis: Int,
     private val maxRedirects: Int,
     private val connectionFactory: SpeechHttpConnectionFactory,
-) : SpeechPackageDownloader {
+) : ResumableSpeechPackageDownloader {
     private val allowedRedirectHosts = redirectHostAllowlist.map { host ->
         requireNotNull(canonicalPublicHost(host)) {
             "Speech redirect hosts must be public DNS names"
@@ -61,21 +65,45 @@ class HttpsSpeechPackageDownloader internal constructor(
     override suspend fun download(
         descriptor: SpeechModelDescriptor,
         destination: OutputStream,
+    ) = download(descriptor, destination, offsetBytes = null)
+
+    override suspend fun resumeDownload(
+        descriptor: SpeechModelDescriptor,
+        offsetBytes: Long,
+        destination: OutputStream,
+    ): SpeechPackageResumeResult {
+        require(offsetBytes in 1 until descriptor.modelPackage.downloadSizeBytes) {
+            "Speech package resume offset is invalid"
+        }
+        return try {
+            download(descriptor, destination, offsetBytes)
+            SpeechPackageResumeResult.APPENDED
+        } catch (_: SpeechPackageRestartRequiredException) {
+            SpeechPackageResumeResult.RESTART_REQUIRED
+        }
+    }
+
+    private suspend fun download(
+        descriptor: SpeechModelDescriptor,
+        destination: OutputStream,
+        offsetBytes: Long?,
     ) {
         try {
-            downloadVerifiedSource(descriptor, destination)
-        } catch (cancelled: CancellationException) {
-            throw cancelled
-        } catch (failure: SpeechPackageDeliveryException) {
-            throw failure
+            downloadVerifiedSource(descriptor, destination, offsetBytes)
         } catch (failure: IOException) {
-            throw downloadFailure(failure)
+            when (failure) {
+                is SpeechPackageRestartRequiredException,
+                is SpeechPackageDeliveryException,
+                -> throw failure
+                else -> throw downloadFailure(failure)
+            }
         }
     }
 
     private suspend fun downloadVerifiedSource(
         descriptor: SpeechModelDescriptor,
         destination: OutputStream,
+        offsetBytes: Long?,
     ) {
         val job = checkNotNull(currentCoroutineContext()[Job]) {
             "Speech package download requires a coroutine job"
@@ -94,6 +122,7 @@ class HttpsSpeechPackageDownloader internal constructor(
                 source,
                 connectTimeoutMillis,
                 readTimeoutMillis,
+                offsetBytes,
             ).use { connection ->
                 val responseCode = connection.responseCode
                 if (responseCode in REDIRECT_CODES) {
@@ -104,17 +133,12 @@ class HttpsSpeechPackageDownloader internal constructor(
                     source = requireSafeRedirect(source, location, admittedHosts)
                     return@use
                 }
-                if (responseCode != HttpsURLConnection.HTTP_OK) {
-                    throw downloadFailure()
-                }
-                val expectedBytes = descriptor.modelPackage.downloadSizeBytes
-                val contentLength = connection.contentLengthBytes
-                if (contentLength != null && contentLength != expectedBytes) {
-                    throw SpeechPackageDeliveryException(
-                        code = "MODEL_DOWNLOAD_INVALID",
-                        guidance = "The model host returned unexpected package metadata. Retry later.",
-                    )
-                }
+                validateResponse(
+                    connection = connection,
+                    responseCode = responseCode,
+                    expectedBytes = descriptor.modelPackage.downloadSizeBytes,
+                    offsetBytes = offsetBytes,
+                )
                 connection.openInputStream().buffered().use { input ->
                     copyCancellable(input, destination, job)
                 }
@@ -123,6 +147,61 @@ class HttpsSpeechPackageDownloader internal constructor(
         }
         rejectDownloadPolicy()
     }
+
+    private fun validateResponse(
+        connection: SpeechHttpConnection,
+        responseCode: Int,
+        expectedBytes: Long,
+        offsetBytes: Long?,
+    ) {
+        if (offsetBytes == null) {
+            validateFullResponse(responseCode, connection.contentLengthBytes, expectedBytes)
+        } else {
+            validateRangeResponse(connection, responseCode, offsetBytes, expectedBytes)
+        }
+    }
+
+    private fun validateFullResponse(
+        responseCode: Int,
+        contentLength: Long?,
+        expectedBytes: Long,
+    ) {
+        if (responseCode != HttpsURLConnection.HTTP_OK) {
+            rejectDownloadResponse()
+        }
+        if (contentLength != null && contentLength != expectedBytes) {
+            rejectDownloadMetadata()
+        }
+    }
+
+    private fun validateRangeResponse(
+        connection: SpeechHttpConnection,
+        responseCode: Int,
+        offsetBytes: Long,
+        expectedBytes: Long,
+    ) {
+        if (responseCode == HttpsURLConnection.HTTP_OK ||
+            responseCode == HTTP_RANGE_NOT_SATISFIABLE
+        ) {
+            restartDownload()
+        }
+        if (responseCode != HTTP_PARTIAL_CONTENT) {
+            rejectDownloadResponse()
+        }
+        val remainingBytes = expectedBytes - offsetBytes
+        if (connection.contentLengthBytes != null &&
+            connection.contentLengthBytes != remainingBytes
+        ) {
+            restartDownload()
+        }
+        if (!matchesContentRange(connection.contentRange, offsetBytes, expectedBytes)) {
+            restartDownload()
+        }
+    }
+
+    private fun restartDownload(): Nothing = throw SpeechPackageRestartRequiredException()
+
+    private fun rejectDownloadResponse(): Nothing = throw downloadFailure()
 
     private fun requireSafeRedirect(
         base: URI,
@@ -161,6 +240,28 @@ class HttpsSpeechPackageDownloader internal constructor(
         return uri
     }
 
+    private fun matchesContentRange(
+        value: String?,
+        offsetBytes: Long,
+        expectedBytes: Long,
+    ): Boolean {
+        if (value == null || value.length > MAX_CONTENT_RANGE_CHARACTERS) {
+            return false
+        }
+        val match = CONTENT_RANGE.matchEntire(value) ?: return false
+        val start = match.groupValues[1].toLongOrNull() ?: return false
+        val end = match.groupValues[2].toLongOrNull() ?: return false
+        val total = match.groupValues[3].toLongOrNull() ?: return false
+        return start == offsetBytes && end == expectedBytes - 1L && total == expectedBytes
+    }
+
+    private fun rejectDownloadMetadata(): Nothing {
+        throw SpeechPackageDeliveryException(
+            code = "MODEL_DOWNLOAD_INVALID",
+            guidance = "The model host returned unexpected package metadata. Retry later.",
+        )
+    }
+
     private suspend fun copyCancellable(
         input: InputStream,
         destination: OutputStream,
@@ -190,7 +291,11 @@ class HttpsSpeechPackageDownloader internal constructor(
         const val MAX_TIMEOUT_MILLIS = 120_000
         const val MAX_REDIRECTS = 10
         const val HTTPS_PORT = 443
+        const val HTTP_PARTIAL_CONTENT = 206
+        const val HTTP_RANGE_NOT_SATISFIABLE = 416
+        const val MAX_CONTENT_RANGE_CHARACTERS = 128
         val REDIRECT_CODES = setOf(301, 302, 303, 307, 308)
+        val CONTENT_RANGE = """bytes ([0-9]+)-([0-9]+)/([0-9]+)""".toRegex()
     }
 }
 
@@ -199,12 +304,14 @@ internal fun interface SpeechHttpConnectionFactory {
         uri: URI,
         connectTimeoutMillis: Int,
         readTimeoutMillis: Int,
+        offsetBytes: Long?,
     ): SpeechHttpConnection
 }
 
 internal interface SpeechHttpConnection : Closeable {
     val responseCode: Int
     val contentLengthBytes: Long?
+    val contentRange: String?
     val redirectLocation: String?
 
     fun openInputStream(): InputStream
@@ -215,6 +322,7 @@ private object JavaNetSpeechHttpConnectionFactory : SpeechHttpConnectionFactory 
         uri: URI,
         connectTimeoutMillis: Int,
         readTimeoutMillis: Int,
+        offsetBytes: Long?,
     ): SpeechHttpConnection {
         val connection = uri.toURL().openConnection() as? HttpsURLConnection
             ?: throw downloadFailure()
@@ -226,6 +334,9 @@ private object JavaNetSpeechHttpConnectionFactory : SpeechHttpConnectionFactory 
         connection.requestMethod = "GET"
         connection.setRequestProperty("Accept", "application/octet-stream")
         connection.setRequestProperty("Accept-Encoding", "identity")
+        if (offsetBytes != null) {
+            connection.setRequestProperty("Range", "bytes=$offsetBytes-")
+        }
         return JavaNetSpeechHttpConnection(connection)
     }
 }
@@ -238,6 +349,9 @@ private class JavaNetSpeechHttpConnection(
 
     override val contentLengthBytes: Long?
         get() = connection.contentLengthLong.takeIf { it >= 0L }
+
+    override val contentRange: String?
+        get() = connection.getHeaderField("Content-Range")
 
     override val redirectLocation: String?
         get() = connection.getHeaderField("Location")
@@ -254,6 +368,8 @@ internal class SpeechPackageDeliveryException(
     val guidance: String,
     cause: Throwable? = null,
 ) : IOException(guidance, cause)
+
+internal class SpeechPackageRestartRequiredException : IOException()
 
 private fun canonicalPublicHost(value: String): String? {
     if (':' in value) {

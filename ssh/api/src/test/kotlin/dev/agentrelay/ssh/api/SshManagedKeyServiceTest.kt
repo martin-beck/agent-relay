@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.ssh.api
 
 import dev.agentrelay.provider.api.RemoteAgentRuntime
@@ -12,7 +17,11 @@ import kotlin.test.assertIs
 import kotlin.test.assertTrue
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withTimeout
 import org.junit.Test
 
 class SshManagedKeyServiceTest {
@@ -43,8 +52,9 @@ class SshManagedKeyServiceTest {
         assertEquals("sh", command.program)
         assertEquals("-c", command.arguments.first())
         val script = command.arguments.last()
-        assertTrue(script.contains("ecdsa-sha2-nistp256 AAAA"))
-        assertTrue(script.contains("grep -qxF"))
+        assertTrue(script.contains("target_algorithm='ecdsa-sha2-nistp256'"))
+        assertTrue(script.contains("target_blob='AAAA"))
+        assertTrue(script.contains("command -v awk"))
         assertTrue(script.contains("chmod 700"))
         assertTrue(script.contains("chmod 600"))
         assertTrue(script.contains("[ -L"))
@@ -116,6 +126,82 @@ class SshManagedKeyServiceTest {
     }
 
     @Test
+    fun installTimeoutBecomesAStableRecoverableFailure() = runTest {
+        val fixture = Fixture(commandStalls = true)
+
+        val failure = assertFailsWith<SshConnectionException> {
+            fixture.service.installPublicKey(PROFILE.id)
+        }
+
+        assertEquals(SshFailureCategory.NETWORK, failure.failure.category)
+        assertEquals("SSH_KEY_OPERATION_TIMEOUT", failure.failure.code)
+        assertEquals(
+            "The SSH key operation timed out. Check the network connection and retry.",
+            failure.failure.actionableMessage,
+        )
+        assertFalse(failure.failure.actionableMessage.contains(PROFILE.endpoint.host))
+        assertTrue(failure.failure.recoverable)
+        assertTrue(fixture.connection.closed)
+    }
+
+    @Test
+    fun passwordlessProbeTimeoutBecomesAStableRecoverableFailure() = runTest {
+        val fixture = Fixture(heartbeatTimesOut = true)
+
+        val failure = assertFailsWith<SshConnectionException> {
+            fixture.service.verifyPasswordlessLogin(PROFILE.id)
+        }
+
+        assertEquals(SshFailureCategory.NETWORK, failure.failure.category)
+        assertEquals("SSH_KEY_OPERATION_TIMEOUT", failure.failure.code)
+        assertEquals(
+            "The SSH key operation timed out. Check the network connection and retry.",
+            failure.failure.actionableMessage,
+        )
+        assertTrue(failure.failure.recoverable)
+        assertTrue(fixture.connection.closed)
+    }
+
+    @Test
+    fun callerTimeoutRemainsStructuredCancellation() = runTest {
+        val fixture = Fixture(
+            commandStalls = true,
+            operationTimeout = 20.seconds,
+        )
+
+        assertFailsWith<TimeoutCancellationException> {
+            withTimeout(1.milliseconds) {
+                fixture.service.installPublicKey(PROFILE.id)
+            }
+        }
+
+        assertTrue(fixture.connection.closed)
+    }
+
+    @Test
+    fun installerControlFailuresReturnStableActionableRedactedCodes() = runTest {
+        val cases = listOf(
+            Triple(70, "SSH_PUBLIC_KEY_INSTALL_INSPECTION_FAILED", "POSIX"),
+            Triple(74, "SSH_PUBLIC_KEY_INSTALL_INTERRUPTED", "interrupted"),
+            Triple(75, "SSH_PUBLIC_KEY_INSTALL_BUSY", "active"),
+        )
+
+        cases.forEach { (exitCode, expectedCode, expectedMessage) ->
+            val fixture = Fixture(exitCode = exitCode)
+
+            val failure = assertFailsWith<SshConnectionException> {
+                fixture.service.installPublicKey(PROFILE.id)
+            }
+
+            assertEquals(SshFailureCategory.REMOTE_PROCESS_EXIT, failure.failure.category)
+            assertEquals(expectedCode, failure.failure.code)
+            assertTrue(failure.failure.actionableMessage.contains(expectedMessage))
+            assertFalse(failure.failure.actionableMessage.contains(PROFILE.endpoint.host))
+            assertTrue(fixture.connection.closed)
+        }
+    }
+
+    @Test
     fun installRejectsAKeyWhoseAdvertisedAlgorithmDoesNotMatchItsBlob() = runTest {
         val fixture = Fixture()
         fixture.agentKeys.generatedAlgorithm = "ssh-ed25519"
@@ -131,10 +217,13 @@ class SshManagedKeyServiceTest {
         profile: SshProfile = PROFILE,
         additionalProfiles: List<SshProfile> = emptyList(),
         exitCode: Int = 0,
+        commandStalls: Boolean = false,
+        heartbeatTimesOut: Boolean = false,
+        operationTimeout: Duration = 20.seconds,
     ) {
         val profiles = ProfileStore(additionalProfiles + profile)
         val agentKeys = AgentKeys()
-        val connection = RecordingConnection(exitCode)
+        val connection = RecordingConnection(exitCode, commandStalls, heartbeatTimesOut)
         val connector = RecordingConnector(connection)
         val service = SshManagedKeyService(
             profiles = profiles,
@@ -143,6 +232,7 @@ class SshManagedKeyServiceTest {
             agentKeys = agentKeys,
             connector = connector,
             clock = SshClock { 101L },
+            operationTimeout = operationTimeout,
         )
     }
 
@@ -221,7 +311,11 @@ class SshManagedKeyServiceTest {
         }
     }
 
-    private class RecordingConnection(private val exitCode: Int) : SshTransportConnection {
+    private class RecordingConnection(
+        private val exitCode: Int,
+        private val commandStalls: Boolean,
+        private val heartbeatTimesOut: Boolean,
+    ) : SshTransportConnection {
         val commands = mutableListOf<RemoteCommand>()
         var heartbeats = 0
         var closed = false
@@ -233,6 +327,9 @@ class SshManagedKeyServiceTest {
                 command: RemoteCommand,
                 timeout: Duration,
             ): RemoteCommandResult {
+                if (commandStalls) {
+                    withTimeout(timeout.inWholeMilliseconds) { awaitCancellation() }
+                }
                 commands += command
                 return RemoteCommandResult(exitCode, "", "")
             }
@@ -245,6 +342,9 @@ class SshManagedKeyServiceTest {
             get() = !closed
 
         override suspend fun heartbeat(): Duration {
+            if (heartbeatTimesOut) {
+                withTimeout(1.milliseconds) { awaitCancellation() }
+            }
             heartbeats += 1
             return 1.milliseconds
         }

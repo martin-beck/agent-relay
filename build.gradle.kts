@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.android.library) apply false
@@ -9,6 +14,44 @@ plugins {
     alias(libs.plugins.kover)
     alias(libs.plugins.roborazzi) apply false
     alias(libs.plugins.spotless)
+}
+
+dependencyLocking {
+    lockAllConfigurations()
+    lockMode.set(LockMode.STRICT)
+}
+
+val secureNettyVersions = mapOf(
+    "4.1." to libs.versions.netty.get(),
+    "4.2." to libs.versions.netty42.get(),
+)
+
+allprojects {
+    configurations.configureEach {
+        resolutionStrategy.eachDependency {
+            if (requested.group == "io.netty") {
+                val requestedVersion = requested.version
+                if (requestedVersion != null) {
+                    secureNettyVersions.entries
+                        .singleOrNull { (releaseLine, _) -> requestedVersion.startsWith(releaseLine) }
+                        ?.let { (releaseLine, secureVersion) ->
+                            val requestedPatch = requestedVersion
+                                .removePrefix(releaseLine)
+                                .removeSuffix(".Final")
+                                .toIntOrNull()
+                            val securePatch = secureVersion
+                                .removePrefix(releaseLine)
+                                .removeSuffix(".Final")
+                                .toIntOrNull()
+                            if (requestedPatch != null && securePatch != null && requestedPatch < securePatch) {
+                                useVersion(secureVersion)
+                                because("Reviewed Netty release-line floors fix known security advisories")
+                            }
+                        }
+                }
+            }
+        }
+    }
 }
 
 val ktlintEditorConfig = mapOf(
@@ -61,7 +104,7 @@ spotless {
             ".editorconfig",
             ".gitignore",
         )
-        targetExclude("**/build/**", ".gradle/**", ".venv/**")
+        targetExclude("**/build/**", "**/.gradle/**", ".venv/**")
         trimTrailingWhitespace()
         endWithNewline()
     }
@@ -94,9 +137,35 @@ val dependencyUpdateLintChecks = setOf(
     "NewerVersionAvailable",
 )
 
+val criticalModuleCoverageFloors = mapOf(
+    ":connection:api" to 70,
+    ":provider:api" to 25,
+    ":session:api" to 89,
+    ":session:runtime" to 83,
+    ":speech:api" to 74,
+    ":ssh:api" to 86,
+)
+
 subprojects {
     pluginManager.apply("com.autonomousapps.dependency-analysis")
     pluginManager.apply("org.jetbrains.kotlinx.kover")
+
+    criticalModuleCoverageFloors[path]?.let { coverageFloor ->
+        extensions.configure<kotlinx.kover.gradle.plugin.dsl.KoverProjectExtension> {
+            reports {
+                verify {
+                    rule {
+                        minBound(coverageFloor)
+                    }
+                }
+            }
+        }
+    }
+
+    dependencyLocking {
+        lockAllConfigurations()
+        lockMode.set(LockMode.STRICT)
+    }
 
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().configureEach {
         compilerOptions.allWarningsAsErrors.set(true)

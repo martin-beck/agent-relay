@@ -1,4 +1,10 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package com.example.agentrelay.ui.main
+import androidx.annotation.StringRes
 
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.layout.Arrangement
@@ -36,19 +42,24 @@ import androidx.compose.ui.input.key.isShiftPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.example.agentrelay.R
+import dev.agentrelay.provider.api.AgentFileChangeKind
 import dev.agentrelay.session.api.SessionActivityType
 import java.text.DateFormat
+import java.text.NumberFormat
 import java.util.Date
 
 @Composable
@@ -64,19 +75,22 @@ internal fun SessionDetailRoute(
     onSaveArtifact: (String, String, String) -> Unit,
     onCancelArtifact: (String) -> Unit,
     modifier: Modifier = Modifier,
+    speechActions: SpeechInputUiActions = SpeechInputUiActions(),
 ) {
     Column(modifier.fillMaxSize()) {
         TextButton(
             onClick = onBack,
             modifier = Modifier.padding(horizontal = 8.dp),
         ) {
-            Text("Back to sessions")
+            Text(stringResource(R.string.session_detail_back_to_sessions))
         }
         when (state) {
-            MainScreenUiState.Loading -> DetailPlaceholder("Opening session state...")
-            is MainScreenUiState.FatalError -> DetailPlaceholder(state.message)
+            MainScreenUiState.Loading -> DetailPlaceholder(stringResource(R.string.session_detail_opening))
+            is MainScreenUiState.FatalError -> DetailPlaceholder(state.message.resolve())
             is MainScreenUiState.Ready -> SessionDetailPane(
                 detail = state.hub.selectedSession,
+                speechInput = state.speechInput,
+                speechActions = speechActions,
                 modifier = Modifier.weight(1f),
                 onDraftChanged = onDraftChanged,
                 onSubmitDraft = onSubmitDraft,
@@ -95,6 +109,8 @@ internal fun SessionDetailRoute(
 internal fun SessionDetailPane(
     detail: SessionDetailUiModel?,
     modifier: Modifier = Modifier,
+    speechInput: SpeechInputUiState = unavailableSpeechInputState(),
+    speechActions: SpeechInputUiActions = SpeechInputUiActions(),
     onDraftChanged: (String, String, Int, Int) -> Unit = { _, _, _, _ -> },
     onSubmitDraft: (String) -> Unit = {},
     onResumeSession: (String) -> Unit = {},
@@ -110,7 +126,7 @@ internal fun SessionDetailPane(
             contentAlignment = Alignment.Center,
         ) {
             Text(
-                text = "Select a session to inspect its transcript and activity.",
+                text = stringResource(R.string.session_detail_select_session),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -127,7 +143,7 @@ internal fun SessionDetailPane(
         }
         if (detail.actions.isNotEmpty()) {
             item(key = "actions-heading") {
-                DetailHeading("Approvals and questions")
+                DetailHeading(stringResource(R.string.session_detail_approvals_and_questions))
             }
             items(
                 detail.actions,
@@ -142,6 +158,8 @@ internal fun SessionDetailPane(
         item(key = "session-composer") {
             SessionComposer(
                 detail = detail,
+                speechInput = speechInput,
+                speechActions = speechActions,
                 onDraftChanged = onDraftChanged,
                 onSubmitDraft = onSubmitDraft,
                 onResumeSession = onResumeSession,
@@ -154,13 +172,13 @@ internal fun SessionDetailPane(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                DetailHeading("Changed files")
+                DetailHeading(stringResource(R.string.session_detail_changed_files))
                 if (detail.canRefreshArtifacts) {
                     OutlinedButton(
                         onClick = { onRefreshArtifacts(detail.session.stableKey) },
                         enabled = !detail.isRefreshingArtifacts,
                     ) {
-                        Text("Refresh changed files")
+                        Text(stringResource(R.string.session_detail_refresh_changed_files))
                     }
                 }
                 if (detail.isRefreshingArtifacts) {
@@ -172,9 +190,9 @@ internal fun SessionDetailPane(
             item(key = "artifacts-empty") {
                 DetailPlaceholder(
                     if (detail.canRefreshArtifacts) {
-                        "No changed files are recorded. Refresh to ask the connected provider."
+                        stringResource(R.string.session_detail_no_changed_files)
                     } else {
-                        "This provider does not expose changed files for this session."
+                        stringResource(R.string.session_detail_changed_files_unsupported)
                     },
                 )
             }
@@ -188,12 +206,12 @@ internal fun SessionDetailPane(
             }
         }
         item(key = "timeline-heading") {
-            DetailHeading("Timeline")
+            DetailHeading(stringResource(R.string.session_detail_timeline))
         }
         if (detail.transcript.isEmpty()) {
             item(key = "timeline-empty") {
                 DetailPlaceholder(
-                    "No timeline entries have been cached. Reconnect to refresh this session.",
+                    stringResource(R.string.session_detail_timeline_empty),
                 )
             }
         } else {
@@ -202,11 +220,11 @@ internal fun SessionDetailPane(
             }
         }
         item(key = "activity-heading") {
-            DetailHeading("Activity")
+            DetailHeading(stringResource(R.string.session_detail_activity))
         }
         if (detail.activities.isEmpty()) {
             item(key = "activity-empty") {
-                DetailPlaceholder("No recent activity is recorded for this session.")
+                DetailPlaceholder(stringResource(R.string.session_detail_activity_empty))
             }
         } else {
             items(detail.activities, key = { "activity:" + it.id }) { activity ->
@@ -216,12 +234,54 @@ internal fun SessionDetailPane(
     }
 }
 
+@get:StringRes
+private val AgentFileChangeKind.labelResource: Int
+    get() = when (this) {
+        AgentFileChangeKind.ADDED -> R.string.session_artifact_change_added
+        AgentFileChangeKind.MODIFIED -> R.string.session_artifact_change_modified
+        AgentFileChangeKind.DELETED -> R.string.session_artifact_change_deleted
+        AgentFileChangeKind.RENAMED -> R.string.session_artifact_change_renamed
+        AgentFileChangeKind.UNKNOWN -> R.string.session_artifact_change_unknown
+    }
+
+@get:StringRes
+private val SessionArtifactAvailabilityStatus.pathFallbackResource: Int?
+    get() = when (this) {
+        SessionArtifactAvailabilityStatus.DELETED -> R.string.session_artifact_path_deleted
+        SessionArtifactAvailabilityStatus.OUTSIDE_WORKSPACE ->
+            R.string.session_artifact_path_outside_workspace
+        SessionArtifactAvailabilityStatus.WORKSPACE_UNKNOWN ->
+            R.string.session_artifact_path_workspace_unknown
+        SessionArtifactAvailabilityStatus.RECONNECT,
+        SessionArtifactAvailabilityStatus.UNSUPPORTED,
+        SessionArtifactAvailabilityStatus.READY,
+        -> null
+    }
+
+@get:StringRes
+private val SessionArtifactAvailabilityStatus.labelResource: Int
+    get() = when (this) {
+        SessionArtifactAvailabilityStatus.RECONNECT -> R.string.session_artifact_availability_reconnect
+        SessionArtifactAvailabilityStatus.UNSUPPORTED -> R.string.session_artifact_availability_unsupported
+        SessionArtifactAvailabilityStatus.READY -> R.string.session_artifact_availability_ready
+        SessionArtifactAvailabilityStatus.DELETED -> R.string.session_artifact_availability_deleted
+        SessionArtifactAvailabilityStatus.OUTSIDE_WORKSPACE ->
+            R.string.session_artifact_availability_outside_workspace
+        SessionArtifactAvailabilityStatus.WORKSPACE_UNKNOWN ->
+            R.string.session_artifact_availability_workspace_unknown
+    }
+
 @Composable
 private fun ArtifactCard(
     artifact: SessionArtifactUiModel,
     onSaveArtifact: (String, String, String) -> Unit,
     onCancelArtifact: (String) -> Unit,
 ) {
+    val numberFormat = NumberFormat.getIntegerInstance(LocalConfiguration.current.locales[0])
+    val displayPath = artifact.displayPath ?: stringResource(
+        checkNotNull(artifact.availabilityStatus.pathFallbackResource),
+    )
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -239,7 +299,7 @@ private fun ArtifactCard(
             ) {
                 SelectionContainer(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = artifact.displayPath,
+                        text = displayPath,
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Medium,
                         maxLines = 4,
@@ -247,13 +307,13 @@ private fun ArtifactCard(
                     )
                 }
                 Text(
-                    text = artifact.changeLabel,
+                    text = stringResource(artifact.changeKind.labelResource),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.primary,
                 )
             }
             Text(
-                text = artifact.availabilityMessage,
+                text = stringResource(artifact.availabilityStatus.labelResource),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -261,18 +321,25 @@ private fun ArtifactCard(
                 CircularProgressIndicator()
                 Text(
                     text = artifact.totalBytes?.let { totalBytes ->
-                        "${artifact.bytesWritten} of $totalBytes bytes saved"
-                    } ?: "${artifact.bytesWritten} bytes saved",
+                        stringResource(
+                            R.string.session_artifact_save_progress_total,
+                            numberFormat.format(artifact.bytesWritten),
+                            numberFormat.format(totalBytes),
+                        )
+                    } ?: stringResource(
+                        R.string.session_artifact_save_progress,
+                        numberFormat.format(artifact.bytesWritten),
+                    ),
                     modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                     style = MaterialTheme.typography.labelMedium,
                 )
                 OutlinedButton(onClick = { onCancelArtifact(artifact.stableKey) }) {
-                    Text("Cancel saving")
+                    Text(stringResource(R.string.session_artifact_cancel_saving))
                 }
             } else {
                 if (artifact.isExportComplete) {
                     Text(
-                        text = "Copy saved and source checksum verified.",
+                        text = stringResource(R.string.session_artifact_copy_saved_verified),
                         modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary,
@@ -289,7 +356,13 @@ private fun ArtifactCard(
                         },
                         enabled = artifact.canSave,
                     ) {
-                        Text(if (artifact.isExportComplete) "Save another copy" else "Save copy")
+                        Text(
+                            if (artifact.isExportComplete) {
+                                stringResource(R.string.session_artifact_save_another_copy)
+                            } else {
+                                stringResource(R.string.session_artifact_save_copy)
+                            },
+                        )
                     }
                 }
             }
@@ -300,6 +373,8 @@ private fun ArtifactCard(
 @Composable
 private fun SessionComposer(
     detail: SessionDetailUiModel,
+    speechInput: SpeechInputUiState,
+    speechActions: SpeechInputUiActions,
     onDraftChanged: (String, String, Int, Int) -> Unit,
     onSubmitDraft: (String) -> Unit,
     onResumeSession: (String) -> Unit,
@@ -323,7 +398,7 @@ private fun SessionComposer(
         }
     }
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        DetailHeading("Message")
+        DetailHeading(stringResource(R.string.session_composer_message))
         OutlinedTextField(
             value = editorValue,
             onValueChange = { changed ->
@@ -353,17 +428,22 @@ private fun SessionComposer(
                     true
                 }
                 .testTag("session-composer-input"),
-            label = { Text("Message to ${detail.session.agentProviderLabel}") },
+            label = { Text(stringResource(R.string.session_composer_message_to, detail.session.agentProviderLabel)) },
             enabled = !composer.isBusy,
             supportingText = {
                 Text(
-                    text = composer.statusMessage
-                        ?: "This draft stays with the session until you send it.",
+                    text = composer.statusMessage?.resolve()
+                        ?: stringResource(R.string.session_composer_draft_saved),
                     modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                 )
             },
             minLines = 3,
             maxLines = 8,
+        )
+        SpeechInputControls(
+            state = speechInput,
+            sessionKey = sessionKey,
+            actions = speechActions,
         )
         FlowRow(
             modifier = Modifier.fillMaxWidth(),
@@ -375,12 +455,12 @@ private fun SessionComposer(
             }
             if (composer.canResume) {
                 OutlinedButton(onClick = { onResumeSession(sessionKey) }) {
-                    Text("Resume session")
+                    Text(stringResource(R.string.session_composer_resume))
                 }
             }
             if (composer.canInterrupt) {
                 OutlinedButton(onClick = { onInterruptSession(sessionKey) }) {
-                    Text("Interrupt turn")
+                    Text(stringResource(R.string.session_composer_interrupt))
                 }
             }
             Button(
@@ -389,9 +469,9 @@ private fun SessionComposer(
             ) {
                 Text(
                     if (composer.submitMode == SessionSubmitMode.STEER) {
-                        "Steer active turn"
+                        stringResource(R.string.session_composer_steer)
                     } else {
-                        "Send"
+                        stringResource(R.string.session_composer_send)
                     },
                 )
             }
@@ -403,14 +483,18 @@ private fun SessionComposer(
 private fun SessionDetailHeader(session: SessionUiModel) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
-            text = session.title,
+            text = session.title.resolve(),
             modifier = Modifier.semantics { heading() },
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.SemiBold,
         )
         Text(
-            text = session.connectionProviderName + "  -  " +
-                session.connectionLabel + "  -  " + session.agentProviderLabel,
+            text = stringResource(
+                R.string.session_detail_context,
+                session.connectionProviderName,
+                session.connectionLabel,
+                session.agentProviderLabel,
+            ),
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.primary,
         )
@@ -478,7 +562,7 @@ private fun TranscriptCard(entry: TranscriptEntryUiModel) {
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = entry.roleLabel,
+                    text = entry.roleLabel.resolve(),
                     modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.primary,
@@ -499,7 +583,7 @@ private fun TranscriptCard(entry: TranscriptEntryUiModel) {
             }
             if (entry.wasTruncated) {
                 Text(
-                    text = "Long entry truncated for safe rendering.",
+                    text = stringResource(R.string.session_timeline_truncated),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -537,7 +621,7 @@ private fun ActivityCard(activity: SessionActivityUiModel) {
                 )
             }
             Text(
-                text = activity.summary,
+                text = activity.summary.resolve(),
                 style = MaterialTheme.typography.bodyMedium,
                 maxLines = 12,
                 overflow = TextOverflow.Ellipsis,
@@ -556,13 +640,14 @@ private fun DetailPlaceholder(message: String) {
     )
 }
 
+@Composable
 private fun activityTypeLabel(type: SessionActivityType): String = when (type) {
-    SessionActivityType.NEW_OUTPUT -> "New output"
-    SessionActivityType.APPROVAL_REQUIRED -> "Approval required"
-    SessionActivityType.QUESTION -> "Question"
-    SessionActivityType.FAILURE -> "Failure"
-    SessionActivityType.RECONNECTED -> "Reconnected"
-    SessionActivityType.TURN_COMPLETED -> "Turn completed"
+    SessionActivityType.NEW_OUTPUT -> stringResource(R.string.session_activity_new_output)
+    SessionActivityType.APPROVAL_REQUIRED -> stringResource(R.string.session_activity_approval_required)
+    SessionActivityType.QUESTION -> stringResource(R.string.session_activity_question)
+    SessionActivityType.FAILURE -> stringResource(R.string.session_activity_failure)
+    SessionActivityType.RECONNECTED -> stringResource(R.string.session_activity_reconnected)
+    SessionActivityType.TURN_COMPLETED -> stringResource(R.string.session_activity_turn_completed)
 }
 
 private fun formatTimestamp(epochMillis: Long): String =

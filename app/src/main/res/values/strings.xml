@@ -1,3 +1,445 @@
+<!-- Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved. -->
+<!-- SPDX-License-Identifier: MIT -->
+
 <resources>
     <string name="app_name">Agent Relay</string>
+    <string name="notification_channel_action_name">Action required</string>
+    <string name="notification_channel_action_description">
+        Approvals and questions that need your response
+    </string>
+    <string name="notification_channel_failure_name">Session problems</string>
+    <string name="notification_channel_failure_description">
+        Important session failures
+    </string>
+    <string name="notification_channel_update_name">Session updates</string>
+    <string name="notification_channel_update_description">
+        Completed sessions and other requested activity
+    </string>
+    <string name="notification_action_title">Agent session needs attention</string>
+    <string name="notification_action_text">
+        Open Agent Relay to review an approval or question
+    </string>
+    <string name="notification_failure_title">Agent session needs attention</string>
+    <string name="notification_failure_text">Open Agent Relay to review a session problem</string>
+    <string name="notification_completion_title">Agent session completed</string>
+    <string name="notification_completion_text">Open Agent Relay to view the latest result</string>
+    <string name="notification_activity_title">Agent session updated</string>
+    <string name="notification_activity_text">Open Agent Relay to view the latest activity</string>
+    <string name="notification_public_text">Open the app to view an update</string>
+    <string name="notification_permission_title">Stay informed in the background</string>
+    <string name="notification_permission_request_explanation">
+        Allow notifications to receive privacy-safe alerts for requested session activity.
+    </string>
+    <string name="notification_permission_rationale">
+        Agent Relay shows fixed, privacy-safe text and never includes prompts, commands, hosts, or
+        paths.
+    </string>
+    <string name="notification_permission_settings_explanation">
+        Notification permission is off. You can enable it in Android settings.
+    </string>
+    <string name="notification_permission_open_settings">
+        Open notification settings
+    </string>
+    <string name="notification_permission_allow">Allow notifications</string>
+    <string name="wear_install_offer_title">Set up %1$s</string>
+    <string name="wear_install_offer_explanation">
+        Install the Agent Relay companion on this watch to receive attention-first updates and use
+        safe remote controls. Installation applies only to this device.
+    </string>
+    <string name="wear_install_action">Install on watch</string>
+    <string name="wear_install_not_now">Not now</string>
+    <string name="wear_install_progress_title">Setting up %1$s</string>
+    <string name="wear_install_progress_explanation">
+        Keep this watch connected while Agent Relay verifies and installs the companion.
+    </string>
+    <string name="wear_install_cancel">Cancel installation</string>
+    <string name="wear_install_recovery_title">Couldn’t set up %1$s</string>
+    <string name="wear_install_recovery_authorization">
+        Authorize this watch for installation, then try again.
+    </string>
+    <string name="wear_install_recovery_installation">
+        The verified companion could not be installed. Check the watch and try again.
+    </string>
+    <string name="wear_install_recovery_connection">
+        The watch disconnected during setup. Reconnect it and try again.
+    </string>
+    <string name="wear_install_retry">Try again</string>
+    <string name="background_transport_channel_name">Background connection</string>
+    <string name="background_transport_channel_description">
+        Keeps explicitly enabled remote agent connections active
+    </string>
+    <string name="background_transport_notification_title">Agent Relay is connected</string>
+    <string name="background_transport_notification_text">
+        Remote agent connections can remain active in the background
+    </string>
+    <string name="background_transport_public_text">Background connection is active</string>
+    <string name="background_transport_stop">Stop</string>
+    <string name="background_transport_title">Background connection</string>
+    <string name="background_transport_stopped">
+        Connections pause when Agent Relay is not visible.
+    </string>
+    <string name="background_transport_starting">Starting background connection…</string>
+    <string name="background_transport_active">
+        Connections can stay active while you use other apps. A persistent notification lets you
+        stop this at any time.
+    </string>
+    <string name="background_transport_stopping">Stopping background connection…</string>
+    <string name="background_transport_failed">
+        Background connection could not start. Check notification settings and try again.
+    </string>
+    <string name="background_transport_requires_notifications">
+        Allow notifications before starting a background connection.
+    </string>
+    <string name="background_transport_start">Keep connections active</string>
+    <string name="background_transport_retry">Try again</string>
+    <string name="background_transport_stop_button">Stop background connection</string>
+    <string name="session_creator_title">Start a new session</string>
+    <string name="session_creator_context">%1$s  -  %2$s  -  %3$s</string>
+    <string name="session_creator_guidance">Choose only provider-neutral launch settings. Leave a field empty to use the agent provider\'s default.</string>
+    <string name="session_creator_working_directory">Working directory (optional)</string>
+    <string name="session_creator_working_directory_support">The path is interpreted on the selected connection provider.</string>
+    <string name="session_creator_model">Model (optional)</string>
+    <string name="session_creator_model_support">Use an exact model identifier supported by this agent provider.</string>
+    <string name="session_creator_start">Start session</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="speech_status_waiting">Waiting for the current voice input state…</string>
+    <string name="speech_status_starting">Starting private on-device voice input…</string>
+    <string name="speech_status_listening">Listening on device. Stop when you finish speaking.</string>
+    <string name="speech_status_transcribing">Finishing the private on-device transcript…</string>
+    <string name="speech_status_review_transcript">Review the transcript before inserting it into the session draft.</string>
+    <string name="speech_status_no_model">No verified offline transcription model is available.</string>
+    <string name="speech_status_install_model">Install the verified offline model before using voice input.</string>
+    <string name="speech_status_downloading_model">Downloading the offline speech model…</string>
+    <string name="speech_status_ready_private">Voice input stays on this device.</string>
+    <string name="speech_status_unavailable_build">Offline voice input is unavailable in this build.</string>
+    <string name="speech_input_title">Voice input</string>
+    <string name="speech_selected_model">Offline model: %1$s</string>
+    <string name="speech_install_model">Install offline model</string>
+    <string name="speech_download_progress">%1$d%% downloaded</string>
+    <string name="speech_cancel_model_download">Cancel model download</string>
+    <string name="speech_start_input">Start voice input</string>
+    <string name="speech_cancel_input">Cancel voice input</string>
+    <string name="speech_stop_recording">Stop recording</string>
+    <string name="speech_use_transcript">Use transcript</string>
+    <string name="speech_discard_transcript">Discard transcript</string>
+    <string name="speech_retry_model_installation">Retry model installation</string>
+    <string name="speech_dismiss_error">Dismiss voice error</string>
+    <string name="speech_model_label">Offline model</string>
+    <string name="speech_model_installed">%1$s - installed</string>
+    <string name="action_retry">Retry</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="session_issue_profile_discovery">%1$s profiles could not be loaded.</string>
+    <string name="session_issue_connection_setup">Connection %1$s could not be prepared.</string>
+    <string name="session_issue_provider_synchronization">%1$s could not be synchronized on %2$s.</string>
+    <string name="session_issue_session_persistence">Session state could not be saved for %1$s.</string>
+    <string name="action_dismiss">Dismiss</string>
+    <string name="session_hub_add_profile">Add %1$s profile</string>
+    <string name="session_hub_start_on_connection">Start %1$s on %2$s</string>
+    <string name="session_hub_review_in">Review in %1$s</string>
+    <string name="list_separator">\u00A0·\u00A0</string>
+    <string name="session_hub_attention_title">Needs attention</string>
+    <string name="session_hub_attention_subtitle">Review provider questions and approvals before work can continue.</string>
+    <string name="session_hub_connections_title">Connections</string>
+    <string name="session_hub_connections_subtitle">Local and remote access share one provider-neutral session hub.</string>
+    <string name="session_hub_connections_empty">No connection profiles are available. Refresh to try again.</string>
+    <string name="session_hub_recent_sessions_title">Recent sessions</string>
+    <string name="session_hub_recent_sessions_subtitle">Unread output and required decisions stay visible across connections.</string>
+    <string name="session_hub_sessions_empty">No sessions have been discovered yet. Connect a profile to check its agent providers.</string>
+    <string name="session_hub_start_subtitle">Choose a ready agent provider and optionally set its workspace and model.</string>
+    <string name="session_hub_tagline">Continue agent work across this device and trusted SSH hosts.</string>
+    <string name="session_hub_response_pending_confirmation">Response awaiting provider confirmation</string>
+    <string name="session_hub_action_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
+    <string name="session_hub_risk">Risk: %1$s</string>
+    <string name="connection_authentication">Authentication: %1$s</string>
+    <string name="connection_connect">Connect</string>
+    <string name="connection_disconnect">Disconnect</string>
+    <string name="connection_edit_profile">Edit profile</string>
+    <string name="connection_identity_changed">Server identity changed</string>
+    <string name="connection_identity_verify_new">Verify new server identity</string>
+    <string name="connection_identity_context">%1$s\u00A0·\u00A0%2$s</string>
+    <string name="connection_identity_previously_trusted">Previously trusted: %1$s</string>
+    <string name="connection_identity_replace">Replace identity</string>
+    <string name="connection_identity_trust">Trust identity</string>
+    <string name="connection_identity_reject">Reject</string>
+    <string name="connection_status_offline">Offline</string>
+    <string name="connection_status_connecting">Connecting</string>
+    <string name="connection_status_online">Online</string>
+    <string name="connection_status_reconnecting">Reconnecting</string>
+    <string name="connection_status_identity_review">Review identity</string>
+    <string name="connection_status_failed">Failed</string>
+    <string name="session_title_fallback">%1$s session</string>
+    <string name="connection_disconnect_user_requested">Disconnected by you</string>
+    <string name="connection_disconnect_authentication_failed">Authentication failed</string>
+    <string name="connection_disconnect_network_lost">Network connection lost</string>
+    <string name="connection_disconnect_server_identity_rejected">Server identity rejected</string>
+    <string name="connection_disconnect_credential_unavailable">Credential unavailable</string>
+    <string name="connection_disconnect_background_suspended">Paused in the background</string>
+    <string name="connection_disconnect_retry_limit_reached">Automatic retry limit reached</string>
+    <string name="connection_disconnect_provider_stopped">Connection provider stopped</string>
+    <string name="connection_phase_preparing">Preparing connection</string>
+    <string name="connection_phase_opening_transport">Opening transport</string>
+    <string name="connection_phase_verifying_server_identity">Verifying server identity</string>
+    <string name="connection_phase_authenticating">Authenticating</string>
+    <string name="connection_agent_check_after_connect">Agent providers are checked after connecting.</string>
+    <plurals name="connection_agent_ready">
+        <item quantity="one">%1$d of %2$d agent provider ready</item>
+        <item quantity="other">%1$d of %2$d agent providers ready</item>
+    </plurals>
+    <string name="connection_agent_none_ready">No installed agent provider is ready on this connection.</string>
+    <plurals name="connection_agent_checking">
+        <item quantity="one">Checking %1$d agent provider</item>
+        <item quantity="other">Checking %1$d agent providers</item>
+    </plurals>
+    <string name="session_detail_back_to_sessions">Back to sessions</string>
+    <string name="session_detail_opening">Opening session state…</string>
+    <string name="session_detail_select_session">Select a session to inspect its transcript and activity.</string>
+    <string name="session_detail_approvals_and_questions">Approvals and questions</string>
+    <string name="session_detail_changed_files">Changed files</string>
+    <string name="session_detail_refresh_changed_files">Refresh changed files</string>
+    <string name="session_detail_no_changed_files">No changed files are recorded. Refresh to ask the connected provider.</string>
+    <string name="session_detail_changed_files_unsupported">This provider does not expose changed files for this session.</string>
+    <string name="session_detail_timeline">Timeline</string>
+    <string name="session_detail_timeline_empty">No timeline entries have been cached. Reconnect to refresh this session.</string>
+    <string name="session_detail_activity">Activity</string>
+    <string name="session_detail_activity_empty">No recent activity is recorded for this session.</string>
+    <string name="session_detail_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
+    <string name="session_composer_message">Message</string>
+    <string name="session_composer_message_to">Message to %1$s</string>
+    <string name="session_composer_draft_saved">This draft stays with the session until you send it.</string>
+    <string name="session_composer_resume">Resume session</string>
+    <string name="session_composer_interrupt">Interrupt turn</string>
+    <string name="session_composer_steer">Steer active turn</string>
+    <string name="session_composer_send">Send</string>
+    <string name="session_artifact_save_progress_total">Bytes saved: %1$s of %2$s</string>
+    <string name="session_artifact_save_progress">Bytes saved: %1$s</string>
+    <string name="session_artifact_cancel_saving">Cancel saving</string>
+    <string name="session_artifact_copy_saved_verified">Copy saved and source checksum verified.</string>
+    <string name="session_artifact_save_another_copy">Save another copy</string>
+    <string name="session_artifact_save_copy">Save copy</string>
+    <string name="session_composer_status_connect">Connect this session to send input.</string>
+    <string name="session_composer_status_applying">Applying session action…</string>
+    <string name="session_composer_status_connect_draft">Connect %1$s to send this saved draft.</string>
+    <string name="session_composer_status_pending_action">Resolve the pending approval or question before sending more input.</string>
+    <string name="session_composer_status_resume">Resume this saved session before sending input.</string>
+    <string name="session_composer_status_resume_unsupported">This provider cannot safely resume the saved session.</string>
+    <string name="session_composer_status_steering_unsupported">This provider cannot steer an active turn. Wait for it to finish or interrupt it.</string>
+    <string name="session_composer_status_read_only">The provider exposed this session as read-only.</string>
+    <string name="session_timeline_role_user">You</string>
+    <string name="session_timeline_role_agent_commentary">Agent commentary</string>
+    <string name="session_timeline_role_agent_final">Final answer</string>
+    <string name="session_timeline_role_plan">Plan</string>
+    <string name="session_timeline_role_reasoning_summary">Reasoning summary</string>
+    <string name="session_timeline_role_tool">Tool</string>
+    <string name="session_timeline_role_system">System</string>
+    <string name="session_timeline_truncated">Long entry truncated for safe rendering.</string>
+    <string name="session_activity_new_output">New output</string>
+    <string name="session_activity_approval_required">Approval required</string>
+    <string name="session_activity_question">Question</string>
+    <string name="session_activity_failure">Failure</string>
+    <string name="session_activity_reconnected">Reconnected</string>
+    <string name="session_activity_turn_completed">Turn completed</string>
+    <string name="profile_editor_loading">Loading connection profile</string>
+    <string name="profile_editor_save">Save</string>
+    <string name="profile_editor_working">Working…</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_close">Close</string>
+    <string name="profile_editor_operations_title">Key setup and verification</string>
+    <string name="profile_editor_save_before_operation">Save profile changes before running this action.</string>
+    <string name="profile_editor_stored_secret">A secret is stored. Leave this blank to keep it.</string>
+    <string name="profile_editor_required">%1$s (required)</string>
+    <string name="profile_editor_delete_title">Delete connection profile?</string>
+    <string name="profile_editor_delete_message">This removes the profile, its stored credentials, and any saved host identity that is not shared by another profile.</string>
+    <string name="profile_error_provider_unavailable">That connection provider is no longer available.</string>
+    <string name="profile_error_profile_unavailable">That connection profile is no longer available.</string>
+    <string name="profile_error_validation">Correct the highlighted profile fields.</string>
+    <string name="profile_error_save">The connection profile could not be saved securely.</string>
+    <string name="profile_error_save_refresh">The profile was saved, but its editor could not be refreshed.</string>
+    <string name="profile_error_operation">The connection profile operation could not be completed securely.</string>
+    <string name="profile_error_operation_timeout">The connection profile operation timed out. Check the connection and retry.</string>
+    <string name="profile_error_operation_refresh">The operation succeeded, but the profile editor could not be refreshed.</string>
+    <string name="profile_error_delete">The connection profile could not be deleted securely.</string>
+    <string name="profile_error_open">The connection profile editor could not be opened.</string>
+    <string name="main_error_profiles_refresh">Connection profiles could not be refreshed.</string>
+    <string name="main_error_connection_open">The connection could not be opened.</string>
+    <string name="main_error_connection_close">The connection could not be closed cleanly.</string>
+    <string name="main_error_identity_decision">The server identity decision could not be applied.</string>
+    <string name="main_error_secure_state_open">Secure session state could not be opened. Retry after unlocking the device.</string>
+    <string name="main_error_session_unavailable">That session is no longer available.</string>
+    <string name="main_error_session_read_save">The session read state could not be saved.</string>
+    <string name="main_error_session_draft_save">The session draft could not be saved securely.</string>
+    <string name="main_error_session_message_required">Enter a message before sending.</string>
+    <string name="main_error_session_steer">The active turn could not be steered.</string>
+    <string name="main_error_session_send">The session input could not be sent.</string>
+    <string name="main_error_session_draft_clear">The message was delivered, but its saved draft could not be cleared securely.</string>
+    <string name="main_error_session_resume">The saved session could not be resumed.</string>
+    <string name="main_error_session_interrupt">The active turn could not be interrupted.</string>
+    <string name="main_error_agent_endpoint_unavailable">That agent endpoint is no longer ready.</string>
+    <string name="main_error_session_start">The new agent session could not be started.</string>
+    <string name="main_error_action_unavailable">That approval or question is no longer available.</string>
+    <string name="main_error_action_delivery_uncertain">The provider response could not be confirmed. Do not retry this request; wait for a newly identified provider request.</string>
+    <string name="main_error_action_audit">The provider accepted the response, but its local audit state could not be confirmed.</string>
+    <string name="main_error_action_response">The approval or question response could not be applied.</string>
+    <plurals name="main_error_working_directory_too_long">
+        <item quantity="one">Working directories are limited to %1$d character.</item>
+        <item quantity="other">Working directories are limited to %1$d characters.</item>
+    </plurals>
+    <plurals name="main_error_model_name_too_long">
+        <item quantity="one">Model names are limited to %1$d character.</item>
+        <item quantity="other">Model names are limited to %1$d characters.</item>
+    </plurals>
+    <plurals name="main_error_session_draft_too_long">
+        <item quantity="one">Session drafts are limited to %1$d character.</item>
+        <item quantity="other">Session drafts are limited to %1$d characters.</item>
+    </plurals>
+    <string name="session_action_type_command">Command approval</string>
+    <string name="session_action_type_file_change">File change approval</string>
+    <string name="session_action_type_question">Question</string>
+    <string name="session_action_type_permission">Permission request</string>
+    <string name="session_action_type_external_tool">External tool approval</string>
+    <string name="session_action_decision_approve_once">Approve once</string>
+    <string name="session_action_decision_approve_for_session">Approve for session</string>
+    <string name="session_action_decision_submit">Submit answers</string>
+    <string name="session_action_decision_decline">Decline</string>
+    <string name="session_action_risk_destructive_command">Destructive command</string>
+    <string name="session_action_risk_broad_filesystem">Broad filesystem access</string>
+    <string name="session_action_risk_credential_access">Credential or secret access</string>
+    <string name="session_action_risk_network_expansion">Network access expansion</string>
+    <string name="session_action_risk_external_tool">External tool execution</string>
+    <string name="session_action_context_connection_provider">Connection provider</string>
+    <string name="session_action_context_connection">Connection</string>
+    <string name="session_action_context_agent_provider">Agent provider</string>
+    <string name="session_action_context_session">Session</string>
+    <string name="session_action_context_scope">Workspace or file scope</string>
+    <string name="session_action_context_rationale">Provider rationale</string>
+    <string name="session_action_command">Command</string>
+    <string name="session_action_additional_confirmation">Additional confirmation required</string>
+    <string name="session_action_resolved">Resolved</string>
+    <string name="session_action_resolved_with">Resolved: %1$s</string>
+    <string name="session_action_resolved_confirmation">Resolved. Additional confirmation recorded.</string>
+    <string name="session_action_resolved_with_confirmation">Resolved: %1$s. Additional confirmation recorded.</string>
+    <string name="session_action_delivery_pending">Response delivery is awaiting provider confirmation. Do not retry this request; wait for a newly identified provider request or verify its state independently.</string>
+    <string name="session_action_confirm_title">Confirm this sensitive action</string>
+    <string name="session_action_confirm_guidance">Review the exact provider, connection, workspace, rationale, and command before continuing.</string>
+    <string name="session_action_scope_value">Scope: %1$s</string>
+    <string name="session_action_decision_value">Decision: %1$s</string>
+    <string name="session_action_confirm_decision">Confirm: %1$s</string>
+    <string name="action_go_back">Go back</string>
+    <string name="session_action_other_answer">Other answer</string>
+    <string name="main_loading">Loading Agent Relay…</string>
+    <string name="session_card_no_preview">No preview is available.</string>
+    <string name="session_card_pinned">Pinned</string>
+    <string name="session_state_not_loaded">Not loaded</string>
+    <string name="session_state_idle">Idle</string>
+    <string name="session_state_running">Running</string>
+    <string name="session_state_waiting_for_approval">Waiting for approval</string>
+    <string name="session_state_unknown">Unknown</string>
+    <string name="session_card_accessibility_context">Provider %1$s; connection %2$s; agent %3$s</string>
+    <string name="accessibility_separator">. </string>
+    <plurals name="session_card_unread">
+        <item quantity="one">%1$d unread</item>
+        <item quantity="other">%1$d unread</item>
+    </plurals>
+    <plurals name="session_card_awaiting_action">
+        <item quantity="one">%1$d action awaiting review</item>
+        <item quantity="other">%1$d actions awaiting review</item>
+    </plurals>
+    <string name="ssh_profile_title_add">Add Secure Shell profile</string>
+    <string name="ssh_profile_title_edit">Edit Secure Shell profile</string>
+    <string name="ssh_profile_field_name">Profile name</string>
+    <string name="ssh_profile_field_host">Host</string>
+    <string name="ssh_profile_field_port">Port</string>
+    <string name="ssh_profile_field_username">Username</string>
+    <string name="ssh_profile_field_jump_host">Jump host</string>
+    <string name="ssh_profile_field_authentication">Authentication</string>
+    <string name="ssh_profile_field_password">Password</string>
+    <string name="ssh_profile_field_private_key">Private key</string>
+    <string name="ssh_profile_field_passphrase_mode">Private-key passphrase</string>
+    <string name="ssh_profile_field_new_passphrase">New private-key passphrase</string>
+    <string name="ssh_profile_field_public_key">App-managed public key</string>
+    <string name="ssh_profile_support_name">A recognizable name shown only in Agent Relay.</string>
+    <string name="ssh_profile_support_jump_host">Connect through another configured SSH profile.</string>
+    <string name="ssh_profile_support_password">Enter a replacement password.</string>
+    <string name="ssh_profile_support_private_key">Paste a replacement private key.</string>
+    <string name="ssh_profile_support_passphrase">Encrypted separately from the private key.</string>
+    <string name="ssh_profile_support_public_key">The private key stays in Android Keystore. Install this public key on the remote account.</string>
+    <string name="ssh_profile_public_key_pending">Created after saving this profile.</string>
+    <string name="ssh_profile_option_direct">Direct connection</string>
+    <string name="ssh_profile_passphrase_keep">Keep stored passphrase</string>
+    <string name="ssh_profile_passphrase_none">No passphrase</string>
+    <string name="ssh_profile_passphrase_replace">Set a new passphrase</string>
+    <string name="ssh_profile_auth_password">Password</string>
+    <string name="ssh_profile_auth_imported_key">Imported private key</string>
+    <string name="ssh_profile_auth_keystore_key">Android Keystore key</string>
+    <string name="ssh_profile_auth_password_support">Encrypted in Android Keystore-backed app storage.</string>
+    <string name="ssh_profile_auth_imported_key_support">Paste an OpenSSH or PEM private key.</string>
+    <string name="ssh_profile_auth_keystore_key_support">The private key never leaves Android Keystore.</string>
+    <string name="ssh_profile_operation_install_key">Install public key</string>
+    <string name="ssh_profile_operation_install_key_support">Use the currently saved authentication to add only the app-managed public key.</string>
+    <string name="ssh_profile_operation_install_key_title">Install public key on this remote account?</string>
+    <string name="ssh_profile_operation_install_key_message">Agent Relay will connect with the saved credential and add this profile\'s public key to ~/.ssh/authorized_keys. The private key never leaves Android Keystore.</string>
+    <string name="ssh_profile_operation_verify_key">Test key-only login</string>
+    <string name="ssh_profile_operation_verify_key_support">Connect using only the app-managed key and confirm passwordless login works.</string>
+    <string name="artifact_error_refresh">Changed files could not be refreshed for this session.</string>
+    <string name="artifact_error_unavailable">That changed file is no longer available.</string>
+    <string name="artifact_error_save_in_progress">That changed file is already being saved.</string>
+    <string name="artifact_error_save">The checked file copy could not be saved.</string>
+    <string name="session_artifact_availability_reconnect">Reconnect this session to save a checked copy.</string>
+    <string name="session_artifact_availability_unsupported">This connection does not support saving checked copies.</string>
+    <string name="session_artifact_availability_ready">Ready to save a checked copy.</string>
+    <string name="session_artifact_availability_deleted">Deleted on the provider; no copy is available.</string>
+    <string name="session_artifact_availability_outside_workspace">Outside the session workspace; saving is blocked.</string>
+    <string name="session_artifact_availability_workspace_unknown">Session workspace is unavailable; saving is blocked.</string>
+    <string name="session_artifact_change_added">Added</string>
+    <string name="session_artifact_change_modified">Modified</string>
+    <string name="session_artifact_change_deleted">Deleted</string>
+    <string name="session_artifact_change_renamed">Renamed</string>
+    <string name="session_artifact_change_unknown">Changed</string>
+    <string name="session_artifact_path_deleted">Deleted file</string>
+    <string name="session_artifact_path_outside_workspace">File outside workspace</string>
+    <string name="session_artifact_path_workspace_unknown">File with unknown workspace</string>
+    <string name="speech_error_microphone_permission">Microphone access is required only while recording offline voice input.</string>
+    <string name="speech_error_transcript_unavailable">That voice transcript is no longer available.</string>
+    <string name="speech_error_session_unavailable">That session is no longer available.</string>
+    <plurals name="speech_error_transcript_too_long">
+        <item quantity="one">The voice transcript would exceed the %1$d-character draft limit.</item>
+        <item quantity="other">The voice transcript would exceed the %1$d-character draft limit.</item>
+    </plurals>
+    <string name="speech_error_transcript_changed">That voice transcript changed before it could be inserted.</string>
+    <string name="speech_error_model_install">The offline speech model could not be installed.</string>
+    <string name="speech_error_model_download_cancel">The speech model download could not be cancelled cleanly.</string>
+    <string name="speech_error_model_required">Install a verified offline transcription model before using voice input.</string>
+    <string name="speech_error_start">Voice input could not be started. Check microphone access and try again.</string>
+    <string name="speech_error_stop">Voice input could not be stopped cleanly.</string>
+    <string name="speech_error_previous_session_cancel">Voice input from the previous session could not be cancelled cleanly.</string>
+    <string name="speech_error_cancel">Voice input could not be cancelled cleanly.</string>
+    <string name="session_activity_summary_new_agent_output">New agent output</string>
+    <string name="session_activity_summary_tool_failed">Tool failed.</string>
+    <string name="session_activity_summary_named_tool_failed">%1$s failed.</string>
+    <string name="session_activity_summary_agent_turn_completed">Agent turn completed.</string>
+    <string name="session_activity_summary_agent_turn_failed">Agent turn failed.</string>
+    <string name="session_activity_summary_agent_provider_failed">Agent provider failed.</string>
+    <string name="session_activity_summary_agent_question_requires_answer">Agent question requires an answer.</string>
+    <string name="session_activity_summary_agent_approval_required">Agent approval required.</string>
+    <string name="session_activity_summary_connection_reconnected">%1$s reconnected.</string>
+    <string name="session_action_title_review_required">Agent action requires review.</string>
+    <string name="session_question_prompt_fallback">Agent question</string>
+    <string name="connection_failure_profile_preparation">Connection profile could not be prepared.</string>
+    <string name="lock_widget_description">Attention-first lock-screen summary</string>
+    <string name="lock_widget_no_attention">No attention needed</string>
+    <string name="lock_widget_status_quiet">Agent Relay</string>
+    <string name="lock_widget_status_attention">Needs attention</string>
+    <string name="lock_widget_status_refresh">Refresh in the app</string>
+    <string name="lock_widget_loading">Checking attention…</string>
+    <string name="lock_widget_error">Attention unavailable</string>
+    <string name="home_widget_description">Attention-first home-screen summary</string>
+    <string name="home_widget_no_attention">No attention needed</string>
+    <string name="home_widget_status_quiet">Agent Relay</string>
+    <string name="home_widget_status_attention">Needs attention</string>
+    <string name="home_widget_status_refresh">Refresh in the app</string>
+    <string name="home_widget_loading">Checking attention…</string>
+    <string name="home_widget_error">Attention unavailable</string>
+    <string name="home_widget_action_open_details_for">Open attention details: %1$s</string>
+    <string name="home_widget_action_acknowledge">Acknowledge</string>
+    <string name="home_widget_action_defer">Defer</string>
+    <string name="home_widget_action_mute_confirm">Mute…</string>
 </resources>

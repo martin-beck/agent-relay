@@ -56,3 +56,7 @@ Before a supported release, the project still needs:
 Android backup is disabled fail-closed while encrypted connection and session
 state are under development. Re-enabling any backup or device-transfer surface
 requires a threat-model and data-classification review.
+
+Background status uses fixed app-owned text. Foreground and event notifications
+never include connection, host, path, provider, session, prompt, command, or
+transcript data, and every service and PendingIntent action is package scoped.

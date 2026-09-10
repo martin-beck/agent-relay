@@ -8,7 +8,7 @@ supported release.
 ### Added
 
 - Generic connection-provider contract with SSH and local implementations.
-- Agent adapters for Codex, OpenCode, Continue, Claude, Cline, and Aider.
+- Agent adapters for Codex, OpenCode, OpenDesk, Continue, Claude, Cline, and Aider.
 - Encrypted session hub and provider-neutral runtime coordinator.
 - Android application graph wiring the connection registry, local and SSH
   providers, encrypted session state, coordinator, and agent factories without
@@ -49,10 +49,22 @@ supported release.
 - Android verification workflow and Dependabot configuration.
 - Build, install, usage, architecture, contribution, security, and release
   documentation.
+- Executable goal-oriented workflow catalogue with ten scenario contracts, six
+  semantic emulator journeys, and 14 reviewed synthetic screenshots.
+- A searchable static usage guide, deterministic capture and comparison tooling,
+  pull-request evidence artifacts, and an explicitly gated public Pages
+  deployment path.
 - Strict Kotlin warning, Detekt, Android lint, and dependency-declaration gates.
 - Reproducible Python, Markdown, YAML, TOML, XML, GitHub configuration,
   spelling, link, workflow-security, repository-hygiene, and secret checks that
   run through the same pinned pre-commit gate locally and in CI.
+- Strict Python McCabe, cross-language cyclomatic, and Kotlin cognitive-
+  complexity ceilings, with advisory Radon maintainability reports.
+- Deterministic Vale terminology checks plus advisory active-voice, concise-
+  wording, and seven-formula readability feedback for Markdown.
+- An opt-in, SHA-pinned SonarQube-compatible analysis path that imports Detekt
+  and Kover reports without transmitting private source until trusted
+  repository settings are explicitly configured.
 - Aggregate Kover coverage verification with a 70% line floor.
 - Kotest property checks and bounded Jazzer fuzzing for POSIX command encoding.
 - Auditable offline-speech contracts plus an Android app-private model store
@@ -78,6 +90,15 @@ supported release.
 - Reproducible native speech packaging with exact ELF, ABI, dependency,
   hardening, size, symbol, build-path, TTS-marker, license, notice, provenance,
   and clean-rebuild checks.
+- Explicit sticky foreground connection recovery after ordinary Android process
+  death, constrained by a bounded Keystore-encrypted lease of exact
+  provider-scoped connection keys. Explicit stop clears the lease; malformed
+  starts fail closed; boot, force-stop, and Android user Stop never opt the app
+  back in.
+- API 36 process-death CI evidence that requires a different recreated process,
+  Android's sticky restart result, stable foreground-service ownership, explicit
+  notification Stop, and independent user-Stop and force-stop no-restart
+  behavior.
 
 ### Changed
 
@@ -104,12 +125,15 @@ supported release.
   identity data were removed before private GitHub publication.
 - Published history is scanned for secrets and uses the GitHub no-reply author
   identity.
+- Explicit foreground-service-backed background connections, encrypted recovery
+  intent, and privacy-safe notification delivery are implemented; live-provider
+  physical-device endurance evidence remains.
 
 ### Known limitations
 
 - The current session hub is an early control surface. Queued/offline input and
   changed-file preview, diff, and batch-export workflows are not yet exposed.
 - Voice input and attachments are not yet integrated with the text composer.
-- Offline speech and background recovery/notifications are not yet wired into
-  the application.
+- Offline speech is not yet wired into the application; end-to-end process-death
+  and provider endurance evidence remains incomplete.
 - Manual TalkBack/keyboard release audits and production release signing remain.

@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.session.runtime
 
 import dev.agentrelay.connection.api.ConnectionProfileId
@@ -58,21 +63,50 @@ enum class SessionCoordinatorIssueKind {
     SESSION_PERSISTENCE,
 }
 
+/**
+ * Describes a coordinator failure without owning presentation text. Labels are bounded opaque
+ * arguments; the UI owns the localized sentence structure for each [kind].
+ */
 data class SessionCoordinatorIssue(
     val id: String,
     val kind: SessionCoordinatorIssueKind,
     val connection: SessionConnectionKey?,
     val agentProviderId: AgentProviderId?,
-    val actionableMessage: String,
+    val connectionProviderLabel: String? = null,
+    val connectionLabel: String? = null,
+    val agentProviderLabel: String? = null,
     val recoverable: Boolean,
     val occurredAtEpochMillis: Long,
 ) {
     init {
         require(id.isNotBlank() && id.length <= 512)
-        require(actionableMessage.isNotBlank() && actionableMessage.length <= 4_096)
+        when (kind) {
+            SessionCoordinatorIssueKind.PROFILE_DISCOVERY -> {
+                require(connectionProviderLabel.isValidIssueLabel())
+                require(connectionLabel == null && agentProviderLabel == null)
+            }
+            SessionCoordinatorIssueKind.CONNECTION_SETUP -> {
+                require(connectionLabel.isValidIssueLabel())
+                require(connectionProviderLabel == null && agentProviderLabel == null)
+            }
+            SessionCoordinatorIssueKind.PROVIDER_SYNCHRONIZATION -> {
+                require(connectionLabel.isValidIssueLabel())
+                require(agentProviderLabel.isValidIssueLabel())
+                require(connectionProviderLabel == null)
+            }
+            SessionCoordinatorIssueKind.SESSION_PERSISTENCE -> {
+                require(agentProviderLabel.isValidIssueLabel())
+                require(connectionProviderLabel == null && connectionLabel == null)
+            }
+        }
         require(occurredAtEpochMillis >= 0L)
     }
 }
+
+private const val MAX_ISSUE_LABEL_LENGTH = 256
+
+private fun String?.isValidIssueLabel(): Boolean =
+    this != null && isNotBlank() && length <= MAX_ISSUE_LABEL_LENGTH
 
 data class SessionCoordinatorSnapshot(
     val profiles: List<ConnectionProfileSummary> = emptyList(),

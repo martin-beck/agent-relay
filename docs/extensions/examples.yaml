@@ -1,0 +1,74 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
+examples:
+  - name: coding-agent-provider
+    fixture: true
+    kind: agent
+    manifest: provider.coding-agent
+    workflow: inspect-redacted-change
+    evidence: accepted-without-external-effect
+    redaction: "fixture input and output contain digests only"
+  - name: repository-debug-log
+    fixture: true
+    kind: workflow
+    manifest: workflow.repository-debug
+    workflow: collect-bounded-log
+    evidence: rejected-out-of-scope-path
+    redaction: "repository paths are symbolic"
+  - name: publication-monitor
+    fixture: true
+    kind: workflow
+    manifest: workflow.publication-monitor
+    workflow: report-publication-state
+    evidence: accepted-read-only
+    redaction: "release identifiers are synthetic"
+  - name: price-monitor
+    fixture: true
+    kind: connector
+    manifest: connector.price-monitor
+    workflow: compare-synthetic-price
+    evidence: accepted-read-only
+    redaction: "prices and provider names are fixtures"
+  - name: restaurant-location-recommendation
+    fixture: true
+    kind: connector
+    manifest: connector.restaurant-location
+    workflow: recommend-nearby-fixture
+    evidence: pending-user-approval
+    redaction: "location is a coarse synthetic region"
+  - name: calendar-cultural-suggestion
+    fixture: true
+    kind: workflow
+    manifest: workflow.calendar-cultural
+    workflow: suggest-cultural-context
+    evidence: accepted-read-only
+    redaction: "calendar title and dates are synthetic"
+  - name: smart-home-battery-check
+    fixture: true
+    kind: connector
+    manifest: connector.smart-home-battery
+    workflow: read-battery-level
+    evidence: accepted-read-only
+    redaction: "device identity is synthetic"
+  - name: vehicle-maintenance-reminder
+    fixture: true
+    kind: workflow
+    manifest: workflow.vehicle-maintenance
+    workflow: propose-maintenance-reminder
+    evidence: pending-user-approval
+    redaction: "vehicle identity and mileage are synthetic"
+  - name: custom-theme
+    fixture: true
+    kind: presentation
+    manifest: presentation.custom-theme
+    workflow: preview-theme
+    evidence: accepted-without-external-effect
+    redaction: "asset names are symbolic"
+  - name: watch-notification
+    fixture: true
+    kind: presentation
+    manifest: presentation.watch-notification
+    workflow: project-safe-alert
+    evidence: accepted-phone-confirmation-required
+    redaction: "notification text is synthetic"

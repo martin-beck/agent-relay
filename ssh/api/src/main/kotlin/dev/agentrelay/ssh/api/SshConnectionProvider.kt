@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.ssh.api
 
 import dev.agentrelay.connection.api.ConnectionCapability
@@ -10,7 +15,6 @@ import dev.agentrelay.connection.api.ConnectionIdentityChallenge
 import dev.agentrelay.connection.api.ConnectionIdentityDecision
 import dev.agentrelay.connection.api.ConnectionIdentityDisposition
 import dev.agentrelay.connection.api.ConnectionPhase
-import dev.agentrelay.connection.api.ConnectionProfileEditor
 import dev.agentrelay.connection.api.ConnectionProfileId
 import dev.agentrelay.connection.api.ConnectionProfileManager
 import dev.agentrelay.connection.api.ConnectionProfileSaveResult
@@ -40,10 +44,7 @@ class SshConnectionProvider(
     private val delegateProfileManager: ConnectionProfileManager,
     stateDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : ConnectionProvider {
-    override val profileManager: ConnectionProfileManager = object : ConnectionProfileManager {
-        override suspend fun editor(profileId: ConnectionProfileId?): ConnectionProfileEditor =
-            delegateProfileManager.editor(profileId)
-
+    override val profileManager: ConnectionProfileManager = object : ConnectionProfileManager by delegateProfileManager {
         override suspend fun save(
             update: ConnectionProfileUpdate,
         ): ConnectionProfileSaveResult {

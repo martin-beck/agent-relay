@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved. -->
+<!-- SPDX-License-Identifier: MIT -->
+
+<resources>
+    <color name="widget_background">#F7F9FC</color>
+    <color name="widget_primary_text">#1B1B1F</color>
+    <color name="widget_secondary_text">#45464F</color>
+    <color name="widget_action_text">#173F7A</color>
+</resources>

@@ -1,0 +1,45 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
+id: durable-recovery
+title: Recover after network, process, or device interruption
+summary: Restore useful state automatically and surface only recovery decisions that need a person.
+status: verified
+order: 7
+verified_test: com.example.agentrelay.ui.main.UsageJourneyTest#capturesVerifiedJourneys
+goal: Continue durable work after interruption without duplicate commands, lost drafts, or silent uncertainty.
+preconditions:
+  - The app previously stored provider-scoped sessions and connection state.
+  - Both devices can eventually reach the same shared network or VPN.
+automatic:
+  - Agent Relay restores encrypted profiles, drafts, event cursors, and acknowledged actions.
+  - Connections retry with bounded backoff, jitter, and an explicit retry budget.
+  - Reconciliation deduplicates replayed events and marks uncertain operations.
+attention:
+  - Review changed host identity before reconnecting.
+  - Decide what to do when a non-idempotent operation has an uncertain outcome.
+  - Reauthenticate when the stored credential is no longer usable.
+recovery:
+  - Exhausted retries move the item to an actionable failed state instead of looping forever.
+  - Restarting either side resumes from durable cursors and operation identifiers.
+  - Manual retry is available only when the operation is safe to repeat.
+steps:
+  - id: observe-interruption
+    title: Observe a bounded degraded state
+    action: Lose the shared network or stop one endpoint during active work.
+    expected: The app preserves the session and reports reconnecting without inventing progress.
+    screenshot: bounded-reconnect.png
+    alt: Agent Relay shows the Workshop host reconnecting with a bounded retry attempt and delay.
+  - id: reconcile-durable-state
+    title: Reconcile after reachability returns
+    action: Restore the shared network or restart the stopped endpoint.
+    expected: >-
+      The app resumes from durable state, suppresses duplicate delivery, and keeps an uncertain response visible.
+    screenshot: uncertain-effect.png
+    alt: Agent Relay keeps an uncertain provider response visible and explicitly blocks unsafe retry.
+  - id: handle-uncertainty
+    title: Handle the remaining exception
+    action: Inspect the uncertain response and wait for a newly identified provider request.
+    expected: The uncertainty clears only when the new request appears with safe response controls.
+    screenshot: reconciled-request.png
+    alt: Agent Relay shows a newly identified approval request after the uncertain response is reconciled.

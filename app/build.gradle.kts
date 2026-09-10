@@ -1,8 +1,17 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.roborazzi)
+}
+
+dependencies {
+    lintChecks(project(":lint-checks"))
 }
 
 android {
@@ -25,9 +34,32 @@ android {
     }
 
     buildTypes {
+        getByName("debug") {
+            isPseudoLocalesEnabled = true
+            manifestPlaceholders["profileableByShell"] = false
+            buildConfigField("String", "AGENT_RELAY_BUILD_MODE", "\"debug\"")
+        }
+        create("diagnostic") {
+            initWith(getByName("debug"))
+            applicationIdSuffix = ".diagnostic"
+            versionNameSuffix = "-diagnostic"
+            matchingFallbacks += listOf("debug")
+            manifestPlaceholders["profileableByShell"] = false
+            buildConfigField("String", "AGENT_RELAY_BUILD_MODE", "\"diagnostic\"")
+        }
+        create("profileable") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".profileable"
+            versionNameSuffix = "-profileable"
+            matchingFallbacks += listOf("release")
+            manifestPlaceholders["profileableByShell"] = true
+            buildConfigField("String", "AGENT_RELAY_BUILD_MODE", "\"profileable\"")
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            manifestPlaceholders["profileableByShell"] = false
+            buildConfigField("String", "AGENT_RELAY_BUILD_MODE", "\"release\"")
         }
     }
     compileOptions {
@@ -37,8 +69,11 @@ android {
     buildFeatures {
         compose = true
         aidl = false
-        buildConfig = false
+        buildConfig = true
         shaders = false
+    }
+    androidResources {
+        generateLocaleConfig = true
     }
 
     packaging {
@@ -60,14 +95,19 @@ dependencies {
 
     // Core Android dependencies
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.annotation)
+    implementation(libs.androidx.core.base)
+    implementation(libs.androidx.core.ktx)
 
     // Arch Components
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.process)
 
     // Provider-neutral connection and session runtime
     implementation(project(":connection:api"))
     implementation(project(":connection:local"))
+    implementation(project(":companion:api"))
     implementation(project(":provider:api"))
     implementation(project(":provider:aider"))
     implementation(project(":provider:claude"))
@@ -75,10 +115,15 @@ dependencies {
     implementation(project(":provider:codex"))
     implementation(project(":provider:continue"))
     implementation(project(":provider:opencode"))
+    implementation(project(":provider:opendesk"))
     implementation(project(":session:android"))
     implementation(project(":session:api"))
     implementation(project(":session:runtime"))
+    implementation(project(":speech:api"))
     implementation(project(":ssh:android"))
+    implementation(project(":ssh:api"))
+    implementation(project(":storage:android"))
+    implementation(libs.kotlinx.serialization.json)
 
     // Compose
     implementation(libs.androidx.compose.ui)
@@ -95,6 +140,9 @@ dependencies {
 
     // Local tests: jUnit, coroutines, Android runner
     testImplementation(libs.junit)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.androidx.test.espresso.core)
+    testImplementation(libs.androidx.compose.ui.geometry)
     testImplementation(libs.androidx.compose.ui.test.junit4)
     testRuntimeOnly(libs.androidx.compose.ui.test.manifest)
     testImplementation(libs.androidx.test.ext.junit)
@@ -107,7 +155,7 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
 
     // Instrumented tests: jUnit rules and runners
-    androidTestRuntimeOnly(libs.androidx.test.core)
+    androidTestImplementation(libs.androidx.test.core)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.test.monitor)
