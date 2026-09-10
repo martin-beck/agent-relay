@@ -8,11 +8,14 @@ import copy
 import json
 import os
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any, cast
 from unittest.mock import patch
 
+from bounded_subprocess import BoundedProcessError, run_bounded
 from run_offline_provider_assurance import (
     AssuranceError,
     CheckResult,
@@ -76,7 +79,10 @@ class OfflineProviderAssuranceTest(unittest.TestCase):
                 "run_offline_provider_assurance.require_network_namespace",
                 return_value=None,
             ),
-            patch("run_offline_provider_assurance.subprocess.run", return_value=completed) as call,
+            patch(
+                "run_offline_provider_assurance.run_bounded",
+                return_value=completed,
+            ) as call,
         ):
             contract, checks = run(REVISION, "1")
         command = call.call_args.args[0]
@@ -87,6 +93,7 @@ class OfflineProviderAssuranceTest(unittest.TestCase):
         self.assertNotEqual(environment["HOME"], str(Path.home()))
         self.assertTrue(environment["ANDROID_USER_HOME"].startswith(environment["HOME"]))
         self.assertTrue(environment["XDG_DATA_HOME"].startswith(environment["HOME"]))
+        self.assertEqual(call.call_args.kwargs["max_output_bytes"], 65_536)
         self.assertEqual([check.result for check in checks], ["passed", "passed", "passed"])
         summary = summary_document(REVISION, checks, contract)
         rendered = json.dumps(summary)
@@ -127,3 +134,46 @@ class OfflineProviderAssuranceTest(unittest.TestCase):
             rendered = summary.read_text(encoding="utf-8")
         self.assertEqual(json.loads(rendered)["sourceRevision"], "0" * 40)
         self.assertNotIn("private-path-or-prompt", rendered)
+
+    def test_malformed_policy_still_emits_bounded_failure_artifacts(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            policy = root / "policy.json"
+            malformed: Any = copy.deepcopy(self.contract())
+            live = cast(dict[str, Any], malformed["liveProvider"])
+            live["requiredClaims"] = [{}]
+            policy.write_text(json.dumps(malformed), encoding="utf-8")
+            junit = root / "result.xml"
+            summary = root / "summary.json"
+            arguments = [
+                "run_offline_provider_assurance.py",
+                "--source-revision",
+                REVISION,
+                "--parent-netns-inode",
+                "1",
+                "--junit",
+                str(junit),
+                "--summary",
+                str(summary),
+            ]
+            with (
+                patch("run_offline_provider_assurance.CONTRACT_PATH", policy),
+                patch("sys.argv", arguments),
+            ):
+                self.assertEqual(main(), 1)
+            report = json.loads(summary.read_text(encoding="utf-8"))
+            self.assertEqual(report["result"], "failed")
+            self.assertEqual(report["sourceRevision"], REVISION)
+            self.assertLess(summary.stat().st_size, 16_384)
+            self.assertIn('failures="1"', junit.read_text(encoding="utf-8"))
+
+    def test_subprocess_output_limit_is_enforced_while_streaming(self) -> None:
+        command = [sys.executable, "-c", "import os; os.write(1, b'x' * 4096)"]
+        with self.assertRaisesRegex(BoundedProcessError, "output budget"):
+            run_bounded(
+                command,
+                cwd=ROOT,
+                env=os.environ.copy(),
+                timeout_seconds=10,
+                max_output_bytes=32,
+            )

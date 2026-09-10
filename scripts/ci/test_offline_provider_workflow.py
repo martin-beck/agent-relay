@@ -70,3 +70,8 @@ class OfflineProviderWorkflowTest(unittest.TestCase):
         self.assertIs(upload["continue-on-error"], True)
         self.assertEqual(upload["with"]["retention-days"], 14)
         self.assertEqual(upload["with"]["if-no-files-found"], "error")
+        reporter = next(
+            step for step in steps if step["name"] == "Report optional evidence transport failure"
+        )
+        self.assertIn("evidence was unavailable", reporter["run"])
+        self.assertNotIn("replay completed", reporter["run"])

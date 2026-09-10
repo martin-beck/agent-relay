@@ -64,6 +64,9 @@ def _validate_metadata(metadata: Any) -> None:
         raise CassetteError("cassette metadata is incomplete")
     if metadata["protocol"] not in PROTOCOLS:
         raise CassetteError("cassette protocol is unsupported")
+    encoded = json.dumps(metadata, sort_keys=True, separators=(",", ":"))
+    if len(encoded.encode()) > 512 or SECRET.search(encoded) or PATH.search(encoded):
+        raise CassetteError("cassette metadata is oversized or contains protected data")
     if not all(
         isinstance(metadata[field], str) and 0 < len(metadata[field]) <= 64
         for field in ("cliVersion", "toolVersion")

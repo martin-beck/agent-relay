@@ -8,15 +8,15 @@ import argparse
 import json
 import os
 import re
-import signal
 import subprocess
 import tempfile
-from contextlib import suppress
 from hashlib import sha256
 from math import isfinite
 from pathlib import Path
 from typing import Any, cast
 from xml.etree import ElementTree
+
+from bounded_subprocess import BoundedProcessError, run_bounded
 
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / "config/local-inference-conformance-v1.json"
@@ -576,31 +576,22 @@ def validate_driver_provenance(evidence: dict[str, Any], staged: dict[str, Any])
             raise ConformanceBlocked(f"driver evidence does not match staged provenance: {field}")
 
 
-def terminate_driver_group(process: subprocess.Popen[bytes]) -> None:
-    with suppress(ProcessLookupError):
-        os.killpg(process.pid, signal.SIGKILL)
-    process.wait()
-
-
 def execute_driver(
     command: list[str], environment: dict[str, str], timeout: int
 ) -> subprocess.CompletedProcess[bytes]:
-    process = subprocess.Popen(  # noqa: S603
-        command,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        env=environment,
-        start_new_session=True,
-    )
     try:
-        stdout, stderr = process.communicate(timeout=timeout)
-    except subprocess.TimeoutExpired as error:
-        terminate_driver_group(process)
-        raise ConformanceBlocked("the conformance driver exceeded its time budget") from error
-    completed = subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
-    if process.returncode != 0:
-        terminate_driver_group(process)
-    return completed
+        return run_bounded(
+            command,
+            env=environment,
+            timeout_seconds=timeout,
+            max_output_bytes=MAX_COMMAND_OUTPUT_BYTES,
+        )
+    except BoundedProcessError as error:
+        if "time budget" in str(error):
+            message = "the conformance driver exceeded its time budget"
+        else:
+            message = "the conformance driver exceeded its output budget"
+        raise ConformanceBlocked(message) from error
 
 
 def run() -> dict[str, Any]:
@@ -621,11 +612,6 @@ def run() -> dict[str, Any]:
         # The command is an explicit trusted-runner input, parsed as argv and
         # constrained to an absolute executable; no shell is involved.
         completed = execute_driver(command, environment, timeout)
-        if (
-            len(completed.stdout) > MAX_COMMAND_OUTPUT_BYTES
-            or len(completed.stderr) > MAX_COMMAND_OUTPUT_BYTES
-        ):
-            raise ConformanceBlocked("the conformance driver exceeded its output budget")
         if completed.returncode != 0:
             raise ConformanceBlocked("the conformance driver failed; private output was suppressed")
         evidence = read_evidence(evidence_path)
@@ -665,9 +651,23 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-if __name__ == "__main__":
+def main() -> int:
     arguments = parse_args()
-    result = run()
+    try:
+        result = run()
+    except Exception:
+        result = {
+            "schemaVersion": 1,
+            "evidenceLabel": "local-model",
+            "result": "failed",
+            "failureClass": "infrastructure",
+            "checks": ["conformance-gate"],
+        }
     if arguments.junit is not None:
         write_junit(result, arguments.junit)
     print(json.dumps(result, sort_keys=True, separators=(",", ":")))
+    return 0 if result["result"] == "passed" else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

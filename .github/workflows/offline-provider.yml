@@ -88,6 +88,8 @@ jobs:
       - name: Report optional evidence transport failure
         if: ${{ !cancelled() && steps.upload_offline_provider.outcome == 'failure' }}
         run: |
-          echo "### Offline provider assurance"
-          echo "Authoritative replay completed, but optional redacted evidence upload failed." \
-            >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "### Offline provider assurance"
+            echo "Optional redacted evidence upload failed or evidence was unavailable."
+            echo "Inspect the preceding authoritative gate status."
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -100,6 +100,8 @@ jobs:
       - name: Report optional evidence transport failure
         if: ${{ !cancelled() && steps.upload_local_inference.outcome == 'failure' }}
         run: |
-          echo "### Local inference conformance"
-          echo "Authoritative conformance completed, but optional redacted evidence upload failed." \
-            >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "### Local inference conformance"
+            echo "Optional redacted evidence upload failed or evidence was unavailable."
+            echo "Inspect the preceding authoritative gate status."
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -78,3 +78,11 @@ class LlmCassetteTest(unittest.TestCase):
         cassette["frames"].pop()
         with self.assertRaisesRegex(CassetteError, "unmatched"):
             validate_cassette(cassette)
+
+    def test_validation_rejects_protected_metadata(self) -> None:
+        for value in ("client-/home/private/session", "Bearer abcdefghijklmnop"):
+            with self.subTest(value=value):
+                cassette = self.cassette()
+                cassette["metadata"]["cliVersion"] = value
+                with self.assertRaisesRegex(CassetteError, "protected data"):
+                    validate_cassette(cassette)

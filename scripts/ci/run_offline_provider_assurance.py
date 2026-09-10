@@ -8,13 +8,13 @@ import argparse
 import json
 import os
 import re
-import subprocess
 import tempfile
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, NoReturn, cast
 from xml.etree import ElementTree
 
+from bounded_subprocess import BoundedProcessError, run_bounded
 from llm_cassette import load_cassette, replay
 from verify_offline_provider_fixture import validate_fixture
 
@@ -37,6 +37,7 @@ PROHIBITED_CONTENT = {
     "system-paths",
     "unreviewed-cassettes",
 }
+MAX_SUMMARY_BYTES = 16_384
 
 
 class AssuranceError(RuntimeError):
@@ -247,25 +248,20 @@ def run_gradle_replay(tier: dict[str, Any]) -> None:
     environment = os.environ.copy()
     environment["AGENT_RELAY_REPLAY_SEED"] = str(tier["seed"])
     environment["AGENT_RELAY_VIRTUAL_TIME"] = "1"
-    try:
-        with tempfile.TemporaryDirectory(prefix="agent-relay-offline-provider-") as runtime_home:
-            environment["HOME"] = runtime_home
-            environment["ANDROID_USER_HOME"] = str(Path(runtime_home) / "android")
-            environment["XDG_DATA_HOME"] = str(Path(runtime_home) / "xdg-data")
-            completed = subprocess.run(  # noqa: S603 - fixed wrapper and allowlisted tests.
+    with tempfile.TemporaryDirectory(prefix="agent-relay-offline-provider-") as runtime_home:
+        environment["HOME"] = runtime_home
+        environment["ANDROID_USER_HOME"] = str(Path(runtime_home) / "android")
+        environment["XDG_DATA_HOME"] = str(Path(runtime_home) / "xdg-data")
+        try:
+            completed = run_bounded(
                 command,
                 cwd=ROOT,
                 env=environment,
-                capture_output=True,
-                check=False,
-                timeout=int(tier["timeoutSeconds"]),
+                timeout_seconds=int(tier["timeoutSeconds"]),
+                max_output_bytes=int(tier["maxOutputBytes"]),
             )
-    except subprocess.TimeoutExpired as error:
-        raise AssuranceError("provider protocol replay exceeded its time budget") from error
-    if len(completed.stdout) > int(tier["maxOutputBytes"]) or len(completed.stderr) > int(
-        tier["maxOutputBytes"]
-    ):
-        fail("provider protocol replay exceeded its private output budget")
+        except BoundedProcessError as error:
+            raise AssuranceError(f"provider protocol replay {error}") from error
     if completed.returncode != 0:
         fail("provider protocol replay failed; private output was suppressed")
 
@@ -295,16 +291,25 @@ def write_junit(path: Path, checks: list[CheckResult]) -> None:
 
 
 def summary_document(
-    source_revision: str, checks: list[CheckResult], document: dict[str, Any]
+    source_revision: str, checks: list[CheckResult], document: dict[str, Any] | None
 ) -> dict[str, Any]:
     passed = all(check.result == "passed" for check in checks)
+    evidence_label = EXPECTED_LABELS["deterministicReplay"]
+    network = "fresh-network-namespace-no-egress"
+    seed = 0
+    virtual_time = True
+    if document is not None:
+        evidence_label = document["evidenceLabels"]["deterministicReplay"]
+        network = document["deterministicReplay"]["network"]
+        seed = document["deterministicReplay"]["seed"]
+        virtual_time = document["deterministicReplay"]["virtualTime"]
     return {
         "schemaVersion": 1,
-        "evidenceLabel": document["evidenceLabels"]["deterministicReplay"],
+        "evidenceLabel": evidence_label,
         "sourceRevision": source_revision,
-        "network": document["deterministicReplay"]["network"],
-        "seed": document["deterministicReplay"]["seed"],
-        "virtualTime": document["deterministicReplay"]["virtualTime"],
+        "network": network,
+        "seed": seed,
+        "virtualTime": virtual_time,
         "result": "passed" if passed else "failed",
         "checks": [asdict(check) for check in checks],
         "wireEmulator": {"result": "not-run", "reason": "no-added-coverage-proven"},
@@ -357,18 +362,19 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    document = load_json(CONTRACT_PATH)
     safe_revision = args.source_revision if REVISION.fullmatch(args.source_revision) else "0" * 40
+    document: dict[str, Any] | None
     checks: list[CheckResult]
     try:
         document, checks = run(args.source_revision, args.parent_netns_inode)
         status = 0
-    except AssuranceError:
+    except Exception:
+        document = None
         checks = [CheckResult("offline-provider-assurance", "failed")]
         status = 1
     write_junit(args.junit, checks)
     summary = summary_document(safe_revision, checks, document)
-    write_summary(args.summary, summary, int(document["artifacts"]["maxSummaryBytes"]))
+    write_summary(args.summary, summary, MAX_SUMMARY_BYTES)
     print(json.dumps(summary, sort_keys=True, separators=(",", ":")))
     return status
 
