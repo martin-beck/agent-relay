@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "provenance": {
+    "classification": "synthetic-credential-free",
+    "contract": "docs/contracts/workbuddy-provider-v1.json",
+    "open_api_reference_digest": "sha256:94b236a4465e91d0a9c43117dd9582acbaf780a29543c9fd7896c32dd947d52e",
+    "third_party_app_digest": "sha256:70cb159236628cd43550c4ad872e02dfbcb0836f1834fbf87d0f61d010265a9b"
+  },
+  "status_online": {"code":0,"msg":"synthetic","request_id":"req-replay-1","data":{"online":true}},
+  "history_gap": {"code":0,"msg":"synthetic","request_id":"req-replay-2","data":{"messages":[
+    {"message_id":"msg-100","role":"user","content":["synthetic question"],"msg_type":"text","created_at":"2026-09-10T10:00:00Z","attachments":[],"metadata":{}},
+    {"message_id":"msg-900","role":"assistant","content":["synthetic answer"],"msg_type":"text","created_at":"2026-09-10T10:00:02Z","attachments":[],"metadata":{}}
+  ]}},
+  "send_accepted": {"code":0,"msg":"synthetic","request_id":"req-replay-3","data":{"message_id":"msg-901"}}
+}
