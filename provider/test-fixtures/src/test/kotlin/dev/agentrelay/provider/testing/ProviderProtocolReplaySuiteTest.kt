@@ -75,7 +75,10 @@ class ProviderProtocolReplaySuiteTest {
     @Test
     fun malformedAndUnexpectedReplayInputsFailClosed() = runTest {
         val runtime = ScriptedRemoteAgentRuntime(
-            listOf(ScriptedCommand(RemoteCommand("aider", listOf("--message"))), ScriptedCommand(RemoteCommand("aider", listOf("--message")))),
+            listOf(
+                ScriptedCommand(RemoteCommand("aider", listOf("--message"))),
+                ScriptedCommand(RemoteCommand("aider", listOf("--message"))),
+            ),
         )
         assertFailsWith<IllegalStateException> {
             runtime.execute(RemoteCommand("aider", listOf("--wrong")))
