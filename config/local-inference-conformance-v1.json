@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "status": "unverified",
+  "network": "deny",
+  "execution": "scheduled-or-manual-self-hosted",
+  "engines": [
+    {"id":"ollama","revision":"86f72929348d384336b6f0adc129e71b2122abdc","protocol":"openai-chat","model":"staged-model-required","quantization":"engine-default-not-accepted","template":"engine-default-not-accepted","cli":"shipped-agent-cli-required","hardware":"self-hosted-cpu-or-gpu","result":"unverified"},
+    {"id":"llama.cpp","revision":"1945e092030f8668ff93382799502d01490e564d","protocol":"openai-chat","model":"staged-model-required","quantization":"explicit-staged-model-required","template":"explicit-chat-template-required","cli":"shipped-agent-cli-required","hardware":"self-hosted-cpu-or-gpu","result":"unverified"},
+    {"id":"vllm","revision":"385dce36bcee42309924a5ece951a96db3dce7f2","protocol":"openai-chat","model":"staged-model-required","quantization":"explicit-staged-model-required","template":"explicit-chat-template-required","cli":"shipped-agent-cli-required","hardware":"accelerator-self-hosted","result":"unverified"},
+    {"id":"localai","revision":"bf93008ef3d6662d6a69447ca121a2af14c741f9","protocol":"openai-chat","model":"staged-model-required","quantization":"explicit-staged-model-required","template":"explicit-chat-template-required","cli":"shipped-agent-cli-required","hardware":"self-hosted-cpu-or-gpu","result":"unverified"}
+  ],
+  "checks": ["health-is-not-compatibility", "stream", "tool-call", "approval", "cancel", "history-resume", "malformed", "timeout", "teardown"],
+  "required_evidence": ["engine_digest", "model_digest", "cli_digest", "adapter_provider", "hardware_class", "redacted_junit"]
+}
