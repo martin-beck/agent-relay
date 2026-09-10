@@ -9,6 +9,7 @@ import os
 import re
 import subprocess
 import tempfile
+from math import isfinite
 from pathlib import Path
 from typing import Any
 
@@ -24,6 +25,24 @@ ALLOWED_FAILURE_CLASSES = {
     "infrastructure",
     "model-behavior",
     "performance",
+}
+STAGED_TUPLE_FIELDS = {
+    "adapter",
+    "cli",
+    "cliDigest",
+    "cliRevision",
+    "cliVersion",
+    "engine",
+    "engineDigest",
+    "engineRevision",
+    "engineVersion",
+    "hardwareClass",
+    "model",
+    "modelDigest",
+    "protocol",
+    "quantization",
+    "sampling",
+    "templateDigest",
 }
 OBSERVATION_FIELDS = {
     "adapter",
@@ -205,26 +224,59 @@ def validate_observation_source(source: Any) -> None:
         raise ValueError("observation source differs from the reviewed public revisions")
 
 
-def require_execution_gates() -> None:
+def require_execution_gates() -> dict[str, Any]:
     if os.environ.get("AGENT_RELAY_LOCAL_INFERENCE_ENABLE") != "1":
         raise ConformanceBlocked("explicit local-inference enable flag is required")
     if os.environ.get("AGENT_RELAY_OUTBOUND_NETWORK", "deny") != "deny":
         raise ConformanceBlocked("outbound network must remain denied")
-    for variable in (
-        "AGENT_RELAY_ENGINE_DIGEST",
-        "AGENT_RELAY_MODEL_DIGEST",
-        "AGENT_RELAY_CLI_DIGEST",
+    return load_staged_tuple()
+
+
+def load_staged_tuple() -> dict[str, Any]:
+    raw_tuple = os.environ.get("AGENT_RELAY_LOCAL_INFERENCE_TUPLE_JSON", "")
+    try:
+        staged = json.loads(raw_tuple)
+    except json.JSONDecodeError as error:
+        raise ConformanceBlocked("staged tuple provenance must be valid JSON") from error
+    if not isinstance(staged, dict) or set(staged) != STAGED_TUPLE_FIELDS:
+        raise ConformanceBlocked("staged tuple provenance fields do not match the schema")
+    for field in (
+        "adapter",
+        "cli",
+        "cliVersion",
+        "engine",
+        "engineVersion",
+        "model",
+        "protocol",
+        "quantization",
     ):
-        value = os.environ.get(variable, "")
-        if not SHA256.fullmatch(value):
-            raise ConformanceBlocked(f"missing provenance: {variable}")
-    if not os.environ.get("AGENT_RELAY_ADAPTER"):
-        raise ConformanceBlocked("missing provenance: AGENT_RELAY_ADAPTER")
-    if os.environ.get("AGENT_RELAY_HARDWARE_CLASS") not in {
+        if not isinstance(staged[field], str) or not staged[field]:
+            raise ConformanceBlocked(f"staged tuple provenance is missing {field}")
+    for field in ("cliDigest", "engineDigest", "modelDigest", "templateDigest"):
+        if not isinstance(staged[field], str) or not SHA256.fullmatch(staged[field]):
+            raise ConformanceBlocked(f"staged tuple provenance has invalid {field}")
+    for field in ("cliRevision", "engineRevision"):
+        if not isinstance(staged[field], str) or not REVISION.fullmatch(staged[field]):
+            raise ConformanceBlocked(f"staged tuple provenance has invalid {field}")
+    if staged["hardwareClass"] not in {
         "self-hosted-cpu-x86_64",
         "self-hosted-gpu-x86_64",
     }:
         raise ConformanceBlocked("an explicit supported hardware class is required")
+    validate_sampling(staged["sampling"])
+    return staged
+
+
+def validate_sampling(sampling: Any) -> None:
+    if not isinstance(sampling, dict) or not sampling:
+        raise ConformanceBlocked("sampling settings must be a non-empty object")
+    for name, value in sampling.items():
+        if not isinstance(name, str) or not name:
+            raise ConformanceBlocked("sampling setting names must be non-empty strings")
+        if value is not None and not isinstance(value, (str, int, float, bool)):
+            raise ConformanceBlocked("sampling setting values must be JSON scalars")
+        if isinstance(value, float) and not isfinite(value):
+            raise ConformanceBlocked("sampling setting numbers must be finite")
 
 
 def require_network_namespace() -> None:
@@ -277,19 +329,13 @@ def read_evidence(path: Path) -> dict[str, Any]:
     return evidence
 
 
-def validate_driver_evidence(evidence: dict[str, Any], document: dict[str, Any]) -> None:
-    required = {
-        "adapter",
+def validate_driver_evidence(
+    evidence: dict[str, Any], document: dict[str, Any], staged: dict[str, Any]
+) -> None:
+    required = STAGED_TUPLE_FIELDS | {
         "checks",
-        "cli",
-        "cliDigest",
-        "engine",
-        "engineDigest",
         "evidenceLabel",
         "failureClass",
-        "hardwareClass",
-        "model",
-        "modelDigest",
         "result",
         "schemaVersion",
     }
@@ -301,13 +347,19 @@ def validate_driver_evidence(evidence: dict[str, Any], document: dict[str, Any])
     if evidence["engine"] not in engine_ids:
         raise ConformanceBlocked("driver evidence names an undeclared engine")
     validate_driver_result(evidence, document)
-    validate_driver_provenance(evidence)
+    validate_driver_provenance(evidence, staged)
 
 
 def validate_driver_result(evidence: dict[str, Any], document: dict[str, Any]) -> None:
     checks = evidence["checks"]
     declared_checks = set(document["checks"])
-    if not isinstance(checks, list) or not checks or not set(checks) <= declared_checks:
+    if (
+        not isinstance(checks, list)
+        or not checks
+        or not all(isinstance(check, str) for check in checks)
+        or len(checks) != len(set(checks))
+        or not set(checks) <= declared_checks
+    ):
         raise ConformanceBlocked("driver evidence contains invalid checks")
     if evidence["result"] not in {"passed", "failed"}:
         raise ConformanceBlocked("driver evidence has an invalid result")
@@ -318,29 +370,23 @@ def validate_driver_result(evidence: dict[str, Any], document: dict[str, Any]) -
         raise ConformanceBlocked("failed evidence requires a classified failure")
 
 
-def validate_driver_provenance(evidence: dict[str, Any]) -> None:
-    expected = {
-        "adapter": os.environ["AGENT_RELAY_ADAPTER"],
-        "cliDigest": os.environ["AGENT_RELAY_CLI_DIGEST"],
-        "engineDigest": os.environ["AGENT_RELAY_ENGINE_DIGEST"],
-        "hardwareClass": os.environ["AGENT_RELAY_HARDWARE_CLASS"],
-        "modelDigest": os.environ["AGENT_RELAY_MODEL_DIGEST"],
-    }
-    for field, value in expected.items():
-        if evidence[field] != value:
+def validate_driver_provenance(evidence: dict[str, Any], staged: dict[str, Any]) -> None:
+    for field, value in staged.items():
+        if evidence.get(field) != value:
             raise ConformanceBlocked(f"driver evidence does not match staged provenance: {field}")
-    for field in ("cli", "model"):
-        if not isinstance(evidence[field], str) or not evidence[field]:
-            raise ConformanceBlocked(f"driver evidence is missing {field}")
 
 
 def run() -> dict[str, Any]:
     document = load_manifest()
     validate_manifest(document)
-    require_execution_gates()
+    staged = require_execution_gates()
     require_network_namespace()
     command = load_driver_command()
-    timeout = min(max(int(os.environ.get("AGENT_RELAY_LOCAL_INFERENCE_TIMEOUT", "1800")), 1), 3600)
+    try:
+        requested_timeout = int(os.environ.get("AGENT_RELAY_LOCAL_INFERENCE_TIMEOUT", "1800"))
+    except ValueError as error:
+        raise ConformanceBlocked("the conformance timeout must be an integer") from error
+    timeout = min(max(requested_timeout, 1), 3600)
     with tempfile.TemporaryDirectory(prefix="agent-relay-local-inference-") as temporary:
         evidence_path = Path(temporary) / "evidence.json"
         environment = os.environ.copy()
@@ -366,7 +412,7 @@ def run() -> dict[str, Any]:
         if completed.returncode != 0:
             raise ConformanceBlocked("the conformance driver failed; private output was suppressed")
         evidence = read_evidence(evidence_path)
-    validate_driver_evidence(evidence, document)
+    validate_driver_evidence(evidence, document, staged)
     return evidence
 
 

@@ -22,6 +22,38 @@ from run_local_inference_conformance import (
 )
 
 
+def staged_tuple(digest: str = "a" * 64) -> dict[str, object]:
+    return {
+        "adapter": "anomaly.opencode",
+        "cli": "opencode",
+        "cliDigest": digest,
+        "cliRevision": "1" * 40,
+        "cliVersion": "1.18.23",
+        "engine": "vllm",
+        "engineDigest": digest,
+        "engineRevision": "2" * 40,
+        "engineVersion": "0.28.1",
+        "hardwareClass": "self-hosted-cpu-x86_64",
+        "model": "Qwen/Qwen3-0.6B@immutable",
+        "modelDigest": digest,
+        "protocol": "openai-chat",
+        "quantization": "float32",
+        "sampling": {"seed": None, "temperature": 0},
+        "templateDigest": digest,
+    }
+
+
+def driver_evidence(digest: str = "a" * 64) -> dict[str, object]:
+    return {
+        **staged_tuple(digest),
+        "checks": ["stream", "teardown"],
+        "evidenceLabel": "local-model",
+        "failureClass": None,
+        "result": "passed",
+        "schemaVersion": 1,
+    }
+
+
 class LocalInferenceConformanceTest(unittest.TestCase):
     def test_manifest_has_four_unverified_pinned_tuples(self) -> None:
         manifest = load_manifest()
@@ -103,33 +135,49 @@ class LocalInferenceConformanceTest(unittest.TestCase):
 
     def test_driver_evidence_requires_exact_staged_provenance(self) -> None:
         digest = "a" * 64
-        evidence = {
-            "adapter": "anomaly.opencode",
-            "checks": ["stream", "teardown"],
-            "cli": "opencode 1.18.23",
-            "cliDigest": digest,
-            "engine": "vllm",
-            "engineDigest": digest,
-            "evidenceLabel": "local-model",
-            "failureClass": None,
-            "hardwareClass": "self-hosted-cpu-x86_64",
-            "model": "Qwen/Qwen3-0.6B@immutable",
-            "modelDigest": digest,
-            "result": "passed",
-            "schemaVersion": 1,
+        staged = staged_tuple(digest)
+        evidence = driver_evidence(digest)
+        validate_driver_evidence(evidence, load_manifest(), staged)
+        evidence["engineDigest"] = "b" * 64
+        with self.assertRaisesRegex(ConformanceBlocked, "staged provenance"):
+            validate_driver_evidence(evidence, load_manifest(), staged)
+
+    def test_driver_evidence_rejects_malformed_checks(self) -> None:
+        staged = staged_tuple()
+        for checks in (["stream", "stream"], ["stream", {}]):
+            evidence = driver_evidence()
+            evidence["checks"] = checks
+            with self.assertRaisesRegex(ConformanceBlocked, "invalid checks"):
+                validate_driver_evidence(evidence, load_manifest(), staged)
+
+    def test_staged_tuple_rejects_incomplete_provenance_and_invalid_timeout(self) -> None:
+        base_env = {
+            "AGENT_RELAY_LOCAL_INFERENCE_ENABLE": "1",
+            "AGENT_RELAY_OUTBOUND_NETWORK": "deny",
+            "AGENT_RELAY_LOCAL_INFERENCE_TUPLE_JSON": json.dumps(staged_tuple()),
+            "AGENT_RELAY_LOCAL_INFERENCE_COMMAND_JSON": json.dumps(["/bin/true"]),
         }
-        env = {
-            "AGENT_RELAY_ADAPTER": "anomaly.opencode",
-            "AGENT_RELAY_CLI_DIGEST": digest,
-            "AGENT_RELAY_ENGINE_DIGEST": digest,
-            "AGENT_RELAY_HARDWARE_CLASS": "self-hosted-cpu-x86_64",
-            "AGENT_RELAY_MODEL_DIGEST": digest,
-        }
-        with patch.dict("os.environ", env, clear=True):
-            validate_driver_evidence(evidence, load_manifest())
-            evidence["engineDigest"] = "b" * 64
-            with self.assertRaisesRegex(ConformanceBlocked, "staged provenance"):
-                validate_driver_evidence(evidence, load_manifest())
+        incomplete = staged_tuple()
+        del incomplete["templateDigest"]
+        with (
+            patch.dict(
+                os.environ,
+                {**base_env, "AGENT_RELAY_LOCAL_INFERENCE_TUPLE_JSON": json.dumps(incomplete)},
+                clear=True,
+            ),
+            self.assertRaisesRegex(ConformanceBlocked, "fields do not match"),
+        ):
+            run()
+        with (
+            patch.dict(
+                os.environ,
+                {**base_env, "AGENT_RELAY_LOCAL_INFERENCE_TIMEOUT": "not-an-integer"},
+                clear=True,
+            ),
+            patch("run_local_inference_conformance.require_network_namespace", return_value=None),
+            self.assertRaisesRegex(ConformanceBlocked, "timeout must be an integer"),
+        ):
+            run()
 
     def test_run_executes_absolute_driver_and_returns_redacted_evidence(self) -> None:
         digest = "c" * 64
@@ -138,19 +186,10 @@ class LocalInferenceConformanceTest(unittest.TestCase):
             driver.write_text(
                 "#!/usr/bin/env python3\n"
                 "import json, os\n"
-                "evidence = {"
-                "'adapter': os.environ['AGENT_RELAY_ADAPTER'],"
-                "'checks': ['stream', 'teardown'],"
-                "'cli': 'opencode 1.18.23',"
-                "'cliDigest': os.environ['AGENT_RELAY_CLI_DIGEST'],"
-                "'engine': 'vllm',"
-                "'engineDigest': os.environ['AGENT_RELAY_ENGINE_DIGEST'],"
-                "'evidenceLabel': 'local-model',"
-                "'failureClass': None,"
-                "'hardwareClass': os.environ['AGENT_RELAY_HARDWARE_CLASS'],"
-                "'model': 'Qwen/Qwen3-0.6B@immutable',"
-                "'modelDigest': os.environ['AGENT_RELAY_MODEL_DIGEST'],"
-                "'result': 'passed', 'schemaVersion': 1}\n"
+                "evidence = json.loads(os.environ['AGENT_RELAY_LOCAL_INFERENCE_TUPLE_JSON'])\n"
+                "evidence.update({'checks': ['stream', 'teardown'], "
+                "'evidenceLabel': 'local-model', 'failureClass': None, "
+                "'result': 'passed', 'schemaVersion': 1})\n"
                 "open(os.environ['AGENT_RELAY_LOCAL_INFERENCE_EVIDENCE'], 'w').write(json.dumps(evidence))\n",
                 encoding="utf-8",
             )
@@ -158,11 +197,7 @@ class LocalInferenceConformanceTest(unittest.TestCase):
             env = {
                 "AGENT_RELAY_LOCAL_INFERENCE_ENABLE": "1",
                 "AGENT_RELAY_OUTBOUND_NETWORK": "deny",
-                "AGENT_RELAY_ENGINE_DIGEST": digest,
-                "AGENT_RELAY_MODEL_DIGEST": digest,
-                "AGENT_RELAY_CLI_DIGEST": digest,
-                "AGENT_RELAY_ADAPTER": "anomaly.opencode",
-                "AGENT_RELAY_HARDWARE_CLASS": "self-hosted-cpu-x86_64",
+                "AGENT_RELAY_LOCAL_INFERENCE_TUPLE_JSON": json.dumps(staged_tuple(digest)),
                 "AGENT_RELAY_LOCAL_INFERENCE_COMMAND_JSON": json.dumps([str(driver)]),
             }
             with (
