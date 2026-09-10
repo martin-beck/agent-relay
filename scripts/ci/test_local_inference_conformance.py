@@ -5,13 +5,19 @@
 from __future__ import annotations
 
 import copy
+import json
+import os
+import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 from run_local_inference_conformance import (
     ConformanceBlocked,
     load_manifest,
+    require_network_namespace,
     run,
+    validate_driver_evidence,
     validate_manifest,
 )
 
@@ -82,3 +88,88 @@ class LocalInferenceConformanceTest(unittest.TestCase):
         env["AGENT_RELAY_OUTBOUND_NETWORK"] = "deny"
         with patch.dict("os.environ", env, clear=True), self.assertRaises(ConformanceBlocked):
             run()
+
+    def test_network_namespace_must_differ_from_parent(self) -> None:
+        current = os.stat("/proc/self/ns/net").st_ino
+        with (
+            patch.dict(
+                os.environ,
+                {"AGENT_RELAY_PARENT_NETNS_INODE": str(current)},
+                clear=True,
+            ),
+            self.assertRaisesRegex(ConformanceBlocked, "isolated network namespace"),
+        ):
+            require_network_namespace()
+
+    def test_driver_evidence_requires_exact_staged_provenance(self) -> None:
+        digest = "a" * 64
+        evidence = {
+            "adapter": "anomaly.opencode",
+            "checks": ["stream", "teardown"],
+            "cli": "opencode 1.18.23",
+            "cliDigest": digest,
+            "engine": "vllm",
+            "engineDigest": digest,
+            "evidenceLabel": "local-model",
+            "failureClass": None,
+            "hardwareClass": "self-hosted-cpu-x86_64",
+            "model": "Qwen/Qwen3-0.6B@immutable",
+            "modelDigest": digest,
+            "result": "passed",
+            "schemaVersion": 1,
+        }
+        env = {
+            "AGENT_RELAY_ADAPTER": "anomaly.opencode",
+            "AGENT_RELAY_CLI_DIGEST": digest,
+            "AGENT_RELAY_ENGINE_DIGEST": digest,
+            "AGENT_RELAY_HARDWARE_CLASS": "self-hosted-cpu-x86_64",
+            "AGENT_RELAY_MODEL_DIGEST": digest,
+        }
+        with patch.dict("os.environ", env, clear=True):
+            validate_driver_evidence(evidence, load_manifest())
+            evidence["engineDigest"] = "b" * 64
+            with self.assertRaisesRegex(ConformanceBlocked, "staged provenance"):
+                validate_driver_evidence(evidence, load_manifest())
+
+    def test_run_executes_absolute_driver_and_returns_redacted_evidence(self) -> None:
+        digest = "c" * 64
+        with tempfile.TemporaryDirectory() as temporary:
+            driver = Path(temporary) / "driver"
+            driver.write_text(
+                "#!/usr/bin/env python3\n"
+                "import json, os\n"
+                "evidence = {"
+                "'adapter': os.environ['AGENT_RELAY_ADAPTER'],"
+                "'checks': ['stream', 'teardown'],"
+                "'cli': 'opencode 1.18.23',"
+                "'cliDigest': os.environ['AGENT_RELAY_CLI_DIGEST'],"
+                "'engine': 'vllm',"
+                "'engineDigest': os.environ['AGENT_RELAY_ENGINE_DIGEST'],"
+                "'evidenceLabel': 'local-model',"
+                "'failureClass': None,"
+                "'hardwareClass': os.environ['AGENT_RELAY_HARDWARE_CLASS'],"
+                "'model': 'Qwen/Qwen3-0.6B@immutable',"
+                "'modelDigest': os.environ['AGENT_RELAY_MODEL_DIGEST'],"
+                "'result': 'passed', 'schemaVersion': 1}\n"
+                "open(os.environ['AGENT_RELAY_LOCAL_INFERENCE_EVIDENCE'], 'w').write(json.dumps(evidence))\n",
+                encoding="utf-8",
+            )
+            driver.chmod(0o700)
+            env = {
+                "AGENT_RELAY_LOCAL_INFERENCE_ENABLE": "1",
+                "AGENT_RELAY_OUTBOUND_NETWORK": "deny",
+                "AGENT_RELAY_ENGINE_DIGEST": digest,
+                "AGENT_RELAY_MODEL_DIGEST": digest,
+                "AGENT_RELAY_CLI_DIGEST": digest,
+                "AGENT_RELAY_ADAPTER": "anomaly.opencode",
+                "AGENT_RELAY_HARDWARE_CLASS": "self-hosted-cpu-x86_64",
+                "AGENT_RELAY_LOCAL_INFERENCE_COMMAND_JSON": json.dumps([str(driver)]),
+            }
+            with (
+                patch.dict(os.environ, env, clear=True),
+                patch(
+                    "run_local_inference_conformance.require_network_namespace",
+                    return_value=None,
+                ),
+            ):
+                self.assertEqual("passed", run()["result"])

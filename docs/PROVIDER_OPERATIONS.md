@@ -110,18 +110,20 @@ transcripts in this repository.
 
 OpenCode applies the selected provider and model to the asynchronous prompt,
 not the session-creation request. To exercise the production adapter against a
-locally staged Ollama model, start Ollama on a denied-network loopback service,
+locally staged model, start its engine on a denied-network loopback service,
 configure OpenCode to use its OpenAI-compatible endpoint, and run:
 
 ```bash
-AGENT_RELAY_LIVE_OPENCODE_OLLAMA=1 \
+AGENT_RELAY_LIVE_OPENCODE_INFERENCE=1 \
+AGENT_RELAY_LIVE_OPENCODE_PROVIDER=LOCAL_PROVIDER_ALIAS \
 AGENT_RELAY_LIVE_OPENCODE_MODEL=LOCAL_MODEL_ALIAS \
   ./gradlew :provider:opencode:test \
-  --tests dev.agentrelay.provider.opencode.OpenCodeLiveIntegrationTest.installedOpenCodeCompletesConfiguredOllamaTurnAndStreamsIt
+  --tests dev.agentrelay.provider.opencode.OpenCodeLiveIntegrationTest.installedOpenCodeCompletesConfiguredLocalInferenceTurnAndStreamsIt
 ```
 
-This second opt-in test creates a disposable Git workspace, verifies project
-discovery, sends a bounded marker prompt through Agent Relay, requires the
+This second opt-in test supports any explicitly configured local OpenAI-compatible provider. It
+creates a disposable Git workspace, verifies project discovery, sends a bounded marker prompt
+through Agent Relay, requires the
 marker in the mapped transcript and at least one mapped live event, and checks
 clean child-process shutdown. The operator must stage and verify the CLI,
 engine, and model before denying outbound network. The test does not publish

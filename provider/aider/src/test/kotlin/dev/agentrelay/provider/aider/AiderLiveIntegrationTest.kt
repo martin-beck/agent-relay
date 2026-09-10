@@ -104,9 +104,9 @@ class AiderLiveIntegrationTest {
             )
             try {
                 val result = client.prompt(
-                    "Reply with exactly READY and nothing else. Do not modify files.",
+                    "Do not modify files. Include the exact marker $LIVE_MARKER in your response.",
                 )
-                assertEquals("READY", result.text.trim())
+                assertTrue(LIVE_MARKER in result.text)
                 assertEquals(emptyList(), result.files)
             } finally {
                 client.close()
@@ -262,5 +262,6 @@ class AiderLiveIntegrationTest {
         const val LIVE_INFERENCE_ENV = "AGENT_RELAY_LIVE_AIDER_INFERENCE"
         const val AIDER_EXECUTABLE_ENV = "AGENT_RELAY_LIVE_AIDER_EXECUTABLE"
         const val LIVE_MODEL_ENV = "AGENT_RELAY_LIVE_AIDER_MODEL"
+        const val LIVE_MARKER = "AGENT_RELAY_AIDER_LOCAL_INFERENCE_OK"
     }
 }
