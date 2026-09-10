@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "provider_id": "openjiuwen.core",
+  "display_name": "openJiuwen Core",
+  "contract_status": "planned",
+  "implementation_status": "contract_only",
+  "authoritative_sources": [
+    {"id": "agent-core-develop", "repository": "https://github.com/openJiuwen-ai/agent-core", "revision": "1c22b9f273757f7625c044c0e3842ff1c9bbb0b1", "ref": "develop", "license": "Apache-2.0", "evidence": ["README.md", "docs/en/2.Development Guide/API Docs/openjiuwen.core/application/llm_agent/llm_agent.md"]},
+    {"id": "agent-core-java-main", "repository": "https://github.com/openJiuwen-ai/agent-core-java", "revision": "27cba5733465b3ed3914fafac11d332f92a83531", "ref": "main", "license": "Apache-2.0", "evidence": ["README.md"]},
+    {"id": "official-organization", "repository": "https://github.com/openJiuwen-ai", "revision": "live-organization-index", "ref": "official organization index", "license": "not applicable", "evidence": ["repository descriptions and links"]}
+  ],
+  "boundary": {"adapter_layer": "provider", "authority": "Agent Relay session/runtime remains the authority for identity, leases, policy, approvals, persistence, retries, and completion.", "transport": "No OpenJiuwen wire protocol or gateway is assumed by this contract. A future adapter must use an explicitly supported local SDK or a separately pinned protocol.", "network": "Live network access is disabled by default; contract tests use deterministic replay fixtures only.", "credentials": "Credentials are opaque references owned by the selected connection/profile. They must never appear in provider options, logs, events, fixtures, or process arguments."},
+  "capabilities": [
+    {"id": "agent-creation", "status": "conditional", "evidence": "agent-core describes Python SDK agent creation and the ReActAgent/WorkflowAgent surfaces.", "relay_mapping": "SESSION_START", "unsupported_outcome": "INCOMPATIBLE when the pinned SDK cannot construct the requested agent or model."},
+    {"id": "workflow-orchestration", "status": "conditional", "evidence": "agent-core describes workflow orchestration, graph execution, component jumps, and state recovery.", "relay_mapping": "SESSION_START", "unsupported_outcome": "UNSUPPORTED; Agent Relay does not import OpenJiuwen workflow graphs into its durable workflow authority."},
+    {"id": "streaming-output", "status": "conditional", "evidence": "agent-core describes streaming output and streaming transfer between components.", "relay_mapping": "LIVE_STREAMING", "unsupported_outcome": "UNSUPPORTED when the selected SDK invocation cannot provide ordered, bounded deltas."},
+    {"id": "tool-calls", "status": "conditional", "evidence": "agent-core describes tool components and local tools calling external services.", "relay_mapping": "APPROVALS", "unsupported_outcome": "UNSUPPORTED unless every external effect is surfaced as an Agent Relay approval before execution."},
+    {"id": "interrupt-and-recovery", "status": "conditional", "evidence": "agent-core describes state interruption and recovery, but the exact durable token and replay semantics are not yet pinned.", "relay_mapping": "TURN_INTERRUPT", "unsupported_outcome": "UNKNOWN_OUTCOME; never retry automatically when delivery or completion cannot be established."},
+    {"id": "session-history", "status": "unsupported", "evidence": "The pinned public sources do not establish a stable provider-neutral session-history protocol for an external adapter.", "relay_mapping": "SESSION_HISTORY", "unsupported_outcome": "UNSUPPORTED with a detail-free user-visible explanation."},
+    {"id": "approvals", "status": "unsupported", "evidence": "Tool capability is documented, but an authoritative OpenJiuwen approval handshake suitable for Agent Relay has not been established.", "relay_mapping": "APPROVALS", "unsupported_outcome": "UNSUPPORTED; tools requiring approval must fail closed before invocation."},
+    {"id": "file-changes", "status": "unsupported", "evidence": "The pinned sources do not establish a safe, provider-owned changed-file manifest with revision and digest semantics.", "relay_mapping": "FILE_CHANGES", "unsupported_outcome": "UNSUPPORTED; Agent Relay must not infer changes from arbitrary tool output."}
+  ],
+  "invariants": [
+    {"id": "bounded-config", "rule": "Endpoint, model, agent, timeout, and replay limits are allowlisted, finite, and size-bounded before SDK invocation."},
+    {"id": "redacted-events", "rule": "Events contain opaque session/turn identifiers and bounded text; credentials, prompts, routes, and raw SDK objects are excluded."},
+    {"id": "fail-closed-effects", "rule": "Unknown, unsupported, malformed, unauthorized, or expired tool/effect requests are rejected before external I/O."},
+    {"id": "ordered-stream", "rule": "A stream must expose monotonic sequence identity and terminal closure; gaps become a failure, not silently reordered output."},
+    {"id": "uncertain-delivery", "rule": "A timeout after provider submission becomes an explicit unknown outcome and is never automatically replayed."},
+    {"id": "authority-separation", "rule": "OpenJiuwen state is an adapter observation; Agent Relay owns durable session identity, policy, approval, and completion state."}
+  ],
+  "deterministic_test_plan": [
+    {"id": "source-pins", "scenario": "Validate official repository URLs, immutable revision shape, and license evidence."},
+    {"id": "capability-matrix", "scenario": "Reject duplicate capability IDs, unknown statuses, missing mappings, and unsupported claims without evidence."},
+    {"id": "hostile-options", "scenario": "Reject oversized endpoints, credentials in options, invalid timeout values, and unbounded model/agent identifiers."},
+    {"id": "stream-replay", "scenario": "Replay ordered deltas, duplicate sequence numbers, gaps, malformed events, and missing terminal closure."},
+    {"id": "effect-boundary", "scenario": "Reject tool/effect events without explicit approval and preserve unknown delivery as non-retryable."},
+    {"id": "privacy-fixture", "scenario": "Assert fixtures contain no secrets, private paths, host addresses, raw prompts, or provider transcripts."}
+  ]
+}
