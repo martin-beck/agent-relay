@@ -101,8 +101,9 @@ forking, and inferred file changes also fail closed.
 - Only `msg_type=text` is documented. Non-text and `permission_response`
   messages fail closed before network I/O; tool approval remains with the
   local user until a compatible handshake is evidenced.
-- History uses bounded pages or an incremental cursor. A post-submit timeout is
-  `UNKNOWN_OUTCOME` and is never automatically replayed.
+- History reads one bounded `limit`/`offset` page per relay request. Incremental
+  message-ID queries and automatic multi-page traversal are unsupported. A
+  post-submit timeout is `UNKNOWN_OUTCOME` and is never automatically replayed.
 - Fixtures are synthetic and credential-free.
 
 ## Verification limit
