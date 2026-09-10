@@ -258,13 +258,20 @@ def load_staged_tuple() -> dict[str, Any]:
     for field in ("cliRevision", "engineRevision"):
         if not isinstance(staged[field], str) or not REVISION.fullmatch(staged[field]):
             raise ConformanceBlocked(f"staged tuple provenance has invalid {field}")
-    if staged["hardwareClass"] not in {
+    validate_hardware(staged["hardwareClass"])
+    validate_sampling(staged["sampling"])
+    return staged
+
+
+def validate_hardware(hardware: Any) -> None:
+    expected_hardware = os.environ.get("AGENT_RELAY_HARDWARE_CLASS")
+    if expected_hardware not in {
         "self-hosted-cpu-x86_64",
         "self-hosted-gpu-x86_64",
     }:
         raise ConformanceBlocked("an explicit supported hardware class is required")
-    validate_sampling(staged["sampling"])
-    return staged
+    if hardware != expected_hardware:
+        raise ConformanceBlocked("staged tuple hardware does not match the selected runner class")
 
 
 def validate_sampling(sampling: Any) -> None:

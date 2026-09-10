@@ -154,6 +154,7 @@ class LocalInferenceConformanceTest(unittest.TestCase):
         base_env = {
             "AGENT_RELAY_LOCAL_INFERENCE_ENABLE": "1",
             "AGENT_RELAY_OUTBOUND_NETWORK": "deny",
+            "AGENT_RELAY_HARDWARE_CLASS": "self-hosted-cpu-x86_64",
             "AGENT_RELAY_LOCAL_INFERENCE_TUPLE_JSON": json.dumps(staged_tuple()),
             "AGENT_RELAY_LOCAL_INFERENCE_COMMAND_JSON": json.dumps(["/bin/true"]),
         }
@@ -166,6 +167,20 @@ class LocalInferenceConformanceTest(unittest.TestCase):
                 clear=True,
             ),
             self.assertRaisesRegex(ConformanceBlocked, "fields do not match"),
+        ):
+            run()
+        gpu_tuple = staged_tuple()
+        gpu_tuple["hardwareClass"] = "self-hosted-gpu-x86_64"
+        with (
+            patch.dict(
+                os.environ,
+                {
+                    **base_env,
+                    "AGENT_RELAY_LOCAL_INFERENCE_TUPLE_JSON": json.dumps(gpu_tuple),
+                },
+                clear=True,
+            ),
+            self.assertRaisesRegex(ConformanceBlocked, "selected runner class"),
         ):
             run()
         with (
@@ -197,6 +212,7 @@ class LocalInferenceConformanceTest(unittest.TestCase):
             env = {
                 "AGENT_RELAY_LOCAL_INFERENCE_ENABLE": "1",
                 "AGENT_RELAY_OUTBOUND_NETWORK": "deny",
+                "AGENT_RELAY_HARDWARE_CLASS": "self-hosted-cpu-x86_64",
                 "AGENT_RELAY_LOCAL_INFERENCE_TUPLE_JSON": json.dumps(staged_tuple(digest)),
                 "AGENT_RELAY_LOCAL_INFERENCE_COMMAND_JSON": json.dumps([str(driver)]),
             }
