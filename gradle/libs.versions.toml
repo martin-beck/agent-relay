@@ -33,7 +33,7 @@ ktlint = "1.4.0"
 robolectric = "4.16.1"
 roborazzi = "1.73.0"
 sherpaOnnx = "1.13.4"
-spotless = "8.7.0"
+spotless = "8.10.0"
 nav3Core = "1.0.1"
 lifecycleViewmodelNav3 = "2.10.0"
 
