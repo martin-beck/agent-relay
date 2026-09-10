@@ -19,7 +19,7 @@
     {
       "id": "agent-adapters",
       "area": "Agent providers",
-      "status": "Codex, OpenCode, OpenDesk, Continue, Claude, Cline, and Aider have implemented adapters and contract tests; OpenJiuwen is metadata-probe-only, advertises no capabilities, and cannot open sessions"
+      "status": "Codex, OpenCode, OpenDesk, Continue, Claude, Cline, Aider, and WorkBuddy have implemented adapters and contract tests; WorkBuddy is not app-exposed and has synthetic-only Open API v2 JVM evidence; OpenJiuwen is metadata-probe-only, advertises no capabilities, and cannot open sessions"
     },
     {
       "id": "session-hub",

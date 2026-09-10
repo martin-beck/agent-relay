@@ -4,9 +4,10 @@ This document records how Agent Relay's provider integrations are verified
 against real command-line agents. It is evidence for readiness and protocol
 work, not a claim that every advertised provider capability is implemented.
 
-The planned WorkBuddy integration has a separate evidence boundary and
-capability matrix in [`WORKBUDDY_PROVIDER.md`](WORKBUDDY_PROVIDER.md). It is
-contract-only until its adapter and conformance evidence are published.
+The implemented but not app-exposed WorkBuddy integration has a separate
+evidence boundary and generated capability matrix in
+[`WORKBUDDY_PROVIDER.md`](WORKBUDDY_PROVIDER.md). Its evidence is synthetic
+Open API v2 JVM-adapter conformance, not a live-service claim.
 
 ## Verification policy
 
@@ -64,6 +65,19 @@ authentication, recovery, and unsupported-operation examples are documented in
 fixtures validate the metadata boundary without live network access or
 protected data. No live OpenJiuwen engine, gateway, CLI, model, session, stream,
 tool, approval, reconnect, or artifact traversal has been verified.
+
+## WorkBuddy Local Assistant boundary
+
+The WorkBuddy module implements the reviewed Open API v2 Local Assistant
+boundary for online status, bounded history, and text submission. It requires
+explicit consent, an approved token, and only the operation-specific readable
+or invokable scopes. Tokens and prompts remain outside process arguments.
+
+The Android app does not compose this provider. Deterministic credential-free
+tests cover failure and lifecycle behavior, including non-replayable uncertain
+delivery, but no live WorkBuddy network request or protected message was used.
+See [WorkBuddy Local Assistant provider](WORKBUDDY_PROVIDER.md) for setup,
+recovery, the generated capability matrix, and all unsupported operations.
 
 ## OpenCode server integration
 

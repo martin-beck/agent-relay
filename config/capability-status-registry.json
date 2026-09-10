@@ -40,6 +40,25 @@
       "arReferences": ["AR-1630"],
       "limitations": ["Adapters and scheduling remain separate child tasks."],
       "evidenceAgeDays": 0
+    },
+    {
+      "id": "provider.workbuddy-local-assistant",
+      "name": "WorkBuddy Local Assistant Open API v2 adapter",
+      "maturity": "implemented",
+      "appExposed": false,
+      "supportedSurfaces": ["remote-runtime"],
+      "sourceModules": ["provider/workbuddy"],
+      "tests": [
+        "provider/workbuddy/src/test/kotlin/dev/agentrelay/provider/workbuddy/WorkBuddyAgentProviderTest.kt",
+        "provider/workbuddy/src/test/kotlin/dev/agentrelay/provider/workbuddy/WorkBuddyConformanceTest.kt"
+      ],
+      "workflowEvidence": ["docs/WORKBUDDY_PROVIDER.md"],
+      "arReferences": ["AR-2212", "AR-2213", "AR-2214", "AR-2215"],
+      "limitations": [
+        "The Android application graph does not expose this provider.",
+        "Only synthetic Open API v2 JVM-adapter behavior is verified; no live WorkBuddy account, credential, message, network request, alternate API version, or other device/platform combination was exercised."
+      ],
+      "evidenceAgeDays": 0
     }
   ]
 }

@@ -75,6 +75,18 @@ stream, tool, approval, history, file, or recovery action is enabled.
 For privacy-safe setup, failure recovery, and explicit unsupported examples,
 read [OpenJiuwen metadata-probe provider](OPENJIUWEN_PROVIDER.md).
 
+## WorkBuddy module boundary
+
+The WorkBuddy Local Assistant adapter is implemented and conformance-tested but
+is not registered in the Android application graph. It cannot be selected from
+the app and has no screenshot-backed workflow. An explicitly composed JVM
+runtime can use only online status, bounded text history, and text submission
+with explicit consent and least-privilege scopes.
+
+Read [WorkBuddy Local Assistant provider](WORKBUDDY_PROVIDER.md) for safe setup,
+recovery, generated capability status, unsupported operations, and the
+synthetic-only verification boundary.
+
 Session navigation stores only a fixed-length SHA-256 identity derived from the
 complete connection/provider/session locator. It does not place raw host,
 workspace, or session identifiers in navigation state.

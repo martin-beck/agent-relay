@@ -51,6 +51,18 @@
       "status": "authoritative"
     },
     {
+      "id": "workbuddy-provider",
+      "path": "docs/WORKBUDDY_PROVIDER.md",
+      "kind": "provider-guide",
+      "status": "authoritative"
+    },
+    {
+      "id": "workbuddy-contract",
+      "path": "docs/contracts/workbuddy-provider-v1.json",
+      "kind": "contract",
+      "status": "authoritative"
+    },
+    {
       "id": "user-satisfaction-contract",
       "path": "docs/contracts/user-satisfaction-v1.json",
       "kind": "contract",
@@ -87,6 +99,20 @@
         "provider/openjiuwen/src/test/kotlin/dev/agentrelay/provider/openjiuwen/OpenJiuwenAgentProviderFactoryTest.kt",
         "provider/openjiuwen/src/test/kotlin/dev/agentrelay/provider/openjiuwen/OpenJiuwenConformanceTest.kt",
         "docs/OPENJIUWEN_PROVIDER.md"
+      ]
+    },
+    {
+      "id": "workbuddy-provider-boundary",
+      "authority": "workbuddy-contract",
+      "evidence": [
+        "config/capability-status-registry.json",
+        "provider/workbuddy/src/main/kotlin/dev/agentrelay/provider/workbuddy/WorkBuddyAgentProviderFactory.kt",
+        "provider/workbuddy/src/main/kotlin/dev/agentrelay/provider/workbuddy/WorkBuddyClient.kt",
+        "provider/workbuddy/src/main/kotlin/dev/agentrelay/provider/workbuddy/WorkBuddyAgentConnection.kt",
+        "provider/workbuddy/src/test/kotlin/dev/agentrelay/provider/workbuddy/WorkBuddyAgentProviderTest.kt",
+        "provider/workbuddy/src/test/kotlin/dev/agentrelay/provider/workbuddy/WorkBuddyConformanceTest.kt",
+        "scripts/docs/render_workbuddy_provider.py",
+        "docs/WORKBUDDY_PROVIDER.md"
       ]
     },
     {
