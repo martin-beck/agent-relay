@@ -81,8 +81,11 @@ The bootstrap path currently supports Linux x86_64. It installs only below the
 checkout and uses pinned, checksum-verified artifacts. See
 [Repository-local toolchain](docs/BOOTSTRAP.md) for quality and offline targets.
 
-On Windows, replace `./gradlew` with `.\gradlew.bat`. The debug APK is
-written to `app/build/outputs/apk/debug/app-debug.apk`.
+On Windows, replace `./gradlew` with `.\gradlew.bat`. Gradle writes the raw
+debug APK to `app/build/outputs/apk/debug/app-debug.apk`. Its deterministic
+development version identifies the exact source commit; see
+[Installing](docs/INSTALLING.md) for inspected metadata and canonical artifact
+names.
 
 For Android Studio setup, SDK configuration, focused tests, and troubleshooting,
 read [Building](docs/BUILDING.md).
@@ -94,6 +97,10 @@ A development APK can be installed on Android 9 (API 28) or newer:
 ```bash
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
+
+The application ID `com.example.agentrelay`, standard debug certificate, and
+`0.1.0-dev.*` versions are development-only identities. They make no promise
+about a future production package, signer, migration, or support policy.
 
 The installed app opens the adaptive session hub, automatically exposes the
 app-sandboxed local profile, and can create or edit encrypted SSH profiles with

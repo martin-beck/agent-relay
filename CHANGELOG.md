@@ -7,6 +7,10 @@ supported release.
 
 ### Added
 
+- Deterministic development APK versions derived from an immutable Git commit,
+  plus an APK inspection tool that emits canonical names, SHA-256 checksums,
+  privacy-safe provenance, and explicit unsupported/debug limitations.
+
 - Generic connection-provider contract with SSH and local implementations.
 - Agent adapters for Codex, OpenCode, OpenDesk, Continue, Claude, Cline, and Aider.
 - Encrypted session hub and provider-neutral runtime coordinator.

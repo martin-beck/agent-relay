@@ -41,6 +41,10 @@ least-privilege CI environment after the repository's private controls are
 reviewed.
 
 The existing debug key and debug APK are development artifacts only.
+Deterministic development version, checksum, provenance, and limitation
+metadata make a debug APK traceable; they do not make it production-signed or
+supported. The `com.example.agentrelay` development application ID and
+`0.1.0-dev.*` versions are not reserved production identities.
 
 ## Publication
 
@@ -48,3 +52,7 @@ A release must be built from a reviewed commit merged through a successful pull
 request. Record checksums and provenance for every published artifact. Do not
 publish a GitHub release, Play Store build, or externally distributed APK until
 the blockers above are closed and the owner explicitly approves publication.
+An explicitly labeled GitHub development prerelease is a separate unsupported
+channel. It may contain only an inspected debug APK plus its machine-readable
+manifest and checksums, and must not claim release support or close any blocker
+listed here.

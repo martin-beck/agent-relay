@@ -10,6 +10,19 @@ plugins {
     alias(libs.plugins.roborazzi)
 }
 
+val developmentSourceCommit = providers.exec {
+    commandLine("git", "rev-parse", "HEAD")
+}.standardOutput.asText.map(String::trim).get()
+require(developmentSourceCommit.matches(Regex("[0-9a-f]{40}"))) {
+    "Development builds require a full lowercase Git source revision"
+}
+val developmentSequence = providers.exec {
+    commandLine("git", "rev-list", "--first-parent", "--count", developmentSourceCommit)
+}.standardOutput.asText.map { it.trim().toInt() }.get()
+val developmentVersionCode = 1_000_000 + developmentSequence
+val developmentVersionName =
+    "0.1.0-dev.$developmentSequence+g${developmentSourceCommit.take(12)}"
+
 dependencies {
     lintChecks(project(":lint-checks"))
 }
@@ -21,9 +34,9 @@ android {
         applicationId = "com.example.agentrelay"
         minSdk = 28
         targetSdk = 36
-        versionCode = 1
+        versionCode = developmentVersionCode
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        versionName = "1.0"
+        versionName = developmentVersionName
     }
 
     testOptions.unitTests.isIncludeAndroidResources = true
