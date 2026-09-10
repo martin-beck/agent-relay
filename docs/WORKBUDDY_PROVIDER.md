@@ -13,6 +13,12 @@ the third-party-app guide hash is
 `sha256:70cb159236628cd43550c4ad872e02dfbcb0836f1834fbf87d0f61d010265a9b`.
 Both document API version `/openapi/v2`, OAuth 2.1, and least-privilege scopes.
 
+The send-scope spelling is `user.localassistant.invokable`, exactly as recorded
+in the [reviewed source excerpt](contracts/evidence/workbuddy-openapi-send-scope-2026-09-10.json).
+The original AR-2212 contract used that spelling before a terminology-only
+follow-up changed it to `invocable`; the official page still uses `invokable`,
+so this correction is a transcription repair rather than a capability change.
+
 The Local Assistant API documents online status, text message submission, and
 bounded paginated or incremental history polling. It does not establish a
 stable session identifier, streaming transport, cancellation endpoint,
@@ -25,7 +31,9 @@ capabilities from product descriptions.
   retries, cancellation, and completion.
 - OAuth tokens are opaque approved-store references and never enter options,
   logs, events, fixtures, process arguments, or test output. Request only the
-  local-assistant scopes needed by the operation.
+  local-assistant scopes needed by the operation:
+  `user.localassistant.readable` for reads and
+  `user.localassistant.invokable` for message submission.
 - Only `msg_type=text` is documented. Non-text and `permission_response`
   messages fail closed before network I/O; tool approval remains with the
   local user until a compatible handshake is evidenced.

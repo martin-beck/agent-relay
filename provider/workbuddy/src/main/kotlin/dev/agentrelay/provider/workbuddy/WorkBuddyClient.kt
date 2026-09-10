@@ -249,7 +249,7 @@ if not isinstance(params,dict): sys.exit(45)
 if os.environ.get('AGENT_RELAY_WORKBUDDY_CONSENT')!='enabled': sys.exit(41)
 token=os.environ.get('AGENT_RELAY_WORKBUDDY_ACCESS_TOKEN','')
 scopes=set(os.environ.get('AGENT_RELAY_WORKBUDDY_SCOPES','').split())
-# The pinned page spells this scope "invokable"; AR-2212 prose used "invocable".
+# The pinned WorkBuddy page spells this OAuth scope "invokable".
 required='user.localassistant.invokable' if op=='send' else 'user.localassistant.readable'
 if not token: sys.exit(41)
 allowed={'user.localassistant.readable','user.localassistant.invokable'}
