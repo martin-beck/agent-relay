@@ -12,6 +12,7 @@ import dev.agentrelay.provider.api.RemoteAgentRuntime
 import dev.agentrelay.provider.api.RemoteCommand
 import dev.agentrelay.provider.api.RemoteCommandResult
 import dev.agentrelay.provider.api.RemoteDuplexProcess
+import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
@@ -28,6 +29,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.junit.Test
@@ -39,8 +41,26 @@ class WorkBuddyConformanceTest {
         val provenance = fixture.objectValue("provenance")
         assertEquals("synthetic-credential-free", provenance.string("classification"))
         assertEquals("docs/contracts/workbuddy-provider-v1.json", provenance.string("contract"))
-        assertTrue(provenance.string("open_api_reference_digest").matches(SHA256))
-        assertTrue(provenance.string("third_party_app_digest").matches(SHA256))
+        val contractRelativePath = provenance.string("contract")
+        val contractPath = generateSequence(Path.of("").toAbsolutePath()) { it.parent }
+            .map { it.resolve(contractRelativePath) }
+            .firstOrNull { it.toFile().isFile }
+        val contract = checkNotNull(contractPath).toFile().bufferedReader().use {
+            JSON.parseToJsonElement(it.readText()).jsonObject
+        }
+        val sourceRevisions = contract.getValue("authoritative_sources").jsonArray.associate {
+            val source = it.jsonObject
+            source.string("id") to source.string("revision")
+        }
+        assertEquals(
+            sourceRevisions.getValue("open-api-reference-en"),
+            provenance.string("open_api_reference_digest"),
+        )
+        assertEquals(
+            sourceRevisions.getValue("third-party-app-en"),
+            provenance.string("third_party_app_digest"),
+        )
+        assertTrue(sourceRevisions.values.all { it.matches(SHA256) })
         val serialized = fixture.toString()
         listOf("access_token", "authorization", "bearer ", "private key").forEach {
             assertFalse(serialized.contains(it, ignoreCase = true))
