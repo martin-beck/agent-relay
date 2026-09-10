@@ -32,6 +32,7 @@ Current verified journeys cover:
 - [Install a debug build](INSTALLING.md)
 - [Understand the architecture](ARCHITECTURE.md)
 - [Review connection providers](CONNECTION_PROVIDERS.md)
+- [Review the OpenJiuwen metadata-probe boundary](OPENJIUWEN_PROVIDER.md)
 - [Review offline LLM testing and local inference recommendations](OFFLINE_LLM_TESTING.md)
 - [Run local-inference conformance](LOCAL_INFERENCE_CONFORMANCE.md)
 - [Read the product roadmap](PRODUCT_ROADMAP.md)

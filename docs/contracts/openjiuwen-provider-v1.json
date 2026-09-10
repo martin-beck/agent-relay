@@ -2,8 +2,17 @@
   "schema_version": 1,
   "provider_id": "openjiuwen.core",
   "display_name": "openJiuwen Core",
-  "contract_status": "planned",
-  "implementation_status": "contract_only",
+  "contract_status": "reviewed",
+  "implementation_status": "metadata_probe_only",
+  "implementation_evidence": {
+    "factory": "provider/openjiuwen/src/main/kotlin/dev/agentrelay/provider/openjiuwen/OpenJiuwenAgentProviderFactory.kt",
+    "tests": [
+      "provider/openjiuwen/src/test/kotlin/dev/agentrelay/provider/openjiuwen/OpenJiuwenAgentProviderFactoryTest.kt",
+      "provider/openjiuwen/src/test/kotlin/dev/agentrelay/provider/openjiuwen/OpenJiuwenConformanceTest.kt"
+    ],
+    "capabilities": "none",
+    "limitation": "No live OpenJiuwen engine, gateway, CLI, model, session, stream, tool, approval, reconnect, or artifact traversal is verified."
+  },
   "authoritative_sources": [
     {"id": "agent-core-develop", "repository": "https://github.com/openJiuwen-ai/agent-core", "revision": "1c22b9f273757f7625c044c0e3842ff1c9bbb0b1", "ref": "develop", "license": "Apache-2.0", "evidence": ["README.md", "docs/en/2.Development Guide/API Docs/openjiuwen.core/application/llm_agent/llm_agent.md"]},
     {"id": "agent-core-java-main", "repository": "https://github.com/openJiuwen-ai/agent-core-java", "revision": "27cba5733465b3ed3914fafac11d332f92a83531", "ref": "main", "license": "Apache-2.0", "evidence": ["README.md"]},

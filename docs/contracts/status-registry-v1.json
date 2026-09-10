@@ -18,8 +18,8 @@
     },
     {
       "id": "agent-adapters",
-      "area": "Codex, OpenCode, OpenDesk, Continue, Claude, Cline, and Aider adapters",
-      "status": "Implemented with contract tests; live checks where available"
+      "area": "Agent providers",
+      "status": "Codex, OpenCode, OpenDesk, Continue, Claude, Cline, and Aider have implemented adapters and contract tests; OpenJiuwen is metadata-probe-only, advertises no capabilities, and cannot open sessions"
     },
     {
       "id": "session-hub",

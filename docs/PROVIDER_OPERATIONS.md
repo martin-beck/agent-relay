@@ -49,6 +49,22 @@ configuration, stored-session metadata, or network topology. Unit and contract
 tests remain the authoritative evidence for malformed output, interruption,
 approvals, resume behavior, file boundaries, and concurrent sessions.
 
+## OpenJiuwen metadata-probe boundary
+
+The OpenJiuwen provider is registered only as a fail-closed discovery boundary.
+It executes a fixed Python distribution-metadata query with no credentials,
+provider options, working directory, or process bridge. Missing, failed,
+malformed, duplicated, truncated, or oversized output reports the SDK as
+missing. A valid version reports the SDK as incompatible because no reviewed
+Agent Relay bridge exists.
+
+The provider advertises no capabilities and cannot open a session. Setup,
+authentication, recovery, and unsupported-operation examples are documented in
+[OpenJiuwen metadata-probe provider](OPENJIUWEN_PROVIDER.md). Deterministic
+fixtures validate the metadata boundary without live network access or
+protected data. No live OpenJiuwen engine, gateway, CLI, model, session, stream,
+tool, approval, reconnect, or artifact traversal has been verified.
+
 ## OpenCode server integration
 
 The OpenCode module starts `opencode serve` on a random loopback port with a

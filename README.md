@@ -36,7 +36,7 @@ permission to redistribute source code, APKs, or project artifacts.
 | Generic connection-provider API | Implemented and unit tested |
 | Local device connection provider | Implemented and unit tested |
 | SSH connection provider and profile setup | Encrypted credentials, strict per-hop host keys, configured jump routes, persistent Android keys, confirmed public-key installation, and key-only probes implemented; final real-device evidence remains |
-| Codex, OpenCode, OpenDesk, Continue, Claude, Cline, and Aider adapters | Implemented with contract tests; live checks where available |
+| Agent providers | Codex, OpenCode, OpenDesk, Continue, Claude, Cline, and Aider have implemented adapters and contract tests; OpenJiuwen is metadata-probe-only, advertises no capabilities, and cannot open sessions |
 | Encrypted session hub and runtime coordinator | Implemented and unit tested |
 | Quality gates | Detekt, Ruff, Radon, Lizard, Vale, strict compiler/lint checks, dependency analysis, 70% coverage, visual regression, property tests, and bounded fuzzing |
 | Adaptive Compose UI and app integration | Provider-neutral setup and session launch, typed timeline, durable text composer, capability-gated controls, risk-aware approvals/questions, adaptive-boundary tests, and deterministic UI baselines implemented |
@@ -134,6 +134,7 @@ More detail:
 
 - [Connection providers](docs/CONNECTION_PROVIDERS.md)
 - [Provider operations](docs/PROVIDER_OPERATIONS.md)
+- [OpenJiuwen metadata-probe provider](docs/OPENJIUWEN_PROVIDER.md)
 - [Session hub](docs/SESSION_HUB.md)
 - [Offline speech architecture](docs/SPEECH.md)
 - [Third-party runtime notices](docs/THIRD_PARTY.md)
