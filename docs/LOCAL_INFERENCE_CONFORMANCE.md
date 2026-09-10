@@ -1,6 +1,6 @@
 # Local-inference conformance matrix
 
-This matrix tests real local model endpoints below the shipped Agent Relay provider CLI. Engines are LLM endpoints, not Agent Relay providers. The machine-readable tuple is [`local-inference-conformance-v1.json`](../config/local-inference-conformance-v1.json).
+This matrix tests real local model endpoints below the shipped Agent Relay provider CLI. Engines are LLM endpoints, not Agent Relay providers. The machine-readable tuple is `config/local-inference-conformance-v1.json`.
 
 ## Current evidence
 
