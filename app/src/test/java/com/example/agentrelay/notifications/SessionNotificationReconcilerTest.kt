@@ -143,7 +143,6 @@ class SessionNotificationReconcilerTest {
             reconciler.reconcile(snapshot(activity("approval", SessionActivityType.APPROVAL_REQUIRED)))
             fail("Expected structured cancellation")
         } catch (_: CancellationException) {
-            Unit
         }
     }
 
