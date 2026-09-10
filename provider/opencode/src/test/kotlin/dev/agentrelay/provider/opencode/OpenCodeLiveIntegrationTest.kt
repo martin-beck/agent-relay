@@ -5,28 +5,42 @@
 
 package dev.agentrelay.provider.opencode
 
+import dev.agentrelay.provider.api.AgentEvent
+import dev.agentrelay.provider.api.AgentProviderConnection
+import dev.agentrelay.provider.api.AgentSessionId
+import dev.agentrelay.provider.api.AgentTranscriptRole
 import dev.agentrelay.provider.api.ProviderReadiness
 import dev.agentrelay.provider.api.RemoteAgentRuntime
 import dev.agentrelay.provider.api.RemoteCommand
 import dev.agentrelay.provider.api.RemoteCommandResult
 import dev.agentrelay.provider.api.RemoteDuplexProcess
+import dev.agentrelay.provider.api.StartSessionOptions
 import java.io.BufferedWriter
 import java.nio.file.Files
+import java.nio.file.Path
+import java.util.Comparator
+import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.TimeUnit
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import org.junit.Assume.assumeTrue
 import org.junit.Test
 
@@ -52,6 +66,86 @@ class OpenCodeLiveIntegrationTest {
             connection.close()
         }
         assertTrue(runtime.processes.all(LocalProcess::isStopped))
+    }
+
+    @Test
+    fun installedOpenCodeCompletesConfiguredOllamaTurnAndStreamsIt() = runBlocking {
+        assumeTrue(System.getenv(LIVE_OLLAMA_TEST_ENV) == "1")
+        val model = System.getenv(LIVE_MODEL_ENV)?.takeIf(String::isNotBlank) ?: DEFAULT_MODEL
+        val workspace = Files.createTempDirectory("agent-relay-opencode-ollama-workspace-")
+        initializeGitWorkspace(workspace)
+        val factory = OpenCodeAgentProviderFactory()
+        val runtime = LocalRuntime()
+        var connection: AgentProviderConnection? = null
+        var eventCollector: Job? = null
+        var sessionId: AgentSessionId? = null
+
+        try {
+            assertIs<ProviderReadiness.Ready>(factory.probe(runtime))
+            val activeConnection = factory.connect(runtime)
+            connection = activeConnection
+            val events = ConcurrentLinkedQueue<AgentEvent>()
+            eventCollector = launch { activeConnection.events.collect(events::add) }
+            val session = activeConnection.startSession(
+                StartSessionOptions(
+                    workingDirectory = workspace.toString(),
+                    model = "ollama/$model",
+                    providerOptions = mapOf("title" to "Agent Relay local inference validation"),
+                ),
+            )
+            sessionId = session.id
+            assertTrue(activeConnection.refreshSessions().any { it.id == session.id })
+
+            delay(500.milliseconds)
+            activeConnection.sendInput(session.id, LIVE_PROMPT)
+            val transcript = withTimeout(5.minutes) {
+                var current = activeConnection.transcript(session.id)
+                while (current.none {
+                        it.role == AgentTranscriptRole.AGENT && LIVE_MARKER in it.text
+                    }
+                ) {
+                    delay(1_000.milliseconds)
+                    current = activeConnection.transcript(session.id)
+                }
+                current
+            }
+
+            assertTrue(
+                transcript.any {
+                    it.role == AgentTranscriptRole.AGENT && LIVE_MARKER in it.text
+                },
+            )
+            assertTrue(
+                events.any {
+                    it.sessionId == session.id &&
+                        (it is AgentEvent.TextDelta || it is AgentEvent.MessageCompleted)
+                },
+                "OpenCode completed the Ollama turn without a mapped live-stream event",
+            )
+        } finally {
+            eventCollector?.cancel()
+            sessionId?.let { id -> runCatching { connection?.interrupt(id) } }
+            try {
+                connection?.close()
+            } finally {
+                val allProcessesStopped = runtime.processes.all(LocalProcess::isStopped)
+                workspace.deleteTree()
+                assertTrue(allProcessesStopped)
+            }
+        }
+    }
+
+    private fun Path.deleteTree() {
+        if (!Files.exists(this)) return
+        Files.walk(this).use { paths ->
+            paths.sorted(Comparator.reverseOrder()).forEach(Files::deleteIfExists)
+        }
+    }
+
+    private fun initializeGitWorkspace(workspace: Path) {
+        val process = ProcessBuilder("git", "init", "--quiet", workspace.toString()).start()
+        assertTrue(process.waitFor(10, TimeUnit.SECONDS), "Git workspace initialization timed out")
+        assertTrue(process.exitValue() == 0, "Git workspace initialization failed")
     }
 
     private class LocalRuntime : RemoteAgentRuntime {
@@ -144,5 +238,11 @@ class OpenCodeLiveIntegrationTest {
 
     private companion object {
         const val LIVE_TEST_ENV = "AGENT_RELAY_LIVE_OPENCODE"
+        const val LIVE_OLLAMA_TEST_ENV = "AGENT_RELAY_LIVE_OPENCODE_OLLAMA"
+        const val LIVE_MODEL_ENV = "AGENT_RELAY_LIVE_OPENCODE_MODEL"
+        const val DEFAULT_MODEL = "qwen3:0.6b"
+        const val LIVE_MARKER = "AGENT_RELAY_OPENCODE_OLLAMA_OK"
+        const val LIVE_PROMPT =
+            "/no_think Output only this exact token: $LIVE_MARKER. Do not use tools."
     }
 }
