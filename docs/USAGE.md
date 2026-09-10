@@ -41,6 +41,8 @@ application graph. It can:
 - reject an SSH identity without silently accepting it;
 - show provider probes, connection state, sanitized errors, unread counts, and
   actionable activity counts;
+- report the OpenJiuwen Python distribution as missing or incompatible through
+  its metadata-only probe without enabling session actions;
 - list sessions discovered through Aider, Claude Code, Cline, Codex, Continue,
   OpenCode, and OpenDesk provider adapters;
 - start a session from a ready agent endpoint with provider-neutral launch
@@ -61,6 +63,17 @@ application graph. It can:
   picker with progress, cancellation, and source-change detection;
 - use focused navigation on compact screens and list-detail navigation on
   expanded screens.
+
+## OpenJiuwen discovery
+
+OpenJiuwen is visible only as a metadata-probe provider. A selected connection
+target needs Python 3 and the approved Python distribution for the probe to read
+its version. The probe accepts no credentials or model configuration. Even
+when the version is valid, the result remains incompatible and no session,
+stream, tool, approval, history, file, or recovery action is enabled.
+
+For privacy-safe setup, failure recovery, and explicit unsupported examples,
+read [OpenJiuwen metadata-probe provider](OPENJIUWEN_PROVIDER.md).
 
 Session navigation stores only a fixed-length SHA-256 identity derived from the
 complete connection/provider/session locator. It does not place raw host,

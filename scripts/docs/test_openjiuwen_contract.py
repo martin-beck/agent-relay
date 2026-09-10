@@ -77,7 +77,12 @@ class OpenJiuwenContractTest(unittest.TestCase):
             <= scenarios
         )
 
-    def test_contract_does_not_claim_an_implemented_adapter(self) -> None:
+    def test_contract_publishes_only_the_metadata_probe(self) -> None:
         document = load_contract()
-        self.assertEqual(document["implementation_status"], "contract_only")
-        self.assertEqual(document["contract_status"], "planned")
+        self.assertEqual(document["implementation_status"], "metadata_probe_only")
+        self.assertEqual(document["contract_status"], "reviewed")
+        evidence = document["implementation_evidence"]
+        self.assertEqual(evidence["capabilities"], "none")
+        self.assertIn("No live OpenJiuwen engine", evidence["limitation"])
+        self.assertTrue((ROOT / evidence["factory"]).is_file())
+        self.assertTrue(all((ROOT / path).is_file() for path in evidence["tests"]))

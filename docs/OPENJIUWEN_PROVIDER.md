@@ -1,8 +1,9 @@
-# OpenJiuwen provider contract
+# OpenJiuwen metadata-probe provider
 
-Agent Relay records the OpenJiuwen integration as a contract-only, planned
-provider until an adapter and its conformance evidence exist. The authoritative
-matrix is [the versioned contract](contracts/openjiuwen-provider-v1.json).
+Agent Relay includes a fail-closed OpenJiuwen discovery boundary. It can verify
+that the Python distribution metadata is available, but it advertises no agent
+capabilities and cannot open a session. The authoritative matrix is
+[the versioned contract](contracts/openjiuwen-provider-v1.json).
 
 ## Evidence boundary
 
@@ -15,9 +16,42 @@ and graph execution. Those descriptions are evidence for the contract matrix,
 not proof that Agent Relay already supports those capabilities.
 
 No OpenJiuwen gateway, wire protocol, credential format, approval handshake,
-session-history schema, or changed-file manifest is assumed. The future adapter
-must pin the exact SDK surface it invokes and must expose unsupported behavior
-explicitly rather than infer it from documentation or marketing material.
+session-history schema, or changed-file manifest is assumed. The current
+factory invokes only a fixed, credential-free Python metadata query with a
+10-second deadline. A successful query reports the installed version as
+incompatible because no reviewed Agent Relay bridge exists.
+
+## Setup and authentication
+
+Install Python 3 and the approved OpenJiuwen Python distribution on the selected
+connection target using the pinned source revision above. Installation and
+package provenance remain administrator-owned; Agent Relay neither downloads
+the SDK nor executes SDK agent code.
+
+The metadata probe accepts no endpoint, model, account, token, API key, or
+credential option. Do not enter provider or model credentials for this
+integration. Authentication cannot make the provider ready because Agent Relay
+has no reviewed bridge or credential handoff for OpenJiuwen.
+
+Reconnect the selected connection to run discovery again after repairing a
+missing Python interpreter or distribution. A missing package, failed command,
+malformed version, duplicate output, oversized output, or truncated output is
+reported as missing without including command output. A valid version is still
+reported as incompatible until a separately pinned bridge passes review.
+
+## Unsupported operations
+
+| Attempt | Current result |
+| --- | --- |
+| Start or resume an OpenJiuwen session | Unsupported; the factory cannot create a connection |
+| Send or stream model input | Unsupported; no gateway, CLI, model, or stream protocol is invoked |
+| Invoke a tool or answer an approval | Unsupported before external I/O; no approval handshake is established |
+| Read provider history or changed files | Unsupported; no stable history or revisioned file manifest is established |
+| Interrupt, reconnect, or replay a turn | Unsupported; uncertain effects must never be replayed automatically |
+
+Agent Relay must not translate a successful SDK metadata probe into any of
+these capabilities. The provider descriptor remains empty, so application
+controls stay capability-gated.
 
 ## Integration rules
 
@@ -28,12 +62,13 @@ explicitly rather than infer it from documentation or marketing material.
   enter fixtures or durable events.
 - External tools and effects fail closed until an Agent Relay approval boundary
   is established. Unknown delivery is an explicit non-retryable outcome.
-- Deterministic replay tests cover malformed events, stream gaps and duplicate
-  sequence identities, oversized options, interruption, cleanup, and privacy.
+- Deterministic replay tests cover ordered and hostile metadata, duplicate and
+  truncated records, unavailable effects, cancellation, repeated probes,
+  cleanup, and privacy.
 - Live credentials, network calls, and protected data are out of scope for the
-  contract milestone.
+  published evidence.
 
-The follow-on AR-2209 adapter may implement only the capabilities marked
-conditional after these invariants and the pinned SDK behavior are verified.
-AR-2210 owns conformance validation; AR-2211 owns generated documentation and
-publication.
+The implementation and conformance suites validate only this metadata-probe
+boundary. No live OpenJiuwen engine, gateway, CLI, model, session, stream, tool,
+approval, reconnect, or artifact traversal was performed. Conditional
+capabilities in the contract remain design evidence, not implemented behavior.
