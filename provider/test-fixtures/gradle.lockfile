@@ -30,4 +30,4 @@ org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0=testCompileClasspath,testRu
 org.jetbrains.kotlinx:kover-jvm-agent:0.9.9=koverJvmAgent
 org.jetbrains:annotations:13.0=kotlinBuildToolsApiClasspath,kotlinCompilerPluginClasspathMain,kotlinCompilerPluginClasspathTest
 org.jetbrains:annotations:23.0.0=compileClasspath,testCompileClasspath,testRuntimeClasspath
-empty=kotlinScriptDefExtensions,testKotlinScriptDefExtensions
+empty=annotationProcessor,kotlinScriptDefExtensions,testAnnotationProcessor,testKotlinScriptDefExtensions
