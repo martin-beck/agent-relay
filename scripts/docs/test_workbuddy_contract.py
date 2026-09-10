@@ -83,4 +83,3 @@ class WorkBuddyContractTest(unittest.TestCase):
         document = load_contract()
         self.assertEqual(document["implementation_status"], "contract_only")
         self.assertEqual(document["contract_status"], "planned")
-
