@@ -118,14 +118,16 @@ AGENT_RELAY_LIVE_OPENCODE_INFERENCE=1 \
 AGENT_RELAY_LIVE_OPENCODE_PROVIDER=LOCAL_PROVIDER_ALIAS \
 AGENT_RELAY_LIVE_OPENCODE_MODEL=LOCAL_MODEL_ALIAS \
   ./gradlew :provider:opencode:test \
-  --tests dev.agentrelay.provider.opencode.OpenCodeLiveIntegrationTest.installedOpenCodeCompletesConfiguredLocalInferenceTurnAndStreamsIt
+  --tests dev.agentrelay.provider.opencode.OpenCodeLiveIntegrationTest.installedOpenCodeCompletesConfiguredLocalInferenceTurnAndStreamsIt \
+  --tests dev.agentrelay.provider.opencode.OpenCodeLiveIntegrationTest.installedOpenCodeCancelsConfiguredLocalInferenceTurn
 ```
 
 This second opt-in test supports any explicitly configured local OpenAI-compatible provider. It
-creates a disposable Git workspace, verifies project discovery, sends a bounded marker prompt
-through Agent Relay, requires the
-marker in the mapped transcript and at least one mapped live event, and checks
-clean child-process shutdown. The operator must stage and verify the CLI,
+creates disposable Git workspaces, verifies project discovery, and sends a bounded marker prompt
+through Agent Relay. It requires the marker in the mapped transcript, a mapped live event, a
+reconnected history read, and an attach to the same session. A second test interrupts an active
+long response and requires the session to return to idle. Both tests check clean child-process
+shutdown. The operator must stage and verify the CLI,
 engine, and model before denying outbound network. The test does not publish
 their private paths, local aliases, session data, raw output, or timing, and it
 does not establish conformance for other engines or CLIs.

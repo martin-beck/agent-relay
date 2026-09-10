@@ -8,6 +8,7 @@ package dev.agentrelay.provider.opencode
 import dev.agentrelay.provider.api.AgentEvent
 import dev.agentrelay.provider.api.AgentProviderConnection
 import dev.agentrelay.provider.api.AgentSessionId
+import dev.agentrelay.provider.api.AgentSessionState
 import dev.agentrelay.provider.api.AgentTranscriptRole
 import dev.agentrelay.provider.api.ProviderReadiness
 import dev.agentrelay.provider.api.RemoteAgentRuntime
@@ -131,8 +132,76 @@ class OpenCodeLiveIntegrationTest {
                 matchingLiveEvent.await().sessionId == session.id,
                 "OpenCode completed the local-inference turn without a mapped live-stream event",
             )
+
+            activeConnection.close()
+            connection = null
+            assertTrue(runtime.processes.all(LocalProcess::isStopped))
+
+            val resumedConnection = factory.connect(runtime)
+            connection = resumedConnection
+            val resumed = resumedConnection.refreshSessions().first { it.id == session.id }
+            assertTrue(resumedConnection.attach(resumed.id).id == session.id)
+            assertTrue(
+                resumedConnection.transcript(resumed.id).any {
+                    it.role == AgentTranscriptRole.AGENT && LIVE_MARKER in it.text
+                },
+            )
         } finally {
             liveEvent?.cancel()
+            sessionId?.let { id -> runCatching { connection?.interrupt(id) } }
+            try {
+                connection?.close()
+            } finally {
+                val allProcessesStopped = runtime.processes.all(LocalProcess::isStopped)
+                workspace.deleteTree()
+                assertTrue(allProcessesStopped)
+            }
+        }
+    }
+
+    @Test
+    fun installedOpenCodeCancelsConfiguredLocalInferenceTurn() = runBlocking {
+        assumeTrue(
+            System.getenv(LIVE_INFERENCE_TEST_ENV) == "1" ||
+                System.getenv(LEGACY_LIVE_OLLAMA_TEST_ENV) == "1",
+        )
+        val provider = System.getenv(LIVE_PROVIDER_ENV)?.takeIf(String::isNotBlank) ?: DEFAULT_PROVIDER
+        val model = System.getenv(LIVE_MODEL_ENV)?.takeIf(String::isNotBlank) ?: DEFAULT_MODEL
+        val workspace = Files.createTempDirectory("agent-relay-opencode-local-cancel-")
+        val factory = OpenCodeAgentProviderFactory()
+        val runtime = LocalRuntime()
+        var connection: AgentProviderConnection? = null
+        var sessionId: AgentSessionId? = null
+
+        try {
+            initializeGitWorkspace(workspace)
+            assertIs<ProviderReadiness.Ready>(factory.probe(runtime))
+            val activeConnection = factory.connect(runtime)
+            connection = activeConnection
+            val session = activeConnection.startSession(
+                StartSessionOptions(
+                    workingDirectory = workspace.toString(),
+                    model = "$provider/$model",
+                    providerOptions = mapOf("title" to "Agent Relay local cancellation validation"),
+                ),
+            )
+            sessionId = session.id
+            activeConnection.sendInput(
+                session.id,
+                "/no_think Produce a detailed 100-item numbered list and do not use tools.",
+            )
+            withTimeout(30_000.milliseconds) {
+                activeConnection.sessions.first { sessions ->
+                    sessions.any { it.id == session.id && it.state == AgentSessionState.RUNNING }
+                }
+            }
+            activeConnection.interrupt(session.id)
+            assertTrue(
+                activeConnection.sessions.value.any {
+                    it.id == session.id && it.state == AgentSessionState.IDLE
+                },
+            )
+        } finally {
             sessionId?.let { id -> runCatching { connection?.interrupt(id) } }
             try {
                 connection?.close()
