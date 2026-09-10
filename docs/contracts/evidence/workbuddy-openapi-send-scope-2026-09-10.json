@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "source_id": "open-api-reference-en",
+  "source_url": "https://open.workbuddy.cn/en/docs/openapi",
+  "retrieved_at": "2026-09-10T13:21:32Z",
+  "response": {
+    "bytes": 352699,
+    "sha256": "sha256:3141871b1cee0c48c8f54af3b2e95cc271309cdab1df0cd566e32c3556960d55"
+  },
+  "archived_excerpt": {
+    "selector": "Send Message to Local Assistant > Permission Requirements",
+    "value": "user.localassistant.invokable",
+    "sha256": "sha256:d1d0d094093b93588eefe7684603b8464747bb5201c4846532c3b5739c5203f5",
+    "raw_html": "<tr><td>HTTP Method</td><td>POST</td></tr><tr><td>Permission Requirements</td><td>user.localassistant.invokable</td></tr><tr><td>Content-Type</td><td>application/json</td></tr>"
+  },
+  "comparison": {
+    "ar_2212_source_revision": "sha256:94b236a4465e91d0a9c43117dd9582acbaf780a29543c9fd7896c32dd947d52e",
+    "ar_2212_pre_terminology_contract_commit": "da97440fd3e1c51b5b5ad2ac6ae6af3b042d82a4",
+    "terminology_change_commit": "bb6205521216fc1070c52f5ce7f9c5370759ca23",
+    "classification": "transcription_error",
+    "limitation": "The original response is retained only by its published digest, so the historical and current full response bodies cannot be compared byte for byte. Both the original contract commit and the current reviewed excerpt use invokable."
+  }
+}
