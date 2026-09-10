@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package com.example.agentrelay
 
 import android.Manifest
@@ -25,10 +30,15 @@ import com.example.agentrelay.notifications.resolveSessionNotificationPermission
 import com.example.agentrelay.notifications.sessionNotificationNavigationKey
 import com.example.agentrelay.theme.AgentRelayTheme
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private val notificationNavigationKey = MutableStateFlow<String?>(null)
+    private val pairingHandoffState = MutableStateFlow<PairingHandoffUiState?>(null)
+    private val pairingEnrollment by lazy { AndroidPairingAppLinkEnrollment(this) }
+    private var pairingIntentJob: Job? = null
+    private var pairingIntentGeneration = 0L
     private val notificationPermissionState =
         MutableStateFlow(SessionNotificationPermissionState.HIDDEN)
     private val notificationPermissionPreferences by lazy {
@@ -46,6 +56,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         acceptNotificationNavigation(intent)
+        acceptPairingAppLink(intent)
         refreshNotificationPermissionState()
 
         enableEdgeToEdge()
@@ -60,6 +71,9 @@ class MainActivity : ComponentActivity() {
                         notificationPermissionState = permissionState,
                         onRequestNotificationPermission = ::requestNotificationPermission,
                         onOpenNotificationSettings = ::openNotificationSettings,
+                        pairingHandoffState = pairingHandoffState,
+                        onPairingApproved = ::approvePairing,
+                        onPairingDismissed = ::dismissPairing,
                     )
                 }
             }
@@ -70,6 +84,7 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         acceptNotificationNavigation(intent)
+        acceptPairingAppLink(intent)
     }
 
     override fun onResume() {
@@ -82,10 +97,56 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun onDestroy() {
+        pairingIntentGeneration++
+        pairingIntentJob?.cancel()
+        super.onDestroy()
+    }
+
     private fun acceptNotificationNavigation(intent: Intent) {
         intent.sessionNotificationNavigationKey(packageName)?.let { navigationKey ->
             notificationNavigationKey.value = navigationKey
         }
+    }
+
+    private fun acceptPairingAppLink(intent: Intent) {
+        if (intent.action != Intent.ACTION_VIEW || intent.dataString == null) {
+            return
+        }
+        val rawLink = intent.dataString ?: return
+        val generation = ++pairingIntentGeneration
+        pairingIntentJob?.cancel()
+        pairingHandoffState.value = null
+        pairingIntentJob = lifecycleScope.launch {
+            val verified = pairingEnrollment.resolveAndVerifyLink(rawLink, nowMillisProvider())
+            if (generation != pairingIntentGeneration) return@launch
+            pairingHandoffState.value = verified?.let(PairingHandoffUiState::Review)
+                ?: PairingHandoffUiState.Rejected
+        }
+    }
+
+    private fun approvePairing(verified: VerifiedPairingAppLink) {
+        val generation = ++pairingIntentGeneration
+        pairingIntentJob?.cancel()
+        pairingIntentJob = lifecycleScope.launch {
+            val enrolled = pairingEnrollment.enroll(verified)
+            if (generation != pairingIntentGeneration) return@launch
+            if (enrolled) {
+                pairingHandoffState.value = null
+                intent.action = null
+                intent.data = null
+            } else {
+                pairingHandoffState.value = PairingHandoffUiState.Rejected
+            }
+        }
+    }
+
+    private fun dismissPairing() {
+        pairingIntentGeneration++
+        pairingIntentJob?.cancel()
+        pairingHandoffState.value = null
+        intent.action = null
+        intent.data = null
     }
 
     private fun consumeNotificationNavigation(navigationKey: String) {
@@ -135,7 +196,8 @@ class MainActivity : ComponentActivity() {
             checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) ==
             PackageManager.PERMISSION_GRANTED
 
-    private companion object {
+    internal companion object {
+        internal var nowMillisProvider: () -> Long = System::currentTimeMillis
         const val NOTIFICATION_PERMISSION_PREFERENCES = "notification-permission"
         const val NOTIFICATION_PERMISSION_REQUESTED = "requested"
     }

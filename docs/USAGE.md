@@ -4,7 +4,25 @@ For goal-oriented walkthroughs with reviewed emulator screenshots, start with
 the [app workflow catalogue](WORKFLOWS.md). It labels implemented journeys as
 verified and future interaction contracts as planned.
 
+## Journey contracts
+
+The versioned interaction-cost contracts in
+[`contracts/user-journeys-v1.json`](contracts/user-journeys-v1.json) define starting
+contexts, outcomes, recovery expectations, and dimension-specific budgets for representative
+user journeys. They intentionally avoid a universal click-depth rule: navigation, scrolling,
+entry, confirmation, waiting, and error costs are measured separately so critical recovery
+journeys can receive tighter budgets than first-time setup for the right reason.
+
 ## Current application behavior
+
+## Visual-density contracts
+
+The versioned [`contracts/visual-density-v1.json`](contracts/visual-density-v1.json)
+fixture defines observable layout budgets for compact, expanded, and large-text states.
+Rules measure hierarchy, content groups, scroll burden, clipping, overlap, truncation,
+primary-action visibility, touch targets, and text size independently. They are adaptive
+per viewport and text scale; no single pixel count or crowding score replaces screenshot,
+semantics, and human usability evidence.
 
 The debug application now launches an adaptive session hub backed by the real
 application graph. It can:

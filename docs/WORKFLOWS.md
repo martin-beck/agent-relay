@@ -14,10 +14,22 @@ A **verified** page is backed by a semantic Android emulator journey and reviewe
 - [Switch sessions and steer active work](workflows/session-switching-steering.md) - **Verified.** Move between concurrent sessions without losing drafts, unread state, or active-turn controls.
 - [Inspect and save a changed file](workflows/changed-file-export.md) - **Verified.** Export one provider-reported workspace file through Android's document picker.
 - [Follow a notification to the required action](workflows/notification-attention.md) - **Planned.** Open the exact session and request that needs attention without searching through background work.
-- [Recover after network, process, or device interruption](workflows/durable-recovery.md) - **Planned.** Restore useful state automatically and surface only recovery decisions that need a person.
-- [Pair the phone with a durable host](workflows/qr-pairing.md) - **Planned.** Scan one host-generated QR code and establish an authenticated route when both devices share a network.
-- [Capture and review offline voice input](workflows/voice-input.md) - **Planned.** Turn speech into a draft locally, then let the user review it before any agent receives it.
+- [Recover after network, process, or device interruption](workflows/durable-recovery.md) - **Verified.** Restore useful state automatically and surface only recovery decisions that need a person.
+- [Pair the phone with a durable host](workflows/qr-pairing.md) - **Verified.** Scan one host-generated QR code and establish an authenticated route when both devices share a network.
+- [Capture and review offline voice input](workflows/voice-input.md) - **Verified.** Turn speech into a draft locally, then let the user review it before any agent receives it.
 - [Review what needs attention across hosts](workflows/attention-overview.md) - **Verified.** See exceptional work first while healthy sessions and connections continue quietly.
+- [Bootstrap a durable host connection](workflows/daemon-bootstrap.md) - **Planned.** Install and supervise the host-side relay service without exposing bootstrap secrets.
+- [Recover a connection through an alternate route](workflows/connection-failover.md) - **Planned.** Preserve session context while a connection moves between bounded transports.
+- [Diagnose a degraded connection](workflows/connectivity-diagnostics.md) - **Planned.** Inspect privacy-preserving connectivity evidence and choose a bounded next action.
+- [Capture and review an incident bundle](workflows/incident-evidence-review.md) - **Planned.** Collect a bounded, redacted incident bundle that explains a failure and its recovery state.
+- [Review capability health and drift](workflows/capability-health-review.md) - **Planned.** See which provider capabilities remain available and what changed since the last check.
+- [Recover a failed workflow safely](workflows/workflow-recovery.md) - **Planned.** Resume a workflow from durable state while keeping uncertain operations visible.
+- [Complete one bounded local production graph](workflows/production-graph-journey.md) - **Planned.** Trace a disposable local task from admission through durable result and restart recovery.
+- [Android system-boundary assurance](workflows/android-system-boundaries.md) - **Planned.** Exercise synthetic permission, lifecycle, companion, Wear, and form-factor boundaries.
+- [Capture and delete diagnostic evidence safely](workflows/diagnostic-privacy-lifecycle.md) - **Planned.** Exercise synthetic diagnostic authorization, redaction, retention expiry, and deletion.
+- [Reproduce replay evidence before diagnosis](workflows/replay-diagnosis-conformance.md) - **Planned.** Re-run bounded counterexamples and reject stale or uncertain diagnosis claims.
+- [Triage attention from home and lock-screen widgets](workflows/attention-widgets.md) - **Planned.** Surface the smallest useful attention signal while preserving privacy and safe actions.
+- [Verify companion device recovery safely](workflows/companion-device-verification.md) - **Planned.** Review notification, speech, and reconnect evidence across a phone and a companion watch.
 
 ## Evidence policy
 

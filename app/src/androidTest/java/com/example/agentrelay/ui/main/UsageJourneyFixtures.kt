@@ -1,5 +1,11 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package com.example.agentrelay.ui.main
 
+import com.example.agentrelay.R
 import dev.agentrelay.connection.api.ConnectionProfileFieldType
 import dev.agentrelay.provider.api.AgentApprovalDecision
 import dev.agentrelay.provider.api.AgentSessionState
@@ -95,6 +101,61 @@ internal fun deliveringActionHub(): SessionHubUiModel {
         selectedSession = checkNotNull(hub.selectedSession).copy(actions = listOf(action)),
     )
 }
+
+internal fun reconnectingRecoveryHub(): SessionHubUiModel {
+    val hub = actionHub()
+    val connection = hub.connections.first().copy(
+        label = "Workshop host",
+        target = "workshop.example.test:22",
+        status = ConnectionStatus.RECONNECTING,
+        statusDetail = UiMessage.Verbatim("Network unavailable. Retrying 2 of 4 in 8 seconds."),
+        connectedAgentCount = 0,
+        agentCount = 1,
+        unavailableAgentCount = 0,
+        canConnect = false,
+        canDisconnect = true,
+        isBusy = true,
+    )
+    return hub.copy(connections = listOf(connection))
+}
+
+internal fun voiceModelRequiredState() = SpeechInputUiState(
+    phase = SpeechInputPhase.MODEL_REQUIRED,
+    models = listOf(
+        SpeechModelOptionUiModel("compact", "English compact", false),
+        SpeechModelOptionUiModel("accurate", "English accurate", true),
+    ),
+    selectedModelId = "compact",
+    selectedModelName = "English compact",
+    statusMessage = UiMessage.Localized(R.string.speech_status_install_model),
+)
+
+internal fun voicePermissionReadyState() = SpeechInputUiState(
+    phase = SpeechInputPhase.READY,
+    models = listOf(SpeechModelOptionUiModel("compact", "English compact", true)),
+    selectedModelId = "compact",
+    selectedModelName = "English compact",
+    statusMessage = UiMessage.Localized(R.string.speech_status_ready_private),
+)
+
+internal fun voiceListeningState() = SpeechInputUiState(
+    phase = SpeechInputPhase.LISTENING,
+    selectedModelId = "compact",
+    selectedModelName = "English compact",
+    targetSessionKey = "session-key",
+    operationId = 41,
+    statusMessage = UiMessage.Localized(R.string.speech_status_listening),
+)
+
+internal fun voiceTranscriptReviewState() = SpeechInputUiState(
+    phase = SpeechInputPhase.RESULT,
+    selectedModelId = "compact",
+    selectedModelName = "English compact",
+    targetSessionKey = "session-key",
+    operationId = 41,
+    transcript = "Run the focused checks, then summarize any failures.",
+    statusMessage = UiMessage.Localized(R.string.speech_status_review_transcript),
+)
 
 internal fun twoSessionHub(): SessionHubUiModel {
     val hub = testHub()

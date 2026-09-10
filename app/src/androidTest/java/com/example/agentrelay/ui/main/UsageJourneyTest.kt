@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package com.example.agentrelay.ui.main
 
 import android.graphics.Bitmap
@@ -23,6 +28,8 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.example.agentrelay.theme.AgentRelayTheme
 import java.io.File
 import java.io.FileOutputStream
+import java.nio.ByteBuffer
+import java.security.MessageDigest
 import java.util.Locale
 import java.util.TimeZone
 import kotlin.math.abs
@@ -41,6 +48,8 @@ class UsageJourneyTest {
     @get:Rule val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
     private lateinit var screen: MutableState<UsageGuideScreen>
+
+    private val capturedFrameSignatures = mutableSetOf<String>()
 
     private lateinit var previousLocale: Locale
     private lateinit var previousTimeZone: TimeZone
@@ -62,6 +71,7 @@ class UsageJourneyTest {
     @Test
     fun capturesVerifiedJourneys() {
         resetCaptureDirectory()
+        capturedFrameSignatures.clear()
         screen = mutableStateOf(UsageGuideScreen.Hub(freshHub()))
         composeTestRule.setContent {
             AgentRelayTheme {
@@ -76,7 +86,10 @@ class UsageJourneyTest {
                         modifier = Modifier.padding(16.dp),
                     )
                     is UsageGuideScreen.Detail -> SessionDetailRoute(
-                        state = MainScreenUiState.Ready(current.hub),
+                        state = MainScreenUiState.Ready(
+                            hub = current.hub,
+                            speechInput = current.speechInput,
+                        ),
                         onBack = {},
                         onDraftChanged = { _, _, _, _ -> },
                         onSubmitDraft = {},
@@ -97,6 +110,8 @@ class UsageJourneyTest {
         captureSessionJourney()
         captureFileJourney()
         captureAttentionOverview()
+        captureDurableRecoveryJourney()
+        captureVoiceInputJourney()
         publishCaptures()
     }
 
@@ -186,6 +201,43 @@ class UsageJourneyTest {
         capture("attention-overview", "attention-overview.png")
     }
 
+    private fun captureDurableRecoveryJourney() {
+        showHub(reconnectingRecoveryHub())
+        scrollToText("Network unavailable. Retrying 2 of 4 in 8 seconds.")
+        capture("durable-recovery", "bounded-reconnect.png")
+
+        showDetail(deliveringActionHub())
+        scrollToText(
+            "Response delivery is awaiting provider confirmation. Do not retry this request; " +
+                "wait for a newly identified provider request or verify its state independently.",
+        )
+        capture("durable-recovery", "uncertain-effect.png")
+
+        showDetail(actionHub())
+        composeTestRule.onNodeWithText("Submit answers").performScrollTo().assertIsDisplayed()
+        capture("durable-recovery", "reconciled-request.png")
+    }
+
+    private fun captureVoiceInputJourney() {
+        val hub = firstReadySessionHub()
+
+        showDetail(hub, voiceModelRequiredState())
+        scrollToText("Install offline model")
+        capture("voice-input", "select-offline-model.png")
+
+        showDetail(hub, voicePermissionReadyState())
+        scrollToText("Voice input stays on this device.")
+        capture("voice-input", "permission-gated-start.png")
+
+        showDetail(hub, voiceListeningState())
+        scrollToText("Listening on device. Stop when you finish speaking.")
+        capture("voice-input", "visible-local-recording.png")
+
+        showDetail(hub, voiceTranscriptReviewState())
+        scrollToText("Run the focused checks, then summarize any failures.")
+        capture("voice-input", "review-transcript.png")
+    }
+
     private fun showHub(hub: SessionHubUiModel) {
         composeTestRule.runOnIdle {
             screen.value = UsageGuideScreen.Hub(hub)
@@ -193,9 +245,12 @@ class UsageJourneyTest {
         composeTestRule.waitForIdle()
     }
 
-    private fun showDetail(hub: SessionHubUiModel) {
+    private fun showDetail(
+        hub: SessionHubUiModel,
+        speechInput: SpeechInputUiState = unavailableSpeechInputState(),
+    ) {
         composeTestRule.runOnIdle {
-            screen.value = UsageGuideScreen.Detail(hub)
+            screen.value = UsageGuideScreen.Detail(hub, speechInput)
         }
         composeTestRule.waitForIdle()
     }
@@ -262,7 +317,8 @@ class UsageJourneyTest {
                 .uiAutomation
                 .takeScreenshot()
                 ?: return@waitUntil false
-            if (hasRenderedContent(candidate, crop)) {
+            val signature = renderedFrameSignature(candidate, crop)
+            if (hasRenderedContent(candidate, crop) && capturedFrameSignatures.add(signature)) {
                 rendered = candidate
                 true
             } else {
@@ -271,6 +327,21 @@ class UsageJourneyTest {
             }
         }
         return checkNotNull(rendered)
+    }
+
+    private fun renderedFrameSignature(image: Bitmap, crop: Int): String {
+        val digest = MessageDigest.getInstance("SHA-256")
+        val pixel = ByteBuffer.allocate(Int.SIZE_BYTES)
+        val xStep = maxOf(1, image.width / 90)
+        val yStep = maxOf(1, (image.height - crop * 2) / 120)
+        for (y in crop until image.height - crop step yStep) {
+            for (x in 0 until image.width step xStep) {
+                pixel.clear()
+                pixel.putInt(image.getPixel(x, y))
+                digest.update(pixel.array())
+            }
+        }
+        return digest.digest().joinToString("") { byte -> "%02x".format(byte) }
     }
 
     private fun hasRenderedContent(image: Bitmap, crop: Int): Boolean {
@@ -303,8 +374,8 @@ class UsageJourneyTest {
             .lineSequence()
             .filter(String::isNotBlank)
             .toList()
-        check(capturedFiles.size == 14) {
-            "Expected 14 published usage-guide screenshots, found ${capturedFiles.size}"
+        check(capturedFiles.size == 21) {
+            "Expected 21 published usage-guide screenshots, found ${capturedFiles.size}"
         }
     }
 
@@ -338,5 +409,8 @@ private sealed interface UsageGuideScreen {
         val sessionCreator: SessionCreatorUiState? = null,
     ) : UsageGuideScreen
 
-    data class Detail(val hub: SessionHubUiModel) : UsageGuideScreen
+    data class Detail(
+        val hub: SessionHubUiModel,
+        val speechInput: SpeechInputUiState = unavailableSpeechInputState(),
+    ) : UsageGuideScreen
 }

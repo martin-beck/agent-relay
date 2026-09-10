@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "authority": "docs/contracts/documentation-authority-v1.json",
+  "sources": [
+    {
+      "id": "architecture",
+      "path": "docs/ARCHITECTURE.md",
+      "kind": "design",
+      "status": "authoritative"
+    },
+    {
+      "id": "software-design",
+      "path": "docs/SOFTWARE_DESIGN.md",
+      "kind": "integration",
+      "status": "authoritative"
+    },
+    {
+      "id": "product-roadmap",
+      "path": "docs/PRODUCT_ROADMAP.md",
+      "kind": "product",
+      "status": "authoritative"
+    },
+    {
+      "id": "workflows",
+      "path": "docs/WORKFLOWS.md",
+      "kind": "generated-index",
+      "status": "generated"
+    },
+    {
+      "id": "workflow-scenarios",
+      "path": "docs/workflows/scenarios",
+      "kind": "contract",
+      "status": "authoritative"
+    },
+    {
+      "id": "quality",
+      "path": "docs/QUALITY.md",
+      "kind": "verification-policy",
+      "status": "authoritative"
+    },
+    {
+      "id": "user-satisfaction-contract",
+      "path": "docs/contracts/user-satisfaction-v1.json",
+      "kind": "contract",
+      "status": "authoritative"
+    },
+    {
+      "id": "user-satisfaction-status",
+      "path": "docs/USER_SATISFACTION.md",
+      "kind": "generated-status",
+      "status": "generated"
+    }
+  ],
+  "claims": [
+    {
+      "id": "module-direction",
+      "authority": "architecture",
+      "evidence": ["docs/ARCHITECTURE.md", "docs/DEVELOPMENT.md"]
+    },
+    {
+      "id": "workflow-status",
+      "authority": "workflow-scenarios",
+      "evidence": ["scripts/docs/render_workflows.py", "scripts/docs/verify_workflows.py"]
+    },
+    {
+      "id": "quality-gates",
+      "authority": "quality",
+      "evidence": [".pre-commit-config.yaml", ".github/workflows/verify.yml"]
+    },
+    {
+      "id": "user-satisfaction-status",
+      "authority": "user-satisfaction-contract",
+      "evidence": [
+        "scripts/docs/verify_satisfaction_assurance.py",
+        "scripts/docs/render_satisfaction.py",
+        "docs/USER_SATISFACTION.md"
+      ]
+    }
+  ]
+}

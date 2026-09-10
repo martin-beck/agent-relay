@@ -208,6 +208,18 @@ targets, paths, provider identifiers, session identifiers, prompts, or commands.
 Notification presentation therefore cannot accidentally treat sensitive
 timeline text as lock-screen-safe content.
 
+Attention personalization is a pure projection over those durable items.
+Preferences may reorder or digest noncritical items and apply daily quiet hours
+in an explicit time zone. Security, approval, uncertain-effect, and
+budget-exhaustion classifications bypass quiet hours and digests; critical
+urgency does too. Age escalation can only increase urgency. Every projection
+records the original item and position, effective urgency, delivery time, and
+stable explanation codes, so the app can explain the result and restore source
+order after a preference change or process restart. Lifecycle-terminal and
+explicitly snoozed items remain inactive because personalization does not reopen
+durable state. Duplicate durable IDs or notification keys fail closed before
+delivery.
+
 Unresolved approval and question activity remains eligible until resolved even
 when marked read. IMPORTANT_ONLY additionally includes failures;
 FINAL_OUTPUT_ONLY includes turn completion; ALL_ACTIVITY includes other unread

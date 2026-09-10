@@ -1,3 +1,6 @@
+<!-- Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved. -->
+<!-- SPDX-License-Identifier: MIT -->
+
 <resources>
     <string name="app_name">Agent Relay</string>
     <string name="notification_channel_action_name">পদক্ষেপ প্রয়োজন</string>
@@ -21,6 +24,18 @@
     <string name="notification_permission_settings_explanation">বিজ্ঞপ্তির অনুমতি বন্ধ আছে। আপনি Android সেটিংসে এটি চালু করতে পারেন।</string>
     <string name="notification_permission_open_settings">বিজ্ঞপ্তি সেটিংস খুলুন</string>
     <string name="notification_permission_allow">বিজ্ঞপ্তির অনুমতি দিন</string>
+    <string name="wear_install_offer_title">%1$s সেট আপ করুন</string>
+    <string name="wear_install_offer_explanation">গুরুত্বপূর্ণ আপডেট পেতে এবং নিরাপদ রিমোট নিয়ন্ত্রণ ব্যবহার করতে এই ঘড়িতে Agent Relay companion ইনস্টল করুন। ইনস্টলেশনটি শুধু এই ডিভাইসের জন্য প্রযোজ্য।</string>
+    <string name="wear_install_action">ঘড়িতে ইনস্টল করুন</string>
+    <string name="wear_install_not_now">এখন নয়</string>
+    <string name="wear_install_progress_title">%1$s সেট আপ করা হচ্ছে</string>
+    <string name="wear_install_progress_explanation">Agent Relay companion যাচাই ও ইনস্টল করার সময় ঘড়িটি সংযুক্ত রাখুন।</string>
+    <string name="wear_install_cancel">ইনস্টলেশন বাতিল করুন</string>
+    <string name="wear_install_recovery_title">%1$s সেট আপ করা যায়নি</string>
+    <string name="wear_install_recovery_authorization">এই ঘড়িতে ইনস্টলেশনের অনুমতি দিয়ে আবার চেষ্টা করুন।</string>
+    <string name="wear_install_recovery_installation">যাচাইকৃত companion ইনস্টল করা যায়নি। ঘড়িটি পরীক্ষা করে আবার চেষ্টা করুন।</string>
+    <string name="wear_install_recovery_connection">সেটআপের সময় ঘড়ির সংযোগ বিচ্ছিন্ন হয়েছে। আবার সংযুক্ত করে চেষ্টা করুন।</string>
+    <string name="wear_install_retry">আবার চেষ্টা করুন</string>
     <string name="background_transport_channel_name">ব্যাকগ্রাউন্ড সংযোগ</string>
     <string name="background_transport_channel_description">স্পষ্টভাবে চালু করা রিমোট এজেন্ট সংযোগ সক্রিয় রাখে</string>
     <string name="background_transport_notification_title">Agent Relay সংযুক্ত</string>
@@ -368,4 +383,22 @@
     <string name="session_action_title_review_required">এজেন্টের কাজ পর্যালোচনা করা প্রয়োজন।</string>
     <string name="session_question_prompt_fallback">এজেন্টের প্রশ্ন</string>
     <string name="connection_failure_profile_preparation">সংযোগ প্রোফাইল প্রস্তুত করা যায়নি।</string>
+    <string name="lock_widget_description">লক স্ক্রিনে মনোযোগের সারাংশ</string>
+    <string name="lock_widget_no_attention">মনোযোগ দেওয়ার মতো কিছু নেই</string>
+    <string name="lock_widget_status_quiet">Agent Relay</string>
+    <string name="lock_widget_status_attention">মনোযোগ প্রয়োজন</string>
+    <string name="lock_widget_status_refresh">অ্যাপে রিফ্রেশ করুন</string>
+    <string name="lock_widget_loading">মনোযোগের বিষয় যাচাই করা হচ্ছে…</string>
+    <string name="lock_widget_error">মনোযোগের অবস্থা পাওয়া যাচ্ছে না</string>
+    <string name="home_widget_description">হোম স্ক্রিনে মনোযোগের সারাংশ</string>
+    <string name="home_widget_no_attention">মনোযোগ দেওয়ার মতো কিছু নেই</string>
+    <string name="home_widget_status_quiet">Agent Relay</string>
+    <string name="home_widget_status_attention">মনোযোগ প্রয়োজন</string>
+    <string name="home_widget_status_refresh">অ্যাপে রিফ্রেশ করুন</string>
+    <string name="home_widget_loading">মনোযোগের বিষয় যাচাই করা হচ্ছে…</string>
+    <string name="home_widget_error">মনোযোগের অবস্থা পাওয়া যাচ্ছে না</string>
+    <string name="home_widget_action_open_details_for">মনোযোগের বিবরণ খুলুন: %1$s</string>
+    <string name="home_widget_action_acknowledge">নিশ্চিত করুন</string>
+    <string name="home_widget_action_defer">পরে করুন</string>
+    <string name="home_widget_action_mute_confirm">নিঃশব্দ করুন…</string>
 </resources>

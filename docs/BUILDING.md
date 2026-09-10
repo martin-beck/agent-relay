@@ -45,6 +45,7 @@ uv sync --locked --only-group quality --only-group docs
 uv run pytest
 scripts/ci/install_shell_quality_tools.sh
 uv run pre-commit run --all-files --show-diff-on-failure
+./gradlew -p buildSrc check --stacktrace
 ./gradlew spotlessCheck detekt buildHealth test koverXmlReport koverVerify checkKotlinAbi lintDebug assembleDebug --stacktrace
 ```
 
@@ -52,6 +53,7 @@ On Windows, run the complete repository and shell gates inside x86_64 or arm64
 WSL. You can run the Gradle portion from PowerShell:
 
 ```powershell
+.\gradlew.bat -p buildSrc check --stacktrace
 .\gradlew.bat spotlessCheck detekt buildHealth test koverXmlReport koverVerify checkKotlinAbi lintDebug assembleDebug --stacktrace
 ```
 
@@ -60,7 +62,10 @@ properties, GitHub metadata, spelling, links, secrets, and generic repository
 hygiene. Its shell slice runs pinned ShellCheck, checks canonical formatting
 with `shfmt --diff`, and runs focused Bats regressions. The generated Gradle
 wrapper remains governed by wrapper validation instead of being reformatted or
-patched locally. The Gradle tasks cover Kotlin formatting, Detekt, strict
+patched locally. The dedicated build-logic gate covers deterministic Java
+formatting, strict compiler diagnostics, PMD, SpotBugs, Gradle plugin
+validation, JUnit 5 and TestKit tests, and ratcheted JaCoCo line and branch
+thresholds. The application Gradle tasks cover Kotlin formatting, Detekt, strict
 dependency declarations, JVM unit and contract tests, aggregate coverage,
 Android lint, and debug APK assembly. The APK is written to:
 
@@ -114,6 +119,19 @@ fails. Because the live OSV database changes independently, re-review both
 reports and the policy whenever the result set changes.
 
 ## Offline speech native build
+
+## Manual external documentation publication
+
+The repository does not publish documentation externally during pushes,
+schedules, or pull requests. An owner may configure a repository variable
+`DOCS_PUBLICATION_URL` and secret `DOCS_PUBLICATION_TOKEN`, then explicitly
+dispatch the `External documentation publication` workflow with `confirm=true`.
+The workflow rebuilds the strict documentation site, creates a deterministic
+archive, sends it only to the configured HTTPS destination, and retains its
+SHA-256 checksum in the job summary. Missing configuration, a
+non-HTTPS destination, an oversized archive, or a token found in the archive
+fails closed before upload. No endpoint, credential, or account identifier is
+stored in the repository.
 
 The debug build includes a source-built sherpa-onnx online-recognition runtime.
 Confirm the exact native tools before building:
@@ -222,11 +240,19 @@ reviewed output separate:
 - `scripts/docs` renders, checks, captures, and compares the guide; and
 - `mkdocs.yml` defines the searchable static site.
 
+When a user-visible capability changes, update or add its scenario contract in the
+same change. Keep a scenario `planned` until a semantic Android journey and reviewed
+captures exist; fixtures and model-only contracts must never be presented as verified
+product evidence.
+
 Validate the authored catalogue, reviewed images, and site without an emulator:
 
 ```bash
 uv run --only-group docs python scripts/docs/render_workflows.py --check
 uv run --only-group docs python scripts/docs/verify_workflows.py
+uv run --only-group docs python scripts/docs/verify_evidence_reproducibility.py \
+  --source-revision "$(git rev-parse HEAD)"
+uv run --only-group docs python scripts/docs/verify_evidence_reproducibility.py --check
 uv run --only-group docs mkdocs build --strict
 uv run --only-group docs mkdocs serve --strict
 ```
@@ -308,11 +334,11 @@ scripts/ci/run_shell_quality.sh test
 ./gradlew checkKotlinAbi
 ```
 
-The last command checks the committed public provider and connection API dumps.
-After an intentional compatible contract change, run
-`./gradlew :provider:api:updateKotlinAbi :connection:api:updateKotlinAbi` and
-review the generated text before committing it. Never update a dump merely to
-silence an unexplained compatibility failure.
+The last command checks the committed public provider, connection, and session
+API dumps. After an intentional compatible contract change, run
+`./gradlew :provider:api:updateKotlinAbi :connection:api:updateKotlinAbi
+:session:api:updateKotlinAbi` and review the generated text before committing
+it. Never update a dump merely to silence an unexplained compatibility failure.
 
 The opt-in provider and SSH live checks are disabled in normal builds. Their
 private environment variables and prerequisites are documented in
@@ -341,6 +367,14 @@ The pull-request UI workflow runs the same suite on an API 36 emulator, compares
 the workflow captures with reviewed evidence, and builds the static guide. A
 successful compile, JVM test, or site build does not substitute for device
 execution.
+
+The scheduled `Documentation maintenance` workflow repeats generated-document,
+workflow-evidence, reproducibility, privacy, API, consistency, strict-site, and
+external-link checks on the dedicated build runner pool. Stale or missing evidence
+fails closed. After every authoritative check passes, the workflow attempts to
+upload a browsable site for three days. That upload is optional evidence transport:
+quota failure emits a warning and job-summary record without changing the validation
+result. Explicit public or external publication paths remain strict.
 
 ## CI
 
@@ -373,3 +407,26 @@ validation.
 
 If a CI-only failure occurs, download the relevant report artifact from the
 workflow run and reproduce the exact failing Gradle task locally.
+
+## Actions artifact retention
+
+The manual `Actions artifact retention` workflow inventories Actions artifacts
+on the dedicated build runner and produces a deterministic dry-run plan by
+default. It protects active runs, current main, open pull-request heads,
+release/publication outputs, recent evidence, and artifacts with incomplete
+provenance. Age, duplicate source heads, size, and explicit quota hysteresis
+rank the remaining candidates.
+
+The repository owner must supply the account's current artifact quota and a
+maximum deletion count for every dispatch. Applying a reviewed plan additionally
+requires the exact confirmation `DELETE_ACTIONS_ARTIFACTS`; the tool rejects
+more than 100 deletions per invocation. The workflow has no schedule, does not
+upload another artifact, and writes its counts to the job summary. A dry run or
+source test never authorizes deletion.
+
+Run the same planner locally with a token provided only through the environment:
+
+```bash
+uv run python scripts/ci/actions_artifact_retention.py \
+  --repository owner/name --quota-mib 500 --max-deletions 25
+```

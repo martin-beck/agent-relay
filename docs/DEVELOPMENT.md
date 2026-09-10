@@ -95,6 +95,12 @@ work. Reconcile again as soon as external state changes.
 The periodic reconciler is a recovery backstop for out-of-band drift. It does not replace
 the immediate updates required from an active worker.
 
+If any tooling operation exceeds its bounded timeout, pause retries immediately. Launch a
+concurrent deep-debug investigation, preserve the timeout evidence, identify and repair the
+root cause on the same branch, verify the repair, and recover or restart the affected tool
+through a supported control before retrying. A failure in the investigation or verification
+preempts later feature work until it is recorded and resolved.
+
 ## Worktree and change discipline
 
 Use only the worktree and branch named by the claimed task. Reconcile unexpected files or

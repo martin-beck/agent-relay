@@ -1,3 +1,6 @@
+<!-- Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved. -->
+<!-- SPDX-License-Identifier: MIT -->
+
 <resources>
     <string name="app_name">Agent Relay</string>
     <string name="notification_channel_action_name">対応が必要です</string>
@@ -21,6 +24,18 @@
     <string name="notification_permission_settings_explanation">通知権限がオフです。Android の設定で有効にできます。</string>
     <string name="notification_permission_open_settings">通知設定を開く</string>
     <string name="notification_permission_allow">通知を許可</string>
+    <string name="wear_install_offer_title">%1$s を設定</string>
+    <string name="wear_install_offer_explanation">重要な更新の受信と安全なリモート操作のため、この時計に Agent Relay コンパニオンをインストールします。インストール先はこの端末だけです。</string>
+    <string name="wear_install_action">時計にインストール</string>
+    <string name="wear_install_not_now">後で</string>
+    <string name="wear_install_progress_title">%1$s を設定しています</string>
+    <string name="wear_install_progress_explanation">Agent Relay がコンパニオンを検証してインストールする間、時計を接続したままにしてください。</string>
+    <string name="wear_install_cancel">インストールをキャンセル</string>
+    <string name="wear_install_recovery_title">%1$s を設定できませんでした</string>
+    <string name="wear_install_recovery_authorization">この時計へのインストールを許可してから、もう一度お試しください。</string>
+    <string name="wear_install_recovery_installation">検証済みコンパニオンをインストールできませんでした。時計を確認して、もう一度お試しください。</string>
+    <string name="wear_install_recovery_connection">設定中に時計との接続が切れました。再接続して、もう一度お試しください。</string>
+    <string name="wear_install_retry">もう一度試す</string>
     <string name="background_transport_channel_name">バックグラウンド接続</string>
     <string name="background_transport_channel_description">明示的に有効にしたリモートエージェント接続を維持します</string>
     <string name="background_transport_notification_title">Agent Relay は接続中です</string>
@@ -360,4 +375,22 @@
     <string name="session_action_title_review_required">エージェントの操作を確認する必要があります。</string>
     <string name="session_question_prompt_fallback">エージェントの質問</string>
     <string name="connection_failure_profile_preparation">接続プロファイルを準備できませんでした。</string>
+    <string name="lock_widget_description">ロック画面の対応項目の概要</string>
+    <string name="lock_widget_no_attention">対応は不要です</string>
+    <string name="lock_widget_status_quiet">Agent Relay</string>
+    <string name="lock_widget_status_attention">要対応</string>
+    <string name="lock_widget_status_refresh">アプリで更新</string>
+    <string name="lock_widget_loading">対応項目を確認中…</string>
+    <string name="lock_widget_error">対応状況を利用できません</string>
+    <string name="home_widget_description">ホーム画面の対応項目の概要</string>
+    <string name="home_widget_no_attention">対応は不要です</string>
+    <string name="home_widget_status_quiet">Agent Relay</string>
+    <string name="home_widget_status_attention">要対応</string>
+    <string name="home_widget_status_refresh">アプリで更新</string>
+    <string name="home_widget_loading">対応項目を確認中…</string>
+    <string name="home_widget_error">対応状況を利用できません</string>
+    <string name="home_widget_action_open_details_for">詳細を開く: %1$s</string>
+    <string name="home_widget_action_acknowledge">確認</string>
+    <string name="home_widget_action_defer">後で対応</string>
+    <string name="home_widget_action_mute_confirm">ミュート…</string>
 </resources>

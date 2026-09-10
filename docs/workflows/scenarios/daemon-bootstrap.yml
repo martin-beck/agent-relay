@@ -1,0 +1,37 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
+id: daemon-bootstrap
+title: Bootstrap a durable host connection
+summary: Install and supervise the host-side relay service without exposing bootstrap secrets.
+status: planned
+order: 11
+goal: Turn a trusted host into a durable Agent Relay endpoint with clear service health.
+preconditions:
+  - A user has shell access to a trusted host and an approved bootstrap scope.
+  - The phone can reach the host through a configured secure transport.
+automatic:
+  - Agent Relay generates or installs host bootstrap material in a bounded private location.
+  - Service supervision restarts the relay after a recoverable process interruption.
+  - Health state reports readiness, degraded state, and last observed failure separately.
+attention:
+  - Confirm the host and account before installing bootstrap material.
+  - Review the requested service permissions and choose the intended startup policy.
+  - Revoke the host when it is no longer trusted.
+recovery:
+  - A failed install leaves no active half-configured service.
+  - Re-running bootstrap is safe only after the prior attempt is inspected.
+  - Revocation disables future routes without deleting unrelated phone profiles.
+steps:
+  - id: review-bootstrap
+    title: Review the host bootstrap request
+    action: Open the bootstrap flow for a trusted synthetic host.
+    expected: The app shows scope, host identity, service account, and rollback behavior.
+  - id: confirm-supervision
+    title: Confirm bounded supervision
+    action: Approve the narrow service setup and startup policy.
+    expected: The app reports the selected policy and an actionable health state.
+  - id: inspect-health
+    title: Inspect host health
+    action: Open the host health details after setup.
+    expected: Readiness and any recovery action are visible without exposing secrets.

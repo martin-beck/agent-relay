@@ -2,6 +2,9 @@
 
 Agent Relay separates how an execution environment is reached from how a coding
 agent is controlled. Neither the session layer nor an agent adapter assumes SSH.
+The [extension platform](EXTENSIONS.md) adds versioned, capability-declared
+providers and workflows while keeping policy, secrets, approvals, and durable
+evidence in the phone and daemon authorities.
 
 ## Dependency direction
 
@@ -21,8 +24,35 @@ speech stack. The Android layer owns verified app-private model activation and
 injectable audio boundaries; the sherpa layer supplies native online inference.
 No connection or agent provider depends on the speech stack.
 :storage:android is shared by Android persistence implementations.
+:backup:api owns the provider-neutral, contract-first encrypted configuration
+archive schema; Android document-picker and durable-store adapters remain above
+this boundary.
 :session:api and :session:android persist provider-neutral session state.
 ```
+
+## Phone-local AI evidence boundary
+
+## Debug-only phone/Wear transport
+
+The debug builds expose a narrow ADB intent endpoint for deterministic phone/Wear
+contract tests. It accepts only a versioned, bounded, redacted packet and reports
+the receiver outcome; it never creates a pairing grant and never uses or proves
+the authenticated Google Data Layer. The endpoint is absent from release source
+sets and cannot be used as OEM-pairing evidence.
+
+For local emulator tests, encode a packet with `DebugWearPacketCodec`, then inject
+it with an explicit component and the `packet` extra. The phone component is
+`com.example.agentrelay/.debug.DebugWearAdbActivity`; the Wear component is
+`dev.agentrelay.wear.app/.debug.DebugWearAdbActivity`. Keep packets synthetic and
+credential-free. Official pairing remains required for Data Layer and production
+companion validation.
+
+Phone-local model discovery reports capability and validation evidence separately from
+the model itself. API availability, model metadata, loadability, mocks, and virtual-device
+checks are useful validation signals but do not prove physical on-device inference. Only a
+`PHYSICAL_DEVICE` observation at `INFERENCE_VERIFIED` may be used to route real user data
+to a phone-local model. Observations contain bounded identifiers and policy data, never
+paths, addresses, hardware identifiers, or model content.
 
 Dependencies point toward contracts. Agent providers consume
 `RemoteAgentRuntime`; they do not cast it to an SSH or local implementation.
@@ -49,6 +79,7 @@ schema without importing SSH configuration types.
 | `:session:android` | Encrypted Android session-hub document store |
 | `:session:runtime` | Profile discovery, connection lifecycle, agent discovery, event projection, and actions |
 | `:storage:android` | Namespaced authenticated Android Keystore document encryption |
+| `:backup:api` | Versioned, redacted and authenticated portable configuration backup contract |
 
 ## Session identity
 
@@ -63,6 +94,49 @@ ConnectionProviderId
 
 The tuple prevents identical provider session IDs from colliding across SSH,
 local access, profiles, or future connection types.
+
+Endpoint trust uses the separate [endpoint identity contract](ENDPOINT_IDENTITY.md).
+Daemon and client identities are fixed-length digests of public signing keys;
+transport addresses and implementation process IDs never define endpoint
+identity. Rotation and compromise recovery are explicit trust transitions.
+
+Pairing is an explicit ceremony between a daemon identity and a client identity.
+An authenticated proof is required before a grant is issued; approved scopes may
+only narrow the request, and every grant has a bounded expiry, revisioned renewal,
+and explicit revocation. Unknown, expired, rejected, replayed, or revoked grants
+fail closed. Pairing records carry identities and capabilities, never protected
+task content or transport metadata.
+
+The daemon protocol is transport-independent: versioned authenticated frames,
+capability negotiation, and protected ciphertext are defined in `:connection:api`.
+Direct, private-network, NAT-traversal, and opaque-relay adapters carry the same
+frames; they cannot inspect protected payloads or change the negotiated transcript.
+Negotiation selects the highest common version and intersects capabilities, while
+malformed, oversized, mismatched, or downgraded messages fail before adapter I/O.
+
+Continuity tokens preserve the daemon identity, pairing grant and protocol
+generation across reconnect and transport failover. The bounded reconnect state
+machine rejects expired or changed tokens. Command IDs use a durable ledger:
+in-flight duplicates are suppressed, completed commands are observed idempotently,
+and partial delivery becomes an explicit unknown outcome that is never replayed
+automatically.
+
+Connectivity diagnostics are a bounded projection, not workflow authority. They
+retain only opaque topology labels, transport/state transitions, durations, and
+fault counters; retention overflow increments explicit dropped-data counters.
+Local connectivity verification uses bounded named fault scenarios (delay, reset,
+truncation, partition and path switching). Each scenario is replayable from a
+non-negative seed and produces only redacted, deterministic events; it never opens
+an unauthenticated diagnostic endpoint or performs network I/O.
+Discovery and failover evidence remains deterministic and useful while excluding
+addresses, paths, credentials, task content, and protected payloads.
+
+Incident bundles are proof artifacts rather than raw log archives. Export requires
+explicit authorization plus a one-document grant. The versioned manifest carries
+only redacted evidence digests, bounded self-check results, artifact hashes and
+omitted-data counts; AES-GCM protects the manifest and integrity verification is
+performed before export. Prompts, transcripts, credentials, routes, commands and
+paths are excluded by construction.
 
 ## Runtime flow
 
@@ -79,6 +153,15 @@ An application-scoped graph owns encrypted store construction and registers both
 Local and Secure Shell plus all implemented agent factories. A navigation-scoped
 ViewModel combines coordinator and durable repository snapshots so destinations
 do not create duplicate runtimes or state authorities.
+
+Optional orchestration adapters are an explicit host-side boundary above the
+framework-neutral execution-engine contract. They receive only already
+delegated attempts, an explicitly enabled parallel or pipeline mode, and an
+allowlisted tool/model selection. They return a deterministic plan; workflow
+tasks, permissions, leases, scheduling, synchronization, execution, and
+completion remain owned by their existing authorities. The default policy is
+disabled, and Android does not depend on or discover an orchestration
+framework.
 Composer edits use an in-memory projection for immediate feedback while the
 ViewModel debounces writes to the encrypted session repository. Submission
 flushes the exact draft before provider I/O and clears it only after successful
@@ -159,6 +242,11 @@ session or UI layers.
   for the whole export.
 - Android export uses a one-document SAF grant, not broad storage permission.
 - Output, protocol lines, retention, retries, and process lifetimes are bounded.
+- Configuration backup is explicit and user-controlled. The portable contract
+  allowlists non-secret categories, rejects sensitive material during model
+  construction, authenticates the archive with passphrase-derived AES-GCM, and
+  never serializes Android Keystore keys, credentials, prompts or protected
+  transcripts. Import adapters must preview and validate before an atomic commit.
 
 See [Connection providers](CONNECTION_PROVIDERS.md) and
 [Session hub](SESSION_HUB.md) for detailed invariants.
@@ -170,6 +258,24 @@ protocol state belong to agent providers. Durable drafts, unread activity,
 preferences, transcript cache, and changed-file records belong to the session
 repository. Transfer progress belongs to the short-lived UI controller. Compose
 is a projection of these sources and must not become a second authority.
+
+Diagnostic observations are bounded, provider-neutral projections rather than
+a second state authority. `DiagnosticEvent` carries stable causal identifiers,
+opaque workflow references, clocks, severity, outcome, and a stable failure
+category; it never carries secrets or raw host, path, credential, or token
+attributes. Its schema compatibility and explicit redaction/export policy are
+validated at the session API boundary. Later capture and tracing components may
+retain or export these observations, but domain events and the session
+repository remain authoritative.
+
+The bounded capture store accepts observations only through an explicitly
+authorized, component-scoped session. It redacts before writing, assigns a
+monotonic cursor and checksum, and enforces record, byte and age limits.
+Queries are read-only projections filtered by causal references; expiry,
+overwrites, coalescing, truncation and rejected writes are reported as bounded
+counters. Corrupt tail frames are discarded during recovery. Capture cannot
+acknowledge commands, determine completion, or drop effects, failures,
+approvals or evidence links from their authoritative stores.
 
 The process lifecycle is a provider-neutral composition boundary. Moving the
 app to the background serially suspends an already-created session runtime
@@ -200,6 +306,26 @@ host, path, profile identifier, or unbounded agent-session identifier. Domain
 state continues to use the lossless locator rather than the digest.
 Approval and question UI keys follow the same one-way digest rule.
 
+Home-screen widget controls cross a non-exported broadcast boundary using
+explicit, immutable, one-shot `PendingIntent` values. Each request is bounded,
+short-lived, authenticated over its complete canonical payload, and tied to an
+authority generation plus an exact attention-snapshot revision. Admission
+authenticates before inspecting authoritative state, rejects revoked, expired,
+duplicate, stale, or no-longer-permitted actions, and durably records the
+request identifier before any effect. A failed durable write prevents the
+effect. The executor performs a final atomic state comparison, and an uncertain
+result remains consumed rather than being retried automatically. Revocation and
+reactivation also require a durable generation transition, so process restart
+cannot revive an old widget capability.
+
+Widget controls never approve an agent-requested privileged action. Opening
+details is available at every home-widget size; medium widgets may also expose
+acknowledge and defer; mute is limited to expanded widgets and always opens an
+in-app confirmation boundary. Lock-screen projections carry no action
+capability. Until the authoritative refresh runtime is installed, the Android
+receiver fails closed after process death rather than interpreting an intent on
+its own.
+
 ## Verification
 
 Contract tests use fake runtimes and providers to validate the boundaries
@@ -207,3 +333,13 @@ without live credentials. Opt-in live checks verify installed tools in private
 disposable environments. Android Keystore behavior additionally requires
 connected device tests. The complete hosted gate is documented in
 [Building](BUILDING.md).
+
+## Android diagnostic build modes
+
+The app exposes `debug`, `diagnostic`, `profileable`, and `release` variants. The diagnostic
+variant is an explicitly selected, debuggable build with bounded runtime probes and expiring
+opt-in coroutine dumps. The profileable variant is release-like and enables shell profiling
+without enabling capture or dumps. All variants use the same authentication, authorization,
+endpoint-trust, and redaction code paths; diagnostic controls never enable capture by default.
+Stable `android.os.Trace` sections cover startup and may be extended around persistence,
+connection, synchronization, and rendering boundaries without recording payloads or secrets.

@@ -1,3 +1,6 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 [project]
 name = "agent-relay-quality"
 version = "0.0.0"
@@ -37,6 +40,8 @@ docstring-code-format = true
 [tool.mypy]
 python_version = "3.12"
 scripts_are_modules = true
+mypy_path = ["scripts/ci", "scripts/docs"]
+explicit_package_bases = true
 show_error_codes = true
 strict = true
 warn_unreachable = true

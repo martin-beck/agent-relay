@@ -1,8 +1,17 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.roborazzi)
+}
+
+dependencies {
+    lintChecks(project(":lint-checks"))
 }
 
 android {
@@ -27,10 +36,30 @@ android {
     buildTypes {
         getByName("debug") {
             isPseudoLocalesEnabled = true
+            manifestPlaceholders["profileableByShell"] = false
+            buildConfigField("String", "AGENT_RELAY_BUILD_MODE", "\"debug\"")
+        }
+        create("diagnostic") {
+            initWith(getByName("debug"))
+            applicationIdSuffix = ".diagnostic"
+            versionNameSuffix = "-diagnostic"
+            matchingFallbacks += listOf("debug")
+            manifestPlaceholders["profileableByShell"] = false
+            buildConfigField("String", "AGENT_RELAY_BUILD_MODE", "\"diagnostic\"")
+        }
+        create("profileable") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".profileable"
+            versionNameSuffix = "-profileable"
+            matchingFallbacks += listOf("release")
+            manifestPlaceholders["profileableByShell"] = true
+            buildConfigField("String", "AGENT_RELAY_BUILD_MODE", "\"profileable\"")
         }
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            manifestPlaceholders["profileableByShell"] = false
+            buildConfigField("String", "AGENT_RELAY_BUILD_MODE", "\"release\"")
         }
     }
     compileOptions {
@@ -40,7 +69,7 @@ android {
     buildFeatures {
         compose = true
         aidl = false
-        buildConfig = false
+        buildConfig = true
         shaders = false
     }
     androidResources {
@@ -78,6 +107,7 @@ dependencies {
     // Provider-neutral connection and session runtime
     implementation(project(":connection:api"))
     implementation(project(":connection:local"))
+    implementation(project(":companion:api"))
     implementation(project(":provider:api"))
     implementation(project(":provider:aider"))
     implementation(project(":provider:claude"))

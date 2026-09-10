@@ -28,6 +28,7 @@ representative physical-device release evidence.
 | yamllint, Taplo, and schema checks | Deterministic YAML/TOML style and valid GitHub workflow, issue-form, and Dependabot structure | Any finding fails |
 | actionlint and zizmor | GitHub Actions expressions, graph semantics, permissions, injection, and supply-chain safety | Any finding fails; audits run offline on pull requests |
 | Typos and Gitleaks | Source-aware spelling and hard-coded secret detection across tracked text | Any finding fails; suppressions must identify a reviewed false positive narrowly |
+| Build logic | Google Java Format, `javac -Xlint:all -Werror`, PMD, SpotBugs, Gradle plugin validation, JUnit 5, TestKit, and JaCoCo | Any finding or test failure fails; line coverage below 93% or branch coverage below 82% fails |
 | Kotlin compiler | Type safety and compiler diagnostics | All warnings are errors |
 | Detekt | Kotlin correctness plus cyclomatic, cognitive, nesting, length, parameter, and size limits | Any configured finding fails; cognitive complexity is ratcheted below 34 and no baseline is used |
 | Android lint | Android and dependency lint checks | Errors and warnings fail; HTML, XML, and SARIF reports |
@@ -41,6 +42,25 @@ representative physical-device release evidence.
 | Kover | Aggregate and critical-module JVM-testable line coverage | Aggregate below 70%, or a critical module below its ratcheted floor, fails |
 | Kotlin ABI validation | Public provider and connection contracts from the pinned Kotlin Gradle plugin | Any unreviewed difference from the committed ABI dumps fails |
 | Debug assembly | Packaging and resource integration | Any failure fails |
+
+### Cross-language assurance contract
+
+The machine-readable `config/language-assurance-contract.json` keeps the Java, Bash,
+dependency, Python, and Kotlin signals comparable. Each gate names
+its coordinator owner, exact command, report location, invariant, and remediation path.
+The contract verifier checks that every required language is represented, evidence paths
+stay below the quality-report directory, and every gate points at a declared invariant.
+It validates the contract shape; it does not substitute for running the underlying gates.
+
+Run the shape check locally with:
+
+```bash
+uv run python scripts/ci/verify_language_assurance.py
+```
+
+Missing or stale evidence remains a failure of the owning gate. The aggregate contract is
+fail-closed: a new assurance signal must add an owner, invariant, evidence location, and
+repair instruction before it can be published.
 
 The dependency-analysis exception for `:session:api` is intentionally narrow:
 its public ABI exposes identifiers from `:connection:api`, so that project
@@ -84,13 +104,13 @@ session runtime 83% (83.47%), speech API 74% (74.34%), and SSH API 86% (86.85%).
 These checks run through each module's normal `koverVerify` task and do not
 replace or reduce the aggregate 70% rule.
 
-The provider and connection API modules enable the experimental ABI validator
-shipped in the pinned Kotlin Gradle plugin 2.3.20. `checkKotlinAbi` compares the
-compiled public contracts with the reviewable dumps under each module's `api`
-directory. Run `updateKotlinAbi` only for an intentional compatible API change,
-then review every dump line. A green check means the compiled ABI matches the
-committed reference; it does not promise source compatibility, behavioral
-compatibility, or semantic-versioning policy.
+The provider, connection, and session API modules enable the experimental ABI
+validator shipped in the pinned Kotlin Gradle plugin 2.3.20. `checkKotlinAbi`
+compares the compiled public contracts with the reviewable dumps under each
+module's `api` directory. Run `updateKotlinAbi` only for an intentional
+compatible API change, then review every dump line. A green check means the
+compiled ABI matches the committed reference; it does not promise source
+compatibility, behavioral compatibility, or semantic-versioning policy.
 
 Run the full local gate:
 
@@ -99,11 +119,15 @@ uv sync --locked --only-group quality --only-group docs
 uv run pytest
 scripts/ci/install_shell_quality_tools.sh
 uv run pre-commit run --all-files --show-diff-on-failure
+./gradlew -p buildSrc check --stacktrace
 ./gradlew spotlessCheck detekt buildHealth test koverXmlReport koverVerify checkKotlinAbi lintDebug assembleDebug --stacktrace
 ```
 
-Run the complete repository and shell gate on Linux x86_64 or arm64. Windows
-hosts use WSL for those checks; the Gradle portion can run from PowerShell.
+This first build-logic slice covers the Java native-download and extraction
+tasks. Dedicated assurance for native shell scripts, dependency provenance and
+verification metadata, Python support tools, and Kotlin convention logic stays
+as explicitly scoped follow-on work; their existing repository gates remain
+mandatory in the meantime.
 
 Install the fast checks as a Git hook after the first sync:
 
@@ -174,6 +198,14 @@ required API 36 UI job additionally captures and compares the running app,
 retains the current images, metrics, and diffs, and publishes a downloadable
 static-site artifact. A planned workflow remains text-only until its semantic
 journey passes and its screenshots receive explicit review.
+
+The machine-readable user-satisfaction authority binds the ten outcome-management child
+contracts to their production sources, focused tests, formal models where available, and
+truthful limitations. Its generated status page may list a journey as Android-verified only
+when the referenced workflow scenario is verified and contains a semantic test plus reviewed,
+accessible screenshot evidence. The full JVM gate executes every child test; the documentation
+validator proves coverage and evidence shape without pretending that file presence is a passing
+test result or that contract evidence is human usability evidence.
 
 ## Format-specific policy
 
@@ -267,7 +299,7 @@ Verify the committed UI baselines separately:
 ./gradlew :app:verifyRoborazziDebug --stacktrace
 ```
 
-Reports are written below `build/reports/detekt`,
+Reports are written below `buildSrc/build/reports`, `build/reports/detekt`,
 `build/reports/dependency-analysis`, `build/reports/kover`, and
 `build/reports/problems`, plus `build/reports/quality` (including Python
 branch-aware coverage XML) and each Android
@@ -307,6 +339,15 @@ Pre-release Detekt 2 builds are not used merely to hide this warning.
 
 ## UI usability and accessibility
 
+### Documentation privacy boundary
+
+Documentation and fixture content is scanned for high-confidence private key,
+access-token, credential-assignment, and cloud-key patterns by
+`scripts/docs/verify_documentation_privacy.py`. Examples must use synthetic
+hosts, identifiers, and redacted placeholders; a real secret is never an
+acceptable fixture. The check covers `docs/`, `config/`, and `fixtures/` and
+runs with the documentation verification gates.
+
 Ease of use is a correctness requirement. UI work is incomplete until the
 primary task is discoverable, every state has a safe next action, and tests show
 that the task remains usable across Android configurations and assistive input.
@@ -340,10 +381,25 @@ least 33 discovered and 33 executed tests. This prevents a missing device,
 missing module report, skipped accessibility audit, or accidentally empty suite
 from appearing green.
 
+Each device job keeps its Gradle daemon registry and authenticated sockets in a
+fresh job-private directory under `RUNNER_TEMP`. It may link the shared
+dependency and wrapper caches into that directory, but it never shares daemon
+state. The runner stops only that private daemon during bounded cleanup after
+the final build request; it never stops a shared daemon immediately before a
+build. This prevents stale socket tokens from turning a successful emulator
+boot into a missing-test-report failure.
+
 That API 36 job also captures the six verified usage journeys, requires all 14
 reviewed screenshots to remain within the documented thresholds, and performs a
 strict static-site build. It retains captures, metrics, diffs, reports, and the
 downloadable browsable guide for 14 days.
+
+Build, test, emulator, accessibility, workflow, and visual assertions are the
+authoritative CI result. GitHub artifact uploads are optional evidence transport:
+an upload failure remains visible as a warning and job-summary entry, but cannot
+turn otherwise successful authoritative checks red. The workflows never hide or
+reinterpret a test failure, never claim that an unavailable artifact was
+uploaded, and keep explicitly enabled public Pages publication strict.
 
 The workflow invokes those three device-test tasks explicitly. Native-only and
 no-test Android modules remain covered by the quality and build workflow without

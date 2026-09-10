@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.session.android
 
 import android.content.Context
@@ -6,6 +11,8 @@ import dev.agentrelay.connection.api.ConnectionProviderId
 import dev.agentrelay.provider.api.AgentProviderId
 import dev.agentrelay.provider.api.AgentSessionId
 import dev.agentrelay.session.api.CachedTranscriptEntry
+import dev.agentrelay.session.api.CommandOutboxState
+import dev.agentrelay.session.api.DurableCommand
 import dev.agentrelay.session.api.SessionActivity
 import dev.agentrelay.session.api.SessionActivitySummary
 import dev.agentrelay.session.api.SessionActivitySummaryKind
@@ -18,6 +25,7 @@ import dev.agentrelay.session.api.SessionLocator
 import dev.agentrelay.session.api.SessionObservation
 import dev.agentrelay.session.api.SessionPreferences
 import dev.agentrelay.session.api.SessionRecord
+import dev.agentrelay.session.api.SessionRecoveryState
 import dev.agentrelay.storage.android.EncryptedFileDocumentStore
 import dev.agentrelay.storage.android.SecureDocumentNamespace
 import dev.agentrelay.storage.android.SecureDocumentStore
@@ -97,6 +105,31 @@ private data class SessionHubDocument(
     val transcripts: List<SessionTranscriptDocument>,
     val actionRequests: List<SessionActionRequestDocument> = emptyList(),
     val artifacts: List<SessionArtifactDocument> = emptyList(),
+    val activeSession: SessionLocatorDocument? = null,
+    val recovery: List<SessionRecoveryDocument> = emptyList(),
+    val commandOutbox: List<SessionCommandOutboxDocument> = emptyList(),
+)
+
+@Serializable
+private data class SessionRecoveryDocument(
+    val locator: SessionLocatorDocument,
+    val scrollPosition: Int,
+    val eventCursor: String?,
+    val pendingCommandIds: List<String>,
+)
+
+@Serializable
+private data class SessionCommandOutboxDocument(
+    val locator: SessionLocatorDocument,
+    val commands: List<DurableCommandDocument>,
+)
+
+@Serializable
+private data class DurableCommandDocument(
+    val id: String,
+    val payload: String,
+    val createdAtEpochMillis: Long,
+    val state: String,
 )
 
 @Serializable
@@ -246,6 +279,21 @@ private fun SessionHubSnapshot.toDocument() = SessionHubDocument(
     },
     actionRequests = actionRequests.map(SessionActionRequest::toDocument),
     artifacts = artifacts.map(SessionArtifact::toDocument),
+    activeSession = activeSession?.toDocument(),
+    recovery = recovery.map { (locator, state) -> state.toDocument(locator) },
+    commandOutbox = commandOutbox.map { (locator, commands) ->
+        SessionCommandOutboxDocument(
+            locator.toDocument(),
+            commands.map { command ->
+                DurableCommandDocument(
+                    id = command.id,
+                    payload = command.payload,
+                    createdAtEpochMillis = command.createdAtEpochMillis,
+                    state = command.state.name,
+                )
+            },
+        )
+    },
 )
 
 private fun SessionHubDocument.toDomain(): SessionHubSnapshot {
@@ -257,6 +305,22 @@ private fun SessionHubDocument.toDomain(): SessionHubSnapshot {
         .associate { document ->
             document.locator.toDomain() to document.entries.map(CachedTranscriptEntryDocument::toDomain)
         }
+    val restoredRecovery = recovery
+        .requireUniqueBy(SessionRecoveryDocument::locator, "session recovery")
+        .associate { it.locator.toDomain() to it.toDomain() }
+    val restoredCommandOutbox = commandOutbox
+        .requireUniqueBy(SessionCommandOutboxDocument::locator, "session command outbox")
+        .associate { document ->
+            document.locator.toDomain() to document.commands.map { command ->
+                DurableCommand(
+                    id = command.id,
+                    payload = command.payload,
+                    createdAtEpochMillis = command.createdAtEpochMillis,
+                    state = runCatching { CommandOutboxState.valueOf(command.state) }
+                        .getOrElse { throw IllegalArgumentException("Unknown command outbox state") },
+                )
+            }
+        }
     return SessionHubSnapshot(
         sessions = sessions.map(SessionRecordDocument::toDomain),
         drafts = restoredDrafts,
@@ -264,8 +328,24 @@ private fun SessionHubDocument.toDomain(): SessionHubSnapshot {
         transcripts = restoredTranscripts,
         actionRequests = actionRequests.map(SessionActionRequestDocument::toDomain),
         artifacts = artifacts.map(SessionArtifactDocument::toDomain),
+        activeSession = activeSession?.toDomain(),
+        recovery = restoredRecovery,
+        commandOutbox = restoredCommandOutbox,
     )
 }
+
+private fun SessionRecoveryState.toDocument(locator: SessionLocator) = SessionRecoveryDocument(
+    locator = locator.toDocument(),
+    scrollPosition = scrollPosition,
+    eventCursor = eventCursor,
+    pendingCommandIds = pendingCommandIds.toList().sorted(),
+)
+
+private fun SessionRecoveryDocument.toDomain() = SessionRecoveryState(
+    scrollPosition = scrollPosition,
+    eventCursor = eventCursor,
+    pendingCommandIds = pendingCommandIds.toSet(),
+)
 
 internal fun SessionLocator.toDocument() = SessionLocatorDocument(
     connectionProviderId = connectionProviderId.value,

@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package com.example.agentrelay.ui.main
 
 import androidx.compose.foundation.layout.Arrangement
@@ -36,6 +41,13 @@ internal fun SessionHubList(
     onSelectSession: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val surfaceBuckets = attentionSurfaceBuckets(hub.sessions)
+    val attentionTitle = stringResource(R.string.session_hub_attention_title)
+    val attentionSubtitle = stringResource(R.string.session_hub_attention_subtitle)
+    val changedTitle = stringResource(R.string.session_detail_changed_files)
+    val surfaceSubtitle = stringResource(R.string.session_hub_recent_sessions_subtitle)
+    val runningTitle = stringResource(R.string.session_state_running)
+    val recentTitle = stringResource(R.string.session_hub_recent_sessions_title)
     LazyColumn(
         modifier = modifier,
         contentPadding = PaddingValues(20.dp),
@@ -119,27 +131,94 @@ internal fun SessionHubList(
             }
         }
         sessionLaunchers(hub.sessionLaunchers, actions.openSessionCreator)
+        sessionSurfaces(
+            sessions = hub.sessions,
+            buckets = surfaceBuckets,
+            selectedSessionKey = hub.selectedSessionKey,
+            attentionTitle = attentionTitle,
+            attentionSubtitle = attentionSubtitle,
+            changedTitle = changedTitle,
+            surfaceSubtitle = surfaceSubtitle,
+            runningTitle = runningTitle,
+            recentTitle = recentTitle,
+            onSelectSession = onSelectSession,
+        )
+    }
+}
+
+private fun LazyListScope.sessionSurfaces(
+    sessions: List<SessionUiModel>,
+    buckets: AttentionSurfaceBuckets,
+    selectedSessionKey: String?,
+    attentionTitle: String,
+    attentionSubtitle: String,
+    changedTitle: String,
+    surfaceSubtitle: String,
+    runningTitle: String,
+    recentTitle: String,
+    onSelectSession: (String) -> Unit,
+) {
+    if (sessions.isEmpty()) {
         item(key = "sessions-heading") {
-            SectionHeading(
-                title = stringResource(R.string.session_hub_recent_sessions_title),
-                subtitle = stringResource(R.string.session_hub_recent_sessions_subtitle),
-            )
+            SectionHeading(title = recentTitle, subtitle = surfaceSubtitle)
         }
-        if (hub.sessions.isEmpty()) {
-            item(key = "sessions-empty") {
-                EmptyCard(
-                    stringResource(R.string.session_hub_sessions_empty),
-                )
-            }
-        } else {
-            items(hub.sessions, key = SessionUiModel::stableKey) { session ->
-                SessionCard(
-                    session = session,
-                    selected = session.stableKey == hub.selectedSessionKey,
-                    onClick = { onSelectSession(session.stableKey) },
-                )
-            }
+        item(key = "sessions-empty") {
+            EmptyCard(stringResource(R.string.session_hub_sessions_empty))
         }
+        return
+    }
+    sessionSurfaceSection(
+        key = "sessions-attention",
+        title = attentionTitle,
+        subtitle = attentionSubtitle,
+        sessions = buckets.needsAttention,
+        selectedSessionKey = selectedSessionKey,
+        onSelectSession = onSelectSession,
+    )
+    sessionSurfaceSection(
+        key = "sessions-changed",
+        title = changedTitle,
+        subtitle = surfaceSubtitle,
+        sessions = buckets.changed,
+        selectedSessionKey = selectedSessionKey,
+        onSelectSession = onSelectSession,
+    )
+    sessionSurfaceSection(
+        key = "sessions-running",
+        title = runningTitle,
+        subtitle = surfaceSubtitle,
+        sessions = buckets.running,
+        selectedSessionKey = selectedSessionKey,
+        onSelectSession = onSelectSession,
+    )
+    sessionSurfaceSection(
+        key = "sessions-recent",
+        title = recentTitle,
+        subtitle = surfaceSubtitle,
+        sessions = buckets.recentlyCompleted,
+        selectedSessionKey = selectedSessionKey,
+        onSelectSession = onSelectSession,
+    )
+}
+
+private fun LazyListScope.sessionSurfaceSection(
+    key: String,
+    title: String,
+    subtitle: String,
+    sessions: List<SessionUiModel>,
+    selectedSessionKey: String?,
+    onSelectSession: (String) -> Unit,
+) {
+    if (sessions.isEmpty()) return
+    item(key = "$key-heading") {
+        SectionHeading(title = title, subtitle = subtitle)
+    }
+    items(sessions, key = SessionUiModel::stableKey) { session ->
+        SessionCard(
+            session = session,
+            selected = session.stableKey == selectedSessionKey,
+            onClick = { onSelectSession(session.stableKey) },
+        )
     }
 }
 

@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.session.api
 
 import dev.agentrelay.connection.api.ConnectionProfileId
@@ -87,6 +92,74 @@ class PersistentSessionHubRepositoryTest {
         assertEquals(1, restored.session(session)?.unreadCount)
         assertEquals("approval-1", restored.inbox().single().id)
         assertEquals("Durable result", restored.transcripts[session]?.single()?.text)
+    }
+
+    @Test
+    fun recoveryStateSurvivesReopenAndActiveSessionIsIdempotent() = runTest {
+        val store = InMemorySessionHubStore()
+        val repository = PersistentSessionHubRepository.open(store)
+        val session = locator("local.device", "local", "recovery-thread")
+        repository.upsertSession(observation(session, updatedAt = 1L))
+        repository.setActiveSession(session)
+        repository.setActiveSession(session)
+        repository.updateRecoveryState(
+            session,
+            SessionRecoveryState(
+                scrollPosition = 42,
+                eventCursor = "event-7",
+                pendingCommandIds = setOf("command-1"),
+            ),
+        )
+
+        val restored = PersistentSessionHubRepository.open(store).snapshot.value
+        assertEquals(session, restored.activeSession)
+        assertEquals(42, restored.recovery[session]?.scrollPosition)
+        assertEquals("event-7", restored.recovery[session]?.eventCursor)
+        assertEquals(setOf("command-1"), restored.recovery[session]?.pendingCommandIds)
+
+        repository.removeSession(session)
+        assertTrue(repository.snapshot.value.activeSession == null)
+        assertTrue(repository.snapshot.value.recovery[session] == null)
+    }
+
+    @Test
+    fun commandOutboxPersistsTransitionsAndRejectsConflictingReuse() = runTest {
+        val store = InMemorySessionHubStore()
+        val repository = PersistentSessionHubRepository.open(store)
+        val session = locator("local.device", "local", "outbox-thread")
+        repository.upsertSession(observation(session, updatedAt = 1L))
+        val command = DurableCommand("command-1", "run tests", 2L)
+
+        assertEquals(CommandEnqueueResult.ENQUEUED, repository.enqueueCommand(session, command))
+        assertEquals(CommandEnqueueResult.DUPLICATE, repository.enqueueCommand(session, command))
+        assertEquals(
+            CommandEnqueueResult.CONFLICT,
+            repository.enqueueCommand(session, command.copy(payload = "delete data")),
+        )
+        assertEquals(CommandOutboxState.CONFLICT, repository.snapshot.value.commandOutbox[session]?.single()?.state)
+        assertFalse(repository.markCommandInFlight(session, command.id))
+
+        val restored = PersistentSessionHubRepository.open(store).snapshot.value
+        assertEquals(CommandOutboxState.CONFLICT, restored.commandOutbox[session]?.single()?.state)
+    }
+
+    @Test
+    fun unknownDeliveryCanOnlyBeAcknowledgedAndIsNeverAutomaticallyReplayable() = runTest {
+        val repository = PersistentSessionHubRepository.open(InMemorySessionHubStore())
+        val session = locator("local.device", "local", "unknown-delivery")
+        repository.upsertSession(observation(session, updatedAt = 1L))
+        val command = DurableCommand("command-unknown", "safe command", 2L)
+        repository.enqueueCommand(session, command)
+
+        assertTrue(repository.markCommandInFlight(session, command.id))
+        assertTrue(repository.markCommandUnknown(session, command.id))
+        assertFalse(repository.markCommandInFlight(session, command.id))
+        assertTrue(repository.acknowledgeCommand(session, command.id))
+        assertFalse(repository.acknowledgeCommand(session, command.id))
+        assertEquals(
+            CommandOutboxState.ACKNOWLEDGED,
+            repository.snapshot.value.commandOutbox[session]?.single()?.state,
+        )
     }
 
     @Test

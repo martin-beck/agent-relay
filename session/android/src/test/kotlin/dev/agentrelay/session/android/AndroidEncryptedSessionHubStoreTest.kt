@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.session.android
 
 import dev.agentrelay.connection.api.ConnectionProfileId
@@ -11,6 +16,8 @@ import dev.agentrelay.provider.api.AgentSessionId
 import dev.agentrelay.provider.api.AgentSessionState
 import dev.agentrelay.provider.api.AgentTranscriptRole
 import dev.agentrelay.session.api.CachedTranscriptEntry
+import dev.agentrelay.session.api.CommandOutboxState
+import dev.agentrelay.session.api.DurableCommand
 import dev.agentrelay.session.api.SessionActivity
 import dev.agentrelay.session.api.SessionActivitySummary
 import dev.agentrelay.session.api.SessionActivitySummaryKind
@@ -58,6 +65,30 @@ class AndroidEncryptedSessionHubStoreTest {
         assertTrue(documents.lastWriteReference?.all { it == 0.toByte() } == true)
         assertEquals(expected, store.load())
         assertTrue(documents.lastReadReference?.all { it == 0.toByte() } == true)
+    }
+
+    @Test
+    fun durableCommandOutboxRoundTripsAcrossEncryptedDocument() = runTest {
+        val documents = InMemoryDocuments()
+        val store = AndroidEncryptedSessionHubStore(documents)
+        val expected = completeSnapshot().copy(
+            commandOutbox = mapOf(
+                ssh to listOf(
+                    DurableCommand(
+                        id = "command-one",
+                        payload = "run tests",
+                        createdAtEpochMillis = 42L,
+                        state = CommandOutboxState.UNKNOWN_DELIVERY,
+                    ),
+                ),
+            ),
+        )
+
+        store.save(expected)
+
+        assertEquals(expected, store.load())
+        val document = Json.parseToJsonElement(documents.storedText()).jsonObject
+        assertTrue(document.getValue("commandOutbox").jsonArray.isNotEmpty())
     }
 
     @Test

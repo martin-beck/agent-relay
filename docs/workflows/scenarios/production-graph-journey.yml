@@ -1,0 +1,35 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
+id: production-graph-journey
+title: Complete one bounded local production graph
+summary: Trace a disposable local task from admission through durable result and restart recovery.
+status: planned
+order: 18
+goal: Prove the local production graph preserves bounded intent, durable progress, and terminal evidence across restart.
+preconditions:
+  - A disposable local fixture uses synthetic task, workflow, project, and result identifiers.
+  - The contract test suite and persistence boundary are available without provider or network access.
+automatic:
+  - Agent Relay admits a proposed task with an explicit budget, completion contract, and prohibited effect.
+  - The host journals an idempotent local result before observing completion.
+  - A restart resumes only from the durable checkpoint and does not repeat the effect implicitly.
+attention:
+  - Review that the fixture remains local-only and contains no credentials, paths, prompts, or provider output.
+  - Treat this contract evidence as distinct from Android synchronization or physical-device evidence.
+recovery:
+  - An expired lease is reacquired from the checkpoint within the bounded recovery batch.
+  - An uncertain effect becomes an explicit attention item instead of an automatic retry.
+steps:
+  - id: admit-local-task
+    title: Admit a bounded local task
+    action: Create the synthetic task proposal with a local-only constraint and explicit prohibited effect.
+    expected: The task remains proposed until an explicit approval boundary.
+  - id: persist-local-result
+    title: Persist the local result intent
+    action: Journal the idempotent local result, acknowledge it, and record completion evidence.
+    expected: The effect reaches completed state with a stable idempotency key.
+  - id: recover-from-checkpoint
+    title: Recover from a durable checkpoint
+    action: Reconstruct the recovery coordinator after a simulated process restart.
+    expected: Recovery resumes from the checkpoint and reports no implicit external replay.

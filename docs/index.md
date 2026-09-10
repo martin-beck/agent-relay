@@ -32,6 +32,7 @@ Current verified journeys cover:
 - [Install a debug build](INSTALLING.md)
 - [Understand the architecture](ARCHITECTURE.md)
 - [Review connection providers](CONNECTION_PROVIDERS.md)
+- [Review offline LLM testing and local inference recommendations](OFFLINE_LLM_TESTING.md)
 - [Read the product roadmap](PRODUCT_ROADMAP.md)
 - [Inspect quality and verification gates](QUALITY.md)
 - [Follow the AI-assisted development process](DEVELOPMENT.md)

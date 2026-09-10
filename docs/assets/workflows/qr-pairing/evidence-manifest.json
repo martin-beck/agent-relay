@@ -1,0 +1,14 @@
+{
+  "format": 1,
+  "mode": "synthetic-waiver",
+  "device_verification": false,
+  "privacy": "redacted synthetic content only",
+  "review_note": "These five deterministic PNG cards are review evidence, not camera, host, emulator, or physical-device captures.",
+  "images": [
+    {"name": "host-qr-display.png", "sha256": "367d21207f8e403f2cdaacc189b9fd93c1d330be7602d4ec54159876c3007170"},
+    {"name": "camera-link-preview.png", "sha256": "790dc2296a6418c734453934eadbcdacd9c1281badea0fa0723c720e4f1d8b74"},
+    {"name": "app-confirmation.png", "sha256": "e2814bb86a630b3ad4ed338c5c71d7758fa865b787904fee2a1becf38bceaeb7"},
+    {"name": "enrollment-complete.png", "sha256": "c16b3c89df80b519e0959e32450a5796ceddcb4181cb3bb0dd75d549a02b942a"},
+    {"name": "expired-rejection.png", "sha256": "17bb0616906deebcbabda7792bd93072d8a78164a718484954014c6a67581d8d"}
+  ]
+}

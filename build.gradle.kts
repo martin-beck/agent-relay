@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.android.library) apply false
@@ -14,6 +19,39 @@ plugins {
 dependencyLocking {
     lockAllConfigurations()
     lockMode.set(LockMode.STRICT)
+}
+
+val secureNettyVersions = mapOf(
+    "4.1." to libs.versions.netty.get(),
+    "4.2." to libs.versions.netty42.get(),
+)
+
+allprojects {
+    configurations.configureEach {
+        resolutionStrategy.eachDependency {
+            if (requested.group == "io.netty") {
+                val requestedVersion = requested.version
+                if (requestedVersion != null) {
+                    secureNettyVersions.entries
+                        .singleOrNull { (releaseLine, _) -> requestedVersion.startsWith(releaseLine) }
+                        ?.let { (releaseLine, secureVersion) ->
+                            val requestedPatch = requestedVersion
+                                .removePrefix(releaseLine)
+                                .removeSuffix(".Final")
+                                .toIntOrNull()
+                            val securePatch = secureVersion
+                                .removePrefix(releaseLine)
+                                .removeSuffix(".Final")
+                                .toIntOrNull()
+                            if (requestedPatch != null && securePatch != null && requestedPatch < securePatch) {
+                                useVersion(secureVersion)
+                                because("Reviewed Netty release-line floors fix known security advisories")
+                            }
+                        }
+                }
+            }
+        }
+    }
 }
 
 val ktlintEditorConfig = mapOf(
@@ -66,7 +104,7 @@ spotless {
             ".editorconfig",
             ".gitignore",
         )
-        targetExclude("**/build/**", ".gradle/**", ".venv/**")
+        targetExclude("**/build/**", "**/.gradle/**", ".venv/**")
         trimTrailingWhitespace()
         endWithNewline()
     }

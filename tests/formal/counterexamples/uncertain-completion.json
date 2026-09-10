@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "id": "uncertain-completion",
+  "kind": "fault-injection",
+  "model": "WorkflowConcurrency",
+  "trace": ["start", "acquire:0:0", "uncertain:0", "complete:0"],
+  "expected": {
+    "outcome": "rejected",
+    "error": "completion requires"
+  },
+  "evidence": {
+    "class": "bounded-model-result",
+    "boundary": "An uncertain external effect is terminal and cannot be completed."
+  },
+  "implementation": "scripts/ci/verify_workflow_concurrency.py",
+  "input_sha256": "ae0c5b5e7b3ea758076cc05873c175b061829b46c73254d108b16edbfd916773",
+  "implementation_sha256": "1495499597fcfcd06cf89bc2f2685468e2f48bb137223fc61c74d5051d2849cf"
+}

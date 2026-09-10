@@ -1,0 +1,37 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
+id: replay-diagnosis-conformance
+title: Reproduce replay evidence before diagnosis
+status: planned
+summary: Re-run bounded counterexamples and reject stale or uncertain diagnosis claims.
+order: 21
+goal: Prove automated diagnosis stays within independently reproduced, current evidence.
+preconditions:
+  - Retained traces contain synthetic opaque identifiers, canonical hashes, and explicit evidence classes.
+  - Diagnosis is advisory only and cannot establish absence of defects or security proof.
+automatic:
+  - The independent validator recomputes trace and implementation hashes before replay.
+  - Uncertain effects remain terminal and stale evidence cannot be promoted to a current finding.
+attention:
+  - Review the reproduced outcome and evidence age before accepting any diagnosis.
+  - This planned workflow has no screenshot or physical-device claim.
+recovery:
+  - Preserve the failing trace and validator output when replay diverges.
+  - Reject a finding when its fixture, implementation hash, or evidence boundary is stale.
+steps:
+  - id: import-trace
+    title: Import a retained counterexample
+    status: planned
+    action: Load a synthetic trace with canonical input and implementation hashes.
+    expected: The independent validator accepts only an in-tree, non-symlinked fixture.
+  - id: reproduce-outcome
+    title: Reproduce the bounded outcome
+    status: planned
+    action: Replay the trace and compare the result with its recorded accepted or rejected outcome.
+    expected: Divergent outcomes fail validation and remain evidence of a regression.
+  - id: bound-diagnosis
+    title: Bound a diagnosis claim
+    status: planned
+    action: Compare the reproduced evidence class and age before presenting a diagnosis.
+    expected: Stale or uncertain evidence cannot be presented as a current confirmed finding.

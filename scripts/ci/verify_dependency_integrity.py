@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 """Verify committed Gradle integrity metadata, locks, and OSV exceptions offline."""
 
 from __future__ import annotations
@@ -26,6 +29,11 @@ LOCK_HEADER = (
     "# This file is expected to be part of source control.",
 )
 ROOT_LOCKFILE = Path("gradle.lockfile")
+NETTY_VERSION = re.compile(r"(\d+)\.(\d+)\.(\d+)\.Final")
+MINIMUM_SAFE_NETTY_BY_RELEASE_LINE = {
+    (4, 1): 137,
+    (4, 2): 17,
+}
 
 
 class IntegrityError(RuntimeError):
@@ -79,6 +87,30 @@ def read_locks(root: Path, manifest: Path) -> dict[tuple[str, str], set[str]]:
             package = f"{parts[0]}:{parts[1]}"
             configurations[(package, parts[2])].update(configuration_list.split(","))
     return configurations
+
+
+def verify_netty_versions(locked: dict[tuple[str, str], set[str]]) -> None:
+    for package, version in locked:
+        if not package.startswith("io.netty:"):
+            continue
+        match = NETTY_VERSION.fullmatch(version)
+        if match is None:
+            raise IntegrityError(f"{package}:{version}: unsupported Netty version format")
+        major, minor, patch = (int(part) for part in match.groups())
+        minimum_patch = MINIMUM_SAFE_NETTY_BY_RELEASE_LINE.get((major, minor))
+        if minimum_patch is None:
+            supported = ", ".join(
+                f"{line_major}.{line_minor}"
+                for line_major, line_minor in MINIMUM_SAFE_NETTY_BY_RELEASE_LINE
+            )
+            raise IntegrityError(
+                f"{package}:{version}: unsupported Netty release line; expected one of {supported}"
+            )
+        if patch < minimum_patch:
+            raise IntegrityError(
+                f"{package}:{version}: Netty {major}.{minor} must be at least "
+                f"{major}.{minor}.{minimum_patch}.Final"
+            )
 
 
 def verify_gradle_metadata(path: Path) -> None:
@@ -273,6 +305,7 @@ def verify_osv_findings(path: Path, accepted: set[OsvFinding]) -> None:
 
 def verify_repository(root: Path, today: datetime.date | None = None) -> None:
     locked = read_locks(root, root / "config/dependency-lockfiles.txt")
+    verify_netty_versions(locked)
     verify_gradle_metadata(root / "gradle/verification-metadata.xml")
     verify_scanner_release(root / "config/osv-scanner-release.json")
     _, expected_exceptions = read_osv_policy(

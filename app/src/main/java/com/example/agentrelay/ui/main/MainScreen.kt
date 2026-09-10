@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package com.example.agentrelay.ui.main
 
 import androidx.compose.foundation.layout.Arrangement
@@ -52,6 +57,11 @@ internal fun MainScreen(
     backgroundTransportState: BackgroundTransportState = BackgroundTransportState.STOPPED,
     onStartBackgroundTransport: () -> Unit = {},
     onStopBackgroundTransport: () -> Unit = {},
+    wearInstallOfferState: WearInstallOfferUiState = WearInstallOfferUiState.Hidden,
+    onInstallWearCompanion: () -> Unit = {},
+    onDeclineWearCompanion: () -> Unit = {},
+    onCancelWearInstall: () -> Unit = {},
+    onRetryWearInstall: () -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val actions = remember(viewModel, onOpenSession, onSaveArtifact, speechActions) {
@@ -101,6 +111,11 @@ internal fun MainScreen(
         backgroundTransportState = backgroundTransportState,
         onStartBackgroundTransport = onStartBackgroundTransport,
         onStopBackgroundTransport = onStopBackgroundTransport,
+        wearInstallOfferState = wearInstallOfferState,
+        onInstallWearCompanion = onInstallWearCompanion,
+        onDeclineWearCompanion = onDeclineWearCompanion,
+        onCancelWearInstall = onCancelWearInstall,
+        onRetryWearInstall = onRetryWearInstall,
         modifier = modifier,
     )
 }
@@ -117,6 +132,11 @@ internal fun MainScreenContent(
     backgroundTransportState: BackgroundTransportState = BackgroundTransportState.STOPPED,
     onStartBackgroundTransport: () -> Unit = {},
     onStopBackgroundTransport: () -> Unit = {},
+    wearInstallOfferState: WearInstallOfferUiState = WearInstallOfferUiState.Hidden,
+    onInstallWearCompanion: () -> Unit = {},
+    onDeclineWearCompanion: () -> Unit = {},
+    onCancelWearInstall: () -> Unit = {},
+    onRetryWearInstall: () -> Unit = {},
 ) {
     when (state) {
         MainScreenUiState.Loading -> Box(
@@ -161,6 +181,14 @@ internal fun MainScreenContent(
 
         is MainScreenUiState.Ready -> {
             Column(modifier.fillMaxSize()) {
+                WearInstallOfferCard(
+                    state = wearInstallOfferState,
+                    onInstall = onInstallWearCompanion,
+                    onDecline = onDeclineWearCompanion,
+                    onCancel = onCancelWearInstall,
+                    onRetry = onRetryWearInstall,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+                )
                 if (notificationPermissionState != SessionNotificationPermissionState.HIDDEN) {
                     SessionNotificationPermissionCard(
                         state = notificationPermissionState,

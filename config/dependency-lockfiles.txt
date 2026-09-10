@@ -1,9 +1,15 @@
 app/gradle.lockfile
+backup/api/gradle.lockfile
+backup/gradle.lockfile
 buildSrc/gradle.lockfile
+companion/api/gradle.lockfile
+companion/gradle.lockfile
+companion/wear/gradle.lockfile
 connection/api/gradle.lockfile
 connection/gradle.lockfile
 connection/local/gradle.lockfile
 gradle.lockfile
+lint-checks/gradle.lockfile
 provider/aider/gradle.lockfile
 provider/api/gradle.lockfile
 provider/claude/gradle.lockfile
@@ -28,3 +34,5 @@ ssh/gradle.lockfile
 ssh/jsch/gradle.lockfile
 storage/android/gradle.lockfile
 storage/gradle.lockfile
+workflow/api/gradle.lockfile
+workflow/gradle.lockfile

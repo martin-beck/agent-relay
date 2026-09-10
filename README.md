@@ -30,6 +30,7 @@ permission to redistribute source code, APKs, or project artifacts.
 
 ## Current status
 
+<!-- generated:status:start -->
 | Area | Status |
 | --- | --- |
 | Generic connection-provider API | Implemented and unit tested |
@@ -42,7 +43,9 @@ permission to redistribute source code, APKs, or project artifacts.
 | Changed files and safe export | Encrypted per-session shelf plus checked single-file export for local and SSH workspaces; previews, diffs, and batch export remain |
 | Offline speech | Verified model delivery/audio boundaries plus a pinned, source-built, TTS-free sherpa-onnx online-recognition adapter for four Android ABIs; the first admitted model, app composition/UI, and device evidence remain |
 | Background operation | Durable privacy-safe alerts plus explicit sticky foreground connection mode and encrypted process-death recovery intent; final provider/device endurance evidence remains |
+| Outcome-first workflow management | Four semantic Android journeys are verified and ten satisfaction child contracts are test-gated; the generated satisfaction page preserves contract-only and live-evidence limitations |
 | Signed release build and distribution | Not available |
+<!-- generated:status:end -->
 
 Start with the [app workflow catalogue](docs/WORKFLOWS.md) for screenshot-backed
 current journeys and clearly labeled planned behavior. See the

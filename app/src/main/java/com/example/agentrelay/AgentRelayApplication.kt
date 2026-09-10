@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package com.example.agentrelay
 
 import android.app.Application
@@ -11,8 +16,13 @@ import com.example.agentrelay.background.configuredBackgroundRecoveryConnections
 import com.example.agentrelay.data.CoordinatorSessionHubRuntime
 import com.example.agentrelay.data.BackgroundAwareSessionHubRuntime
 import com.example.agentrelay.data.SessionHubRuntime
+import com.example.agentrelay.diagnostics.DiagnosticRuntimeConfig
+import com.example.agentrelay.diagnostics.DiagnosticTrace
 import com.example.agentrelay.notifications.AndroidSessionNotificationSink
 import com.example.agentrelay.notifications.SessionNotificationRuntime
+import com.example.agentrelay.widgets.AndroidAttentionWidgetRuntime
+import com.example.agentrelay.widgets.AttentionWidgetActionRuntime
+import com.example.agentrelay.widgets.AttentionWidgetActionRuntimeHolder
 import dev.agentrelay.connection.api.ConnectionProviderRegistry
 import dev.agentrelay.connection.local.LocalConnectionProvider
 import dev.agentrelay.provider.aider.AiderAgentProviderFactory
@@ -36,6 +46,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 class AgentRelayApplication : Application() {
+    internal val diagnosticConfig: DiagnosticRuntimeConfig = DiagnosticRuntimeConfig.fromBuildConfig()
     private val lifecycleScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     private val graphDelegate = lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
@@ -45,6 +56,13 @@ class AgentRelayApplication : Application() {
     internal val backgroundTransport by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
         BackgroundTransportController(
             AndroidBackgroundTransportStarter(applicationContext),
+        )
+    }
+    internal val attentionWidgets by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+        AndroidAttentionWidgetRuntime(
+            context = applicationContext,
+            scope = lifecycleScope,
+            runtimeFactory = graph::sessionHubRuntime,
         )
     }
 
@@ -59,7 +77,12 @@ class AgentRelayApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        ProcessLifecycleOwner.get().lifecycle.addObserver(backgroundLifecycle)
+        AttentionWidgetActionRuntimeHolder.runtime = AttentionWidgetActionRuntime { request ->
+            attentionWidgets.process(request)
+        }
+        DiagnosticTrace.section(diagnosticConfig, "startup") {
+            ProcessLifecycleOwner.get().lifecycle.addObserver(backgroundLifecycle)
+        }
     }
 
     internal fun releaseBackgroundTransportAfterServiceDestruction() {

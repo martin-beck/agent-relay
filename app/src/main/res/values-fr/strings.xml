@@ -1,3 +1,6 @@
+<!-- Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved. -->
+<!-- SPDX-License-Identifier: MIT -->
+
 <resources>
     <string name="app_name">Agent Relay</string>
     <string name="notification_channel_action_name">Action requise</string>
@@ -21,6 +24,18 @@
     <string name="notification_permission_settings_explanation">L’autorisation de notification est désactivée. Vous pouvez l’activer dans les paramètres Android.</string>
     <string name="notification_permission_open_settings">Ouvrir les paramètres de notification</string>
     <string name="notification_permission_allow">Autoriser les notifications</string>
+    <string name="wear_install_offer_title">Configurer %1$s</string>
+    <string name="wear_install_offer_explanation">Installez le compagnon Agent Relay sur cette montre pour recevoir les mises à jour prioritaires et utiliser des commandes à distance sûres. L’installation concerne uniquement cet appareil.</string>
+    <string name="wear_install_action">Installer sur la montre</string>
+    <string name="wear_install_not_now">Pas maintenant</string>
+    <string name="wear_install_progress_title">Configuration de %1$s</string>
+    <string name="wear_install_progress_explanation">Gardez la montre connectée pendant qu’Agent Relay vérifie et installe le compagnon.</string>
+    <string name="wear_install_cancel">Annuler l’installation</string>
+    <string name="wear_install_recovery_title">Impossible de configurer %1$s</string>
+    <string name="wear_install_recovery_authorization">Autorisez l’installation sur cette montre, puis réessayez.</string>
+    <string name="wear_install_recovery_installation">Le compagnon vérifié n’a pas pu être installé. Vérifiez la montre et réessayez.</string>
+    <string name="wear_install_recovery_connection">La montre s’est déconnectée pendant la configuration. Reconnectez-la et réessayez.</string>
+    <string name="wear_install_retry">Réessayer</string>
     <string name="background_transport_channel_name">Connexion en arrière-plan</string>
     <string name="background_transport_channel_description">Maintient actives les connexions aux agents distants explicitement activées</string>
     <string name="background_transport_notification_title">Agent Relay est connecté</string>
@@ -376,4 +391,22 @@
     <string name="session_action_title_review_required">L’action de l’agent doit être examinée.</string>
     <string name="session_question_prompt_fallback">Question de l’agent</string>
     <string name="connection_failure_profile_preparation">Le profil de connexion n’a pas pu être préparé.</string>
+    <string name="lock_widget_description">Résumé des éléments à traiter sur l’écran de verrouillage</string>
+    <string name="lock_widget_no_attention">Aucune attention requise</string>
+    <string name="lock_widget_status_quiet">Agent Relay</string>
+    <string name="lock_widget_status_attention">Attention requise</string>
+    <string name="lock_widget_status_refresh">Actualiser dans l’application</string>
+    <string name="lock_widget_loading">Vérification en cours…</string>
+    <string name="lock_widget_error">État indisponible</string>
+    <string name="home_widget_description">Résumé des éléments à traiter sur l’écran d’accueil</string>
+    <string name="home_widget_no_attention">Aucune attention requise</string>
+    <string name="home_widget_status_quiet">Agent Relay</string>
+    <string name="home_widget_status_attention">Attention requise</string>
+    <string name="home_widget_status_refresh">Actualiser dans l’application</string>
+    <string name="home_widget_loading">Vérification en cours…</string>
+    <string name="home_widget_error">État indisponible</string>
+    <string name="home_widget_action_open_details_for">Ouvrir les détails : %1$s</string>
+    <string name="home_widget_action_acknowledge">Confirmer</string>
+    <string name="home_widget_action_defer">Reporter</string>
+    <string name="home_widget_action_mute_confirm">Mettre en sourdine…</string>
 </resources>

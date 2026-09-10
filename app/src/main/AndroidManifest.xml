@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<!-- Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved. -->
+<!-- SPDX-License-Identifier: MIT -->
+
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -14,9 +18,11 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
+        tools:targetApi="29"
         android:supportsRtl="true"
         android:windowSoftInputMode="adjustResize"
         android:theme="@style/Theme.AgentRelay">
+        <profileable android:shell="${profileableByShell}" />
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -24,12 +30,49 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:host="pair.agentrelay.dev"
+                    android:pathPrefix="/v1/pair"
+                    android:scheme="https" />
+            </intent-filter>
         </activity>
         <service
             android:name=".background.RemoteSessionForegroundService"
             android:exported="false"
             android:foregroundServiceType="remoteMessaging"
             android:stopWithTask="false" />
+        <receiver
+            android:name=".widgets.LockScreenAttentionWidgetProvider"
+            android:exported="false"
+            android:label="@string/lock_widget_description">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.example.agentrelay.action.REFRESH_LOCK_WIDGET" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/lock_screen_attention_widget_info" />
+        </receiver>
+        <receiver
+            android:name=".widgets.HomeScreenAttentionWidgetProvider"
+            android:exported="false"
+            android:label="@string/home_widget_description">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.example.agentrelay.action.REFRESH_HOME_WIDGET" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/home_screen_attention_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widgets.AttentionWidgetActionReceiver"
+            android:exported="false" />
     </application>
 
 </manifest>

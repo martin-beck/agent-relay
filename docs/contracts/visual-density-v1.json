@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "layouts": [
+    {
+      "id": "session-hub-compact",
+      "purpose": "Choose a connection or session on a narrow viewport.",
+      "viewport": "COMPACT",
+      "supportedTextScales": ["NORMAL", "LARGE", "EXTRA_LARGE"],
+      "hierarchy": ["screen-title", "attention-items", "connections", "sessions"],
+      "primaryAction": "open-selected-session",
+      "budget": {"maxContentGroups": 6, "maxScrollsToPrimaryAction": 2, "maxClippedElements": 0, "maxOverlappingElements": 0, "maxTruncatedLabels": 0, "minTouchTargetDp": 48, "minBodyTextSp": 14}
+    },
+    {
+      "id": "session-hub-expanded",
+      "purpose": "Scan connections and sessions beside contextual details.",
+      "viewport": "EXPANDED",
+      "supportedTextScales": ["NORMAL", "LARGE", "EXTRA_LARGE"],
+      "hierarchy": ["screen-title", "navigation-pane", "detail-pane"],
+      "primaryAction": "open-selected-session",
+      "budget": {"maxContentGroups": 8, "maxScrollsToPrimaryAction": 1, "maxClippedElements": 0, "maxOverlappingElements": 0, "maxTruncatedLabels": 0, "minTouchTargetDp": 48, "minBodyTextSp": 14}
+    },
+    {
+      "id": "connection-form-large-text",
+      "purpose": "Edit one connection without losing validation context.",
+      "viewport": "COMPACT",
+      "supportedTextScales": ["LARGE", "EXTRA_LARGE"],
+      "hierarchy": ["form-title", "identity-fields", "authentication", "save-action"],
+      "primaryAction": "save-connection",
+      "budget": {"maxContentGroups": 5, "maxScrollsToPrimaryAction": 3, "maxClippedElements": 0, "maxOverlappingElements": 0, "maxTruncatedLabels": 0, "minTouchTargetDp": 48, "minBodyTextSp": 16}
+    }
+  ]
+}
