@@ -69,6 +69,8 @@ jobs:
 
       - name: Verify Huawei and MIT source headers
         run: uv run python scripts/ci/verify_source_headers.py
+      - name: Verify public license metadata
+        run: uv run python scripts/ci/verify_license_metadata.py
 
       - name: Check every tracked source and document format
         env:

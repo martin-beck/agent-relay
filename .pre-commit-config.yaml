@@ -190,6 +190,12 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
+      - id: verify-license-metadata
+        name: Verify public license metadata
+        entry: python scripts/ci/verify_license_metadata.py
+        language: system
+        pass_filenames: false
+        always_run: true
       - id: verify-android-locales
         name: Verify Android locale resources
         entry: python scripts/ci/verify_android_locales.py

@@ -40,16 +40,18 @@ On Windows, invoke `.\gradlew.bat` instead of `./gradlew`.
 
 ## Install a CI artifact
 
-Invited collaborators can open a successful Android verification workflow run,
-download the `agent-relay-debug-...` artifact, extract it, and install the APK:
+When a development artifact is available, open its successful Android
+verification workflow run, download the `agent-relay-debug-...` artifact,
+extract it, and install the APK:
 
 ```bash
 adb install -r app-debug.apk
 ```
 
-GitHub artifacts are ZIP archives, not directly installable APKs. Use artifacts
-only from this private repository and verify that the associated workflow and
-commit succeeded.
+GitHub Actions artifacts are ZIP archives, not directly installable APKs, and
+may require GitHub authentication. Verify that the associated workflow and
+exact source commit succeeded. A later publication task owns anonymous APK
+delivery; this source-clearance change does not publish an artifact.
 
 ## Remove the development build
 
@@ -65,3 +67,7 @@ during development.
 A production release requires a stable application ID, complete P0 UI, device
 testing, external signing configuration, version policy, and a completed
 security review. See [Releasing](RELEASING.md).
+
+The development APK and its embedded Agent Relay license are covered by the
+repository's [MIT License](../LICENSE). Packaged third-party components retain
+their own terms and notices.
