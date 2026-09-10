@@ -116,6 +116,7 @@ dependencies {
     implementation(project(":provider:continue"))
     implementation(project(":provider:opencode"))
     implementation(project(":provider:opendesk"))
+    implementation(project(":provider:openjiuwen"))
     implementation(project(":session:android"))
     implementation(project(":session:api"))
     implementation(project(":session:runtime"))
