@@ -39,6 +39,11 @@ LICENSE_COPIES = (
     PurePosixPath("app/src/main/assets/licenses/AGENT_RELAY_LICENSE.txt"),
 )
 PUBLIC_DOCUMENTS = (
+    PurePosixPath(".github/ISSUE_TEMPLATE/bug_report.yml"),
+    PurePosixPath(".github/ISSUE_TEMPLATE/config.yml"),
+    PurePosixPath(".github/ISSUE_TEMPLATE/feature_request.yml"),
+    PurePosixPath(".github/PULL_REQUEST_TEMPLATE.md"),
+    PurePosixPath("CODE_OF_CONDUCT.md"),
     PurePosixPath("README.md"),
     PurePosixPath("CONTRIBUTING.md"),
     PurePosixPath("SECURITY.md"),
@@ -50,9 +55,9 @@ PUBLIC_DOCUMENTS = (
 )
 FORBIDDEN_PUBLIC_PHRASES = (
     "private, invite-only",
+    "private development preview",
     "private personal repository",
-    "private repository's",
-    "for a private repository",
+    "private repository",
     "only to invited collaborators",
     "no public license",
 )

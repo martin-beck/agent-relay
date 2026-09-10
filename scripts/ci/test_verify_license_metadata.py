@@ -55,6 +55,8 @@ def test_valid_public_tree_passes(tmp_path: Path) -> None:
 def test_drift_and_private_only_wording_fail(tmp_path: Path) -> None:
     paths = valid_tree(tmp_path)
     (tmp_path / "README.md").write_text("Private, invite-only project\n", encoding="utf-8")
+    issue_template = tmp_path / ".github/ISSUE_TEMPLATE/bug_report.yml"
+    issue_template.write_text("Agent Relay is a private development preview.\n", encoding="utf-8")
     (tmp_path / "example.py").write_text(
         "# Copyright (C) Huawei Technologies Co., Ltd. 2025. All rights reserved.\n"
         "# SPDX-License-Identifier: Apache-2.0\n",
@@ -62,6 +64,9 @@ def test_drift_and_private_only_wording_fail(tmp_path: Path) -> None:
     )
     result = findings(tmp_path, paths)
     assert any("private-only phrase remains" in value for value in result)
+    assert any(
+        str(value).startswith(f"{issue_template.relative_to(tmp_path)}:") for value in result
+    )
     assert any("inconsistent Huawei copyright" in value for value in result)
     assert any("inconsistent first-party SPDX identifier" in value for value in result)
 
@@ -77,9 +82,11 @@ def test_generated_wrapper_license_is_not_treated_as_first_party(tmp_path: Path)
 def test_missing_required_documents_fail_cleanly(tmp_path: Path) -> None:
     paths = valid_tree(tmp_path)
     (tmp_path / "README.md").unlink()
+    (tmp_path / "CODE_OF_CONDUCT.md").unlink()
     (tmp_path / "docs/THIRD_PARTY.md").unlink()
 
     result = findings(tmp_path, paths)
 
     assert "README.md: required public document is missing" in result
+    assert "CODE_OF_CONDUCT.md: required public document is missing" in result
     assert "docs/THIRD_PARTY.md: required third-party attribution file is missing" in result

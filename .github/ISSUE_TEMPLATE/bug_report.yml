@@ -8,14 +8,14 @@ body:
   - type: markdown
     attributes:
       value: |
-        Agent Relay is a private development preview. Redact credentials, host
-        details, private paths, session IDs, prompts, transcripts, and provider
-        configuration before submitting.
+        Agent Relay is an unsupported development preview. Redact credentials,
+        host details, private paths, session IDs, prompts, transcripts, and
+        provider configuration before submitting.
   - type: input
     id: commit
     attributes:
       label: Affected commit
-      description: Full or abbreviated Git commit ID from the private repository.
+      description: Full or abbreviated Git commit ID from this repository.
       placeholder: abc1234
     validations:
       required: true
