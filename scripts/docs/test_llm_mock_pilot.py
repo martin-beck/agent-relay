@@ -1,6 +1,7 @@
 # Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
 # SPDX-License-Identifier: MIT
 """Validate the bounded LLM wire mock pilot record."""
+
 import json
 import re
 import unittest
