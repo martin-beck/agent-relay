@@ -166,6 +166,24 @@ self-hosted runners with pre-staged immutable models, hard budgets, serializatio
 Fork code must not execute on self-hosted runners; use the repository's same-repository PR guard.
 Genuine-provider checks remain opt-in and release-scoped.
 
+The `Local inference conformance` workflow is the fail-closed entry point for those local-model
+runs. Its `agent-relay-local-inference-cpu` and `agent-relay-local-inference-gpu` labels keep the
+hardware class explicit, while workflow concurrency serializes each class. Checkout and the
+repository-local bootstrap complete before the conformance step enters a fresh Bubblewrap network
+namespace. The runner compares the namespace inode with its parent, requires one exact staged tuple
+covering engine and CLI identity, versions, revisions and digests, model and template digests,
+protocol, quantization, sampling, adapter, and hardware class, and invokes a pre-staged driver as a
+JSON argument array without a shell.
+The driver must start and stop its loopback engine and real CLI inside that namespace and write one
+bounded JSON evidence object to `AGENT_RELAY_LOCAL_INFERENCE_EVIDENCE`.
+
+Only the validated redacted object is uploaded. Driver output is size-bounded and suppressed on
+failure; the evidence schema rejects extra fields and permits only the declared checks and failure
+classes (`api-shape`, `agent-protocol`, `model-behavior`, `performance`, or `infrastructure`). The
+repository variables supply the driver argument array and staged tuple JSON, so normal PR jobs neither
+download a model nor execute local inference. A scheduled run defaults to CPU; a maintainer may
+select the GPU-labelled pool manually.
+
 Evidence labels must identify the boundary: `synthetic-runtime`, `mock-llm-wire`,
 `sanitized-replay`, `local-model`, or `live-provider`. Mock or local-model success cannot
 satisfy cloud authentication, general model quality, physical-device inference, or untested

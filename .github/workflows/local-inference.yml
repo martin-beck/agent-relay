@@ -1,0 +1,89 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
+name: Local inference conformance
+
+on:
+  workflow_dispatch:
+    inputs:
+      hardware:
+        description: Pre-staged self-hosted runner class
+        required: true
+        default: cpu
+        type: choice
+        options:
+          - cpu
+          - gpu
+  schedule:
+    - cron: "23 3 * * 0"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: local-inference-${{ inputs.hardware || 'cpu' }}
+  cancel-in-progress: false
+
+jobs:
+  conformance:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: >-
+      ${{
+        inputs.hardware == 'gpu' &&
+        fromJSON('["self-hosted","linux","x64","agent-relay-local-inference-gpu"]') ||
+        fromJSON('["self-hosted","linux","x64","agent-relay-local-inference-cpu"]')
+      }}
+    timeout-minutes: 60
+    env:
+      AGENT_RELAY_LOCAL_INFERENCE_ENABLE: "1"
+      AGENT_RELAY_OUTBOUND_NETWORK: deny
+      AGENT_RELAY_HARDWARE_CLASS: >-
+        ${{
+          inputs.hardware == 'gpu' &&
+          'self-hosted-gpu-x86_64' ||
+          'self-hosted-cpu-x86_64'
+        }}
+      AGENT_RELAY_LOCAL_INFERENCE_TUPLE_JSON: ${{ vars.LOCAL_INFERENCE_TUPLE_JSON }}
+      AGENT_RELAY_LOCAL_INFERENCE_COMMAND_JSON: ${{ vars.LOCAL_INFERENCE_COMMAND_JSON }}
+      AGENT_RELAY_LOCAL_INFERENCE_TIMEOUT: "3000"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Stage repository-local toolchain
+        run: python3 scripts/bootstrap.py --target quality --launcher-check
+
+      - name: Verify fail-closed manifest
+        run: >-
+          scripts/with-toolchain env PYTHONPATH=scripts/ci
+          python3 -m unittest scripts/ci/test_local_inference_conformance.py
+
+      - name: Run serial conformance without outbound networking
+        shell: bash
+        run: |
+          set -euo pipefail
+          summary="$RUNNER_TEMP/local-inference-summary.json"
+          export AGENT_RELAY_PARENT_NETNS_INODE
+          AGENT_RELAY_PARENT_NETNS_INODE="$(stat -Lc %i /proc/self/ns/net)"
+          bwrap \
+            --die-with-parent \
+            --new-session \
+            --unshare-net \
+            --ro-bind / / \
+            --dev-bind /dev /dev \
+            --proc /proc \
+            --tmpfs /tmp \
+            --bind "$GITHUB_WORKSPACE" "$GITHUB_WORKSPACE" \
+            --bind "$RUNNER_TEMP" "$RUNNER_TEMP" \
+            scripts/with-toolchain \
+              python3 scripts/ci/run_local_inference_conformance.py >"$summary"
+          python3 -m json.tool "$summary" >/dev/null
+
+      - name: Upload bounded redacted evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: local-inference-${{ inputs.hardware || 'cpu' }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/local-inference-summary.json
+          if-no-files-found: error
+          retention-days: 14
