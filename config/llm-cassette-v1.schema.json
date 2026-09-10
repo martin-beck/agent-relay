@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-relay.dev/schemas/llm-cassette-v1.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "evidence", "metadata", "limits", "frames"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "evidence": {"type":"object", "additionalProperties":false, "required":["tier","synthetic","approved"], "properties":{"tier":{"const":"sanitized-replay"},"synthetic":{"const":true},"approved":{"const":true}}},
+    "metadata": {"type":"object", "additionalProperties":false, "required":["protocol","cliVersion","toolVersion","sourceRevision"], "properties":{"protocol":{"enum":["openai-chat","openai-responses","anthropic-messages","gemini"]},"cliVersion":{"type":"string","maxLength":64},"toolVersion":{"type":"string","maxLength":64},"sourceRevision":{"type":"string","pattern":"^[0-9a-f]{7,64}$"}}},
+    "limits": {"type":"object", "additionalProperties":false, "required":["maxBodyBytes","maxFrames","maxVirtualMillis"], "properties":{"maxBodyBytes":{"type":"integer","minimum":1,"maximum":1048576},"maxFrames":{"type":"integer","minimum":1,"maximum":10000},"maxVirtualMillis":{"type":"integer","minimum":1,"maximum":3600000}}},
+    "frames": {"type":"array","minItems":1,"items":{"type":"object","additionalProperties":false,"required":["atMillis","direction","bodyDigest","body"],"properties":{"atMillis":{"type":"integer","minimum":0},"direction":{"enum":["request","response"]},"bodyDigest":{"type":"string","pattern":"^[0-9a-f]{64}$"},"body":{"type":"object"}}}}
+  }
+}

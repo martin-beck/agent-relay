@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "evidence": {
+    "tier": "sanitized-replay",
+    "synthetic": true,
+    "approved": true
+  },
+  "metadata": {
+    "protocol": "openai-chat",
+    "cliVersion": "synthetic-cli-1",
+    "toolVersion": "mockagents-0.5.0",
+    "sourceRevision": "f33b581"
+  },
+  "limits": {
+    "maxBodyBytes": 65536,
+    "maxFrames": 4,
+    "maxVirtualMillis": 5000
+  },
+  "frames": [
+    {
+      "atMillis": 0,
+      "direction": "request",
+      "bodyDigest": "0000000000000000000000000000000000000000000000000000000000000000",
+      "body": {
+        "role": "user",
+        "content": "synthetic request",
+        "tools": [
+          "clock"
+        ]
+      }
+    },
+    {
+      "atMillis": 20,
+      "direction": "response",
+      "bodyDigest": "1111111111111111111111111111111111111111111111111111111111111111",
+      "body": {
+        "type": "tool_call",
+        "name": "clock",
+        "arguments": {
+          "zone": "UTC"
+        }
+      }
+    },
+    {
+      "atMillis": 40,
+      "direction": "request",
+      "bodyDigest": "2222222222222222222222222222222222222222222222222222222222222222",
+      "body": {
+        "role": "tool",
+        "content": "synthetic result"
+      }
+    },
+    {
+      "atMillis": 60,
+      "direction": "response",
+      "bodyDigest": "3333333333333333333333333333333333333333333333333333333333333333",
+      "body": {
+        "type": "final",
+        "content": "synthetic response"
+      }
+    }
+  ]
+}
