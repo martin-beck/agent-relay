@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 """Reject high-confidence live secrets and private data in documentation fixtures."""
 
 from __future__ import annotations

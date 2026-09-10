@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 """Validate the repository's machine-readable documentation authority."""
 
 from __future__ import annotations

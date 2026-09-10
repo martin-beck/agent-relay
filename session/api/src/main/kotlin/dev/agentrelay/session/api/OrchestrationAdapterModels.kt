@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.session.api
 
 /** The adapter may describe delegation, but never becomes workflow authority. */

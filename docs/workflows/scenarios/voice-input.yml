@@ -1,8 +1,12 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 id: voice-input
 title: Capture and review offline voice input
 summary: Turn speech into a draft locally, then let the user review it before any agent receives it.
-status: planned
+status: verified
 order: 9
+verified_test: com.example.agentrelay.ui.main.UsageJourneyTest#capturesVerifiedJourneys
 goal: Create session input hands-free without sending microphone data to a cloud service.
 preconditions:
   - A compatible offline speech model is installed and verified.
@@ -23,12 +27,24 @@ steps:
   - id: acquire-model
     title: Prepare an offline model
     action: Select voice input when no compatible verified model is installed.
-    expected: The app explains the model size and asks before acquiring it.
+    expected: The app requires an explicit install for the selected offline model.
+    screenshot: select-offline-model.png
+    alt: Agent Relay offers explicit selection and installation of an offline speech model.
+  - id: authorize-microphone
+    title: Authorize an explicit recording
+    action: Select Start voice input for the current session.
+    expected: The app states that voice input stays on the device before Android handles microphone permission.
+    screenshot: permission-gated-start.png
+    alt: Agent Relay offers a permission-gated voice input action and states that input remains on the device.
   - id: record-locally
     title: Record with visible control
     action: Start recording, speak the instruction, and stop recording.
     expected: A foreground indicator remains visible and audio stays on the device.
+    screenshot: visible-local-recording.png
+    alt: Agent Relay visibly listens on device with explicit stop and cancel recording controls.
   - id: review-transcript
     title: Review before delivery
     action: Edit the generated draft and select Send or Steer active turn.
     expected: Only the reviewed text reaches the selected agent session.
+    screenshot: review-transcript.png
+    alt: Agent Relay presents an offline transcript with explicit use and discard actions before delivery.

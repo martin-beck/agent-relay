@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.compiler)
@@ -102,6 +107,7 @@ dependencies {
     // Provider-neutral connection and session runtime
     implementation(project(":connection:api"))
     implementation(project(":connection:local"))
+    implementation(project(":companion:api"))
     implementation(project(":provider:api"))
     implementation(project(":provider:aider"))
     implementation(project(":provider:claude"))

@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 """Validate the redacted extension fixture catalogue and manifest schema."""
 
 from __future__ import annotations

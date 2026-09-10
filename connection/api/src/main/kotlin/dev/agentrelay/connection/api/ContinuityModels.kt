@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.connection.api
 
 /** Opaque resumable authority; it contains identity and grant references, never transport metadata. */
@@ -147,6 +152,120 @@ class CommandLedger {
     }
 }
 
+@JvmInline
+value class ContinuityDeviceId(val value: String) {
+    init {
+        require(value.matches(DEVICE_ID_PATTERN)) { "Continuity device id is invalid" }
+    }
+}
+
+data class ContinuityCursor(val generation: Long, val sequence: Long) {
+    init {
+        require(generation >= 1) { "Continuity generation is invalid" }
+        require(sequence >= 0) { "Continuity sequence is invalid" }
+    }
+}
+
+data class ContinuityUpdate(val cursor: ContinuityCursor, val attentionDigest: String) {
+    init {
+        requireCanonicalContinuityDigest(attentionDigest, "Attention digest")
+    }
+}
+
+enum class ContinuityDeviceState { TRUSTED, OFFLINE, REVOKED }
+
+data class ContinuityDeviceSnapshot(
+    val device: ContinuityDeviceId,
+    val state: ContinuityDeviceState,
+    val acknowledged: ContinuityCursor,
+)
+
+/**
+ * Ordered, replay-safe projection ledger shared by phone and companion devices.
+ * It retains opaque updates until every trusted device acknowledges them.
+ */
+class CrossDeviceContinuityLedger(private val sessionId: String, generation: Long = 1) {
+    private var cursor = ContinuityCursor(generation, 0)
+    private val devices = linkedMapOf<ContinuityDeviceId, DeviceRecord>()
+    private val updates = mutableListOf<ContinuityUpdate>()
+
+    init {
+        require(sessionId.matches(SESSION_ID_PATTERN)) { "Continuity session id is invalid" }
+    }
+
+    @Synchronized
+    fun enroll(device: ContinuityDeviceId): ContinuityDeviceSnapshot {
+        val record = devices[device]
+        require(record?.state != ContinuityDeviceState.REVOKED) { "Device has been revoked" }
+        val next = DeviceRecord(ContinuityDeviceState.TRUSTED, record?.acknowledged ?: cursor)
+        devices[device] = next
+        return snapshot(device)
+    }
+
+    @Synchronized
+    fun publish(attentionDigest: String): ContinuityUpdate {
+        val update = ContinuityUpdate(cursor.copy(sequence = cursor.sequence + 1), attentionDigest)
+        cursor = update.cursor
+        updates += update
+        return update
+    }
+
+    @Synchronized
+    fun markOffline(device: ContinuityDeviceId): ContinuityDeviceSnapshot {
+        val record = requireRecord(device)
+        require(record.state == ContinuityDeviceState.TRUSTED) { "Device is not trusted" }
+        record.state = ContinuityDeviceState.OFFLINE
+        return snapshot(device)
+    }
+
+    @Synchronized
+    fun reconnect(device: ContinuityDeviceId, acknowledged: ContinuityCursor): List<ContinuityUpdate> {
+        val record = requireRecord(device)
+        require(record.state != ContinuityDeviceState.REVOKED) { "Device has been revoked" }
+        acknowledge(device, acknowledged)
+        record.state = ContinuityDeviceState.TRUSTED
+        return updates.filter { it.cursor.sequence > record.acknowledged.sequence }
+    }
+
+    @Synchronized
+    fun acknowledge(device: ContinuityDeviceId, acknowledged: ContinuityCursor): ContinuityDeviceSnapshot {
+        val record = requireRecord(device)
+        require(record.state != ContinuityDeviceState.REVOKED) { "Device has been revoked" }
+        require(acknowledged.generation == cursor.generation) { "Cursor generation differs" }
+        require(acknowledged.sequence <= cursor.sequence) { "Cursor is ahead of authority" }
+        require(acknowledged.sequence >= record.acknowledged.sequence) { "Cursor acknowledgement regressed" }
+        record.acknowledged = acknowledged
+        return snapshot(device)
+    }
+
+    @Synchronized
+    fun revoke(device: ContinuityDeviceId): ContinuityDeviceSnapshot {
+        val record = requireRecord(device)
+        record.state = ContinuityDeviceState.REVOKED
+        return snapshot(device)
+    }
+
+    @Synchronized
+    fun pendingFor(device: ContinuityDeviceId): List<ContinuityUpdate> {
+        val record = requireRecord(device)
+        require(record.state != ContinuityDeviceState.REVOKED) { "Device has been revoked" }
+        return updates.filter { it.cursor.sequence > record.acknowledged.sequence }
+    }
+
+    private fun snapshot(device: ContinuityDeviceId): ContinuityDeviceSnapshot {
+        val record = requireRecord(device)
+        return ContinuityDeviceSnapshot(device, record.state, record.acknowledged)
+    }
+
+    private fun requireRecord(device: ContinuityDeviceId): DeviceRecord =
+        requireNotNull(devices[device]) { "Device is not enrolled" }
+
+    private data class DeviceRecord(
+        var state: ContinuityDeviceState,
+        var acknowledged: ContinuityCursor,
+    )
+}
+
 private fun requireCanonicalContinuityDigest(value: String, field: String) {
     require(value.length == CONTINUITY_DIGEST_LENGTH) { "$field must be 32 bytes" }
     require(value.matches(BASE64_URL_PATTERN) && !value.contains('=')) { "$field must be base64url" }
@@ -157,4 +276,5 @@ private const val MAX_RECONNECT_ATTEMPTS = 8
 private const val CONTINUITY_DIGEST_LENGTH = 43
 private val SESSION_ID_PATTERN = Regex("[a-z][a-z0-9-]{2,63}")
 private val COMMAND_ID_PATTERN = Regex("[a-z][a-z0-9-]{2,63}")
+private val DEVICE_ID_PATTERN = Regex("[a-z][a-z0-9-]{2,63}")
 private val BASE64_URL_PATTERN = Regex("[A-Za-z0-9_-]+")

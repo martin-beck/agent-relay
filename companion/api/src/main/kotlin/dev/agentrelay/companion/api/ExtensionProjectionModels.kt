@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.companion.api
 
 /** Bounded extension output projected by the phone; it is never an authority. */

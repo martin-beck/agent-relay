@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 """Create or verify a deterministic provenance manifest for verified workflows."""
 
 from __future__ import annotations

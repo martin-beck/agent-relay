@@ -1,9 +1,14 @@
 #!/usr/bin/env bats
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 
 setup() {
   REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/../.." && pwd -P)"
   INSTALLER="$REPO_ROOT/scripts/ci/install_shell_quality_tools.sh"
   RUNNER="$REPO_ROOT/scripts/ci/run_shell_quality.sh"
+  EMULATOR_RUNNER="$REPO_ROOT/scripts/ci/run_android_emulator_tests.sh"
+  GRADLE_HOME_PREPARER="$REPO_ROOT/scripts/ci/prepare_private_gradle_home.sh"
   SOURCE_TOOL_ROOT="${SHELL_QUALITY_TOOL_ROOT:-$REPO_ROOT/build/tools/shell-quality}"
   TEST_ROOT="$(mktemp -d "${BATS_TEST_TMPDIR}/tooling.XXXXXX")"
   TOOL_ROOT="$TEST_ROOT/tools"
@@ -13,6 +18,62 @@ setup() {
     aarch64 | arm64) SHELLCHECK_PLATFORM=linux.aarch64 ;;
     *) SHELLCHECK_PLATFORM=unsupported ;;
   esac
+}
+
+@test "device jobs isolate daemon state while reusing only safe Gradle caches" {
+  mkdir -p "$TEST_ROOT/shared-gradle/caches" "$TEST_ROOT/shared-gradle/wrapper"
+  mkdir -p "$TEST_ROOT/runner-temp"
+  private_home="$TEST_ROOT/runner-temp/agent-relay-gradle-test"
+
+  run env RUNNER_TEMP="$TEST_ROOT/runner-temp" \
+    "$GRADLE_HOME_PREPARER" "$TEST_ROOT/shared-gradle" "$private_home"
+
+  [ "$status" -eq 0 ]
+  [ "$output" = "$private_home" ]
+  [ "$(readlink -f "$private_home/caches")" = "$TEST_ROOT/shared-gradle/caches" ]
+  [ "$(readlink -f "$private_home/wrapper")" = "$TEST_ROOT/shared-gradle/wrapper" ]
+  [ ! -e "$private_home/daemon" ]
+}
+
+@test "device jobs reject stale or non-private Gradle daemon homes" {
+  mkdir -p "$TEST_ROOT/shared-gradle" "$TEST_ROOT/runner-temp/stale/daemon"
+
+  run env RUNNER_TEMP="$TEST_ROOT/runner-temp" \
+    "$GRADLE_HOME_PREPARER" "$TEST_ROOT/shared-gradle" "$TEST_ROOT/outside"
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"must be a child of RUNNER_TEMP"* ]]
+
+  run env RUNNER_TEMP="$TEST_ROOT/runner-temp" \
+    "$GRADLE_HOME_PREPARER" "$TEST_ROOT/shared-gradle" "$TEST_ROOT/runner-temp/stale"
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"daemon registry already exists"* ]]
+}
+
+@test "emulator runner never stops a shared daemon before the build" {
+  run grep -Fx './gradlew --stop > /dev/null 2>&1 || true' "$EMULATOR_RUNNER"
+  [ "$status" -eq 1 ]
+  run grep -F 'timeout 10 ./gradlew --stop > /dev/null' "$EMULATOR_RUNNER"
+  [ "$status" -eq 0 ]
+  run grep -F 'export GRADLE_USER_HOME="$private_gradle_home"' "$EMULATOR_RUNNER"
+  [ "$status" -eq 0 ]
+}
+
+@test "emulator runner validates an explicit avdmanager before touching adb" {
+  mkdir -p "$TEST_ROOT/sdk/platform-tools" "$TEST_ROOT/sdk/emulator"
+  printf '#!/usr/bin/env bash\nexit 99\n' > "$TEST_ROOT/sdk/platform-tools/adb"
+  printf '#!/usr/bin/env bash\nexit 99\n' > "$TEST_ROOT/sdk/emulator/emulator"
+  chmod +x "$TEST_ROOT/sdk/platform-tools/adb" "$TEST_ROOT/sdk/emulator/emulator"
+
+  run env \
+    ANDROID_HOME="$TEST_ROOT/sdk" \
+    ANDROID_AVD_HOME="$TEST_ROOT/avd" \
+    RUNNER_TEMP="$TEST_ROOT/runner-temp" \
+    AVDMANAGER_BIN="$TEST_ROOT/missing-avdmanager" \
+    "$EMULATOR_RUNNER" true
+
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"avdmanager is not executable at $TEST_ROOT/missing-avdmanager"* ]]
+  [ -d "$TEST_ROOT/runner-temp" ]
 }
 
 teardown() {

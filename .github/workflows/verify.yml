@@ -1,3 +1,6 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 name: Android verification
 
 on:
@@ -64,6 +67,9 @@ jobs:
             --directory "${vale_dir}/bin" vale
           echo "${vale_dir}/bin" >> "${GITHUB_PATH}"
 
+      - name: Verify Huawei and MIT source headers
+        run: uv run python scripts/ci/verify_source_headers.py
+
       - name: Check every tracked source and document format
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -81,6 +87,9 @@ jobs:
           uv run radon mi scripts/ci scripts/docs --show \
             --json --output-file build/reports/quality/radon-maintainability.json
           uv run lizard --CCN 20 --xml --output_file build/reports/quality/lizard.xml .
+
+      - name: Verify cross-language assurance contract
+        run: uv run python scripts/ci/verify_language_assurance.py
 
       - name: Install pinned OSV-Scanner
         shell: bash
@@ -168,6 +177,8 @@ jobs:
             --source-revision "${GITHUB_SHA}"
           uv run python scripts/docs/verify_evidence_reproducibility.py --check
           uv run python scripts/docs/verify_usability_review.py
+          uv run python scripts/docs/verify_satisfaction_assurance.py
+          uv run python scripts/docs/render_satisfaction.py --check
           uv run python scripts/docs/generate_extension_api.py --check
           uv run python scripts/docs/generate_api_reference.py --check
           uv run python scripts/docs/verify_extension_examples.py
@@ -227,7 +238,9 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Upload test results
+        id: upload_test_results
         if: ${{ !cancelled() }}
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: unit-test-results-${{ github.run_attempt }}
@@ -236,7 +249,9 @@ jobs:
           retention-days: 14
 
       - name: Upload quality reports
+        id: upload_quality_reports
         if: ${{ !cancelled() }}
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: quality-reports-${{ github.run_attempt }}
@@ -251,7 +266,9 @@ jobs:
           retention-days: 14
 
       - name: Upload lint reports
+        id: upload_lint_reports
         if: ${{ !cancelled() }}
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: lint-reports-${{ github.run_attempt }}
@@ -263,13 +280,28 @@ jobs:
           retention-days: 14
 
       - name: Upload debug APK
+        id: upload_debug_apk
         if: ${{ success() }}
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: agent-relay-debug-${{ github.sha }}
           path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           retention-days: 14
+
+      - name: Report unavailable optional artifacts
+        if: >-
+          ${{ always() &&
+              (steps.upload_test_results.outcome == 'failure' ||
+              steps.upload_quality_reports.outcome == 'failure' ||
+              steps.upload_lint_reports.outcome == 'failure' ||
+              steps.upload_debug_apk.outcome == 'failure') }}
+        run: |
+          echo "::warning::One or more optional artifact uploads failed;" \
+            "inspect the upload step for the original error."
+          echo "Optional build evidence could not be uploaded; authoritative checks above retain their result." \
+            >> "$GITHUB_STEP_SUMMARY"
 
   visual-regression:
     name: Visual regression
@@ -303,7 +335,9 @@ jobs:
         run: ./gradlew :app:verifyRoborazziDebug --stacktrace
 
       - name: Upload visual-regression evidence
+        id: upload_visual_evidence
         if: ${{ !cancelled() }}
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: visual-regression-${{ github.run_attempt }}
@@ -315,3 +349,11 @@ jobs:
             app/src/test/screenshots/**/*_compare.png
           if-no-files-found: ignore
           retention-days: 14
+
+      - name: Report unavailable optional visual artifacts
+        if: ${{ always() && steps.upload_visual_evidence.outcome == 'failure' }}
+        run: |
+          echo "::warning::Optional visual evidence upload failed;" \
+            "inspect the upload step for the original error."
+          echo "Optional visual evidence could not be uploaded; deterministic image verification retains its result." \
+            >> "$GITHUB_STEP_SUMMARY"

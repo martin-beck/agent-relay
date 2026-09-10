@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved. -->
+<!-- SPDX-License-Identifier: MIT -->
+
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-feature android:name="android.hardware.type.watch" android:required="true" />
     <application

@@ -1,3 +1,6 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 site_name: Agent Relay
 site_description: Human-goal workflows and verified Android emulator evidence for Agent Relay
 site_url: https://martin-beck.github.io/agent-relay/
@@ -45,6 +48,7 @@ nav:
       - Offline voice input: workflows/voice-input.md
       - Attention overview: workflows/attention-overview.md
   - Usage: USAGE.md
+  - User satisfaction: USER_SATISFACTION.md
   - Install: INSTALLING.md
   - Build: BUILDING.md
   - Development process: DEVELOPMENT.md
@@ -52,6 +56,7 @@ nav:
   - Generated API reference: generated/api-reference.md
   - Connection providers: CONNECTION_PROVIDERS.md
   - Provider operations: PROVIDER_OPERATIONS.md
+  - Offline LLM testing: OFFLINE_LLM_TESTING.md
   - Session hub: SESSION_HUB.md
   - Speech: SPEECH.md
   - Quality: QUALITY.md

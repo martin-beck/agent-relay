@@ -8,52 +8,52 @@ This reference is generated from the provider Kotlin contracts and typed Python 
 
 | Symbol | Source | Description |
 | --- | --- | --- |
-| `Accepted` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:174` | Provider API contract. |
-| `Accepted` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:122` | Provider API contract. |
-| `ExtensionAction` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:40` | Provider API contract. |
-| `ExtensionAdmission` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:121` | Provider API contract. |
-| `ExtensionAgentAdapter` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:131` | Provider-neutral adapter seam for optional extension-backed agent execution. |
-| `ExtensionAgentRequest` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:106` | Provider API contract. |
-| `ExtensionAgentResult` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:135` | Provider API contract. |
-| `ExtensionApiVersion` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:14` | Provider API contract. |
-| `ExtensionApprovalState` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:77` | Provider API contract. |
-| `ExtensionCapability` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:21` | Provider API contract. |
-| `ExtensionDataPolicy` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:98` | Provider API contract. |
-| `ExtensionDataSource` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:27` | Provider API contract. |
-| `ExtensionExecutionClass` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:6` | Whether extension code is supplied by the signed host or must be isolated. |
-| `ExtensionExecutionEvidence` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:158` | Redacted, deterministic evidence; raw prompts, credentials and content never enter this record. |
-| `ExtensionExecutionOutcome` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:84` | Provider API contract. |
-| `ExtensionField` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:30` | Provider API contract. |
-| `ExtensionId` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:4` | Provider API contract. |
-| `ExtensionInvocation` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:158` | Provider API contract. |
-| `ExtensionInvocationDecision` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:173` | Provider API contract. |
-| `ExtensionInvocationLedger` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:178` | Provider API contract. |
-| `ExtensionLifecycle` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:63` | Provider API contract. |
-| `ExtensionManifest` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:112` | Provider API contract. |
-| `ExtensionModelAccess` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:16` | Provider API contract. |
-| `ExtensionNetworkAccess` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:11` | Provider API contract. |
-| `ExtensionPermission` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:23` | Provider API contract. |
-| `ExtensionPermissionGrant` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:69` | Provider API contract. |
-| `ExtensionPrivacyClass` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:25` | Provider API contract. |
-| `ExtensionRejection` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:145` | Provider API contract. |
-| `ExtensionResourceBudget` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:49` | Provider API contract. |
-| `ExtensionSandboxCoordinator` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:187` | Admission and evidence coordinator. It never executes code itself, and therefore cannot |
-| `ExtensionSandboxLimits` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:22` | Hard resource and authority limits applied before extension code is started. |
-| `ExtensionSandboxPolicy` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:61` | Policy is an admission boundary; it is not an authorization to bypass the host. |
-| `ExtensionSandboxRejection` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:93` | Provider API contract. |
-| `ExtensionSecretReference` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:92` | Provider API contract. |
-| `Rejected` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:175` | Provider API contract. |
-| `Rejected` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:127` | Provider API contract. |
-| `activeAt` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:88` | Provider API contract. |
-| `admit` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:190` | Provider API contract. |
-| `compatibleWith` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:138` | Provider API contract. |
-| `evaluate` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:182` | Provider API contract. |
-| `evidence` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:232` | Provider API contract. |
-| `narrowedPermissions` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:141` | Provider API contract. |
+| `Accepted` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:179` | Provider API contract. |
+| `Accepted` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:127` | Provider API contract. |
+| `ExtensionAction` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:45` | Provider API contract. |
+| `ExtensionAdmission` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:126` | Provider API contract. |
+| `ExtensionAgentAdapter` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:136` | Provider-neutral adapter seam for optional extension-backed agent execution. |
+| `ExtensionAgentRequest` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:111` | Provider API contract. |
+| `ExtensionAgentResult` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:140` | Provider API contract. |
+| `ExtensionApiVersion` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:19` | Provider API contract. |
+| `ExtensionApprovalState` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:82` | Provider API contract. |
+| `ExtensionCapability` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:26` | Provider API contract. |
+| `ExtensionDataPolicy` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:103` | Provider API contract. |
+| `ExtensionDataSource` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:32` | Provider API contract. |
+| `ExtensionExecutionClass` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:11` | Whether extension code is supplied by the signed host or must be isolated. |
+| `ExtensionExecutionEvidence` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:163` | Redacted, deterministic evidence; raw prompts, credentials and content never enter this record. |
+| `ExtensionExecutionOutcome` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:89` | Provider API contract. |
+| `ExtensionField` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:35` | Provider API contract. |
+| `ExtensionId` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:9` | Provider API contract. |
+| `ExtensionInvocation` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:163` | Provider API contract. |
+| `ExtensionInvocationDecision` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:178` | Provider API contract. |
+| `ExtensionInvocationLedger` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:183` | Provider API contract. |
+| `ExtensionLifecycle` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:68` | Provider API contract. |
+| `ExtensionManifest` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:117` | Provider API contract. |
+| `ExtensionModelAccess` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:21` | Provider API contract. |
+| `ExtensionNetworkAccess` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:16` | Provider API contract. |
+| `ExtensionPermission` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:28` | Provider API contract. |
+| `ExtensionPermissionGrant` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:74` | Provider API contract. |
+| `ExtensionPrivacyClass` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:30` | Provider API contract. |
+| `ExtensionRejection` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:150` | Provider API contract. |
+| `ExtensionResourceBudget` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:54` | Provider API contract. |
+| `ExtensionSandboxCoordinator` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:192` | Admission and evidence coordinator. It never executes code itself, and therefore cannot |
+| `ExtensionSandboxLimits` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:27` | Hard resource and authority limits applied before extension code is started. |
+| `ExtensionSandboxPolicy` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:66` | Policy is an admission boundary; it is not an authorization to bypass the host. |
+| `ExtensionSandboxRejection` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:98` | Provider API contract. |
+| `ExtensionSecretReference` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:97` | Provider API contract. |
+| `Rejected` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:180` | Provider API contract. |
+| `Rejected` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:132` | Provider API contract. |
+| `activeAt` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:93` | Provider API contract. |
+| `admit` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:195` | Provider API contract. |
+| `compatibleWith` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:143` | Provider API contract. |
+| `evaluate` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:187` | Provider API contract. |
+| `evidence` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionSandboxModels.kt:237` | Provider API contract. |
+| `narrowedPermissions` | `provider/api/src/main/kotlin/dev/agentrelay/provider/api/ExtensionModels.kt:146` | Provider API contract. |
 
 ## Python verification interfaces
 
 | Symbol | Signature | Source | Description |
 | --- | --- | --- | --- |
-| `verify_counterexamples` | `def verify_counterexamples(root` | `scripts/ci/verify_counterexamples.py:129` | Verify every retained fixture and return the number of replayed traces. |
-| `verify_manifest` | `def verify_manifest(manifest` | `scripts/ci/verify_formal_evidence.py:81` | Validate the pinned formal-evidence contract and its referenced models. |
+| `verify_counterexamples` | `def verify_counterexamples(root` | `scripts/ci/verify_counterexamples.py:132` | Verify every retained fixture and return the number of replayed traces. |
+| `verify_manifest` | `def verify_manifest(manifest` | `scripts/ci/verify_formal_evidence.py:84` | Validate the pinned formal-evidence contract and its referenced models. |

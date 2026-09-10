@@ -1,8 +1,12 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 id: durable-recovery
 title: Recover after network, process, or device interruption
 summary: Restore useful state automatically and surface only recovery decisions that need a person.
-status: planned
+status: verified
 order: 7
+verified_test: com.example.agentrelay.ui.main.UsageJourneyTest#capturesVerifiedJourneys
 goal: Continue durable work after interruption without duplicate commands, lost drafts, or silent uncertainty.
 preconditions:
   - The app previously stored provider-scoped sessions and connection state.
@@ -24,11 +28,18 @@ steps:
     title: Observe a bounded degraded state
     action: Lose the shared network or stop one endpoint during active work.
     expected: The app preserves the session and reports reconnecting without inventing progress.
+    screenshot: bounded-reconnect.png
+    alt: Agent Relay shows the Workshop host reconnecting with a bounded retry attempt and delay.
   - id: reconcile-durable-state
     title: Reconcile after reachability returns
     action: Restore the shared network or restart the stopped endpoint.
-    expected: The app resumes from durable state and suppresses duplicate events and actions.
+    expected: >-
+      The app resumes from durable state, suppresses duplicate delivery, and keeps an uncertain response visible.
+    screenshot: uncertain-effect.png
+    alt: Agent Relay keeps an uncertain provider response visible and explicitly blocks unsafe retry.
   - id: handle-uncertainty
     title: Handle the remaining exception
-    action: Open an item that cannot be reconciled safely in the background.
-    expected: The app explains the uncertainty and offers only safe next actions.
+    action: Inspect the uncertain response and wait for a newly identified provider request.
+    expected: The uncertainty clears only when the new request appears with safe response controls.
+    screenshot: reconciled-request.png
+    alt: Agent Relay shows a newly identified approval request after the uncertain response is reconciled.

@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package com.example.agentrelay
 
 import android.app.Application
@@ -15,6 +20,9 @@ import com.example.agentrelay.diagnostics.DiagnosticRuntimeConfig
 import com.example.agentrelay.diagnostics.DiagnosticTrace
 import com.example.agentrelay.notifications.AndroidSessionNotificationSink
 import com.example.agentrelay.notifications.SessionNotificationRuntime
+import com.example.agentrelay.widgets.AndroidAttentionWidgetRuntime
+import com.example.agentrelay.widgets.AttentionWidgetActionRuntime
+import com.example.agentrelay.widgets.AttentionWidgetActionRuntimeHolder
 import dev.agentrelay.connection.api.ConnectionProviderRegistry
 import dev.agentrelay.connection.local.LocalConnectionProvider
 import dev.agentrelay.provider.aider.AiderAgentProviderFactory
@@ -50,6 +58,13 @@ class AgentRelayApplication : Application() {
             AndroidBackgroundTransportStarter(applicationContext),
         )
     }
+    internal val attentionWidgets by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+        AndroidAttentionWidgetRuntime(
+            context = applicationContext,
+            scope = lifecycleScope,
+            runtimeFactory = graph::sessionHubRuntime,
+        )
+    }
 
     private val backgroundLifecycle = AppBackgroundLifecycleObserver(
         scope = lifecycleScope,
@@ -62,6 +77,9 @@ class AgentRelayApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        AttentionWidgetActionRuntimeHolder.runtime = AttentionWidgetActionRuntime { request ->
+            attentionWidgets.process(request)
+        }
         DiagnosticTrace.section(diagnosticConfig, "startup") {
             ProcessLifecycleOwner.get().lifecycle.addObserver(backgroundLifecycle)
         }

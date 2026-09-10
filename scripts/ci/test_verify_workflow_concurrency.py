@@ -1,3 +1,6 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 from unittest import TestCase
 
 from verify_workflow_concurrency import replay, verify_model

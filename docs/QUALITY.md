@@ -43,6 +43,25 @@ representative physical-device release evidence.
 | Kotlin ABI validation | Public provider and connection contracts from the pinned Kotlin Gradle plugin | Any unreviewed difference from the committed ABI dumps fails |
 | Debug assembly | Packaging and resource integration | Any failure fails |
 
+### Cross-language assurance contract
+
+The machine-readable `config/language-assurance-contract.json` keeps the Java, Bash,
+dependency, Python, and Kotlin signals comparable. Each gate names
+its coordinator owner, exact command, report location, invariant, and remediation path.
+The contract verifier checks that every required language is represented, evidence paths
+stay below the quality-report directory, and every gate points at a declared invariant.
+It validates the contract shape; it does not substitute for running the underlying gates.
+
+Run the shape check locally with:
+
+```bash
+uv run python scripts/ci/verify_language_assurance.py
+```
+
+Missing or stale evidence remains a failure of the owning gate. The aggregate contract is
+fail-closed: a new assurance signal must add an owner, invariant, evidence location, and
+repair instruction before it can be published.
+
 The dependency-analysis exception for `:session:api` is intentionally narrow:
 its public ABI exposes identifiers from `:connection:api`, so that project
 dependency must remain `api` even though bytecode-only analysis recommends
@@ -85,13 +104,13 @@ session runtime 83% (83.47%), speech API 74% (74.34%), and SSH API 86% (86.85%).
 These checks run through each module's normal `koverVerify` task and do not
 replace or reduce the aggregate 70% rule.
 
-The provider and connection API modules enable the experimental ABI validator
-shipped in the pinned Kotlin Gradle plugin 2.3.20. `checkKotlinAbi` compares the
-compiled public contracts with the reviewable dumps under each module's `api`
-directory. Run `updateKotlinAbi` only for an intentional compatible API change,
-then review every dump line. A green check means the compiled ABI matches the
-committed reference; it does not promise source compatibility, behavioral
-compatibility, or semantic-versioning policy.
+The provider, connection, and session API modules enable the experimental ABI
+validator shipped in the pinned Kotlin Gradle plugin 2.3.20. `checkKotlinAbi`
+compares the compiled public contracts with the reviewable dumps under each
+module's `api` directory. Run `updateKotlinAbi` only for an intentional
+compatible API change, then review every dump line. A green check means the
+compiled ABI matches the committed reference; it does not promise source
+compatibility, behavioral compatibility, or semantic-versioning policy.
 
 Run the full local gate:
 
@@ -179,6 +198,14 @@ required API 36 UI job additionally captures and compares the running app,
 retains the current images, metrics, and diffs, and publishes a downloadable
 static-site artifact. A planned workflow remains text-only until its semantic
 journey passes and its screenshots receive explicit review.
+
+The machine-readable user-satisfaction authority binds the ten outcome-management child
+contracts to their production sources, focused tests, formal models where available, and
+truthful limitations. Its generated status page may list a journey as Android-verified only
+when the referenced workflow scenario is verified and contains a semantic test plus reviewed,
+accessible screenshot evidence. The full JVM gate executes every child test; the documentation
+validator proves coverage and evidence shape without pretending that file presence is a passing
+test result or that contract evidence is human usability evidence.
 
 ## Format-specific policy
 
@@ -354,10 +381,25 @@ least 33 discovered and 33 executed tests. This prevents a missing device,
 missing module report, skipped accessibility audit, or accidentally empty suite
 from appearing green.
 
+Each device job keeps its Gradle daemon registry and authenticated sockets in a
+fresh job-private directory under `RUNNER_TEMP`. It may link the shared
+dependency and wrapper caches into that directory, but it never shares daemon
+state. The runner stops only that private daemon during bounded cleanup after
+the final build request; it never stops a shared daemon immediately before a
+build. This prevents stale socket tokens from turning a successful emulator
+boot into a missing-test-report failure.
+
 That API 36 job also captures the six verified usage journeys, requires all 14
 reviewed screenshots to remain within the documented thresholds, and performs a
 strict static-site build. It retains captures, metrics, diffs, reports, and the
 downloadable browsable guide for 14 days.
+
+Build, test, emulator, accessibility, workflow, and visual assertions are the
+authoritative CI result. GitHub artifact uploads are optional evidence transport:
+an upload failure remains visible as a warning and job-summary entry, but cannot
+turn otherwise successful authoritative checks red. The workflows never hide or
+reinterpret a test failure, never claim that an unavailable artifact was
+uploaded, and keep explicitly enabled public Pages publication strict.
 
 The workflow invokes those three device-test tasks explicitly. Native-only and
 no-test Android modules remain covered by the quality and build workflow without

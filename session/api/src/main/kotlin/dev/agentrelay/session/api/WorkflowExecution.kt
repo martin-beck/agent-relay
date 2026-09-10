@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.session.api
 
 /** Stable categories used by retry policy and durable diagnostics. */
@@ -23,6 +28,14 @@ data class WorkflowRetryPolicy(
         }
     }
 
+    fun allows(attempt: Int): Boolean = attempt in 1..maxAttempts
+
+    fun delayBeforeAttempt(attempt: Int): Long {
+        require(attempt in 1..maxAttempts) { "Attempt is outside retry policy" }
+        val exponent = (attempt - 1).coerceAtMost(30)
+        return (baseBackoffMillis * (1L shl exponent)).coerceAtMost(maxBackoffMillis)
+    }
+
     fun decision(attempt: Int, category: WorkflowFailureCategory, effect: WorkflowEffectState): RetryDecision {
         require(attempt in 1..maxAttempts) { "Attempt is outside retry policy" }
         if (effect == WorkflowEffectState.UNCERTAIN || category == WorkflowFailureCategory.UNCERTAIN_EFFECT) {
@@ -32,9 +45,7 @@ data class WorkflowRetryPolicy(
             return RetryDecision.DoNotRetry("failure-is-not-retryable")
         }
         if (attempt >= maxAttempts) return RetryDecision.DoNotRetry("retry-budget-exhausted")
-        val exponent = (attempt - 1).coerceAtMost(30)
-        val delay = (baseBackoffMillis * (1L shl exponent)).coerceAtMost(maxBackoffMillis)
-        return RetryDecision.RetryAfter(delay)
+        return RetryDecision.RetryAfter(delayBeforeAttempt(attempt))
     }
 }
 

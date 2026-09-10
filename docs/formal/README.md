@@ -54,6 +54,31 @@ counterexample traces cannot carry host, account, prompt, or provider data.
 Every retained trace is replayed before the formal evidence is accepted; a
 changed rejection, implementation, or trace digest fails the quality gate.
 
+`CrossDeviceContinuity.tla` captures the companion-device safety boundary:
+the authority sequence only advances, acknowledgements cannot move backwards
+or beyond authority, and revocation prevents later acceptance. The executable
+connection API tests cover the same finite transitions, including offline
+replay, reconnect, and replacement enrollment.
+
+`ResourceBudget.tla` states the companion resource-control invariants used by
+the executable workflow API contract: reservations are admitted only while
+the projected usage fits every declared dimension, reconciliation is
+monotonic, and an observed overrun enters a terminal hard stop. Unknown money
+prices are rejected or require explicit approval according to the policy; the
+Kotlin race tests provide the finite executable evidence for serialized
+reservations.
+
+`CollaborationAuthority.tla` captures shared-project authority: compare-and-set
+mutations advance one durable revision, audit entries never disappear, and a
+revoked lease remains unable to authorize later work. `CollaborationModelsTest`
+provides executable evidence for scope-limited delegation, stale conflicts,
+expiry, revocation, and redacted audit comments.
+
+`PrivacyLifecycle.tla` captures the privacy boundary: retention expiry is
+terminal deletion, credential versions only advance, and every lifecycle
+mutation appends audit evidence. `PrivacyLifecycleModelsTest` provides the
+executable checks for redacted exports, deletion, retention, and rotation.
+
 ```bash
 python scripts/ci/verify_counterexamples.py
 ```
@@ -85,3 +110,10 @@ python scripts/ci/verify_workflow_concurrency.py
 python scripts/ci/verify_formal_evidence.py
 python scripts/ci/verify_counterexamples.py
 ```
+
+## Debug Wear transport
+
+`DebugWearTransport.tla` states the noninterference boundary for the
+unauthenticated emulator harness: it is permitted only in debug builds and
+cannot create a pairing grant or claim authenticated Google Data Layer
+evidence. Official OEM pairing remains required for production communication.

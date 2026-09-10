@@ -1,3 +1,6 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 from __future__ import annotations
 
 import tempfile
@@ -21,6 +24,8 @@ from verify_workflows import (
     expected_capture_paths,
     reject_orphans,
 )
+
+CAPTURE_SCRIPT = Path(__file__).with_name("capture_usage_workflows.sh")
 
 
 def scenario(status: str = "verified") -> dict[str, Any]:
@@ -51,6 +56,53 @@ def scenario(status: str = "verified") -> dict[str, Any]:
 
 
 class RenderWorkflowsTest(unittest.TestCase):
+    def test_usage_capture_preserves_evidence_owned_by_other_tests(self) -> None:
+        script = CAPTURE_SCRIPT.read_text(encoding="utf-8")
+
+        self.assertNotIn('rm -rf "$baseline_root"', script)
+        self.assertIn(
+            'find "$capture_root" -mindepth 1 -maxdepth 1 -type d -print0',
+            script,
+        )
+        self.assertIn('rm -rf "$baseline_workflow"', script)
+
+    def test_durable_recovery_is_backed_by_named_emulator_evidence(self) -> None:
+        source = SCENARIO_DIR / "durable-recovery.yml"
+        manifest = yaml.safe_load(source.read_text(encoding="utf-8"))
+
+        validated = validate_manifest(manifest, source)
+
+        self.assertEqual("verified", validated["status"])
+        self.assertEqual(
+            "com.example.agentrelay.ui.main.UsageJourneyTest#capturesVerifiedJourneys",
+            validated["verified_test"],
+        )
+        self.assertEqual(
+            ["bounded-reconnect.png", "uncertain-effect.png", "reconciled-request.png"],
+            [step["screenshot"] for step in validated["steps"]],
+        )
+
+    def test_voice_input_is_backed_by_named_emulator_evidence(self) -> None:
+        source = SCENARIO_DIR / "voice-input.yml"
+        manifest = yaml.safe_load(source.read_text(encoding="utf-8"))
+
+        validated = validate_manifest(manifest, source)
+
+        self.assertEqual("verified", validated["status"])
+        self.assertEqual(
+            "com.example.agentrelay.ui.main.UsageJourneyTest#capturesVerifiedJourneys",
+            validated["verified_test"],
+        )
+        self.assertEqual(
+            [
+                "select-offline-model.png",
+                "permission-gated-start.png",
+                "visible-local-recording.png",
+                "review-transcript.png",
+            ],
+            [step["screenshot"] for step in validated["steps"]],
+        )
+
     def test_companion_device_evidence_stays_planned_until_backed_by_hardware(self) -> None:
         source = SCENARIO_DIR / "companion-device-verification.yml"
         manifest = yaml.safe_load(source.read_text(encoding="utf-8"))

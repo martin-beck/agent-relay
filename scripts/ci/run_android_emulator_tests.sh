@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 set -euo pipefail
 : "${ANDROID_HOME:=}"
 : "${RUNNER_TEMP:=}"
@@ -8,12 +11,14 @@ set -euo pipefail
 : "${EMULATOR_TARGET:=default}"
 : "${EMULATOR_ARCH:=x86_64}"
 : "${EMULATOR_PROFILE:=pixel_7_pro}"
+: "${AVDMANAGER_BIN:=}"
 ANDROID_AVD_HOME="${ANDROID_AVD_HOME:-${HOME:-$RUNNER_TEMP}/.android/avd}"
 echo "Android SDK: ${ANDROID_HOME:-<unset>}"
 echo "AVD home: $ANDROID_AVD_HOME"
 echo "Runner temp: ${RUNNER_TEMP:-<unset>}"
 echo "Emulator port: $EMULATOR_PORT"
 test -n "$ANDROID_HOME" -a -n "$ANDROID_AVD_HOME" -a -n "$RUNNER_TEMP"
+mkdir -p "$RUNNER_TEMP"
 XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-$RUNNER_TEMP/android-runtime}"
 mkdir -p "$XDG_RUNTIME_DIR"
 chmod 0700 "$XDG_RUNTIME_DIR"
@@ -24,8 +29,18 @@ export ANDROID_SERIAL="${ANDROID_SERIAL:-emulator-$EMULATOR_PORT}"
 if [[ "${1:-}" == -- ]]; then shift; fi
 adb_bin="$ANDROID_HOME/platform-tools/adb"
 emulator_bin="$ANDROID_HOME/emulator/emulator"
-avdmanager_bin="$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager"
-test -x "$adb_bin" -a -x "$emulator_bin" -a -x "$avdmanager_bin"
+avdmanager_bin="${AVDMANAGER_BIN:-$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager}"
+test -x "$adb_bin" -a -x "$emulator_bin"
+if [[ ! -x "$avdmanager_bin" ]]; then
+  echo "avdmanager is not executable at $avdmanager_bin" >&2
+  exit 2
+fi
+shared_gradle_home="${GRADLE_USER_HOME:-${HOME:-$RUNNER_TEMP}/.gradle}"
+private_gradle_home="$RUNNER_TEMP/agent-relay-gradle-$EMULATOR_AVD_NAME"
+bash "$(dirname "$0")/prepare_private_gradle_home.sh" \
+  "$shared_gradle_home" "$private_gradle_home" > /dev/null
+export GRADLE_USER_HOME="$private_gradle_home"
+echo "Private Gradle daemon home: $GRADLE_USER_HOME"
 android_config_dir="${HOME:-$RUNNER_TEMP}/.android"
 adb_private_key="$android_config_dir/adbkey"
 adb_public_key="$adb_private_key.pub"
@@ -64,6 +79,9 @@ if [[ ! -d "$avd_dir" ]]; then
 fi
 if [[ -f "$avd_dir/config.ini" ]]; then
   echo 'hw.cpu.ncore=2' >> "$avd_dir/config.ini"
+  # Keep the ephemeral CI userdata image within the runner disk budget.
+  sed -i '/^disk.dataPartition.size=/d' "$avd_dir/config.ini"
+  echo 'disk.dataPartition.size=6G' >> "$avd_dir/config.ini"
 else
   echo "avdmanager created no config.ini; writing minimal x86_64 configuration" >&2
   cat > "$avd_dir/config.ini" << EOF
@@ -96,6 +114,11 @@ cleanup() {
   mkdir -p build/emulator
   [[ ! -f "$log_file" ]] || cp "$log_file" "build/emulator/emulator-$EMULATOR_PORT.log"
   [[ ! -f "$pid_file" ]] || cp "$pid_file" "build/emulator/emulator-$EMULATOR_PORT.pid"
+  # Stop only this job's private daemon, after its last build request. A global
+  # stop immediately before a build can race Gradle's authenticated socket handoff.
+  if [[ -x ./gradlew && -d "$GRADLE_USER_HOME/daemon" ]]; then
+    timeout 10 ./gradlew --stop > /dev/null 2>&1 || true
+  fi
   "$adb_bin" -s "emulator-$EMULATOR_PORT" emu kill > /dev/null 2>&1 || true
   if [[ -s "$pid_file" ]]; then
     pid="$(< "$pid_file")"
@@ -160,7 +183,6 @@ verify_device_stable() {
 verify_device_stable
 "$adb_bin" devices -l
 "$adb_bin" -s "emulator-$EMULATOR_PORT" get-state
-./gradlew --stop > /dev/null 2>&1 || true
 if "$adb_bin" devices | awk '$1 == "emulator-5554" && $2 == "unauthorized" { found = 1 } END { exit !found }'; then
   "$adb_bin" disconnect localhost:5554 > /dev/null 2>&1 || true
 fi

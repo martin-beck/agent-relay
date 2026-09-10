@@ -1,4 +1,7 @@
 #!/usr/bin/env bats
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 
 setup() {
   REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/../.." && pwd -P)"
@@ -19,6 +22,13 @@ setup() {
   run "$BOOTSTRAP" preview --manifest "$TEST_ROOT/manifest"
   [ "$status" -eq 0 ]
   [[ "$output" == *"explicit"* || "$output" == *"Target:"* ]]
+  [ ! -e "$AGENT_RELAY_HOME" ]
+}
+
+@test "preview rejects a missing manifest before reading bundle state" {
+  run "$BOOTSTRAP" preview --manifest "$TEST_ROOT/missing-manifest"
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"manifest"* ]]
   [ ! -e "$AGENT_RELAY_HOME" ]
 }
 

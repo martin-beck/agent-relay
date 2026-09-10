@@ -1,3 +1,6 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 id: capability-health-review
 title: Review capability health and drift
 summary: See which provider capabilities remain available and what changed since the last check.

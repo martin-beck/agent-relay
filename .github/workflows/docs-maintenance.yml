@@ -1,3 +1,6 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 name: Documentation maintenance
 
 on:
@@ -15,7 +18,7 @@ concurrency:
 jobs:
   verify:
     name: Documentation drift and evidence maintenance
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, agent-relay-build-ci]
     timeout-minutes: 20
     steps:
       - name: Check out source
@@ -41,6 +44,8 @@ jobs:
             --source-revision "${GITHUB_SHA}"
           uv run python scripts/docs/verify_evidence_reproducibility.py --check
           uv run python scripts/docs/verify_usability_review.py
+          uv run python scripts/docs/verify_satisfaction_assurance.py
+          uv run python scripts/docs/render_satisfaction.py --check
           uv run python scripts/docs/generate_extension_api.py --check
           uv run python scripts/docs/generate_api_reference.py --check
           uv run python scripts/docs/verify_extension_examples.py
@@ -54,10 +59,20 @@ jobs:
         run: uv run pre-commit run lychee-online --hook-stage manual --all-files
 
       - name: Upload maintenance site
+        id: upload_maintenance_site
         if: ${{ success() }}
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: documentation-maintenance-site-${{ github.run_attempt }}
           path: build/site
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 3
+
+      - name: Report unavailable optional maintenance site
+        if: ${{ always() && steps.upload_maintenance_site.outcome == 'failure' }}
+        run: |
+          echo "::warning::Optional documentation site upload failed;" \
+            "authoritative documentation and link checks retain their result."
+          echo "Optional documentation site could not be uploaded; all validation above passed." \
+            >> "$GITHUB_STEP_SUMMARY"

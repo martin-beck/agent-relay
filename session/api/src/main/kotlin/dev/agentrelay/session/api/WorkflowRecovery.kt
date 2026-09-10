@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.session.api
 
 /** Durable, provider-neutral progress captured at a journal boundary. */
@@ -60,8 +65,16 @@ interface WorkflowCheckpointStore {
     fun compensations(): List<WorkflowCompensation>
 }
 
-enum class WorkflowRecoveryAction { RESUME, COMPENSATE, CANCELLED, QUARANTINED, ATTENTION }
+enum class WorkflowRecoveryAction {
+    RESUME,
+    COMPENSATE,
+    COMPENSATED,
+    CANCELLED,
+    QUARANTINED,
+    ATTENTION,
+}
 
+/** Deterministic exponential retry budget shared by restart and reconnect recovery. */
 data class WorkflowRecoveryDecision(
     val checkpoint: WorkflowCheckpoint,
     val action: WorkflowRecoveryAction,
@@ -80,6 +93,7 @@ data class WorkflowRecoveryReport(
 class WorkflowRecoveryCoordinator(
     private val store: WorkflowCheckpointStore,
     private val currentSchema: Int = CURRENT_CHECKPOINT_SCHEMA,
+    private val retryPolicy: WorkflowRetryPolicy = WorkflowRetryPolicy(3, 1_000, 60_000),
 ) {
     init {
         require(currentSchema > 0) { "Recovery schema must be positive" }
@@ -114,6 +128,13 @@ class WorkflowRecoveryCoordinator(
     }
 
     private fun decide(checkpoint: WorkflowCheckpoint, nowMillis: Long): WorkflowRecoveryDecision {
+        if (store.compensations().any { it.checkpointId == checkpoint.checkpointId }) {
+            return WorkflowRecoveryDecision(
+                checkpoint,
+                WorkflowRecoveryAction.COMPENSATED,
+                "compensation-already-recorded",
+            )
+        }
         if (!checkpoint.isCompatible(currentSchema)) {
             store.quarantine(checkpoint.checkpointId, "unsupported-checkpoint-schema")
             return WorkflowRecoveryDecision(checkpoint, WorkflowRecoveryAction.QUARANTINED, "unsupported-checkpoint-schema")
@@ -139,6 +160,9 @@ class WorkflowRecoveryCoordinator(
         }
         if (checkpoint.effect == WorkflowEffectState.UNCERTAIN) {
             return WorkflowRecoveryDecision(checkpoint, WorkflowRecoveryAction.ATTENTION, "effect-outcome-uncertain")
+        }
+        if (!retryPolicy.allows(checkpoint.attempt)) {
+            return WorkflowRecoveryDecision(checkpoint, WorkflowRecoveryAction.ATTENTION, "retry-budget-exhausted")
         }
         val stale = checkpoint.leaseExpiresAtMillis?.let { it <= nowMillis } ?: true
         return WorkflowRecoveryDecision(

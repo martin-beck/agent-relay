@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 import dev.agentrelay.buildlogic.OnnxRuntimeExtractTask
 import dev.agentrelay.buildlogic.SherpaAndroidRuntimeTask
 import dev.agentrelay.buildlogic.SherpaKotlinApiTask

@@ -1,3 +1,6 @@
+<!-- Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved. -->
+<!-- SPDX-License-Identifier: MIT -->
+
 <resources>
     <string name="app_name">Agent Relay</string>
     <string name="notification_channel_action_name">Требуется действие</string>
@@ -21,6 +24,18 @@
     <string name="notification_permission_settings_explanation">Уведомления отключены. Их можно включить в настройках Android.</string>
     <string name="notification_permission_open_settings">Открыть настройки уведомлений</string>
     <string name="notification_permission_allow">Разрешить уведомления</string>
+    <string name="wear_install_offer_title">Настроить %1$s</string>
+    <string name="wear_install_offer_explanation">Установите приложение-компаньон Agent Relay на эти часы, чтобы получать важные обновления и использовать безопасное удалённое управление. Установка выполняется только на это устройство.</string>
+    <string name="wear_install_action">Установить на часы</string>
+    <string name="wear_install_not_now">Не сейчас</string>
+    <string name="wear_install_progress_title">Настройка %1$s</string>
+    <string name="wear_install_progress_explanation">Не отключайте часы, пока Agent Relay проверяет и устанавливает приложение-компаньон.</string>
+    <string name="wear_install_cancel">Отменить установку</string>
+    <string name="wear_install_recovery_title">Не удалось настроить %1$s</string>
+    <string name="wear_install_recovery_authorization">Разрешите установку на эти часы и повторите попытку.</string>
+    <string name="wear_install_recovery_installation">Не удалось установить проверенное приложение-компаньон. Проверьте часы и повторите попытку.</string>
+    <string name="wear_install_recovery_connection">Во время настройки часы отключились. Подключите их снова и повторите попытку.</string>
+    <string name="wear_install_retry">Повторить</string>
     <string name="background_transport_channel_name">Фоновое подключение</string>
     <string name="background_transport_channel_description">Поддерживает активность явно включённых подключений к удалённым агентам</string>
     <string name="background_transport_notification_title">Agent Relay подключён</string>
@@ -384,4 +399,22 @@
     <string name="session_action_title_review_required">Действие агента требует проверки.</string>
     <string name="session_question_prompt_fallback">Вопрос агента</string>
     <string name="connection_failure_profile_preparation">Не удалось подготовить профиль подключения.</string>
+    <string name="lock_widget_description">Сводка на экране блокировки</string>
+    <string name="lock_widget_no_attention">Ничего не требует внимания</string>
+    <string name="lock_widget_status_quiet">Agent Relay</string>
+    <string name="lock_widget_status_attention">Требуется внимание</string>
+    <string name="lock_widget_status_refresh">Обновить в приложении</string>
+    <string name="lock_widget_loading">Проверка элементов…</string>
+    <string name="lock_widget_error">Состояние недоступно</string>
+    <string name="home_widget_description">Сводка на главном экране</string>
+    <string name="home_widget_no_attention">Ничего не требует внимания</string>
+    <string name="home_widget_status_quiet">Agent Relay</string>
+    <string name="home_widget_status_attention">Требуется внимание</string>
+    <string name="home_widget_status_refresh">Обновить в приложении</string>
+    <string name="home_widget_loading">Проверка элементов…</string>
+    <string name="home_widget_error">Состояние недоступно</string>
+    <string name="home_widget_action_open_details_for">Открыть подробности: %1$s</string>
+    <string name="home_widget_action_acknowledge">Подтвердить</string>
+    <string name="home_widget_action_defer">Отложить</string>
+    <string name="home_widget_action_mute_confirm">Отключить уведомления…</string>
 </resources>

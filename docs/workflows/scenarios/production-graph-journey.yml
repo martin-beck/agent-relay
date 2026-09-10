@@ -1,3 +1,6 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 id: production-graph-journey
 title: Complete one bounded local production graph
 summary: Trace a disposable local task from admission through durable result and restart recovery.

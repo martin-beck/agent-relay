@@ -1,3 +1,6 @@
+<!-- Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved. -->
+<!-- SPDX-License-Identifier: MIT -->
+
 <resources>
     <string name="app_name">Agent Relay</string>
     <string name="notification_channel_action_name">Handlungsbedarf</string>
@@ -21,6 +24,18 @@
     <string name="notification_permission_settings_explanation">Benachrichtigungen sind deaktiviert. Sie können sie in den Android-Einstellungen aktivieren.</string>
     <string name="notification_permission_open_settings">Benachrichtigungseinstellungen öffnen</string>
     <string name="notification_permission_allow">Benachrichtigungen erlauben</string>
+    <string name="wear_install_offer_title">%1$s einrichten</string>
+    <string name="wear_install_offer_explanation">Installieren Sie den Agent-Relay-Begleiter auf dieser Uhr, um wichtige Updates und sichere Fernsteuerungen zu nutzen. Die Installation gilt nur für dieses Gerät.</string>
+    <string name="wear_install_action">Auf Uhr installieren</string>
+    <string name="wear_install_not_now">Nicht jetzt</string>
+    <string name="wear_install_progress_title">%1$s wird eingerichtet</string>
+    <string name="wear_install_progress_explanation">Lassen Sie die Uhr verbunden, während Agent Relay den Begleiter prüft und installiert.</string>
+    <string name="wear_install_cancel">Installation abbrechen</string>
+    <string name="wear_install_recovery_title">%1$s konnte nicht eingerichtet werden</string>
+    <string name="wear_install_recovery_authorization">Autorisieren Sie diese Uhr für die Installation und versuchen Sie es erneut.</string>
+    <string name="wear_install_recovery_installation">Der verifizierte Begleiter konnte nicht installiert werden. Prüfen Sie die Uhr und versuchen Sie es erneut.</string>
+    <string name="wear_install_recovery_connection">Die Verbindung zur Uhr wurde während der Einrichtung getrennt. Verbinden Sie sie erneut und versuchen Sie es noch einmal.</string>
+    <string name="wear_install_retry">Erneut versuchen</string>
     <string name="background_transport_channel_name">Hintergrundverbindung</string>
     <string name="background_transport_channel_description">Hält ausdrücklich aktivierte Remote-Agent-Verbindungen aktiv</string>
     <string name="background_transport_notification_title">Agent Relay ist verbunden</string>
@@ -368,4 +383,22 @@
     <string name="session_action_title_review_required">Agentenaktion muss überprüft werden.</string>
     <string name="session_question_prompt_fallback">Agentenfrage</string>
     <string name="connection_failure_profile_preparation">Das Verbindungsprofil konnte nicht vorbereitet werden.</string>
+    <string name="lock_widget_description">Aufmerksamkeitsübersicht auf dem Sperrbildschirm</string>
+    <string name="lock_widget_no_attention">Keine Aufmerksamkeit erforderlich</string>
+    <string name="lock_widget_status_quiet">Agent Relay</string>
+    <string name="lock_widget_status_attention">Aufmerksamkeit erforderlich</string>
+    <string name="lock_widget_status_refresh">In der App aktualisieren</string>
+    <string name="lock_widget_loading">Aufmerksamkeit wird geprüft…</string>
+    <string name="lock_widget_error">Aufmerksamkeit nicht verfügbar</string>
+    <string name="home_widget_description">Aufmerksamkeitsübersicht auf dem Startbildschirm</string>
+    <string name="home_widget_no_attention">Keine Aufmerksamkeit erforderlich</string>
+    <string name="home_widget_status_quiet">Agent Relay</string>
+    <string name="home_widget_status_attention">Aufmerksamkeit erforderlich</string>
+    <string name="home_widget_status_refresh">In der App aktualisieren</string>
+    <string name="home_widget_loading">Aufmerksamkeit wird geprüft…</string>
+    <string name="home_widget_error">Aufmerksamkeit nicht verfügbar</string>
+    <string name="home_widget_action_open_details_for">Aufmerksamkeitsdetails öffnen: %1$s</string>
+    <string name="home_widget_action_acknowledge">Bestätigen</string>
+    <string name="home_widget_action_defer">Zurückstellen</string>
+    <string name="home_widget_action_mute_confirm">Stummschalten…</string>
 </resources>

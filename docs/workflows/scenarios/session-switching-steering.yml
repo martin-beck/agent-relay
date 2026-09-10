@@ -1,3 +1,6 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 id: session-switching-steering
 title: Switch sessions and steer active work
 summary: Move between concurrent sessions without losing drafts, unread state, or active-turn controls.

@@ -1,9 +1,15 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package com.example.agentrelay
 
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -57,8 +63,9 @@ class PairingAppLinkJourneyTest {
         captureIfRequested("camera-link-confirmation.png")
 
         composeTestRule.onNodeWithText("Approve pairing").performClick()
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Review secure pairing").assertDoesNotExist()
+        composeTestRule.waitUntil(5_000) {
+            composeTestRule.onAllNodesWithText("Review secure pairing").fetchSemanticsNodes().isEmpty()
+        }
         captureIfRequested("enrollment-complete.png")
     }
 

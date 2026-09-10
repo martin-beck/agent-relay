@@ -1,3 +1,6 @@
+<!-- Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved. -->
+<!-- SPDX-License-Identifier: MIT -->
+
 <resources>
     <string name="app_name">Agent Relay</string>
     <string name="notification_channel_action_name">Acción requerida</string>
@@ -21,6 +24,18 @@
     <string name="notification_permission_settings_explanation">El permiso de notificaciones está desactivado. Puede activarlo en los ajustes de Android.</string>
     <string name="notification_permission_open_settings">Abrir ajustes de notificaciones</string>
     <string name="notification_permission_allow">Permitir notificaciones</string>
+    <string name="wear_install_offer_title">Configurar %1$s</string>
+    <string name="wear_install_offer_explanation">Instala el complemento de Agent Relay en este reloj para recibir actualizaciones prioritarias y usar controles remotos seguros. La instalación solo se aplica a este dispositivo.</string>
+    <string name="wear_install_action">Instalar en el reloj</string>
+    <string name="wear_install_not_now">Ahora no</string>
+    <string name="wear_install_progress_title">Configurando %1$s</string>
+    <string name="wear_install_progress_explanation">Mantén el reloj conectado mientras Agent Relay verifica e instala el complemento.</string>
+    <string name="wear_install_cancel">Cancelar instalación</string>
+    <string name="wear_install_recovery_title">No se pudo configurar %1$s</string>
+    <string name="wear_install_recovery_authorization">Autoriza este reloj para la instalación y vuelve a intentarlo.</string>
+    <string name="wear_install_recovery_installation">No se pudo instalar el complemento verificado. Comprueba el reloj y vuelve a intentarlo.</string>
+    <string name="wear_install_recovery_connection">El reloj se desconectó durante la configuración. Vuelve a conectarlo e inténtalo de nuevo.</string>
+    <string name="wear_install_retry">Volver a intentarlo</string>
     <string name="background_transport_channel_name">Conexión en segundo plano</string>
     <string name="background_transport_channel_description">Mantiene activas las conexiones con agentes remotos habilitadas expresamente</string>
     <string name="background_transport_notification_title">Agent Relay está conectado</string>
@@ -376,4 +391,22 @@
     <string name="session_action_title_review_required">La acción del agente requiere revisión.</string>
     <string name="session_question_prompt_fallback">Pregunta del agente</string>
     <string name="connection_failure_profile_preparation">No se pudo preparar el perfil de conexión.</string>
+    <string name="lock_widget_description">Resumen de atención en la pantalla de bloqueo</string>
+    <string name="lock_widget_no_attention">No se necesita atención</string>
+    <string name="lock_widget_status_quiet">Agent Relay</string>
+    <string name="lock_widget_status_attention">Necesita atención</string>
+    <string name="lock_widget_status_refresh">Actualizar en la aplicación</string>
+    <string name="lock_widget_loading">Comprobando la atención…</string>
+    <string name="lock_widget_error">Atención no disponible</string>
+    <string name="home_widget_description">Resumen de atención en la pantalla de inicio</string>
+    <string name="home_widget_no_attention">No se necesita atención</string>
+    <string name="home_widget_status_quiet">Agent Relay</string>
+    <string name="home_widget_status_attention">Necesita atención</string>
+    <string name="home_widget_status_refresh">Actualizar en la aplicación</string>
+    <string name="home_widget_loading">Comprobando la atención…</string>
+    <string name="home_widget_error">Atención no disponible</string>
+    <string name="home_widget_action_open_details_for">Abrir detalles de atención: %1$s</string>
+    <string name="home_widget_action_acknowledge">Confirmar</string>
+    <string name="home_widget_action_defer">Posponer</string>
+    <string name="home_widget_action_mute_confirm">Silenciar…</string>
 </resources>

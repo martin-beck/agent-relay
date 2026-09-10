@@ -1,3 +1,6 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 extends: existence
 link: https://developers.google.com/style/voice
 message: "In general, use active voice instead of passive voice ('%s')."

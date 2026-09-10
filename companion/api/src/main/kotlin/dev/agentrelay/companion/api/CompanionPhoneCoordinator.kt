@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.companion.api
 
 /** Phone-owned, serialized companion state; transports only receive opaque projections. */
@@ -46,6 +51,14 @@ class CompanionPhoneCoordinator(
 
     fun preferences(deviceId: CompanionDeviceId): CompanionDevicePreferences? = preferences[deviceId]
 
+    fun enrollmentGeneration(deviceId: CompanionDeviceId): Long =
+        enrollments[deviceId]?.generation ?: error("Unknown companion device")
+
+    fun acceptsControl(deviceId: CompanionDeviceId, generation: Long): Boolean =
+        enrollments[deviceId]?.let {
+            it.state == CompanionEnrollmentState.ENROLLED && it.generation == generation
+        } == true
+
     fun enqueue(projection: CompanionProjection): Boolean {
         val enrollment = enrollments[projection.deviceId]
         require(enrollment?.state == CompanionEnrollmentState.ENROLLED) {
@@ -62,6 +75,15 @@ class CompanionPhoneCoordinator(
         val queue = queues[deviceId] ?: return emptyList()
         queue.removeAll { !it.isFreshAt(nowEpochMillis) }
         return queue.toList()
+    }
+
+    /** Removes only projections acknowledged by the companion at or below a revision. */
+    fun acknowledge(deviceId: CompanionDeviceId, revision: Long): Int {
+        require(revision > 0) { "Acknowledged revision must be positive" }
+        val queue = queues[deviceId] ?: return 0
+        val before = queue.size
+        queue.removeAll { it.projectionRevision <= revision }
+        return before - queue.size
     }
 
     fun reconcile(message: CompanionMessageEnvelope, nowEpochMillis: Long): CompanionReconciliationOutcome {

@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.buildlogic;
 
 import java.io.BufferedInputStream;
@@ -5,9 +10,11 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
@@ -47,9 +54,29 @@ public abstract class SherpaSourceExtractTask extends DefaultTask {
   public final void extract() throws IOException {
     String root = getArchiveRoot().get();
     Path output = getOutputDirectory().get().getAsFile().toPath();
-    deleteRecursively(output);
-    Files.createDirectories(output);
+    if (Files.isSymbolicLink(output)) {
+      throw new IOException("Sherpa source output was a symbolic link");
+    }
+    Path parent = output.getParent();
+    Path outputName = output.getFileName();
+    if (parent == null || outputName == null) {
+      throw new IOException("Sherpa source output had no parent or file name");
+    }
+    Files.createDirectories(parent);
+    Path staging = Files.createTempDirectory(parent, outputName + ".partial-");
+    boolean installed = false;
+    try {
+      extractInto(root, staging);
+      replaceDirectory(staging, output);
+      installed = true;
+    } finally {
+      if (!installed) {
+        deleteRecursively(staging);
+      }
+    }
+  }
 
+  private void extractInto(String root, Path output) throws IOException {
     Set<String> extracted = new HashSet<>();
     long totalBytes = 0L;
     try (InputStream fileInput =
@@ -122,6 +149,39 @@ public abstract class SherpaSourceExtractTask extends DefaultTask {
       if (paths.anyMatch(Files::isSymbolicLink)) {
         throw new IOException("Sherpa source extraction contained a symbolic link");
       }
+    }
+  }
+
+  static void replaceDirectory(Path staging, Path output) throws IOException {
+    Path parent = output.getParent();
+    Path outputName = output.getFileName();
+    if (parent == null || outputName == null) {
+      throw new IOException("Sherpa source output had no parent or file name");
+    }
+    Path backup = null;
+    if (Files.exists(output, LinkOption.NOFOLLOW_LINKS)) {
+      backup = Files.createTempDirectory(parent, outputName + ".backup-");
+      Files.delete(backup);
+      moveDirectory(output, backup);
+    }
+    try {
+      moveDirectory(staging, output);
+    } catch (IOException failure) {
+      if (backup != null && !Files.exists(output, LinkOption.NOFOLLOW_LINKS)) {
+        moveDirectory(backup, output);
+      }
+      throw failure;
+    }
+    if (backup != null) {
+      deleteRecursively(backup);
+    }
+  }
+
+  private static void moveDirectory(Path source, Path target) throws IOException {
+    try {
+      Files.move(source, target, StandardCopyOption.ATOMIC_MOVE);
+    } catch (AtomicMoveNotSupportedException ignored) {
+      Files.move(source, target);
     }
   }
 

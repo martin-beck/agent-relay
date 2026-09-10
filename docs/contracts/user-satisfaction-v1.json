@@ -1,0 +1,154 @@
+{
+  "$schema": "user-satisfaction-v1.schema.json",
+  "schemaVersion": 1,
+  "statusAuthority": "docs/contracts/user-satisfaction-v1.json",
+  "requiredPhases": [
+    "state-outcome",
+    "review-scope",
+    "approve-decision",
+    "recover-interruption",
+    "explain-result"
+  ],
+  "verifiedJourneys": [
+    {
+      "id": "fresh-start-first-session",
+      "title": "Start a first useful session",
+      "phase": "state-outcome",
+      "scenario": "docs/workflows/scenarios/fresh-start-first-session.yml",
+      "userValue": "Reach a usable agent session from a clean app state with reviewed identity and scope."
+    },
+    {
+      "id": "attention-approval",
+      "title": "Review scope and answer once",
+      "phase": "approve-decision",
+      "scenario": "docs/workflows/scenarios/attention-approval.yml",
+      "userValue": "Understand a provider request, its risk, and its exact scope before responding."
+    },
+    {
+      "id": "durable-recovery",
+      "title": "Recover after interruption",
+      "phase": "recover-interruption",
+      "scenario": "docs/workflows/scenarios/durable-recovery.yml",
+      "userValue": "Resume useful work without duplicate effects or hidden uncertainty."
+    },
+    {
+      "id": "attention-overview",
+      "title": "Explain what needs attention",
+      "phase": "explain-result",
+      "scenario": "docs/workflows/scenarios/attention-overview.yml",
+      "userValue": "See exceptional work first and distinguish required action from routine progress."
+    }
+  ],
+  "childContracts": [
+    {
+      "ar": "AR-2160",
+      "id": "outcome-first-onboarding",
+      "title": "Outcome-first onboarding",
+      "phase": "state-outcome",
+      "maturity": "contract-verified",
+      "sources": ["app/src/main/java/com/example/agentrelay/onboarding/OutcomeOnboardingContracts.kt"],
+      "tests": ["app/src/test/java/com/example/agentrelay/onboarding/OutcomeOnboardingContractsTest.kt"],
+      "formalEvidence": [],
+      "limitation": "The reducer is tested, but its dedicated outcome-entry screen has no semantic Android journey yet."
+    },
+    {
+      "ar": "AR-2161",
+      "id": "natural-language-authoring",
+      "title": "Natural-language workflow authoring",
+      "phase": "state-outcome",
+      "maturity": "contract-verified",
+      "sources": ["workflow/api/src/main/kotlin/dev/agentrelay/workflow/api/WorkflowAuthoringModels.kt"],
+      "tests": ["workflow/api/src/test/kotlin/dev/agentrelay/workflow/api/WorkflowAuthoringModelsTest.kt"],
+      "formalEvidence": [],
+      "limitation": "Deterministic parsing and review boundaries are tested; production UI composition remains unverified."
+    },
+    {
+      "ar": "AR-2162",
+      "id": "autonomy-policy-controls",
+      "title": "Autonomy and policy controls",
+      "phase": "approve-decision",
+      "maturity": "contract-verified",
+      "sources": ["workflow/api/src/main/kotlin/dev/agentrelay/workflow/api/AutonomyPolicyModels.kt"],
+      "tests": ["workflow/api/src/test/kotlin/dev/agentrelay/workflow/api/AutonomyPolicyModelsTest.kt"],
+      "formalEvidence": [],
+      "limitation": "Policy, escalation, revocation, and pause-all contracts are tested without a dedicated Android surface."
+    },
+    {
+      "ar": "AR-2163",
+      "id": "progress-completion-proof",
+      "title": "Progress and completion proof",
+      "phase": "explain-result",
+      "maturity": "contract-verified",
+      "sources": ["workflow/api/src/main/kotlin/dev/agentrelay/workflow/api/WorkflowProgressProofModels.kt"],
+      "tests": ["workflow/api/src/test/kotlin/dev/agentrelay/workflow/api/WorkflowProgressProofModelsTest.kt"],
+      "formalEvidence": [],
+      "limitation": "Proof projection is tested; a complete production workflow result journey is still planned."
+    },
+    {
+      "ar": "AR-2164",
+      "id": "permissioned-integrations",
+      "title": "Permissioned integrations and connectors",
+      "phase": "review-scope",
+      "maturity": "contract-verified",
+      "sources": ["provider/api/src/main/kotlin/dev/agentrelay/provider/api/PermissionedIntegrations.kt"],
+      "tests": ["provider/api/src/test/kotlin/dev/agentrelay/provider/api/PermissionedIntegrationsTest.kt"],
+      "formalEvidence": [],
+      "limitation": "Capability, token, retry, and revocation contracts are tested without live third-party credentials."
+    },
+    {
+      "ar": "AR-2165",
+      "id": "cross-device-continuity",
+      "title": "Cross-device continuity",
+      "phase": "recover-interruption",
+      "maturity": "contract-verified",
+      "sources": ["connection/api/src/main/kotlin/dev/agentrelay/connection/api/ContinuityModels.kt"],
+      "tests": ["connection/api/src/test/kotlin/dev/agentrelay/connection/api/CrossDeviceContinuityLedgerTest.kt"],
+      "formalEvidence": ["docs/formal/CrossDeviceContinuity.tla"],
+      "limitation": "Replay and replacement-device invariants are tested; authenticated OEM phone/Wear evidence remains pending."
+    },
+    {
+      "ar": "AR-2166",
+      "id": "shared-collaboration",
+      "title": "Shared project collaboration",
+      "phase": "review-scope",
+      "maturity": "contract-verified",
+      "sources": ["workflow/api/src/main/kotlin/dev/agentrelay/workflow/api/CollaborationModels.kt"],
+      "tests": ["workflow/api/src/test/kotlin/dev/agentrelay/workflow/api/CollaborationModelsTest.kt"],
+      "formalEvidence": ["docs/formal/CollaborationAuthority.tla"],
+      "limitation": "Authority and conflict contracts are tested; multi-person Android interaction evidence remains planned."
+    },
+    {
+      "ar": "AR-2167",
+      "id": "attention-personalization",
+      "title": "Explainable attention personalization",
+      "phase": "explain-result",
+      "maturity": "contract-verified",
+      "sources": ["session/api/src/main/kotlin/dev/agentrelay/session/api/AttentionPersonalizationModels.kt"],
+      "tests": ["session/api/src/test/kotlin/dev/agentrelay/session/api/AttentionPersonalizationModelsTest.kt"],
+      "formalEvidence": [],
+      "limitation": "Quiet-hours and escalation projections are tested; personalized Android rendering remains unverified."
+    },
+    {
+      "ar": "AR-2168",
+      "id": "resource-controls",
+      "title": "Cost and resource controls",
+      "phase": "review-scope",
+      "maturity": "contract-verified",
+      "sources": ["workflow/api/src/main/kotlin/dev/agentrelay/workflow/api/ResourceControlModels.kt"],
+      "tests": ["workflow/api/src/test/kotlin/dev/agentrelay/workflow/api/ResourceControlModelsTest.kt"],
+      "formalEvidence": ["docs/formal/ResourceBudget.tla"],
+      "limitation": "Budget reservations and hard stops are tested; live provider cost reconciliation remains unavailable."
+    },
+    {
+      "ar": "AR-2169",
+      "id": "trust-privacy-controls",
+      "title": "Trust and privacy controls",
+      "phase": "approve-decision",
+      "maturity": "contract-verified",
+      "sources": ["session/api/src/main/kotlin/dev/agentrelay/session/api/PrivacyLifecycleModels.kt"],
+      "tests": ["session/api/src/test/kotlin/dev/agentrelay/session/api/PrivacyLifecycleModelsTest.kt"],
+      "formalEvidence": ["docs/formal/PrivacyLifecycle.tla"],
+      "limitation": "Retention, deletion, export, and rotation contracts are tested; their integrated Android journey is planned."
+    }
+  ]
+}

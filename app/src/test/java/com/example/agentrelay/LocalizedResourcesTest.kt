@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package com.example.agentrelay
 
 import android.app.Application
@@ -168,6 +173,18 @@ class LocalizedResourcesTest {
                 2,
                 2,
             )
+            val wearOfferTitle = context.getString(
+                R.string.wear_install_offer_title,
+                "Watch 42",
+            )
+            val wearProgressTitle = context.getString(
+                R.string.wear_install_progress_title,
+                "Watch 42",
+            )
+            val wearRecoveryTitle = context.getString(
+                R.string.wear_install_recovery_title,
+                "Watch 42",
+            )
 
             opaqueValues.forEach { value ->
                 assertTrue(languageTag, sessionContext.contains(value))
@@ -243,6 +260,13 @@ class LocalizedResourcesTest {
             assertFalse(languageTag, sessionAccessibilityContext.contains("%1\$"))
             assertTrue(languageTag, unreadSessions.isNotBlank())
             assertTrue(languageTag, awaitingActions.isNotBlank())
+            WEAR_INSTALL_RESOURCES.forEach { resource ->
+                assertTrue(languageTag, context.getString(resource).isNotBlank())
+            }
+            listOf(wearOfferTitle, wearProgressTitle, wearRecoveryTitle).forEach { title ->
+                assertTrue(languageTag, title.contains("Watch 42"))
+                assertFalse(languageTag, title.contains("%1\$"))
+            }
             assertFalse(languageTag, unreadSessions.contains("%1\$"))
             assertFalse(languageTag, awaitingActions.contains("%1\$"))
             assertTrue(languageTag, context.getString(R.string.main_loading).isNotBlank())
@@ -331,6 +355,18 @@ class LocalizedResourcesTest {
             R.string.connection_failure_profile_preparation,
             R.string.session_action_title_review_required,
             R.string.session_question_prompt_fallback,
+        )
+
+        val WEAR_INSTALL_RESOURCES = listOf(
+            R.string.wear_install_offer_explanation,
+            R.string.wear_install_action,
+            R.string.wear_install_not_now,
+            R.string.wear_install_progress_explanation,
+            R.string.wear_install_cancel,
+            R.string.wear_install_recovery_authorization,
+            R.string.wear_install_recovery_installation,
+            R.string.wear_install_recovery_connection,
+            R.string.wear_install_retry,
         )
 
         val COORDINATOR_ISSUE_RESOURCES = mapOf(
