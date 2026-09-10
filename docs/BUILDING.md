@@ -1,7 +1,8 @@
 # Building Agent Relay
 
 This guide describes the reproducible development build used by continuous
-integration.
+integration. On Linux x86_64, the supported setup is the
+[repository-local toolchain](BOOTSTRAP.md).
 
 ## Requirements
 
@@ -19,8 +20,9 @@ integration.
 - uv, used to install the repository's locked cross-language check runner
 - An account invited to the private repository
 
-Android Studio may supply the JDK and SDK, or they can be installed separately.
-The Gradle wrapper downloads the repository's pinned Gradle 9.1.0 distribution.
+The repository bootstrap can supply every listed build and quality tool without
+machine-global installation. The Gradle wrapper uses the locally provisioned,
+checksum-verified Gradle 9.7.1 distribution and local cache.
 
 ## Checkout
 
@@ -29,8 +31,17 @@ git clone https://github.com/martin-beck/agent-relay.git
 cd agent-relay
 ```
 
-Create `local.properties` only when your environment needs an explicit SDK
-location. It is ignored by Git and must not be committed.
+Provision the build target and let the bootstrap write ignored
+`local.properties` and local Gradle configuration:
+
+```bash
+python3 scripts/bootstrap.py --target build --install --yes \
+  --accept-android-sdk-license
+scripts/with-toolchain ./gradlew assembleDebug --stacktrace
+```
+
+For a manually managed environment, create `local.properties` only when it
+needs an explicit SDK location. It is ignored by Git and must not be committed.
 
 ```properties
 sdk.dir=/path/to/Android/Sdk
