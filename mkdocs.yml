@@ -56,6 +56,7 @@ nav:
   - Generated API reference: generated/api-reference.md
   - Connection providers: CONNECTION_PROVIDERS.md
   - Provider operations: PROVIDER_OPERATIONS.md
+  - OpenJiuwen metadata probe: OPENJIUWEN_PROVIDER.md
   - Offline LLM testing: OFFLINE_LLM_TESTING.md
   - Session hub: SESSION_HUB.md
   - Speech: SPEECH.md

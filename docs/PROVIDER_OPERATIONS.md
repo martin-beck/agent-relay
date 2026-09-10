@@ -49,6 +49,22 @@ configuration, stored-session metadata, or network topology. Unit and contract
 tests remain the authoritative evidence for malformed output, interruption,
 approvals, resume behavior, file boundaries, and concurrent sessions.
 
+## OpenJiuwen metadata-probe boundary
+
+The OpenJiuwen provider is registered only as a fail-closed discovery boundary.
+It executes a fixed Python distribution-metadata query with no credentials,
+provider options, working directory, or process bridge. Missing, failed,
+malformed, duplicated, truncated, or oversized output reports the SDK as
+missing. A valid version reports the SDK as incompatible because no reviewed
+Agent Relay bridge exists.
+
+The provider advertises no capabilities and cannot open a session. Setup,
+authentication, recovery, and unsupported-operation examples are documented in
+[OpenJiuwen metadata-probe provider](OPENJIUWEN_PROVIDER.md). Deterministic
+fixtures validate the metadata boundary without live network access or
+protected data. No live OpenJiuwen engine, gateway, CLI, model, session, stream,
+tool, approval, reconnect, or artifact traversal has been verified.
+
 ## OpenCode server integration
 
 The OpenCode module starts `opencode serve` on a random loopback port with a
@@ -77,6 +93,26 @@ AGENT_RELAY_LIVE_OPENCODE=1 ./gradlew \
 The opt-in live check verifies these boundaries without recording host
 identifiers, account names, endpoint details, session identifiers, or raw
 transcripts in this repository.
+
+OpenCode applies the selected provider and model to the asynchronous prompt,
+not the session-creation request. To exercise the production adapter against a
+locally staged Ollama model, start Ollama on a denied-network loopback service,
+configure OpenCode to use its OpenAI-compatible endpoint, and run:
+
+```bash
+AGENT_RELAY_LIVE_OPENCODE_OLLAMA=1 \
+AGENT_RELAY_LIVE_OPENCODE_MODEL=LOCAL_MODEL_ALIAS \
+  ./gradlew :provider:opencode:test \
+  --tests dev.agentrelay.provider.opencode.OpenCodeLiveIntegrationTest.installedOpenCodeCompletesConfiguredOllamaTurnAndStreamsIt
+```
+
+This second opt-in test creates a disposable Git workspace, verifies project
+discovery, sends a bounded marker prompt through Agent Relay, requires the
+marker in the mapped transcript and at least one mapped live event, and checks
+clean child-process shutdown. The operator must stage and verify the CLI,
+engine, and model before denying outbound network. The test does not publish
+their private paths, local aliases, session data, raw output, or timing, and it
+does not establish conformance for other engines or CLIs.
 
 ## OpenDesk server integration
 
