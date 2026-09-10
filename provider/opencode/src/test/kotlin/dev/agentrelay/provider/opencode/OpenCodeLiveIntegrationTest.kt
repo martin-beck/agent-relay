@@ -19,22 +19,23 @@ import java.io.BufferedWriter
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.Comparator
-import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.TimeUnit
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
@@ -73,19 +74,17 @@ class OpenCodeLiveIntegrationTest {
         assumeTrue(System.getenv(LIVE_OLLAMA_TEST_ENV) == "1")
         val model = System.getenv(LIVE_MODEL_ENV)?.takeIf(String::isNotBlank) ?: DEFAULT_MODEL
         val workspace = Files.createTempDirectory("agent-relay-opencode-ollama-workspace-")
-        initializeGitWorkspace(workspace)
         val factory = OpenCodeAgentProviderFactory()
         val runtime = LocalRuntime()
         var connection: AgentProviderConnection? = null
-        var eventCollector: Job? = null
+        var liveEvent: Deferred<AgentEvent>? = null
         var sessionId: AgentSessionId? = null
 
         try {
+            initializeGitWorkspace(workspace)
             assertIs<ProviderReadiness.Ready>(factory.probe(runtime))
             val activeConnection = factory.connect(runtime)
             connection = activeConnection
-            val events = ConcurrentLinkedQueue<AgentEvent>()
-            eventCollector = launch { activeConnection.events.collect(events::add) }
             val session = activeConnection.startSession(
                 StartSessionOptions(
                     workingDirectory = workspace.toString(),
@@ -95,6 +94,15 @@ class OpenCodeLiveIntegrationTest {
             )
             sessionId = session.id
             assertTrue(activeConnection.refreshSessions().any { it.id == session.id })
+            val matchingLiveEvent = async(start = CoroutineStart.UNDISPATCHED) {
+                withTimeout(5.minutes) {
+                    activeConnection.events.first {
+                        it.sessionId == session.id &&
+                            (it is AgentEvent.TextDelta || it is AgentEvent.MessageCompleted)
+                    }
+                }
+            }
+            liveEvent = matchingLiveEvent
 
             delay(500.milliseconds)
             activeConnection.sendInput(session.id, LIVE_PROMPT)
@@ -116,14 +124,11 @@ class OpenCodeLiveIntegrationTest {
                 },
             )
             assertTrue(
-                events.any {
-                    it.sessionId == session.id &&
-                        (it is AgentEvent.TextDelta || it is AgentEvent.MessageCompleted)
-                },
+                matchingLiveEvent.await().sessionId == session.id,
                 "OpenCode completed the Ollama turn without a mapped live-stream event",
             )
         } finally {
-            eventCollector?.cancel()
+            liveEvent?.cancel()
             sessionId?.let { id -> runCatching { connection?.interrupt(id) } }
             try {
                 connection?.close()
@@ -144,7 +149,15 @@ class OpenCodeLiveIntegrationTest {
 
     private fun initializeGitWorkspace(workspace: Path) {
         val process = ProcessBuilder("git", "init", "--quiet", workspace.toString()).start()
-        assertTrue(process.waitFor(10, TimeUnit.SECONDS), "Git workspace initialization timed out")
+        val finished = process.waitFor(10, TimeUnit.SECONDS)
+        if (!finished) {
+            process.destroy()
+            if (!process.waitFor(2, TimeUnit.SECONDS)) {
+                process.destroyForcibly()
+                process.waitFor()
+            }
+        }
+        assertTrue(finished, "Git workspace initialization timed out")
         assertTrue(process.exitValue() == 0, "Git workspace initialization failed")
     }
 
