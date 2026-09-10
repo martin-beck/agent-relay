@@ -74,6 +74,59 @@ class LocalInferenceConformanceTest(unittest.TestCase):
         self.assertEqual(observation["quantization"], "Q4_K_M")
         self.assertFalse(observation["determinismClaimed"])
 
+    def test_manifest_admits_the_complete_cpu_matrix_with_exact_boundaries(self) -> None:
+        observations = load_manifest()["matrixObservations"]
+        self.assertEqual(
+            {(item["engine"], item["cli"]) for item in observations},
+            {
+                ("llama.cpp", "opencode"),
+                ("localai", "opencode"),
+                ("ollama", "opencode"),
+                ("vllm", "aider"),
+                ("vllm", "opencode"),
+            },
+        )
+        self.assertTrue(
+            all(
+                item["network"] == "fresh-netns-loopback-only-no-default-route"
+                and item["determinismClaimed"] is False
+                for item in observations
+            )
+        )
+        vllm = next(item for item in observations if item["id"].startswith("opencode-vllm"))
+        self.assertEqual(vllm["directApiChecks"], ["tool-call"])
+        self.assertIn("adapter-tool-call", vllm["limitations"])
+
+    def test_matrix_observation_rejects_tampering_and_private_fields(self) -> None:
+        manifest = copy.deepcopy(load_manifest())
+        manifest["matrixObservations"][0]["verifiedChecks"].append("tool-call")
+        with self.assertRaisesRegex(ValueError, "reviewed evidence"):
+            validate_manifest(manifest)
+        manifest = copy.deepcopy(load_manifest())
+        manifest["matrixObservations"][0]["hostName"] = "private-host"
+        with self.assertRaisesRegex(ValueError, "privacy-reviewed schema"):
+            validate_manifest(manifest)
+
+    def test_matrix_observation_requires_limits_and_noncomparative_performance(self) -> None:
+        manifest = copy.deepcopy(load_manifest())
+        manifest["matrixObservations"][0]["limitations"].remove("approval")
+        with self.assertRaisesRegex(ValueError, "required limitations"):
+            validate_manifest(manifest)
+        manifest = copy.deepcopy(load_manifest())
+        manifest["matrixObservations"][0]["performanceSmoke"]["comparisonClaimed"] = True
+        with self.assertRaisesRegex(ValueError, "performance smoke"):
+            validate_manifest(manifest)
+
+    def test_matrix_observation_rejects_duplicate_ids_and_invalid_digests(self) -> None:
+        manifest = copy.deepcopy(load_manifest())
+        manifest["matrixObservations"][-1] = copy.deepcopy(manifest["matrixObservations"][0])
+        with self.assertRaisesRegex(ValueError, "ids must be unique"):
+            validate_manifest(manifest)
+        manifest = copy.deepcopy(load_manifest())
+        manifest["matrixObservations"][0]["modelDigest"] = "invalid"
+        with self.assertRaisesRegex(ValueError, "invalid matrix observation digest"):
+            validate_manifest(manifest)
+
     def test_observation_rejects_unknown_engine_and_overclaimed_check(self) -> None:
         manifest = copy.deepcopy(load_manifest())
         manifest["admittedObservations"][0]["engine"] = "unknown"
