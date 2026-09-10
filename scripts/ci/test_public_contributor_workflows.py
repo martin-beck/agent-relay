@@ -135,6 +135,7 @@ class PublicContributorWorkflowTest(unittest.TestCase):
         ):
             self.assertIn(required, supervisor)
         for forbidden in (
+            "--init",
             "--privileged",
             "--network=host",
             "/var/run/docker.sock",
@@ -143,7 +144,8 @@ class PublicContributorWorkflowTest(unittest.TestCase):
         ):
             self.assertNotIn(forbidden, supervisor)
         self.assertIn("registration-token", supervisor)
-        self.assertIn('status == "offline"', supervisor.replace("\\", ""))
+        self.assertIn("flock --nonblock", supervisor)
+        self.assertIn("cleanup_stale_registrations", supervisor)
         self.assertIn(PUBLIC_RUNNER, supervisor)
 
         self.assertRegex(dockerfile, r"FROM ubuntu@sha256:[0-9a-f]{64}")

@@ -443,12 +443,13 @@ PUBLIC_RUNNER_REPOSITORY=owner/repository \
   scripts/ci/public_runner/supervise.sh
 ```
 
-The supervisor requires GitHub CLI, jq, OpenSSL, and Docker. Its Docker command may be supplied as
+The supervisor requires GitHub CLI, jq, OpenSSL, `flock`, and Docker. Its Docker command may be supplied as
 `PUBLIC_RUNNER_DOCKER_COMMAND` when the service account uses a rootless or mediated Docker client.
 Keep the supervisor credential outside the repository and container. Do not grant the container a
 host directory, device, privileged mode, host network, Docker API, or reusable cache. The supervisor
-deletes only offline registrations carrying its exact dedicated label before registering a
-replacement. Operational logs must identify runners only by their random public-lane name.
+holds a host-local singleton lock and deletes stale registrations carrying only its exact dedicated
+label before registering a replacement. Operational logs must identify runners only by their random
+public-lane name.
 
 Self-hosted verification, UI, and AWQ workflows do not accept `pull_request` events. After reviewing
 an exact contributor commit and its workflow diff, a maintainer may push that immutable commit to a

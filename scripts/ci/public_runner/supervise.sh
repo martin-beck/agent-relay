@@ -11,6 +11,12 @@ IFS="${IFS/_/}"
   printf "PUBLIC_RUNNER_REPOSITORY must be owner/repository.\n" >&2
   exit 2
 }
+: "${XDG_RUNTIME_DIR:?XDG_RUNTIME_DIR is required}"
+exec 9> "$XDG_RUNTIME_DIR/agent-relay-public-runner.lock"
+flock --nonblock 9 || {
+  printf "Another disposable public runner supervisor is active.\n" >&2
+  exit 1
+}
 
 runner_label=agent-relay-public-ci
 runner_image="${PUBLIC_RUNNER_IMAGE:-agent-relay-public-runner:2.337.0}"
@@ -41,7 +47,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-cleanup_offline_registrations() {
+cleanup_stale_registrations() {
   local runner_id
   while IFS= read -r runner_id; do
     [[ "$runner_id" =~ ^[0-9]+$ ]] || continue
@@ -50,14 +56,13 @@ cleanup_offline_registrations() {
   done < <(
     gh api "repos/$PUBLIC_RUNNER_REPOSITORY/actions/runners" --paginate |
       jq --raw-output --arg label "$runner_label" ".runners[]
-        | select(.status == \"offline\")
         | select(any(.labels[]; .name == \$label))
         | .id"
   )
 }
 
 while true; do
-  cleanup_offline_registrations
+  cleanup_stale_registrations
   runner_name="public-ci-$(openssl rand -hex 8)"
   registration_token="$(
     gh api --method POST \
@@ -77,7 +82,6 @@ while true; do
   "${docker_command[@]}" run \
     --detach \
     --rm \
-    --init \
     --name "$runner_name" \
     --hostname public-ci \
     --read-only \
