@@ -15,8 +15,8 @@ concurrency:
 
 jobs:
   validate:
-    name: Secret-free hosted checks
-    runs-on: ubuntu-latest
+    name: Secret-free disposable checks
+    runs-on: agent-relay-public-ci
     timeout-minutes: 20
 
     steps:
@@ -60,6 +60,12 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
+
+      - name: Set up isolated Android SDK
+        uses: android-actions/setup-android@07976c6290703d34c16d382cb36445f98bb43b1f # v3.2.2
+
+      - name: Install required Android platform
+        run: sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
 
       - name: Validate wrapper without shared caches
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0

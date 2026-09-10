@@ -15,6 +15,8 @@ import yaml
 ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW_DIR = ROOT / ".github/workflows"
 PUBLIC_WORKFLOW = WORKFLOW_DIR / "public-contributor.yml"
+PUBLIC_RUNNER = "agent-relay-public-ci"
+PUBLIC_RUNNER_DIR = ROOT / "scripts/ci/public_runner"
 PINNED_ACTION = re.compile(r"^[^@]+@[0-9a-f]{40}$")
 FORBIDDEN_PUBLIC_TEXT = (
     "secrets.",
@@ -47,7 +49,7 @@ def events(workflow: dict[str, Any]) -> set[str]:
 
 
 class PublicContributorWorkflowTest(unittest.TestCase):
-    """Prove untrusted pull requests have only a hosted, read-only lane."""
+    """Prove untrusted pull requests have only a disposable, read-only lane."""
 
     def setUp(self) -> None:
         self.paths = sorted(WORKFLOW_DIR.glob("*.yml"))
@@ -60,7 +62,7 @@ class PublicContributorWorkflowTest(unittest.TestCase):
             self.assertEqual(PUBLIC_WORKFLOW, path)
             self.assertEqual({"contents": "read"}, workflow["permissions"])
             for job in workflow["jobs"].values():
-                self.assertEqual("ubuntu-latest", job["runs-on"])
+                self.assertEqual(PUBLIC_RUNNER, job["runs-on"])
                 self.assertNotIn("permissions", job)
                 self.assertNotIn("environment", job)
 
@@ -107,6 +109,49 @@ class PublicContributorWorkflowTest(unittest.TestCase):
             )
             if contains_self_hosted:
                 self.assertNotIn("pull_request", events(workflow), path)
+
+    def test_public_runner_is_single_job_and_disposable(self) -> None:
+        entrypoint = (PUBLIC_RUNNER_DIR / "entrypoint.sh").read_text(encoding="utf-8")
+        supervisor = (PUBLIC_RUNNER_DIR / "supervise.sh").read_text(encoding="utf-8")
+        dockerfile = (PUBLIC_RUNNER_DIR / "Dockerfile").read_text(encoding="utf-8")
+
+        self.assertIn("--ephemeral", entrypoint)
+        self.assertIn("--no-default-labels", entrypoint)
+        self.assertIn("--disableupdate", entrypoint)
+        self.assertIn("unset RUNNER_REGISTRATION_TOKEN", entrypoint)
+        self.assertIn("exec env -i", entrypoint)
+        self.assertIn("exec ./run.sh", entrypoint)
+        self.assertIn(PUBLIC_RUNNER, entrypoint)
+
+        for required in (
+            "--rm",
+            "--detach",
+            "--read-only",
+            "--cap-drop=ALL",
+            "no-new-privileges",
+            "--network=bridge",
+            "runner:rw,exec,nosuid,nodev",
+            "tmp:rw,exec,nosuid,nodev",
+        ):
+            self.assertIn(required, supervisor)
+        for forbidden in (
+            "--privileged",
+            "--network=host",
+            "/var/run/docker.sock",
+            "--volume",
+            " -v ",
+        ):
+            self.assertNotIn(forbidden, supervisor)
+        self.assertIn("registration-token", supervisor)
+        self.assertIn('status == "offline"', supervisor.replace("\\", ""))
+        self.assertIn(PUBLIC_RUNNER, supervisor)
+
+        self.assertRegex(dockerfile, r"FROM ubuntu@sha256:[0-9a-f]{64}")
+        self.assertIn("RUNNER_VERSION=2.337.0", dockerfile)
+        self.assertIn(
+            "70920811a4f8ad4328818682bca5c6469c1c942fab52448868071d0063816613",
+            dockerfile,
+        )
 
 
 if __name__ == "__main__":

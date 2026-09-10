@@ -417,12 +417,38 @@ result. Explicit public or external publication paths remain strict.
 
 ### Public contributor checks
 
-Pull requests run `Public contributor validation` only on an ephemeral GitHub-hosted runner. The
-lane has a read-only token, credential-free checkout, no repository variables or secrets, no shared
-cache or artifact exchange, and no environment or publication authority. It runs the locked Python
-suite; repository, workflow, secret, and source-header checks; and JVM tests, Kotlin formatting,
-Detekt, and ABI validation. It does not build native code, start an emulator, assemble an APK, or
-claim the complete gate.
+Pull requests run `Public contributor validation` only on the dedicated `agent-relay-public-ci`
+runner label. A host-side supervisor registers one randomly named ephemeral runner inside a fresh
+locked-down container, accepts at most one job, and removes the container afterward. The container
+has a read-only image, job-private memory-backed work and temporary directories, a private PID and
+network namespace, no host mounts or Docker socket, no Linux capabilities, and no shared caches.
+The runner receives the unavoidable one-job registration credential only during setup, immediately
+removes its host-side environment file, and re-executes with a clean job environment. It receives no
+repository variables or secrets,
+environment or publication authority, artifact exchange, or write-capable repository token.
+
+The lane runs the locked Python suite; repository, workflow, secret, and source-header checks; and
+JVM tests, Kotlin formatting, Detekt, and ABI validation. It installs the required JDK and Android
+platform inside the disposable filesystem. It does not build native code, start an emulator,
+assemble an APK, or claim the complete gate.
+
+Build the pinned runner image from the repository root, then run the supervisor under a private
+service account whose GitHub CLI authentication can only administer runners for this repository:
+
+```bash
+docker build --pull \
+  --file scripts/ci/public_runner/Dockerfile \
+  --tag agent-relay-public-runner:2.337.0 .
+PUBLIC_RUNNER_REPOSITORY=owner/repository \
+  scripts/ci/public_runner/supervise.sh
+```
+
+The supervisor requires GitHub CLI, jq, OpenSSL, and Docker. Its Docker command may be supplied as
+`PUBLIC_RUNNER_DOCKER_COMMAND` when the service account uses a rootless or mediated Docker client.
+Keep the supervisor credential outside the repository and container. Do not grant the container a
+host directory, device, privileged mode, host network, Docker API, or reusable cache. The supervisor
+deletes only offline registrations carrying its exact dedicated label before registering a
+replacement. Operational logs must identify runners only by their random public-lane name.
 
 Self-hosted verification, UI, and AWQ workflows do not accept `pull_request` events. After reviewing
 an exact contributor commit and its workflow diff, a maintainer may push that immutable commit to a
@@ -431,11 +457,12 @@ new repository commit; never promote a mutable fork ref or an unreviewed workflo
 `main` runs the same trusted gates again.
 
 Before making the repository public, its owner must also require approval for every external
-contributor workflow and restrict each self-hosted runner group to the trusted workflow files pinned
-to the default branch, or remove the runners from the public repository. Source policy tests cannot
-verify account-level runner configuration. GitHub warns that public forks can otherwise request
-self-hosted jobs by changing workflow files, so repository visibility must not change until that
-external control is independently verified.
+contributor workflow and restrict each persistent self-hosted runner group to trusted workflow files
+pinned to the default branch, or remove those runners from the public repository. Source policy
+tests cannot verify account-level runner configuration. Public forks can otherwise request a
+persistent self-hosted job by changing workflow files, so repository visibility must not change
+until that external control is independently verified. The disposable public pool is not a
+substitute for isolating the persistent trusted pools.
 
 `.github/workflows/verify.yml` runs the required quality/build and deterministic
 visual-regression jobs. Actions are
