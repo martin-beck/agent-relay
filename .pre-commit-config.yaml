@@ -238,6 +238,16 @@ repos:
           ^(docs/contracts/documentation-authority-v1\.json|
           docs/(ARCHITECTURE|SOFTWARE_DESIGN|PRODUCT_ROADMAP|QUALITY|WORKFLOWS)\.md|
           scripts/docs/verify_documentation_authority\.py)$
+      - id: render-workbuddy-provider
+        name: Render WorkBuddy provider capability boundary
+        entry: python scripts/docs/render_workbuddy_provider.py --check
+        language: system
+        pass_filenames: false
+        files: >-
+          ^(config/capability-status-registry\.json|
+          docs/contracts/workbuddy-provider-v1\.json|
+          docs/WORKBUDDY_PROVIDER\.md|
+          scripts/docs/render_workbuddy_provider\.py)$
       - id: verify-user-satisfaction
         name: Verify user-satisfaction evidence boundaries
         entry: python scripts/docs/verify_satisfaction_assurance.py

@@ -57,6 +57,7 @@ nav:
   - Connection providers: CONNECTION_PROVIDERS.md
   - Provider operations: PROVIDER_OPERATIONS.md
   - OpenJiuwen metadata probe: OPENJIUWEN_PROVIDER.md
+  - WorkBuddy Local Assistant: WORKBUDDY_PROVIDER.md
   - Offline LLM testing: OFFLINE_LLM_TESTING.md
   - Session hub: SESSION_HUB.md
   - Speech: SPEECH.md

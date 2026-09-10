@@ -14,6 +14,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
 CONTRACT = ROOT / "docs" / "contracts" / "workbuddy-provider-v1.json"
+CAPABILITY_REGISTRY = ROOT / "config" / "capability-status-registry.json"
 SCOPE_EVIDENCE = (
     ROOT / "docs" / "contracts" / "evidence" / "workbuddy-openapi-send-scope-2026-09-10.json"
 )
@@ -60,6 +61,10 @@ class WorkBuddyContractTest(unittest.TestCase):
             )
         )
         self.assertGreaterEqual(sum(item["status"] == "unsupported" for item in capabilities), 4)
+        statuses = {item["id"]: item["status"] for item in capabilities}
+        self.assertEqual(statuses["online-status"], "supported")
+        self.assertEqual(statuses["text-submission"], "supported")
+        self.assertEqual(statuses["history-polling"], "supported")
 
     def test_security_and_delivery_invariants_are_present(self) -> None:
         invariants = {item["id"] for item in load_contract()["invariants"]}
@@ -125,7 +130,23 @@ class WorkBuddyContractTest(unittest.TestCase):
             <= scenarios
         )
 
-    def test_contract_is_not_an_adapter_claim(self) -> None:
+    def test_published_implementation_evidence_matches_registry(self) -> None:
         document = load_contract()
-        self.assertEqual(document["implementation_status"], "contract_only")
-        self.assertEqual(document["contract_status"], "planned")
+        evidence = document["implementation_evidence"]
+        registry = json.loads(CAPABILITY_REGISTRY.read_text(encoding="utf-8"))
+        entry = next(
+            item
+            for item in registry["capabilities"]
+            if item["id"] == evidence["capability_registry_id"]
+        )
+
+        self.assertEqual(document["implementation_status"], "implemented")
+        self.assertEqual(document["contract_status"], "reviewed")
+        self.assertEqual(entry["maturity"], "implemented")
+        self.assertFalse(evidence["app_exposed"])
+        self.assertFalse(entry["appExposed"])
+        for path in (evidence["factory"], evidence["client"], evidence["connection"]):
+            self.assertTrue((ROOT / path).is_file())
+        self.assertEqual(evidence["tests"], entry["tests"])
+        self.assertTrue(all((ROOT / path).is_file() for path in evidence["tests"]))
+        self.assertIn("Synthetic Open API v2 JVM-adapter evidence only", evidence["limitation"])
