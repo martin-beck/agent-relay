@@ -9,7 +9,7 @@ import unittest
 from pathlib import Path
 from typing import Any, cast
 
-from llm_cassette import CassetteError, contract_diff, replay, sanitize_capture
+from llm_cassette import CassetteError, contract_diff, replay, sanitize_capture, validate_cassette
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -50,9 +50,13 @@ class LlmCassetteTest(unittest.TestCase):
 
     def test_replay_is_zero_egress_strict_and_complete(self) -> None:
         cassette = self.cassette()
-        request = cassette["frames"][0]["body"]
+        requests = [
+            frame["body"] for frame in cassette["frames"] if frame["direction"] == "request"
+        ]
+        responses = replay(cassette, requests)
+        self.assertEqual(len(responses), 2)
         with self.assertRaises(CassetteError):
-            replay(cassette, [request], allow_network=True)
+            replay(cassette, requests, allow_network=True)
         with self.assertRaises(CassetteError):
             replay(cassette, [], allow_network=False)
 
@@ -63,3 +67,14 @@ class LlmCassetteTest(unittest.TestCase):
         self.assertEqual(
             contract_diff({"id": 1, "time": 1}, {"id": 2, "time": 2}, {"time"}), ["id"]
         )
+
+    def test_validation_rejects_tampering_and_unpaired_frames(self) -> None:
+        cassette = self.cassette()
+        validate_cassette(cassette)
+        cassette["frames"][0]["body"]["content"] = "changed"
+        with self.assertRaisesRegex(CassetteError, "digest"):
+            validate_cassette(cassette)
+        cassette = self.cassette()
+        cassette["frames"].pop()
+        with self.assertRaisesRegex(CassetteError, "unmatched"):
+            validate_cassette(cassette)

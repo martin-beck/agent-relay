@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "evidenceLabels": {
+    "deterministicReplay": "synthetic-offline-replay",
+    "wireEmulator": "llm-wire-emulator",
+    "localInference": "local-model",
+    "liveProvider": "live-provider"
+  },
+  "deterministicReplay": {
+    "network": "fresh-network-namespace-no-egress",
+    "seed": 0,
+    "virtualTime": true,
+    "jobTimeoutMinutes": 45,
+    "timeoutSeconds": 600,
+    "maxOutputBytes": 65536,
+    "fixture": "fixtures/offline/basic-tool-round.json",
+    "fixtureSchema": "config/offline-provider-fixture-v1.schema.json",
+    "cassette": "fixtures/offline/sanitized-openai-tool-round.json",
+    "cassetteSchema": "config/llm-cassette-v1.schema.json",
+    "gradleTask": ":provider:test-fixtures:test",
+    "testClasses": [
+      "dev.agentrelay.provider.testing.ScriptedRemoteRuntimeTest",
+      "dev.agentrelay.provider.testing.ProviderProtocolReplaySuiteTest"
+    ]
+  },
+  "wireEmulator": {
+    "status": "not-admitted",
+    "reason": "AR-2223 did not prove added coverage through a shipped real CLI.",
+    "candidate": "mockagents",
+    "revision": "6ddb03e54a14484e5929a19673f0cfd8a1975f07",
+    "version": "0.5.0",
+    "license": "Apache-2.0",
+    "linuxAmd64Sha256": "1b2e6fb9d3bb96c680f9f9c819c2669939751baf45abb35b1370c97f1d291458",
+    "scenarios": []
+  },
+  "localInference": {
+    "workflow": ".github/workflows/local-inference.yml",
+    "manifest": "config/local-inference-conformance-v1.json",
+    "triggers": ["schedule", "workflow_dispatch"],
+    "runnerClasses": ["cpu", "gpu"],
+    "network": "fresh-network-namespace-no-egress",
+    "jobTimeoutMinutes": 60,
+    "driverTimeoutSeconds": 3000,
+    "maxEvidenceBytes": 65536,
+    "maxCommandOutputBytes": 65536,
+    "requiredEvidence": [
+      "engine_digest",
+      "model_digest",
+      "cli_digest",
+      "adapter_provider",
+      "hardware_class",
+      "redacted_junit"
+    ]
+  },
+  "liveProvider": {
+    "status": "opt-in-release-only",
+    "automatedByThisWorkflow": false,
+    "satisfiesFromMockOrLocal": [],
+    "requiredClaims": [
+      "authentication",
+      "cloud-compatibility",
+      "model-quality",
+      "physical-device"
+    ]
+  },
+  "artifacts": {
+    "junit": "offline-provider-junit.xml",
+    "summary": "offline-provider-summary.json",
+    "maxSummaryBytes": 16384,
+    "retentionDays": 14,
+    "prohibitedContent": [
+      "credentials",
+      "model-reasoning",
+      "network-addresses",
+      "raw-prompts",
+      "raw-transcripts",
+      "system-paths",
+      "unreviewed-cassettes"
+    ]
+  },
+  "toolchain": {
+    "bootstrapManifest": "config/bootstrap-toolchain.json",
+    "pythonLock": "uv.lock",
+    "gradleWrapper": "gradle/wrapper/gradle-wrapper.properties",
+    "dependencyVerification": "gradle/verification-metadata.xml",
+    "execution": "repository-local-bootstrap",
+    "policy": "checksum-and-lockfile-verified"
+  },
+  "dependencyUpdates": {
+    "cadence": "monthly-or-security-triggered",
+    "requirements": [
+      "immutable-revision",
+      "license-review",
+      "release-notes-review",
+      "sha256-verification",
+      "full-assurance-rerun"
+    ]
+  },
+  "publication": {
+    "failureFirst": true,
+    "exactHeadRequired": true,
+    "runnerConcurrency": "one-per-ref",
+    "claimsRemainTiered": true
+  }
+}

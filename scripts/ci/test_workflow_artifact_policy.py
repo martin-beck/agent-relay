@@ -9,10 +9,13 @@ from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
+DOCUMENTATION_WORKFLOW = ROOT / ".github/workflows/docs-maintenance.yml"
 WORKFLOWS = (
     ROOT / ".github/workflows/verify.yml",
     ROOT / ".github/workflows/ui.yml",
-    ROOT / ".github/workflows/docs-maintenance.yml",
+    DOCUMENTATION_WORKFLOW,
+    ROOT / ".github/workflows/offline-provider.yml",
+    ROOT / ".github/workflows/local-inference.yml",
 )
 UPLOAD_ACTION = "actions/upload-artifact@"
 PAGES_UPLOAD_ACTION = "actions/upload-pages-artifact@"
@@ -43,7 +46,7 @@ class WorkflowArtifactPolicyTest(unittest.TestCase):
                 and ".outcome" in str(step.get("if", ""))
             )
 
-        self.assertEqual(len(uploads), 9)
+        self.assertEqual(len(uploads), 11)
         self.assertTrue(all(step.get("continue-on-error") is True for step in uploads))
         self.assertTrue(all(step.get("id") for step in uploads))
         referenced_outcomes = "\n".join(str(step.get("if", "")) for step in reporters)
@@ -63,7 +66,7 @@ class WorkflowArtifactPolicyTest(unittest.TestCase):
         self.assertNotIn("continue-on-error", pages_uploads[0])
 
     def test_documentation_maintenance_uses_build_pool_and_short_optional_retention(self) -> None:
-        workflow = yaml.safe_load(WORKFLOWS[-1].read_text(encoding="utf-8"))
+        workflow = yaml.safe_load(DOCUMENTATION_WORKFLOW.read_text(encoding="utf-8"))
         job = workflow["jobs"]["verify"]
         upload = next(
             step for step in job["steps"] if str(step.get("uses", "")).startswith(UPLOAD_ACTION)

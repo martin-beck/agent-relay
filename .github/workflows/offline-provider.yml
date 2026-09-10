@@ -1,0 +1,93 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
+name: Offline provider assurance
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deterministic-replay:
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, linux, x64, agent-relay-build-ci]
+    timeout-minutes: 45
+    env:
+      AGENT_RELAY_TOOLCHAIN_TARGET: quality
+      AGENT_RELAY_OUTBOUND_NETWORK: deny
+      PYTHONHASHSEED: "0"
+    steps:
+      - name: Check out exact source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Provision checksum-pinned repository toolchain
+        run: >-
+          python3 scripts/bootstrap.py --target quality --install --yes
+          --accept-android-sdk-license
+
+      - name: Install locked Python assurance dependencies
+        run: scripts/with-toolchain uv sync --locked --only-group quality
+
+      - name: Stage checksum-locked replay dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          scripts/with-toolchain \
+            ./gradlew --no-daemon :provider:test-fixtures:testClasses --stacktrace
+
+      - name: Run deterministic replay with zero egress
+        shell: bash
+        run: |
+          set -euo pipefail
+          report_dir="$RUNNER_TEMP/offline-provider-assurance"
+          mkdir -p "$report_dir"
+          parent_netns_inode="$(stat -Lc %i /proc/self/ns/net)"
+          bwrap \
+            --die-with-parent \
+            --new-session \
+            --unshare-net \
+            --ro-bind / / \
+            --dev-bind /dev /dev \
+            --proc /proc \
+            --tmpfs /tmp \
+            --bind "$GITHUB_WORKSPACE" "$GITHUB_WORKSPACE" \
+            --bind "$RUNNER_TEMP" "$RUNNER_TEMP" \
+            scripts/with-toolchain \
+              python scripts/ci/run_offline_provider_assurance.py \
+              --source-revision "${{ github.event.pull_request.head.sha || github.sha }}" \
+              --parent-netns-inode "$parent_netns_inode" \
+              --junit "$report_dir/offline-provider-junit.xml" \
+              --summary "$report_dir/offline-provider-summary.json"
+
+      - name: Upload bounded redacted replay evidence
+        id: upload_offline_provider
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: offline-provider-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/offline-provider-assurance
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Report optional evidence transport failure
+        if: ${{ !cancelled() && steps.upload_offline_provider.outcome == 'failure' }}
+        run: |
+          echo "### Offline provider assurance"
+          echo "Authoritative replay completed, but optional redacted evidence upload failed." \
+            >> "$GITHUB_STEP_SUMMARY"

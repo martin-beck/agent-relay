@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import re
@@ -15,6 +16,7 @@ from hashlib import sha256
 from math import isfinite
 from pathlib import Path
 from typing import Any, cast
+from xml.etree import ElementTree
 
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / "config/local-inference-conformance-v1.json"
@@ -556,6 +558,7 @@ def validate_driver_result(evidence: dict[str, Any], document: dict[str, Any]) -
         or not all(isinstance(check, str) for check in checks)
         or len(checks) != len(set(checks))
         or not set(checks) <= declared_checks
+        or "teardown" not in checks
     ):
         raise ConformanceBlocked("driver evidence contains invalid checks")
     if evidence["result"] not in {"passed", "failed"}:
@@ -630,5 +633,41 @@ def run() -> dict[str, Any]:
     return evidence
 
 
+def write_junit(evidence: dict[str, Any], path: Path) -> None:
+    """Write a bounded result-only JUnit report without model content."""
+    checks = cast(list[str], evidence["checks"])
+    suite = ElementTree.Element(
+        "testsuite",
+        name="local-inference-conformance",
+        tests=str(len(checks)),
+        failures="0" if evidence["result"] == "passed" else "1",
+    )
+    for index, check in enumerate(checks):
+        case = ElementTree.SubElement(
+            suite,
+            "testcase",
+            name=check,
+            classname="local.inference",
+        )
+        if evidence["result"] == "failed" and index == 0:
+            ElementTree.SubElement(
+                case,
+                "failure",
+                message=str(evidence["failureClass"]),
+            ).text = "Private model and command output is intentionally suppressed."
+    path.parent.mkdir(parents=True, exist_ok=True)
+    ElementTree.ElementTree(suite).write(path, encoding="utf-8", xml_declaration=True)
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--junit", type=Path)
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
-    print(json.dumps(run(), sort_keys=True, separators=(",", ":")))
+    arguments = parse_args()
+    result = run()
+    if arguments.junit is not None:
+        write_junit(result, arguments.junit)
+    print(json.dumps(result, sort_keys=True, separators=(",", ":")))

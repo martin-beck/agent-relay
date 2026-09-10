@@ -64,6 +64,7 @@ jobs:
         run: |
           set -euo pipefail
           summary="$RUNNER_TEMP/local-inference-summary.json"
+          junit="$RUNNER_TEMP/local-inference-junit.xml"
           export AGENT_RELAY_PARENT_NETNS_INODE
           AGENT_RELAY_PARENT_NETNS_INODE="$(stat -Lc %i /proc/self/ns/net)"
           bwrap \
@@ -77,13 +78,28 @@ jobs:
             --bind "$GITHUB_WORKSPACE" "$GITHUB_WORKSPACE" \
             --bind "$RUNNER_TEMP" "$RUNNER_TEMP" \
             scripts/with-toolchain \
-              python3 scripts/ci/run_local_inference_conformance.py >"$summary"
+              python3 scripts/ci/run_local_inference_conformance.py \
+                --junit "$junit" >"$summary"
           python3 -m json.tool "$summary" >/dev/null
+          python3 -c 'import sys; from xml.etree import ElementTree; ElementTree.parse(sys.argv[1])' \
+            "$junit"
 
       - name: Upload bounded redacted evidence
+        id: upload_local_inference
+        if: ${{ !cancelled() }}
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: local-inference-${{ inputs.hardware || 'cpu' }}-${{ github.run_id }}
-          path: ${{ runner.temp }}/local-inference-summary.json
+          path: |
+            ${{ runner.temp }}/local-inference-summary.json
+            ${{ runner.temp }}/local-inference-junit.xml
           if-no-files-found: error
           retention-days: 14
+
+      - name: Report optional evidence transport failure
+        if: ${{ !cancelled() && steps.upload_local_inference.outcome == 'failure' }}
+        run: |
+          echo "### Local inference conformance"
+          echo "Authoritative conformance completed, but optional redacted evidence upload failed." \
+            >> "$GITHUB_STEP_SUMMARY"

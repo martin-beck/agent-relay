@@ -15,6 +15,34 @@ direct OpenAI-compatible mock cannot exercise that whole boundary.
 This research creates AR-2219 through AR-2226. It adds no simulator dependency and claims no new
 provider support.
 
+## CI implementation
+
+The Offline provider assurance workflow runs on pull requests and main. It provisions the
+checksum-verified repository-local quality toolchain, then stages locked Python and Gradle inputs
+before entering a fresh network namespace. It reruns the committed fixture schema,
+privacy-approved cassette, shared runtime, and native provider protocol suites with outbound
+networking unavailable. A fixed seed, coroutine virtual time, strict request matching, bounded
+execution, and exact source revision are recorded in a redacted JSON summary and JUnit report.
+
+The machine policy is config/offline-provider-assurance-v1.json. MockAgents remains unadmitted:
+AR-2223 did not complete the required traversal through a shipped real CLI, so CI runs no wire
+emulator scenario and makes no claim from its smoke test. Reconsider it only after a real CLI
+demonstrates coverage beyond native protocol replay, with the same loopback, lifecycle, checksum,
+license, and privacy gates.
+
+Local-model conformance remains a separate scheduled or manually dispatched workflow on serialized
+CPU or GPU runners. Its manifest requires immutable engine, model, CLI, template, adapter, hardware,
+and sampling provenance, while the launcher enforces network, time, output, evidence-size, and
+teardown boundaries. Genuine provider checks remain explicit release evidence; mock and local-model
+results cannot satisfy authentication, cloud compatibility, model quality, or physical-device
+claims.
+
+Evidence upload is optional transport, never the authority for a passing test. Monitor the
+authoritative command first, retain only the bounded redacted files for 14 days, and publish only
+an immutable head whose required checks are terminal green. Review optional dependencies monthly
+or after a security trigger, repin immutable revisions and SHA-256 values, recheck licenses and
+release notes, and rerun the complete assurance tier before accepting an update.
+
 ## Evidence snapshot
 
 The review was refreshed on 2026-09-09 against Agent Relay main

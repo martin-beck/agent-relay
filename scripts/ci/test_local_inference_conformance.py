@@ -20,6 +20,7 @@ from run_local_inference_conformance import (
     run,
     validate_driver_evidence,
     validate_manifest,
+    write_junit,
 )
 
 
@@ -203,6 +204,20 @@ class LocalInferenceConformanceTest(unittest.TestCase):
             evidence["checks"] = checks
             with self.assertRaisesRegex(ConformanceBlocked, "invalid checks"):
                 validate_driver_evidence(evidence, load_manifest(), staged)
+        evidence = driver_evidence()
+        evidence["checks"] = ["stream"]
+        with self.assertRaisesRegex(ConformanceBlocked, "invalid checks"):
+            validate_driver_evidence(evidence, load_manifest(), staged)
+
+    def test_junit_contains_only_bounded_result_labels(self) -> None:
+        evidence = driver_evidence()
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "local-inference.xml"
+            write_junit(evidence, path)
+            rendered = path.read_text(encoding="utf-8")
+        self.assertIn("local-inference-conformance", rendered)
+        self.assertIn('name="teardown"', rendered)
+        self.assertNotIn("model", rendered)
 
     def test_staged_tuple_rejects_incomplete_provenance_and_invalid_timeout(self) -> None:
         base_env = {
