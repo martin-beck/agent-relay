@@ -23,14 +23,17 @@ before the first supported release.
 Build and install with Gradle:
 
 ```bash
-./gradlew installDebug
+python3 scripts/bootstrap.py --target device --install --yes \
+  --accept-android-sdk-license
+AGENT_RELAY_TOOLCHAIN_TARGET=device scripts/with-toolchain ./gradlew installDebug
 ```
 
 Or assemble the APK and install it with ADB:
 
 ```bash
-./gradlew assembleDebug
-adb install -r app/build/outputs/apk/debug/app-debug.apk
+scripts/with-toolchain ./gradlew assembleDebug
+AGENT_RELAY_TOOLCHAIN_TARGET=device scripts/with-toolchain \
+  adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
 On Windows, invoke `.\gradlew.bat` instead of `./gradlew`.

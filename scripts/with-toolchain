@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
+set -euo pipefail
+
+repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
+tool_root="$repo_root/.agent-relay/toolchain"
+target="${AGENT_RELAY_TOOLCHAIN_TARGET:-build}"
+
+[[ $# -gt 0 ]] || {
+  printf 'Usage: scripts/with-toolchain COMMAND [ARG ...]\n' >&2
+  exit 2
+}
+[[ "$(basename -- "$1")" != gradle ]] || {
+  printf 'Use the checked-in ./gradlew entry point, not gradle.\n' >&2
+  exit 2
+}
+
+python3 "$repo_root/scripts/bootstrap.py" --repo-root "$repo_root" --target "$target" \
+  --launcher-check >/dev/null
+
+export JAVA_HOME="$tool_root/components/jdk"
+export ANDROID_SDK_ROOT="$tool_root/android-sdk"
+export ANDROID_HOME="$ANDROID_SDK_ROOT"
+export ANDROID_USER_HOME="$tool_root/android-home"
+unset ANDROID_PREFS_ROOT
+export GRADLE_USER_HOME="$tool_root/gradle-home"
+export UV_CACHE_DIR="$tool_root/uv-cache"
+export UV_PROJECT_ENVIRONMENT="$tool_root/quality/venv"
+export PRE_COMMIT_HOME="$tool_root/pre-commit"
+export ADB_VENDOR_KEYS="$tool_root/adb"
+
+tool_path="$JAVA_HOME/bin:$tool_root/components/cmake/bin:$tool_root/components/ninja"
+tool_path="$tool_path:$tool_root/components/uv:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin"
+tool_path="$tool_path:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/build-tools/36.0.0"
+if [[ "$target" == quality ]]; then
+  tool_path="$tool_root/quality/venv/bin:$tool_root/quality/shellcheck:$tool_root/quality/shfmt:$tool_root/quality/bats/bin:$tool_root/quality/vale:$tool_path"
+fi
+export PATH="$tool_path:$PATH"
+
+selected_tools=(java cmake ninja sdkmanager adb uv)
+if [[ "$target" == quality ]]; then
+  selected_tools+=(shellcheck shfmt bats vale pytest pre-commit)
+fi
+
+for selected_tool in "${selected_tools[@]}"; do
+  selected_path="$(command -v -- "$selected_tool")" || {
+    printf 'Repository-local %s is unavailable.\n' "$selected_tool" >&2
+    exit 1
+  }
+  selected_path="$(realpath -e -- "$selected_path")"
+  case "$selected_path" in
+    "$tool_root"/*) ;;
+    *)
+      printf 'Refusing ambient %s outside the repository-local toolchain.\n' "$selected_tool" >&2
+      exit 1
+      ;;
+  esac
+done
+
+exec "$@"
