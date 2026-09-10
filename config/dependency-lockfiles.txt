@@ -19,6 +19,7 @@ provider/continue/gradle.lockfile
 provider/gradle.lockfile
 provider/opencode/gradle.lockfile
 provider/opendesk/gradle.lockfile
+provider/openjiuwen/gradle.lockfile
 session/android/gradle.lockfile
 session/api/gradle.lockfile
 session/gradle.lockfile
