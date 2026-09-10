@@ -1,5 +1,12 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.session.runtime
 
+import dev.agentrelay.connection.api.ConnectionFailureMessage
+import dev.agentrelay.connection.api.ConnectionFailureMessageKind
 import dev.agentrelay.connection.api.ConnectionProviderRegistry
 import dev.agentrelay.connection.api.ConnectionState
 import dev.agentrelay.provider.api.AgentApproval
@@ -67,6 +74,41 @@ class SessionCoordinatorTest {
 
         assertEquals(1, broken.closeCount)
         assertEquals(1, local.closeCount)
+    }
+
+    @Test
+    fun controllerPreparationFailurePublishesTypedMessageAndIssue() = runTest {
+        val broken = FakeConnectionProvider(
+            providerId = "local",
+            profileId = "device",
+            label = "This device",
+            initialRuntime = FakeRuntime("device"),
+            failConnectionLookup = true,
+        )
+        val coordinator = coordinator(listOf(broken), FakeAgentFactory())
+
+        try {
+            coordinator.refreshProfiles()
+
+            val snapshot = coordinator.snapshot.value
+            val failure = assertIs<ConnectionState.Failed>(
+                snapshot.connectionStates.getValue(broken.key()),
+            ).failure
+            assertEquals(
+                ConnectionFailureMessage.Generated(
+                    ConnectionFailureMessageKind.PROFILE_PREPARATION_FAILED,
+                ),
+                failure.message,
+            )
+            assertTrue(
+                snapshot.issues.values.any { issue ->
+                    issue.kind == SessionCoordinatorIssueKind.CONNECTION_SETUP &&
+                        issue.connection == broken.key()
+                },
+            )
+        } finally {
+            coordinator.shutdown()
+        }
     }
 
     @Test

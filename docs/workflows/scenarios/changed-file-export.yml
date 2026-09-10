@@ -1,0 +1,38 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
+id: changed-file-export
+title: Inspect and save a changed file
+summary: Export one provider-reported workspace file through Android's document picker.
+status: verified
+order: 5
+goal: Retrieve a changed file without granting broad storage access or following unsafe paths.
+preconditions:
+  - The selected session reports a changed regular file inside its workspace.
+  - The connection is online and supports checked file access.
+automatic:
+  - Agent Relay normalizes the relative path and rejects traversal or symlink escapes.
+  - It records size, modification time, and SHA-256 before streaming bounded chunks.
+  - Failure or cancellation triggers best-effort removal of a partial destination.
+attention:
+  - Verify the safe relative name and availability message.
+  - Choose the destination in Android's system document picker.
+  - Confirm the completed row reports source verification.
+recovery:
+  - Reconnect before saving when the provider is offline.
+  - Retry from a new destination when the source changed during export.
+  - Treat deleted and unavailable rows as history, not downloadable files.
+verified_test: com.example.agentrelay.ui.main.UsageJourneyTest#capturesVerifiedJourneys
+steps:
+  - id: changed-files
+    title: Review the changed-file shelf
+    action: Open the selected session and inspect its Changed files section.
+    expected: The safe path, change type, and checked-copy availability are visible.
+    screenshot: changed-files.png
+    alt: Agent Relay changed-file shelf showing a safe synthetic workspace-relative report path.
+  - id: export-complete
+    title: Confirm the checked copy
+    action: Select Save copy, choose a destination, and wait for verification.
+    expected: The row reports a completed verified export and allows another copy.
+    screenshot: export-complete.png
+    alt: Agent Relay changed-file row reporting completion of a verified synthetic file export.

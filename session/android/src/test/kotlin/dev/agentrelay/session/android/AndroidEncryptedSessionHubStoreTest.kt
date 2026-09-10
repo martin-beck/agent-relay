@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.session.android
 
 import dev.agentrelay.connection.api.ConnectionProfileId
@@ -11,7 +16,11 @@ import dev.agentrelay.provider.api.AgentSessionId
 import dev.agentrelay.provider.api.AgentSessionState
 import dev.agentrelay.provider.api.AgentTranscriptRole
 import dev.agentrelay.session.api.CachedTranscriptEntry
+import dev.agentrelay.session.api.CommandOutboxState
+import dev.agentrelay.session.api.DurableCommand
 import dev.agentrelay.session.api.SessionActivity
+import dev.agentrelay.session.api.SessionActivitySummary
+import dev.agentrelay.session.api.SessionActivitySummaryKind
 import dev.agentrelay.session.api.SessionActivityType
 import dev.agentrelay.session.api.SessionActionRequest
 import dev.agentrelay.session.api.SessionActionRisk
@@ -24,6 +33,8 @@ import dev.agentrelay.session.api.SessionLocator
 import dev.agentrelay.session.api.SessionNotificationPriority
 import dev.agentrelay.session.api.SessionObservation
 import dev.agentrelay.session.api.SessionPreferences
+import dev.agentrelay.session.api.SessionPresentationText
+import dev.agentrelay.session.api.SessionPresentationTextKind
 import dev.agentrelay.session.api.SessionQuestion
 import dev.agentrelay.session.api.SessionQuestionOption
 import dev.agentrelay.session.api.SessionRecord
@@ -32,6 +43,7 @@ import dev.agentrelay.storage.android.SecureStoreCorruptException
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonArray
@@ -53,6 +65,30 @@ class AndroidEncryptedSessionHubStoreTest {
         assertTrue(documents.lastWriteReference?.all { it == 0.toByte() } == true)
         assertEquals(expected, store.load())
         assertTrue(documents.lastReadReference?.all { it == 0.toByte() } == true)
+    }
+
+    @Test
+    fun durableCommandOutboxRoundTripsAcrossEncryptedDocument() = runTest {
+        val documents = InMemoryDocuments()
+        val store = AndroidEncryptedSessionHubStore(documents)
+        val expected = completeSnapshot().copy(
+            commandOutbox = mapOf(
+                ssh to listOf(
+                    DurableCommand(
+                        id = "command-one",
+                        payload = "run tests",
+                        createdAtEpochMillis = 42L,
+                        state = CommandOutboxState.UNKNOWN_DELIVERY,
+                    ),
+                ),
+            ),
+        )
+
+        store.save(expected)
+
+        assertEquals(expected, store.load())
+        val document = Json.parseToJsonElement(documents.storedText()).jsonObject
+        assertTrue(document.getValue("commandOutbox").jsonArray.isNotEmpty())
     }
 
     @Test
@@ -81,7 +117,7 @@ class AndroidEncryptedSessionHubStoreTest {
         val valid = Json.parseToJsonElement(documents.storedText()).jsonObject
 
         documents.replace(
-            JsonObject(valid + ("formatVersion" to JsonPrimitive(2))).toString().encodeToByteArray(),
+            JsonObject(valid + ("formatVersion" to JsonPrimitive(3))).toString().encodeToByteArray(),
         )
         assertFailsWith<SecureStoreCorruptException> {
             store.load()
@@ -106,11 +142,16 @@ class AndroidEncryptedSessionHubStoreTest {
         val valid = Json.parseToJsonElement(documents.storedText()).jsonObject
         val legacyActivities = JsonArray(
             valid.getValue("activities").jsonArray.map { element ->
-                JsonObject(element.jsonObject - "actionRequestId")
+                JsonObject(
+                    element.jsonObject -
+                        setOf("actionRequestId", "summaryKind", "summaryArgument"),
+                )
             },
         )
         val legacy = JsonObject(
-            (valid - "actionRequests" - "artifacts") + ("activities" to legacyActivities),
+            (valid - "actionRequests" - "artifacts") +
+                ("formatVersion" to JsonPrimitive(1)) +
+                ("activities" to legacyActivities),
         )
         documents.replace(legacy.toString().encodeToByteArray())
 
@@ -118,7 +159,149 @@ class AndroidEncryptedSessionHubStoreTest {
 
         assertTrue(restored.actionRequests.isEmpty())
         assertTrue(restored.artifacts.isEmpty())
-        assertEquals(null, restored.activities.single().actionRequestId)
+        val activity = restored.activities.single()
+        assertEquals(null, activity.actionRequestId)
+        assertEquals(
+            SessionActivitySummary.Verbatim("Command approval required"),
+            activity.summary,
+        )
+    }
+
+    @Test
+    fun generatedSummaryRoundTripsWithoutPersistingFallbackCopy() = runTest {
+        val documents = InMemoryDocuments()
+        val store = AndroidEncryptedSessionHubStore(documents)
+        val generated = SessionActivity(
+            id = "reconnected:workstation",
+            locator = ssh,
+            type = SessionActivityType.RECONNECTED,
+            summary = SessionActivitySummary.Generated(
+                SessionActivitySummaryKind.CONNECTION_RECONNECTED,
+                "Workstation",
+            ),
+            eventAnchorId = "reconnect-event",
+            occurredAtEpochMillis = 40,
+        )
+        val expected = completeSnapshot().copy(activities = listOf(generated))
+
+        store.save(expected)
+
+        val document = Json.parseToJsonElement(documents.storedText()).jsonObject
+        assertEquals(JsonPrimitive(2), document.getValue("formatVersion"))
+        val storedActivity = document.getValue("activities").jsonArray.single().jsonObject
+        assertEquals(JsonNull, storedActivity.getValue("summary"))
+        assertEquals(
+            JsonPrimitive("CONNECTION_RECONNECTED"),
+            storedActivity.getValue("summaryKind"),
+        )
+        assertEquals(JsonPrimitive("Workstation"), storedActivity.getValue("summaryArgument"))
+        assertEquals(expected, store.load())
+    }
+
+    @Test
+    fun generatedActionAndQuestionTextRoundTripsWithoutFallbackCopy() = runTest {
+        val documents = InMemoryDocuments()
+        val store = AndroidEncryptedSessionHubStore(documents)
+        val baseline = completeSnapshot()
+        val baselineAction = baseline.actionRequests.single()
+        val generatedAction = baselineAction.copy(
+            title = SessionPresentationText.Generated(
+                SessionPresentationTextKind.ACTION_REVIEW_REQUIRED,
+            ),
+            questions = baselineAction.questions.map { question ->
+                question.copy(
+                    prompt = SessionPresentationText.Generated(
+                        SessionPresentationTextKind.AGENT_QUESTION,
+                    ),
+                )
+            },
+        )
+        val expected = baseline.copy(actionRequests = listOf(generatedAction))
+
+        store.save(expected)
+
+        val document = Json.parseToJsonElement(documents.storedText()).jsonObject
+        val storedAction = document.getValue("actionRequests").jsonArray.single().jsonObject
+        assertEquals(JsonNull, storedAction.getValue("title"))
+        assertEquals(
+            JsonPrimitive("ACTION_REVIEW_REQUIRED"),
+            storedAction.getValue("titleKind"),
+        )
+        val storedQuestion = storedAction.getValue("questions").jsonArray.single().jsonObject
+        assertEquals(JsonNull, storedQuestion.getValue("prompt"))
+        assertEquals(JsonPrimitive("AGENT_QUESTION"), storedQuestion.getValue("promptKind"))
+        assertEquals(expected, store.load())
+    }
+
+    @Test
+    fun legacyVersionOneActionTextLoadsAsVerbatim() = runTest {
+        val documents = InMemoryDocuments()
+        val store = AndroidEncryptedSessionHubStore(documents)
+        val expected = completeSnapshot()
+        store.save(expected)
+        val valid = Json.parseToJsonElement(documents.storedText()).jsonObject
+        val legacyActions = JsonArray(
+            valid.getValue("actionRequests").jsonArray.map { actionElement ->
+                val action = actionElement.jsonObject
+                val legacyQuestions = JsonArray(
+                    action.getValue("questions").jsonArray.map { questionElement ->
+                        JsonObject(questionElement.jsonObject - "promptKind")
+                    },
+                )
+                JsonObject((action - "titleKind") + ("questions" to legacyQuestions))
+            },
+        )
+        val legacy = JsonObject(
+            valid +
+                ("formatVersion" to JsonPrimitive(1)) +
+                ("actionRequests" to legacyActions),
+        )
+        documents.replace(legacy.toString().encodeToByteArray())
+
+        assertEquals(expected, store.load())
+    }
+
+    @Test
+    fun contradictoryActionPresentationShapeFailsClosed() = runTest {
+        val documents = InMemoryDocuments()
+        val store = AndroidEncryptedSessionHubStore(documents)
+        store.save(completeSnapshot())
+        val valid = Json.parseToJsonElement(documents.storedText()).jsonObject
+        val invalidActions = JsonArray(
+            valid.getValue("actionRequests").jsonArray.map { actionElement ->
+                JsonObject(
+                    actionElement.jsonObject +
+                        ("titleKind" to JsonPrimitive("ACTION_REVIEW_REQUIRED")),
+                )
+            },
+        )
+        documents.replace(
+            JsonObject(valid + ("actionRequests" to invalidActions)).toString().encodeToByteArray(),
+        )
+
+        assertFailsWith<SecureStoreCorruptException> {
+            store.load()
+        }
+    }
+
+    @Test
+    fun contradictoryActivitySummaryShapeFailsClosed() = runTest {
+        val documents = InMemoryDocuments()
+        val store = AndroidEncryptedSessionHubStore(documents)
+        store.save(completeSnapshot())
+        val valid = Json.parseToJsonElement(documents.storedText()).jsonObject
+        val invalidActivities = JsonArray(
+            valid.getValue("activities").jsonArray.map { element ->
+                JsonObject(element.jsonObject + ("summaryArgument" to JsonPrimitive("unexpected")))
+            },
+        )
+        documents.replace(
+            JsonObject(valid + ("activities" to invalidActivities)).toString().encodeToByteArray(),
+        )
+
+        assertFailsWith<SecureStoreCorruptException> {
+            store.load()
+        }
     }
 
     private class InMemoryDocuments(initial: ByteArray? = null) : SecureDocumentStore {
@@ -204,7 +387,7 @@ class AndroidEncryptedSessionHubStoreTest {
                     id = "approval:remote-thread:one",
                     locator = ssh,
                     type = SessionActivityType.APPROVAL_REQUIRED,
-                    summary = "Command approval required",
+                    summary = SessionActivitySummary.Verbatim("Command approval required"),
                     eventAnchorId = "event-one",
                     actionRequestId = "action-one",
                     occurredAtEpochMillis = 30L,
@@ -240,7 +423,7 @@ class AndroidEncryptedSessionHubStoreTest {
                     locator = ssh,
                     turnId = "turn-one",
                     type = AgentApprovalType.COMMAND,
-                    title = "Remove generated output",
+                    title = SessionPresentationText.Verbatim("Remove generated output"),
                     description = "Clean the generated output before rebuilding",
                     command = "rm -rf /workspace/project/build",
                     workingDirectory = "/workspace/project",
@@ -249,7 +432,7 @@ class AndroidEncryptedSessionHubStoreTest {
                             id = "question-scope",
                             providerQuestionId = "scope",
                             header = "Scope",
-                            prompt = "Apply once or for this session?",
+                            prompt = SessionPresentationText.Verbatim("Apply once or for this session?"),
                             options = listOf(
                                 SessionQuestionOption("once", "Only this command"),
                                 SessionQuestionOption("session", "Similar commands this session"),

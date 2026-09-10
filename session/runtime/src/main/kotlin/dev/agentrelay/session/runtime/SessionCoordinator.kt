@@ -1,9 +1,16 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.session.runtime
 
 import dev.agentrelay.connection.api.ConnectionChallengeId
 import dev.agentrelay.connection.api.ConnectionDisconnectReason
 import dev.agentrelay.connection.api.ConnectionFailure
 import dev.agentrelay.connection.api.ConnectionFailureCategory
+import dev.agentrelay.connection.api.ConnectionFailureMessage
+import dev.agentrelay.connection.api.ConnectionFailureMessageKind
 import dev.agentrelay.connection.api.ConnectionIdentityDecision
 import dev.agentrelay.connection.api.ConnectionProfileSummary
 import dev.agentrelay.connection.api.ConnectionProviderRegistry
@@ -80,7 +87,7 @@ class SessionCoordinator(
                             kind = SessionCoordinatorIssueKind.PROFILE_DISCOVERY,
                             connection = null,
                             agentProviderId = null,
-                            actionableMessage = descriptor.displayName + " profiles could not be loaded",
+                            connectionProviderLabel = descriptor.displayName.take(256),
                             recoverable = true,
                             occurredAtEpochMillis = now(),
                         )
@@ -402,7 +409,9 @@ class SessionCoordinator(
         val failure = ConnectionFailure(
             category = ConnectionFailureCategory.CONFIGURATION,
             code = "CONNECTION_SETUP_FAILED",
-            actionableMessage = "Connection profile could not be prepared",
+            message = ConnectionFailureMessage.Generated(
+                ConnectionFailureMessageKind.PROFILE_PREPARATION_FAILED,
+            ),
             recoverable = true,
         )
         stateMutex.withLock {
@@ -415,7 +424,7 @@ class SessionCoordinator(
                         kind = SessionCoordinatorIssueKind.CONNECTION_SETUP,
                         connection = key,
                         agentProviderId = null,
-                        actionableMessage = "Connection " + profile.label.take(256) + " could not be prepared",
+                        connectionLabel = profile.label.take(256),
                         recoverable = true,
                         occurredAtEpochMillis = now(),
                     )

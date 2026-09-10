@@ -1,3 +1,6 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
 name: Android verification
 
 on:
@@ -17,8 +20,11 @@ concurrency:
 jobs:
   verify:
     name: Quality, test, lint, and build
-    runs-on: ubuntu-latest
-    timeout-minutes: 35
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, linux, x64, agent-relay-build-ci]
+    timeout-minutes: 60
 
     steps:
       - name: Check out source
@@ -30,40 +36,163 @@ jobs:
         uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
         with:
           version: "0.12.8"
-          enable-cache: true
-          cache-dependency-glob: uv.lock
-
-      - name: Restore repository-check environments
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cache/pre-commit
-          key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
+          enable-cache: false
 
       - name: Install repository-check runner
-        run: uv sync --locked --only-group quality
+        run: uv sync --locked --only-group quality --only-group docs
+
+      - name: Install pinned shell quality tools
+        run: |
+          tool_root="${RUNNER_TEMP}/agent-relay-shell-quality"
+          SHELL_QUALITY_TOOL_ROOT="$tool_root" scripts/ci/install_shell_quality_tools.sh
+          printf 'SHELL_QUALITY_TOOL_ROOT=%s\n' "$tool_root" >> "$GITHUB_ENV"
+
+      - name: Install pinned Vale
+        shell: bash
+        env:
+          VALE_ARCHIVE_SHA256: c8f9d6c8055442bc7e9c121b2498e6f0e3fb670f4665e6ee577f1897f7665cf6
+          VALE_VERSION: 3.19.0
+        run: |
+          vale_archive="${RUNNER_TEMP}/vale.tar.gz"
+          vale_dir="${RUNNER_TEMP}/vale-${VALE_VERSION}"
+          vale_base="https://github.com/errata-ai/vale/releases/download"
+          vale_name="vale_${VALE_VERSION}_Linux_64-bit.tar.gz"
+          vale_url="${vale_base}/v${VALE_VERSION}/${vale_name}"
+          curl --fail --location --retry 3 --show-error \
+            --output "${vale_archive}" "${vale_url}"
+          printf '%s  %s\n' "${VALE_ARCHIVE_SHA256}" "${vale_archive}" \
+            | sha256sum --check --strict
+          mkdir -p "${vale_dir}/bin"
+          tar --extract --gzip --file "${vale_archive}" \
+            --directory "${vale_dir}/bin" vale
+          echo "${vale_dir}/bin" >> "${GITHUB_PATH}"
+
+      - name: Verify Huawei and MIT source headers
+        run: uv run python scripts/ci/verify_source_headers.py
 
       - name: Check every tracked source and document format
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GIT_CONFIG_COUNT: 1
+          GIT_CONFIG_KEY_0: credential.https://github.com.helper
+          GIT_CONFIG_VALUE_0: >-
+            !f() { echo username=x-access-token; echo password="$GITHUB_TOKEN"; }; f
         run: uv run pre-commit run --all-files --show-diff-on-failure
+
+      - name: Record complexity reports
+        run: |
+          mkdir -p build/reports/quality
+          uv run radon cc scripts/ci scripts/docs --show-complexity --average --total-average \
+            --json --output-file build/reports/quality/radon-complexity.json
+          uv run radon mi scripts/ci scripts/docs --show \
+            --json --output-file build/reports/quality/radon-maintainability.json
+          uv run lizard --CCN 20 --xml --output_file build/reports/quality/lizard.xml .
+
+      - name: Verify cross-language assurance contract
+        run: uv run python scripts/ci/verify_language_assurance.py
+
+      - name: Install pinned OSV-Scanner
+        shell: bash
+        run: |
+          osv_version="$(jq --raw-output .version config/osv-scanner-release.json)"
+          osv_url="$(jq --raw-output .linux_amd64_url config/osv-scanner-release.json)"
+          osv_sha256="$(jq --raw-output .linux_amd64_sha256 config/osv-scanner-release.json)"
+          osv_bin="${RUNNER_TEMP}/osv-scanner-${osv_version}"
+          curl --fail --location --retry 3 --show-error --output "${osv_bin}" "${osv_url}"
+          printf '%s  %s\n' "${osv_sha256}" "${osv_bin}" | sha256sum --check --strict
+          chmod 0755 "${osv_bin}"
+          echo "OSV_SCANNER_BIN=${osv_bin}" >> "${GITHUB_ENV}"
+
+      - name: Scan locked dependencies for known vulnerabilities
+        shell: bash
+        run: |
+          lock_args=(--lockfile uv.lock)
+          while IFS= read -r lockfile; do
+            if [[ "${lockfile##*/}" == "gradle.lockfile" ]]; then
+              lock_args+=(--lockfile "${lockfile}")
+            fi
+          done < config/dependency-lockfiles.txt
+          mkdir -p build/reports/quality
+          set +e
+          "${OSV_SCANNER_BIN}" scan source \
+            --no-resolve \
+            --format json \
+            --output-file build/reports/quality/osv-scanner-unfiltered.json \
+            "${lock_args[@]}"
+          unfiltered_status=$?
+          set -e
+          if (( unfiltered_status > 1 )); then
+            exit "${unfiltered_status}"
+          fi
+          uv run python scripts/ci/verify_dependency_integrity.py \
+            --osv-results build/reports/quality/osv-scanner-unfiltered.json
+          "${OSV_SCANNER_BIN}" scan source \
+            --config config/osv-scanner.toml \
+            --no-resolve \
+            --format sarif \
+            --output-file build/reports/quality/osv-scanner.sarif \
+            "${lock_args[@]}"
 
       - name: Set up JDK 17
         uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
         with:
           distribution: temurin
           java-version: "17"
+          # The self-hosted temp path is too long for setup-java's GPG agent sockets.
+          # setup-java still verifies the vendor-published SHA-256 checksum.
+          verify-signature: false
 
       - name: Validate wrapper and set up Gradle
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          cache-provider: basic
+          cache-disabled: true
 
-      - name: Test CI support scripts
-        run: python3 -m unittest discover -s scripts/ci -p 'test_*.py'
+      - name: Verify build logic
+        run: ./gradlew -p buildSrc check --stacktrace
+
+      - name: Verify formal proof obligations and evidence manifest
+        run: |
+          uv run python scripts/ci/verify_formal_evidence.py
+          uv run python scripts/ci/verify_formal_models.py
+          uv run python scripts/ci/verify_workflow_concurrency.py
+          uv run python scripts/ci/verify_counterexamples.py
+          uv run python scripts/ci/verify_fm_agent_pilot.py
+
+      - name: Install pinned Android native toolchain
+        run: bash scripts/ci/install_android_native_toolchain.sh
+
+      - name: Verify pinned offline speech runtime
+        run: ./gradlew :speech:sherpa:buildSherpaAndroidRuntime --stacktrace
+
+      - name: Test repository support scripts
+        run: |
+          mkdir -p build/reports/quality
+          uv run pytest --cov-report=xml:build/reports/quality/python-coverage.xml
+
+      - name: Verify and build app workflow guide
+        run: |
+          uv run python scripts/docs/render_workflows.py --check
+          uv run python scripts/docs/verify_workflows.py
+          uv run python scripts/docs/verify_evidence_reproducibility.py \
+            --source-revision "${GITHUB_SHA}"
+          uv run python scripts/docs/verify_evidence_reproducibility.py --check
+          uv run python scripts/docs/verify_usability_review.py
+          uv run python scripts/docs/verify_satisfaction_assurance.py
+          uv run python scripts/docs/render_satisfaction.py --check
+          uv run python scripts/docs/generate_extension_api.py --check
+          uv run python scripts/docs/generate_api_reference.py --check
+          uv run python scripts/docs/verify_extension_examples.py
+          uv run python scripts/docs/verify_documentation_authority.py
+          uv run python scripts/docs/verify_documentation_privacy.py
+          uv run python scripts/docs/render_status.py --check
+          uv run python scripts/docs/verify_documentation_consistency.py
+          uv run mkdocs build --strict
 
       - name: Run static quality checks
         run: ./gradlew spotlessCheck detekt buildHealth --stacktrace
 
       - name: Run tests and verify coverage
-        run: ./gradlew test koverXmlReport koverHtmlReport koverVerify --stacktrace
+        run: ./gradlew test koverXmlReport koverHtmlReport koverVerify checkKotlinAbi --stacktrace
 
       - name: Run Android lint
         run: ./gradlew lintDebug --stacktrace
@@ -71,8 +200,47 @@ jobs:
       - name: Assemble debug application
         run: ./gradlew assembleDebug --stacktrace
 
+      - name: Prepare explicitly enabled Sonar analysis
+        if: >-
+          ${{ vars.SONAR_PROJECT_KEY != '' &&
+              vars.SONAR_HOST_URL != '' &&
+              github.actor != 'dependabot[bot]' &&
+              (github.event_name != 'pull_request' ||
+              github.event.pull_request.head.repo.full_name == github.repository) }}
+        shell: bash
+        env:
+          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+          SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
+          SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          if [[ -z "${SONAR_TOKEN}" ]]; then
+            echo "::error::SONAR_TOKEN must be configured when Sonar analysis is enabled."
+            exit 1
+          fi
+          {
+            printf 'sonar.host.url=%s\n' "${SONAR_HOST_URL}"
+            printf 'sonar.projectKey=%s\n' "${SONAR_PROJECT_KEY}"
+            if [[ -n "${SONAR_ORGANIZATION}" ]]; then
+              printf 'sonar.organization=%s\n' "${SONAR_ORGANIZATION}"
+            fi
+          } >> sonar-project.properties
+
+      - name: Run explicitly enabled Sonar analysis
+        if: >-
+          ${{ vars.SONAR_PROJECT_KEY != '' &&
+              vars.SONAR_HOST_URL != '' &&
+              github.actor != 'dependabot[bot]' &&
+              (github.event_name != 'pull_request' ||
+              github.event.pull_request.head.repo.full_name == github.repository) }}
+        uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f # v8.2.1
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
       - name: Upload test results
+        id: upload_test_results
         if: ${{ !cancelled() }}
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: unit-test-results-${{ github.run_attempt }}
@@ -81,7 +249,9 @@ jobs:
           retention-days: 14
 
       - name: Upload quality reports
+        id: upload_quality_reports
         if: ${{ !cancelled() }}
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: quality-reports-${{ github.run_attempt }}
@@ -90,11 +260,15 @@ jobs:
             build/reports/detekt/**
             build/reports/kover/**
             build/reports/problems/**
+            build/reports/quality/**
+            buildSrc/build/reports/**
           if-no-files-found: ignore
           retention-days: 14
 
       - name: Upload lint reports
+        id: upload_lint_reports
         if: ${{ !cancelled() }}
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: lint-reports-${{ github.run_attempt }}
@@ -106,7 +280,9 @@ jobs:
           retention-days: 14
 
       - name: Upload debug APK
+        id: upload_debug_apk
         if: ${{ success() }}
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: agent-relay-debug-${{ github.sha }}
@@ -114,9 +290,25 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+      - name: Report unavailable optional artifacts
+        if: >-
+          ${{ always() &&
+              (steps.upload_test_results.outcome == 'failure' ||
+              steps.upload_quality_reports.outcome == 'failure' ||
+              steps.upload_lint_reports.outcome == 'failure' ||
+              steps.upload_debug_apk.outcome == 'failure') }}
+        run: |
+          echo "::warning::One or more optional artifact uploads failed;" \
+            "inspect the upload step for the original error."
+          echo "Optional build evidence could not be uploaded; authoritative checks above retain their result." \
+            >> "$GITHUB_STEP_SUMMARY"
+
   visual-regression:
     name: Visual regression
-    runs-on: ubuntu-latest
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, linux, x64, agent-relay-build-ci]
     timeout-minutes: 20
 
     steps:
@@ -130,17 +322,22 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
+          # The self-hosted temp path is too long for setup-java's GPG agent sockets.
+          # setup-java still verifies the vendor-published SHA-256 checksum.
+          verify-signature: false
 
       - name: Validate wrapper and set up Gradle
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          cache-provider: basic
+          cache-disabled: true
 
       - name: Verify deterministic UI images
         run: ./gradlew :app:verifyRoborazziDebug --stacktrace
 
       - name: Upload visual-regression evidence
+        id: upload_visual_evidence
         if: ${{ !cancelled() }}
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: visual-regression-${{ github.run_attempt }}
@@ -152,3 +349,11 @@ jobs:
             app/src/test/screenshots/**/*_compare.png
           if-no-files-found: ignore
           retention-days: 14
+
+      - name: Report unavailable optional visual artifacts
+        if: ${{ always() && steps.upload_visual_evidence.outcome == 'failure' }}
+        run: |
+          echo "::warning::Optional visual evidence upload failed;" \
+            "inspect the upload step for the original error."
+          echo "Optional visual evidence could not be uploaded; deterministic image verification retains its result." \
+            >> "$GITHUB_STEP_SUMMARY"

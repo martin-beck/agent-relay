@@ -100,11 +100,36 @@ an unreferenced identity.
 with the profile's currently saved authentication and configured jump route,
 then runs a bounded POSIX command that:
 
-- rejects symbolic-link SSH directories and authorized-key files;
-- applies directory mode 0700 and file mode 0600;
+- rejects a symbolic-link or non-directory SSH path and a symbolic-link or
+  nonregular authorized-key path;
+- creates the authorized-key file only when absent, applies directory mode 0700
+  and file mode 0600, and avoids touching an existing file unconditionally;
+- serializes cooperating Agent Relay installers with a PID-owned atomic
+  directory lock, safely reclaims a well-formed lock whose owner exited or an
+  unchanged ownerless or malformed lock after a bounded wait, retries a
+  generation-safe acquisition/recovery handshake within eight total waits,
+  pins a foreign stale recovery marker by hardlink while revalidating its exact
+  inode and contents, and removes only its own evidence when interrupted;
 - strips comments and sends only the validated algorithm and Base64 public-key
-  blob; and
-- appends nothing when the exact key is already present.
+  blob;
+- preserves an existing active key line byte-for-byte only when the key occupies
+  the direct key fields or follows a recognized OpenSSH options field, while
+  preserving restrictive options, trailing comments, and CRLF bytes;
+- treats a cert-authority entry as CA trust rather than plain-key authorization,
+  so that entry does not prevent installation of the usable normalized key;
+- fails closed on an ambiguous or malformed options prefix, including
+  principals without cert-authority;
+- appends the normalized key only when no active line matches; and
+- fails before changing the SSH files when a POSIX awk is unavailable or cannot
+  execute.
+The service maps inspection failure, interruption, and busy or unsafe locks to
+separate stable, redacted, actionable failures instead of reporting all remote
+exits as permission problems.
+
+These portable shell checks do not claim atomic no-follow protection against a
+malicious process running as the same remote account. POSIX shell cannot exclude
+a hard-linked file or every path replacement between validation and use. A
+same-account process can already modify that account's authorized_keys file.
 
 **Test key-only login** creates a fresh route in which only the destination
 authentication is replaced with the app-managed key. Jump profiles retain their
@@ -203,7 +228,12 @@ Coverage includes:
   resolution, per-hop trust, and referenced-jump deletion protection;
 - password replacement, imported-key/passphrase transitions, Android agent-key
   creation and deletion, identifier collision retries, and failed-save cleanup;
-- constrained idempotent public-key installation, destination-only key override,
+- executable legal-position, restrictive-option, CRLF, cert-authority,
+  principals, unrelated-comment, malformed-prefix, stale-lock, absent-file,
+  metadata no-op, symbolic-link, non-directory, FIFO, permission, ownerless and
+  malformed lock recovery, lock-wait and acquisition interruption, concurrent
+  install, idempotence, and missing-tool public-key installation cases;
+- destination-only key override,
   jump credential retention, and heartbeat-backed passwordless probes;
 - exponential backoff, retry exhaustion, non-retried authentication failure,
   independent sessions, and background suspension/resumption;

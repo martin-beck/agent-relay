@@ -1,0 +1,38 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
+id: session-switching-steering
+title: Switch sessions and steer active work
+summary: Move between concurrent sessions without losing drafts, unread state, or active-turn controls.
+status: verified
+order: 4
+goal: Continue the right task while preserving context across several agent sessions.
+preconditions:
+  - At least two synthetic sessions exist on one or more connections.
+  - One session is running and advertises steering and interruption.
+automatic:
+  - Agent Relay keeps unread and attention counts with the complete session identity.
+  - Each session keeps its own encrypted draft and cursor selection.
+  - Available controls follow the provider-reported session state and capabilities.
+attention:
+  - Choose the session whose title, connection, provider, and workspace match the task.
+  - Use Steer active turn only when new guidance should affect the running turn.
+  - Use Interrupt turn when stopping the active operation is necessary.
+recovery:
+  - Return to the session list when the selected task is wrong.
+  - A failed send keeps the draft and shows a sanitized error.
+  - Resume only when the provider advertises durable resume support.
+verified_test: com.example.agentrelay.ui.main.UsageJourneyTest#capturesVerifiedJourneys
+steps:
+  - id: session-list
+    title: Compare active sessions
+    action: Review session titles, providers, unread counts, and attention badges.
+    expected: The list makes the task that needs attention distinguishable from quiet work.
+    screenshot: session-list.png
+    alt: Agent Relay session list with two synthetic tasks, unread badges, and different agent states.
+  - id: running-session
+    title: Steer the selected running session
+    action: Open the running task, edit its preserved draft, and review the available controls.
+    expected: Steer active turn and Interrupt turn are available for the capable provider.
+    screenshot: running-session.png
+    alt: Running synthetic agent session with a preserved draft, steer button, and interrupt button.

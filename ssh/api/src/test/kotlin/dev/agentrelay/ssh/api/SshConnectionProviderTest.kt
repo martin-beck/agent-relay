@@ -1,9 +1,21 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.ssh.api
 
 import dev.agentrelay.connection.api.ConnectionCapability
+import dev.agentrelay.connection.api.ConnectionProfileEditor
 import dev.agentrelay.connection.api.ConnectionIdentityDecision
 import dev.agentrelay.connection.api.ConnectionIdentityDisposition
 import dev.agentrelay.connection.api.ConnectionProfileId
+import dev.agentrelay.connection.api.ConnectionProfileManager
+import dev.agentrelay.connection.api.ConnectionProfileOperationId
+import dev.agentrelay.connection.api.ConnectionProfileOperationResult
+import dev.agentrelay.connection.api.ConnectionProfileSaveResult
+import dev.agentrelay.connection.api.ConnectionProfileUpdate
+import dev.agentrelay.connection.api.ConnectionProviderRegistry
 import dev.agentrelay.connection.api.ConnectionState
 import dev.agentrelay.provider.api.RemoteAgentRuntime
 import dev.agentrelay.provider.api.RemoteCommand
@@ -75,6 +87,63 @@ class SshConnectionProviderTest {
         assertEquals(SshConnectionProvider.ID, connection.diagnosticSnapshot().providerId)
         connection.disconnect()
         provider.close()
+    }
+
+    @Test
+    fun profileOperationsReachTheDelegateThroughTheProviderRegistry() = runTest {
+        val hostKeys = InMemorySshHostKeyStore()
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val manager = SshConnectionManager(
+            profileStore = ProfileStore,
+            credentialStore = CredentialStore,
+            hostKeyStore = hostKeys,
+            connector = TrustConnector(HOST_KEY),
+            heartbeatInterval = 1.hours,
+            dispatcher = dispatcher,
+            sleeper = SshDelay { awaitCancellation() },
+        )
+        val delegate = RecordingProfileManager()
+        val registry = ConnectionProviderRegistry(
+            listOf(
+                SshConnectionProvider(
+                    profileStore = ProfileStore,
+                    manager = manager,
+                    delegateProfileManager = delegate,
+                    stateDispatcher = dispatcher,
+                ),
+            ),
+        )
+        val profileId = ConnectionProfileId(PROFILE.id.value)
+        val operationId = ConnectionProfileOperationId("verify-key-login")
+
+        registry.use {
+            val result = it.profileManager(SshConnectionProvider.ID)
+                .performOperation(profileId, operationId)
+
+            assertEquals("delegated", result.notice)
+            assertEquals(profileId to operationId, delegate.lastOperation)
+        }
+    }
+
+    private class RecordingProfileManager : ConnectionProfileManager {
+        var lastOperation: Pair<ConnectionProfileId, ConnectionProfileOperationId>? = null
+            private set
+
+        override suspend fun editor(profileId: ConnectionProfileId?): ConnectionProfileEditor =
+            error("Not needed")
+
+        override suspend fun save(update: ConnectionProfileUpdate): ConnectionProfileSaveResult =
+            error("Not needed")
+
+        override suspend fun delete(profileId: ConnectionProfileId) = error("Not needed")
+
+        override suspend fun performOperation(
+            profileId: ConnectionProfileId,
+            operationId: ConnectionProfileOperationId,
+        ): ConnectionProfileOperationResult {
+            lastOperation = profileId to operationId
+            return ConnectionProfileOperationResult("delegated")
+        }
     }
 
     private object ProfileStore : SshProfileStore {

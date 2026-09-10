@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.session.api
 
 import dev.agentrelay.connection.api.ConnectionProfileId
@@ -94,6 +99,50 @@ data class SessionDraft(
     }
 }
 
+data class SessionRecoveryState(
+    val scrollPosition: Int = 0,
+    val eventCursor: String? = null,
+    val pendingCommandIds: Set<String> = emptySet(),
+) {
+    init {
+        require(scrollPosition >= 0) { "Recovery scroll position must not be negative" }
+        eventCursor?.let { requireBounded(it, "Recovery event cursor", MAX_ID_CHARS) }
+        require(pendingCommandIds.size <= MAX_PENDING_COMMANDS) {
+            "Too many pending recovery commands"
+        }
+        pendingCommandIds.forEach { requireBounded(it, "Pending command id", MAX_ID_CHARS) }
+    }
+}
+
+enum class CommandOutboxState {
+    QUEUED,
+    IN_FLIGHT,
+    UNKNOWN_DELIVERY,
+    ACKNOWLEDGED,
+    CONFLICT,
+}
+
+enum class CommandEnqueueResult {
+    ENQUEUED,
+    DUPLICATE,
+    CONFLICT,
+}
+
+/** A command intent retained until its delivery outcome is known. */
+data class DurableCommand(
+    val id: String,
+    val payload: String,
+    val createdAtEpochMillis: Long,
+    val state: CommandOutboxState = CommandOutboxState.QUEUED,
+) {
+    init {
+        requireBounded(id, "Command id", MAX_ID_CHARS)
+        require(payload.isNotEmpty()) { "Command payload must not be empty" }
+        require(payload.length <= MAX_COMMAND_CHARS) { "Command payload is too large" }
+        require(createdAtEpochMillis >= 0L) { "Command creation time must not be negative" }
+    }
+}
+
 enum class SessionActivityType {
     NEW_OUTPUT,
     APPROVAL_REQUIRED,
@@ -103,11 +152,48 @@ enum class SessionActivityType {
     TURN_COMPLETED,
 }
 
+enum class SessionActivitySummaryKind {
+    NEW_AGENT_OUTPUT,
+    TOOL_FAILED,
+    NAMED_TOOL_FAILED,
+    AGENT_TURN_COMPLETED,
+    AGENT_TURN_FAILED,
+    AGENT_PROVIDER_FAILED,
+    AGENT_QUESTION_REQUIRES_ANSWER,
+    AGENT_APPROVAL_REQUIRED,
+    CONNECTION_RECONNECTED,
+}
+
+sealed interface SessionActivitySummary {
+    data class Generated(
+        val kind: SessionActivitySummaryKind,
+        val argument: String? = null,
+    ) : SessionActivitySummary {
+        init {
+            if (kind.requiresArgument) {
+                requireBounded(requireNotNull(argument), "Activity summary argument", MAX_LABEL_CHARS)
+            } else {
+                require(argument == null) { "Activity summary kind does not accept an argument" }
+            }
+        }
+    }
+
+    data class Verbatim(val text: String) : SessionActivitySummary {
+        init {
+            requireBounded(text, "Activity summary", MAX_ACTIVITY_CHARS)
+        }
+    }
+}
+
+private val SessionActivitySummaryKind.requiresArgument: Boolean
+    get() = this == SessionActivitySummaryKind.NAMED_TOOL_FAILED ||
+        this == SessionActivitySummaryKind.CONNECTION_RECONNECTED
+
 data class SessionActivity(
     val id: String,
     val locator: SessionLocator,
     val type: SessionActivityType,
-    val summary: String,
+    val summary: SessionActivitySummary,
     val eventAnchorId: String?,
     val actionRequestId: String? = null,
     val occurredAtEpochMillis: Long,
@@ -116,7 +202,6 @@ data class SessionActivity(
 ) {
     init {
         requireBounded(id, "Activity id", MAX_ID_CHARS)
-        requireBounded(summary, "Activity summary", MAX_ACTIVITY_CHARS)
         eventAnchorId?.let { requireBounded(it, "Event anchor id", MAX_ID_CHARS) }
         actionRequestId?.let { requireBounded(it, "Action request id", MAX_ID_CHARS) }
         require(occurredAtEpochMillis >= 0L)
@@ -144,6 +229,21 @@ enum class SessionActionRisk {
     EXTERNAL_TOOL,
 }
 
+enum class SessionPresentationTextKind {
+    ACTION_REVIEW_REQUIRED,
+    AGENT_QUESTION,
+}
+
+sealed interface SessionPresentationText {
+    data class Generated(val kind: SessionPresentationTextKind) : SessionPresentationText
+
+    data class Verbatim(val text: String) : SessionPresentationText {
+        init {
+            requireBounded(text, "Presentation text", MAX_DESCRIPTION_CHARS)
+        }
+    }
+}
+
 data class SessionQuestionOption(
     val label: String,
     val description: String? = null,
@@ -158,7 +258,7 @@ data class SessionQuestion(
     val id: String,
     val providerQuestionId: String,
     val header: String?,
-    val prompt: String,
+    val prompt: SessionPresentationText,
     val options: List<SessionQuestionOption> = emptyList(),
     val allowsOther: Boolean = true,
     val allowsMultiple: Boolean = false,
@@ -167,7 +267,12 @@ data class SessionQuestion(
         requireBounded(id, "Question id", MAX_ID_CHARS)
         requireBounded(providerQuestionId, "Provider question id", MAX_PROVIDER_REQUEST_ID_CHARS)
         header?.let { requireBounded(it, "Question header", MAX_LABEL_CHARS) }
-        requireBounded(prompt, "Question prompt", MAX_DESCRIPTION_CHARS)
+        requirePresentationText(
+            prompt,
+            "Question prompt",
+            MAX_DESCRIPTION_CHARS,
+            SessionPresentationTextKind.AGENT_QUESTION,
+        )
         require(options.size <= MAX_QUESTION_OPTIONS) { "Question has too many options" }
         require(options.distinctBy { it.label }.size == options.size) {
             "Question contains duplicate options"
@@ -184,7 +289,7 @@ data class SessionActionRequest(
     val locator: SessionLocator,
     val turnId: String?,
     val type: AgentApprovalType,
-    val title: String,
+    val title: SessionPresentationText,
     val description: String?,
     val command: String?,
     val workingDirectory: String?,
@@ -202,7 +307,12 @@ data class SessionActionRequest(
         requireBounded(id, "Action request id", MAX_ID_CHARS)
         requireBounded(providerApprovalId, "Provider approval id", MAX_PROVIDER_REQUEST_ID_CHARS)
         turnId?.let { requireBounded(it, "Action turn id", MAX_ID_CHARS) }
-        requireBounded(title, "Action title", MAX_TITLE_CHARS)
+        requirePresentationText(
+            title,
+            "Action title",
+            MAX_TITLE_CHARS,
+            SessionPresentationTextKind.ACTION_REVIEW_REQUIRED,
+        )
         description?.let { requireBounded(it, "Action description", MAX_DESCRIPTION_CHARS) }
         command?.let { requireBounded(it, "Action command", MAX_COMMAND_CHARS) }
         workingDirectory?.let { requireBounded(it, "Action working directory", MAX_PATH_CHARS) }
@@ -325,6 +435,9 @@ data class SessionHubSnapshot(
     val transcripts: Map<SessionLocator, List<CachedTranscriptEntry>> = emptyMap(),
     val actionRequests: List<SessionActionRequest> = emptyList(),
     val artifacts: List<SessionArtifact> = emptyList(),
+    val activeSession: SessionLocator? = null,
+    val recovery: Map<SessionLocator, SessionRecoveryState> = emptyMap(),
+    val commandOutbox: Map<SessionLocator, List<DurableCommand>> = emptyMap(),
 ) {
     init {
         require(sessions.distinctBy { it.locator }.size == sessions.size) {
@@ -340,6 +453,17 @@ data class SessionHubSnapshot(
             "Session snapshot contains duplicate artifact identities"
         }
         val locators = sessions.mapTo(mutableSetOf()) { it.locator }
+        require(activeSession == null || activeSession in locators) {
+            "Active session references an unknown session"
+        }
+        require(recovery.keys.all(locators::contains)) { "Recovery references an unknown session" }
+        require(commandOutbox.keys.all(locators::contains)) { "Command outbox references an unknown session" }
+        require(commandOutbox.values.all { commands -> commands.distinctBy(DurableCommand::id).size == commands.size }) {
+            "Command outbox contains duplicate command identities"
+        }
+        require(commandOutbox.values.all { commands -> commands.size <= MAX_PENDING_COMMANDS }) {
+            "Too many durable commands"
+        }
         require(drafts.keys.all(locators::contains)) { "A draft references an unknown session" }
         require(activities.all { it.locator in locators }) { "Activity references an unknown session" }
         require(transcripts.keys.all(locators::contains)) { "A transcript references an unknown session" }
@@ -359,6 +483,9 @@ data class SessionHubSnapshot(
     }
 
     fun session(locator: SessionLocator): SessionRecord? = sessions.firstOrNull { it.locator == locator }
+
+    fun command(locator: SessionLocator, id: String): DurableCommand? =
+        commandOutbox[locator].orEmpty().firstOrNull { it.id == id }
 
     fun actionRequest(locator: SessionLocator, id: String): SessionActionRequest? =
         actionRequests.firstOrNull { it.locator == locator && it.id == id }
@@ -482,12 +609,29 @@ internal fun SessionHubSnapshot.normalized(policy: SessionRetentionPolicy): Sess
         transcripts = normalizedTranscripts,
         actionRequests = retainedActionRequests,
         artifacts = retainedArtifacts,
+        activeSession = activeSession?.takeIf(retainedLocators::contains),
+        recovery = recovery.filterKeys(retainedLocators::contains),
+        commandOutbox = commandOutbox.filterKeys(retainedLocators::contains),
     )
 }
 
 private fun requireBounded(value: String, label: String, maximum: Int) {
     require(value.isNotBlank()) { "$label must not be blank" }
     require(value.length <= maximum) { "$label is too large" }
+}
+
+private fun requirePresentationText(
+    value: SessionPresentationText,
+    label: String,
+    maximum: Int,
+    generatedKind: SessionPresentationTextKind,
+) {
+    when (value) {
+        is SessionPresentationText.Verbatim -> requireBounded(value.text, label, maximum)
+        is SessionPresentationText.Generated -> require(value.kind == generatedKind) {
+            "$label has the wrong generated kind"
+        }
+    }
 }
 
 private fun requireArtifactRelativePath(value: String, label: String) {
@@ -536,6 +680,7 @@ private const val MAX_PROVIDER_REQUEST_ID_CHARS = 4_096
 private const val MAX_METADATA_ENTRIES = 64
 private const val MAX_METADATA_KEY_CHARS = 256
 private const val MAX_METADATA_VALUE_CHARS = 4_096
+internal const val MAX_PENDING_COMMANDS = 64
 
 private val APPROVING_DECISIONS = setOf(
     AgentApprovalDecision.APPROVE_ONCE,

@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.ssh.api
 
 import dev.agentrelay.connection.api.ConnectionProfileEditor
@@ -130,7 +135,7 @@ class SshConnectionProfileManager(
                         id = PUBLIC_KEY,
                         label = "App-managed public key",
                         type = ConnectionProfileFieldType.READ_ONLY,
-                        value = publicKey?.openSshPublicKey ?: "Created after saving this profile.",
+                        value = publicKey?.openSshPublicKey.orEmpty(),
                         supportingText =
                         "The private key stays in Android Keystore. Install this public key on the remote account.",
                         maxLength = MAX_PUBLIC_KEY_CHARS,
@@ -701,21 +706,19 @@ class SshConnectionProfileManager(
         throw ConnectionProfileValidationException(mapOf(field to message))
 
     companion object {
-        internal val LABEL = ConnectionProfileFieldId("profile-label")
-        internal val HOST = ConnectionProfileFieldId("host-name")
-        internal val PORT = ConnectionProfileFieldId("host-port")
-        internal val USERNAME = ConnectionProfileFieldId("username")
-        internal val JUMP_HOST = ConnectionProfileFieldId("jump-host")
-        internal val AUTHENTICATION = ConnectionProfileFieldId("authentication")
-        internal val PASSWORD = ConnectionProfileFieldId("password")
-        internal val PRIVATE_KEY = ConnectionProfileFieldId("private-key")
-        internal val PASSPHRASE_MODE = ConnectionProfileFieldId("passphrase-mode")
-        internal val PASSPHRASE = ConnectionProfileFieldId("passphrase")
-        internal val PUBLIC_KEY = ConnectionProfileFieldId("public-key")
-        internal val INSTALL_PUBLIC_KEY =
-            ConnectionProfileOperationId("install-public-key")
-        internal val VERIFY_KEY_LOGIN =
-            ConnectionProfileOperationId("verify-key-login")
+        internal val LABEL = SshConnectionProfileSchema.PROFILE_LABEL
+        internal val HOST = SshConnectionProfileSchema.HOST
+        internal val PORT = SshConnectionProfileSchema.PORT
+        internal val USERNAME = SshConnectionProfileSchema.USERNAME
+        internal val JUMP_HOST = SshConnectionProfileSchema.JUMP_HOST
+        internal val AUTHENTICATION = SshConnectionProfileSchema.AUTHENTICATION
+        internal val PASSWORD = SshConnectionProfileSchema.PASSWORD
+        internal val PRIVATE_KEY = SshConnectionProfileSchema.PRIVATE_KEY
+        internal val PASSPHRASE_MODE = SshConnectionProfileSchema.PASSPHRASE_MODE
+        internal val PASSPHRASE = SshConnectionProfileSchema.PASSPHRASE
+        internal val PUBLIC_KEY = SshConnectionProfileSchema.PUBLIC_KEY
+        internal val INSTALL_PUBLIC_KEY = SshConnectionProfileSchema.INSTALL_PUBLIC_KEY
+        internal val VERIFY_KEY_LOGIN = SshConnectionProfileSchema.VERIFY_KEY_LOGIN
 
         private val EDITABLE_FIELDS = setOf(
             LABEL,
@@ -729,13 +732,15 @@ class SshConnectionProfileManager(
             PASSPHRASE_MODE,
             PASSPHRASE,
         )
-        private const val AUTH_PASSWORD = "password"
-        private const val AUTH_IMPORTED_KEY = "imported-key"
-        private const val AUTH_AGENT_BACKED = "agent-backed"
-        private const val NO_JUMP_HOST = "direct"
-        private const val PASSPHRASE_KEEP = "keep"
-        private const val PASSPHRASE_NONE = "none"
-        private const val PASSPHRASE_REPLACE = "replace"
+        private const val AUTH_PASSWORD = SshConnectionProfileSchema.AUTHENTICATION_PASSWORD
+        private const val AUTH_IMPORTED_KEY =
+            SshConnectionProfileSchema.AUTHENTICATION_IMPORTED_KEY
+        private const val AUTH_AGENT_BACKED =
+            SshConnectionProfileSchema.AUTHENTICATION_AGENT_BACKED
+        private const val NO_JUMP_HOST = SshConnectionProfileSchema.DIRECT_CONNECTION
+        private const val PASSPHRASE_KEEP = SshConnectionProfileSchema.PASSPHRASE_KEEP
+        private const val PASSPHRASE_NONE = SshConnectionProfileSchema.PASSPHRASE_NONE
+        private const val PASSPHRASE_REPLACE = SshConnectionProfileSchema.PASSPHRASE_REPLACE
         private const val MAX_PASSWORD_CHARS = 16 * 1024
         private const val MAX_PRIVATE_KEY_CHARS = 4 * 1024 * 1024
         private const val MAX_PUBLIC_KEY_CHARS = 16 * 1024

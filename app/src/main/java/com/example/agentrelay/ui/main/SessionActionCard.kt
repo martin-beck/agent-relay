@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package com.example.agentrelay.ui.main
 
 import androidx.compose.foundation.layout.Arrangement
@@ -9,6 +14,9 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -31,16 +39,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.example.agentrelay.R
 import dev.agentrelay.provider.api.AgentApprovalDecision
+import dev.agentrelay.session.api.SessionActionRisk
 import dev.agentrelay.session.api.SessionActionState
 
 internal typealias SessionActionResponder = (
@@ -120,7 +136,7 @@ private fun ActionCardContent(
         ActionHeader(action)
         ActionContext(action)
         action.command?.let { ActionCommand(it) }
-        ActionRisks(action.riskLabels)
+        ActionRisks(action.risks)
         if (action.questions.isNotEmpty() && action.state == SessionActionState.PENDING) {
             HorizontalDivider()
             ActionQuestions(
@@ -145,12 +161,12 @@ private fun ActionHeader(action: SessionActionUiModel) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
             Text(
-                text = action.typeLabel,
+                text = action.type.localizedLabel(),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.primary,
             )
             Text(
-                text = action.title,
+                text = action.title.resolve(),
                 modifier = Modifier.semantics { heading() },
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
@@ -164,21 +180,38 @@ private fun ActionHeader(action: SessionActionUiModel) {
 
 @Composable
 private fun ActionContext(action: SessionActionUiModel) {
-    LabeledValue("Connection provider", action.connectionProviderName)
     LabeledValue(
-        "Connection",
-        action.connectionLabel + "  -  " + action.connectionTarget,
+        stringResource(R.string.session_action_context_connection_provider),
+        action.connectionProviderName,
     )
-    LabeledValue("Agent provider", action.agentProviderLabel)
-    LabeledValue("Session", action.sessionTitle)
-    action.scope?.let { LabeledValue("Workspace or file scope", it) }
-    action.description?.let { LabeledValue("Provider rationale", it) }
+    LabeledValue(
+        stringResource(R.string.session_action_context_connection),
+        stringResource(
+            R.string.connection_identity_context,
+            action.connectionLabel,
+            action.connectionTarget,
+        ),
+    )
+    LabeledValue(
+        stringResource(R.string.session_action_context_agent_provider),
+        action.agentProviderLabel,
+    )
+    LabeledValue(
+        stringResource(R.string.session_action_context_session),
+        action.sessionTitle.resolve(),
+    )
+    action.scope?.let {
+        LabeledValue(stringResource(R.string.session_action_context_scope), it)
+    }
+    action.description?.let {
+        LabeledValue(stringResource(R.string.session_action_context_rationale), it)
+    }
 }
 
 @Composable
 private fun ActionCommand(command: String) {
     Text(
-        text = "Command",
+        text = stringResource(R.string.session_action_command),
         style = MaterialTheme.typography.labelMedium,
         fontWeight = FontWeight.SemiBold,
     )
@@ -193,7 +226,7 @@ private fun ActionCommand(command: String) {
 }
 
 @Composable
-private fun ActionRisks(risks: List<String>) {
+private fun ActionRisks(risks: List<SessionActionRisk>) {
     if (risks.isEmpty()) {
         return
     }
@@ -202,13 +235,16 @@ private fun ActionRisks(risks: List<String>) {
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         Text(
-            text = "Additional confirmation required",
+            text = stringResource(R.string.session_action_additional_confirmation),
             style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.error,
         )
         risks.forEach { risk ->
-            Text("Risk: " + risk, style = MaterialTheme.typography.bodyMedium)
+            Text(
+                stringResource(R.string.session_hub_risk, risk.localizedLabel()),
+                style = MaterialTheme.typography.bodyMedium,
+            )
         }
     }
 }
@@ -219,12 +255,14 @@ private fun ActionQuestions(
     answerState: ActionAnswerState,
     enabled: Boolean,
 ) {
+    val focusManager = LocalFocusManager.current
     questions.forEach { question ->
         QuestionInput(
             question = question,
             selected = answerState.selectedOptions[question.stableKey].orEmpty(),
             otherAnswer = answerState.otherAnswers[question.stableKey].orEmpty(),
             enabled = enabled,
+            focusManager = focusManager,
             onSelectedChanged = { answerState.select(question, it) },
             onOtherChanged = { answerState.changeOther(question, it) },
         )
@@ -247,13 +285,17 @@ private fun ActionControls(
 
 @Composable
 private fun ResolvedActionStatus(action: SessionActionUiModel) {
+    val decision = action.completedDecision?.localizedLabel()
     Text(
-        text = buildString {
-            append("Resolved")
-            action.completedDecisionLabel?.let { append(" with ").append(it.lowercase()) }
-            if (action.additionalConfirmationGiven) {
-                append(". Additional confirmation recorded")
-            }
+        text = when {
+            decision != null && action.additionalConfirmationGiven -> stringResource(
+                R.string.session_action_resolved_with_confirmation,
+                decision,
+            )
+            decision != null -> stringResource(R.string.session_action_resolved_with, decision)
+            action.additionalConfirmationGiven ->
+                stringResource(R.string.session_action_resolved_confirmation)
+            else -> stringResource(R.string.session_action_resolved)
         },
         modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
         style = MaterialTheme.typography.labelLarge,
@@ -263,8 +305,7 @@ private fun ResolvedActionStatus(action: SessionActionUiModel) {
 @Composable
 private fun DeliveringActionStatus() {
     Text(
-        text = "Response delivery is awaiting provider confirmation. Do not retry this request; " +
-            "wait for a newly identified provider request or verify its state independently.",
+        text = stringResource(R.string.session_action_delivery_pending),
         modifier = Modifier.semantics { liveRegion = LiveRegionMode.Assertive },
         style = MaterialTheme.typography.bodyMedium,
     )
@@ -283,6 +324,7 @@ private fun DecisionButtons(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         action.decisions.forEach { decision ->
+            val decisionLabel = decision.decision.localizedLabel()
             val enabled = decision.decision != AgentApprovalDecision.SUBMIT ||
                 everyQuestionAnswered
             val response = PendingActionResponse(
@@ -295,11 +337,11 @@ private fun DecisionButtons(
             )
             if (decision.isPositive) {
                 Button(onClick = { onDecision(response) }, enabled = enabled) {
-                    Text(decision.label)
+                    Text(decisionLabel)
                 }
             } else {
                 OutlinedButton(onClick = { onDecision(response) }, enabled = enabled) {
-                    Text(decision.label)
+                    Text(decisionLabel)
                 }
             }
         }
@@ -316,7 +358,7 @@ private fun SensitiveActionConfirmation(
     AlertDialog(
         modifier = Modifier.testTag("action-confirmation-dialog"),
         onDismissRequest = onDismiss,
-        title = { Text("Confirm this sensitive action") },
+        title = { Text(stringResource(R.string.session_action_confirm_title)) },
         text = {
             Column(
                 modifier = Modifier
@@ -324,29 +366,40 @@ private fun SensitiveActionConfirmation(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
+                Text(stringResource(R.string.session_action_confirm_guidance))
                 Text(
-                    "Review the exact provider, connection, workspace, rationale, and command " +
-                        "before continuing.",
-                )
-                Text(
-                    action.connectionProviderName + "  -  " + action.connectionLabel +
-                        "  -  " + action.agentProviderLabel,
+                    stringResource(
+                        R.string.session_hub_action_context,
+                        action.connectionProviderName,
+                        action.connectionLabel,
+                        action.agentProviderLabel,
+                    ),
                     fontWeight = FontWeight.SemiBold,
                 )
-                action.scope?.let { Text("Scope: " + it) }
-                action.riskLabels.forEach { Text("Risk: " + it) }
+                action.scope?.let {
+                    Text(stringResource(R.string.session_action_scope_value, it))
+                }
+                action.risks.forEach {
+                    Text(stringResource(R.string.session_hub_risk, it.localizedLabel()))
+                }
                 action.command?.let { ConfirmedCommand(it) }
-                Text("Decision: " + response.decision.label)
+                val decisionLabel = response.decision.decision.localizedLabel()
+                Text(stringResource(R.string.session_action_decision_value, decisionLabel))
             }
         },
         confirmButton = {
             Button(onClick = onConfirm) {
-                Text("Confirm " + response.decision.label.lowercase())
+                Text(
+                    stringResource(
+                        R.string.session_action_confirm_decision,
+                        response.decision.decision.localizedLabel(),
+                    ),
+                )
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Go back")
+                Text(stringResource(R.string.action_go_back))
             }
         },
     )
@@ -355,7 +408,7 @@ private fun SensitiveActionConfirmation(
 @Composable
 private fun ConfirmedCommand(command: String) {
     Text(
-        text = "Command",
+        text = stringResource(R.string.session_action_command),
         style = MaterialTheme.typography.labelMedium,
         fontWeight = FontWeight.SemiBold,
     )
@@ -373,6 +426,7 @@ private fun QuestionInput(
     selected: Set<String>,
     otherAnswer: String,
     enabled: Boolean,
+    focusManager: FocusManager,
     onSelectedChanged: (Set<String>) -> Unit,
     onOtherChanged: (String) -> Unit,
 ) {
@@ -384,14 +438,26 @@ private fun QuestionInput(
                 fontWeight = FontWeight.SemiBold,
             )
         }
-        Text(question.prompt, style = MaterialTheme.typography.bodyMedium)
+        Text(question.prompt.resolve(), style = MaterialTheme.typography.bodyMedium)
         if (question.options.isNotEmpty()) {
             FlowRow(
+                modifier = if (question.allowsMultiple) {
+                    Modifier
+                } else {
+                    Modifier.selectableGroup()
+                },
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 question.options.forEach { option ->
                     FilterChip(
+                        modifier = Modifier.semantics {
+                            role = if (question.allowsMultiple) {
+                                Role.Checkbox
+                            } else {
+                                Role.RadioButton
+                            }
+                        },
                         selected = option.label in selected,
                         onClick = {
                             onSelectedChanged(
@@ -423,9 +489,19 @@ private fun QuestionInput(
                     .fillMaxWidth()
                     .testTag("question-other-" + question.stableKey),
                 enabled = enabled,
-                label = { Text("Other answer") },
+                label = { Text(stringResource(R.string.session_action_other_answer)) },
                 singleLine = !question.allowsMultiple,
                 maxLines = if (question.allowsMultiple) 4 else 1,
+                keyboardOptions = KeyboardOptions(
+                    imeAction = if (question.allowsMultiple) {
+                        ImeAction.Default
+                    } else {
+                        ImeAction.Done
+                    },
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = { focusManager.clearFocus() },
+                ),
             )
         }
     }
@@ -477,7 +553,7 @@ private fun Set<String>.toggle(value: String): Set<String> =
 @Composable
 private fun SessionActionUiModel.containerColor() = when {
     state == SessionActionState.RESOLVED -> MaterialTheme.colorScheme.surfaceContainerLow
-    riskLabels.isNotEmpty() -> MaterialTheme.colorScheme.errorContainer
+    risks.isNotEmpty() -> MaterialTheme.colorScheme.errorContainer
     else -> MaterialTheme.colorScheme.tertiaryContainer
 }
 

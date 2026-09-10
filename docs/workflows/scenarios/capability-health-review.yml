@@ -1,0 +1,37 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
+id: capability-health-review
+title: Review capability health and drift
+summary: See which provider capabilities remain available and what changed since the last check.
+status: planned
+order: 15
+goal: Understand degraded capability support before starting an action that depends on it.
+preconditions:
+  - A provider advertises a capability set and a synthetic probe result.
+  - The app has a prior capability snapshot for comparison.
+automatic:
+  - Agent Relay compares advertised and observed capabilities by provider and session.
+  - Drift is attached to the stable provider and connection identities.
+  - Unsupported actions are hidden or explained before provider I/O.
+attention:
+  - Review a capability change before relying on the affected action.
+  - Decide whether to refresh, reconnect, or continue with a reduced capability set.
+  - Confirm any provider-side permission change outside the app.
+recovery:
+  - Probe failures become stale or unknown rather than false healthy results.
+  - A refresh uses bounded requests and does not replay a user command.
+  - The prior snapshot remains available for comparison after a failed refresh.
+steps:
+  - id: open-capabilities
+    title: Open capability health
+    action: Select a provider with a synthetic capability drift event.
+    expected: The app separates advertised, observed, stale, and unknown capabilities.
+  - id: inspect-drift
+    title: Inspect one changed capability
+    action: Open the changed capability details.
+    expected: The provider, scope, last probe, and safe alternatives are visible.
+  - id: choose-refresh
+    title: Choose a bounded refresh
+    action: Request a capability refresh or continue with the known safe subset.
+    expected: The app reports the refresh result without starting an unrelated command.

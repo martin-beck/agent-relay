@@ -1,6 +1,28 @@
 # Using Agent Relay
 
+For goal-oriented walkthroughs with reviewed emulator screenshots, start with
+the [app workflow catalogue](WORKFLOWS.md). It labels implemented journeys as
+verified and future interaction contracts as planned.
+
+## Journey contracts
+
+The versioned interaction-cost contracts in
+[`contracts/user-journeys-v1.json`](contracts/user-journeys-v1.json) define starting
+contexts, outcomes, recovery expectations, and dimension-specific budgets for representative
+user journeys. They intentionally avoid a universal click-depth rule: navigation, scrolling,
+entry, confirmation, waiting, and error costs are measured separately so critical recovery
+journeys can receive tighter budgets than first-time setup for the right reason.
+
 ## Current application behavior
+
+## Visual-density contracts
+
+The versioned [`contracts/visual-density-v1.json`](contracts/visual-density-v1.json)
+fixture defines observable layout budgets for compact, expanded, and large-text states.
+Rules measure hierarchy, content groups, scroll burden, clipping, overlap, truncation,
+primary-action visibility, touch targets, and text size independently. They are adaptive
+per viewport and text scale; no single pixel count or crowding score replaces screenshot,
+semantics, and human usability evidence.
 
 The debug application now launches an adaptive session hub backed by the real
 application graph. It can:
@@ -20,7 +42,7 @@ application graph. It can:
 - show provider probes, connection state, sanitized errors, unread counts, and
   actionable activity counts;
 - list sessions discovered through Aider, Claude Code, Cline, Codex, Continue,
-  and OpenCode provider adapters;
+  OpenCode, and OpenDesk provider adapters;
 - start a session from a ready agent endpoint with provider-neutral launch
   options;
 - render cached user messages, agent commentary, final answers, plans,
@@ -71,6 +93,11 @@ state.
   sessions that are not currently loaded.
 - **Interrupt turn** is available only for a supported running or approval-waiting
   state.
+
+With an external keyboard, Tab moves focus out of the multiline message field
+toward the available turn controls, Shift+Tab moves backward, and Enter
+activates the focused button. Tab navigation does not add a tab character to the
+draft.
 
 Draft text and cursor selection remain attached to the complete local-or-remote
 session identity. Editing is reflected immediately and written securely after a
@@ -168,9 +195,23 @@ To enable and verify passwordless login:
 2. Reopen **Edit profile** and select **Install public key**. Review the
    confirmation explaining that the remote account will be changed.
 3. Confirm the action. Agent Relay uses the saved authentication and jump route,
-   rejects symbolic-link SSH files, creates the SSH directory with restrictive
-   permissions, and adds only the normalized public key when it is not already
-   present. It never sends or exports the private key.
+   rejects unsafe SSH-directory and authorized-key path types, creates missing
+   files with restrictive permissions, and serializes cooperating Agent Relay
+   installers with a PID-owned lock. It recovers a lock when its owner has exited
+   or when an ownerless or malformed lock remains unchanged across a bounded wait.
+   It recognizes the normalized algorithm and key blob only in legal key
+   positions, including after recognized restrictive options. Existing matching
+   restrictions, comments, and CRLF line endings are left unchanged. A
+   cert-authority entry trusts the key as a certificate authority; it does not
+   prevent Agent Relay from adding the same public key in a form that authorizes
+   plain-key login. A
+   principals option without cert-authority, an ambiguous options prefix, or a
+   failing POSIX awk stops the operation. The app reports inspection,
+   interruption, and busy-lock failures separately without exposing host data.
+   The normalized key is added only when absent, and an existing file is not
+   touched unconditionally. Portable shell cannot exclude malicious hard-link or
+   path-replacement races by another process with the same account authority.
+   Agent Relay never sends or exports the private key.
 4. Select **Test key-only login**. This makes a new connection whose destination
    uses only the app-managed key, while jump hosts continue using their own
    saved authentication, then executes a real heartbeat.

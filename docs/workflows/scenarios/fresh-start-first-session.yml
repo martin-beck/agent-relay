@@ -1,0 +1,50 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
+id: fresh-start-first-session
+title: Fresh start to first usable session
+summary: Configure a secure host, review its identity, and open the first agent session.
+status: verified
+order: 1
+goal: Reach a usable agent session from a clean app state without exposing credentials.
+preconditions:
+  - The app was installed with no saved remote connection profile.
+  - A synthetic Secure Shell fixture is available to the emulator.
+automatic:
+  - Agent Relay stores profile secrets in app-private encrypted storage.
+  - The connection provider probes supported agents after identity trust is established.
+  - A successful launch selects the new provider-scoped session.
+attention:
+  - Enter the intended host account and choose its authentication method.
+  - Compare the first-use host fingerprint with a trusted source before accepting it.
+  - Confirm the working directory and optional model before starting the session.
+recovery:
+  - Correct highlighted fields without re-entering secrets that are already stored.
+  - Reject an unexpected fingerprint and verify the host outside Agent Relay.
+  - Reconnect the profile before retrying agent discovery or session launch.
+verified_test: com.example.agentrelay.ui.main.UsageJourneyTest#capturesVerifiedJourneys
+steps:
+  - id: open-fresh-hub
+    title: Open a fresh session hub
+    action: Launch Agent Relay with no saved remote profile.
+    expected: The hub explains that no sessions exist and offers Secure Shell profile creation.
+    screenshot: open-fresh-hub.png
+    alt: Agent Relay fresh session hub with no remote profiles and an add Secure Shell profile action.
+  - id: add-secure-shell-profile
+    title: Enter the host profile
+    action: Select Add Secure Shell profile and enter the synthetic account details.
+    expected: The editor shows host, port, username, jump-host, and authentication controls.
+    screenshot: add-secure-shell-profile.png
+    alt: Secure Shell profile editor showing synthetic host fields and password authentication.
+  - id: review-first-host-identity
+    title: Review the first host identity
+    action: Save and connect, then compare the displayed Ed25519 fingerprint.
+    expected: The connection stays blocked until the identity is trusted or rejected.
+    screenshot: review-first-host-identity.png
+    alt: Secure Shell connection card waiting for review of a synthetic first-use host fingerprint.
+  - id: start-first-session
+    title: Open the first usable session
+    action: Trust the verified identity, select the discovered agent, and start its session.
+    expected: A session detail view opens with timeline context and a usable message composer.
+    screenshot: start-first-session.png
+    alt: Agent Relay session detail showing a ready synthetic coding-agent session and message composer.

@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "statusAuthority": "config/capability-status-registry.json",
+  "capabilities": [
+    {
+      "id": "companion.capability-health",
+      "name": "Companion capability health",
+      "maturity": "foundation",
+      "appExposed": false,
+      "supportedSurfaces": ["phone"],
+      "sourceModules": ["provider/api"],
+      "tests": ["provider/api/src/test/kotlin/dev/agentrelay/provider/api/CapabilityHealthModelsTest.kt"],
+      "workflowEvidence": ["docs/workflows/capability-health-review.md"],
+      "arReferences": ["AR-1801"],
+      "limitations": ["Provider probes are not yet exposed in the Android UI."],
+      "evidenceAgeDays": 0
+    },
+    {
+      "id": "companion.extension-projection",
+      "name": "Phone and Wear extension projection",
+      "maturity": "foundation",
+      "appExposed": false,
+      "supportedSurfaces": ["phone", "wear-emulator"],
+      "sourceModules": ["companion/api"],
+      "tests": ["companion/api/src/test/kotlin/dev/agentrelay/companion/api/ExtensionProjectionModelsTest.kt"],
+      "workflowEvidence": [],
+      "arReferences": ["AR-1397"],
+      "limitations": ["Transport and Android UI integration remain publication follow-up work."],
+      "evidenceAgeDays": 0
+    },
+    {
+      "id": "session.execution-engine",
+      "name": "Framework-neutral execution engine contract",
+      "maturity": "foundation",
+      "appExposed": false,
+      "supportedSurfaces": ["daemon"],
+      "sourceModules": ["session/api"],
+      "tests": ["session/api/src/test/kotlin/dev/agentrelay/session/api/ExecutionEngineModelsTest.kt"],
+      "workflowEvidence": [],
+      "arReferences": ["AR-1630"],
+      "limitations": ["Adapters and scheduling remain separate child tasks."],
+      "evidenceAgeDays": 0
+    }
+  ]
+}

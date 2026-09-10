@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.provider.opencode
 
 import dev.agentrelay.provider.api.RemoteAgentRuntime
@@ -32,6 +37,7 @@ internal class OpenCodeServerClient private constructor(
     private val serverProcess: RemoteDuplexProcess,
     private val port: Int,
     private val password: String,
+    private val providerName: String,
     dispatcher: CoroutineDispatcher,
 ) : OpenCodeClient {
     private val json = Json { ignoreUnknownKeys = true }
@@ -125,14 +131,14 @@ internal class OpenCodeServerClient private constructor(
         )
         check(result.successful) {
             val details = result.standardError.trim().ifEmpty { result.standardOutput.trim() }
-            "OpenCode $method $path failed: $details"
+            "$providerName $method $path failed: $details"
         }
         val output = result.standardOutput.trim()
         return if (output.isEmpty()) JsonNull else json.parseToJsonElement(output)
     }
 
     private fun url(path: String, directory: String?): String {
-        require(path.startsWith("/")) { "OpenCode path must be absolute" }
+        require(path.startsWith("/")) { "$providerName path must be absolute" }
         val query = directory?.let {
             "?directory=" + URLEncoder.encode(it, StandardCharsets.UTF_8)
         }.orEmpty()
@@ -151,7 +157,8 @@ internal class OpenCodeServerClient private constructor(
     companion object {
         suspend fun start(
             runtime: RemoteAgentRuntime,
-            executable: String,
+            executable: ResolvedOpenCodeExecutable,
+            configuration: OpenCodeCompatibleProviderConfiguration,
             dispatcher: CoroutineDispatcher = Dispatchers.IO,
         ): OpenCodeServerClient {
             val portResult = runtime.execute(
@@ -161,30 +168,37 @@ internal class OpenCodeServerClient private constructor(
                 ),
             )
             check(portResult.successful) {
-                "Unable to allocate a loopback port for OpenCode: " + portResult.standardError.trim()
+                "Unable to allocate a loopback port for " + configuration.executableName + ": " +
+                    portResult.standardError.trim()
             }
             val port = checkNotNull(portResult.standardOutput.trim().toIntOrNull()) {
-                "OpenCode port allocator returned invalid output"
+                configuration.executableName + " port allocator returned invalid output"
             }
             val passwordBytes = ByteArray(32).also(SecureRandom()::nextBytes)
             val password = Base64.getUrlEncoder().withoutPadding().encodeToString(passwordBytes)
             val process = runtime.openProcess(
                 RemoteCommand(
-                    program = executable,
-                    arguments = listOf(
-                        "serve",
+                    program = executable.path,
+                    arguments = configuration.serveArguments + listOf(
                         "--hostname",
                         "127.0.0.1",
                         "--port",
                         port.toString(),
                     ),
-                    environment = mapOf(
+                    environment = executable.environment + mapOf(
                         "OPENCODE_SERVER_USERNAME" to "opencode",
                         "OPENCODE_SERVER_PASSWORD" to password,
                     ),
                 ),
             )
-            val client = OpenCodeServerClient(runtime, process, port, password, dispatcher)
+            val client = OpenCodeServerClient(
+                runtime,
+                process,
+                port,
+                password,
+                configuration.executableName,
+                dispatcher,
+            )
             repeat(40) {
                 val healthy = runCatching {
                     client.health().objectOrNull()?.string("healthy") == "true"
@@ -195,7 +209,7 @@ internal class OpenCodeServerClient private constructor(
                 delay(250.milliseconds)
             }
             client.close()
-            error("OpenCode headless server did not become ready on loopback")
+            error(configuration.executableName + " headless server did not become ready on loopback")
         }
 
         private const val PASSWORD_ENV = "AGENT_RELAY_OPENCODE_PASSWORD"

@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package com.example.agentrelay.ui.main
 
 import androidx.compose.foundation.layout.Arrangement
@@ -10,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.AlertDialog
@@ -25,8 +31,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
@@ -34,8 +43,11 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.agentrelay.R
 import com.example.agentrelay.theme.AgentRelayTheme
 import dev.agentrelay.connection.api.ConnectionProfileFieldType
+
+internal const val PROFILE_EDITOR_LIST_TEST_TAG = "profile-editor-list"
 
 @Composable
 internal fun ConnectionProfileEditorDialog(
@@ -45,7 +57,7 @@ internal fun ConnectionProfileEditorDialog(
     when (state) {
         ConnectionProfileEditorUiState.Loading -> AlertDialog(
             onDismissRequest = actions.dismissProfileEditor,
-            title = { Text("Loading connection profile") },
+            title = { Text(stringResource(R.string.profile_editor_loading)) },
             text = {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -57,18 +69,22 @@ internal fun ConnectionProfileEditorDialog(
             confirmButton = {},
             dismissButton = {
                 TextButton(onClick = actions.dismissProfileEditor) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.action_cancel))
                 }
             },
         )
 
         is ConnectionProfileEditorUiState.Editing -> {
-            val confirmedOperation = state.confirmedOperation()
+            val localizedState = state.localizedConnectionProfile()
+            val confirmedOperation = localizedState.confirmedOperation()
             when {
-                state.confirmDelete -> DeleteProfileConfirmation(state, actions)
+                state.confirmDelete -> DeleteProfileConfirmation(localizedState, actions)
                 confirmedOperation != null ->
-                    ProfileOperationConfirmation(state, confirmedOperation, actions)
-                else -> ProfileEditor(state, actions)
+                    ProfileOperationConfirmation(localizedState, confirmedOperation, actions)
+                else -> ProfileEditor(
+                    localizedState,
+                    actions,
+                )
             }
         }
     }
@@ -88,13 +104,14 @@ private fun ProfileEditor(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(max = 560.dp),
+                    .heightIn(max = 560.dp)
+                    .testTag(PROFILE_EDITOR_LIST_TEST_TAG),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 editor.notice?.let { notice ->
                     item(key = "profile-notice") {
                         Text(
-                            text = notice,
+                            text = notice.resolve(),
                             modifier = Modifier.semantics {
                                 liveRegion = LiveRegionMode.Polite
                             },
@@ -106,7 +123,7 @@ private fun ProfileEditor(
                 editor.error?.let { error ->
                     item(key = "profile-error") {
                         Text(
-                            text = error,
+                            text = error.resolve(),
                             modifier = Modifier.semantics {
                                 liveRegion = LiveRegionMode.Assertive
                             },
@@ -142,7 +159,11 @@ private fun ProfileEditor(
                     )
                 }
                 Text(
-                    text = if (editor.activeOperationId == null) "Save" else "Working…",
+                    text = if (editor.activeOperationId == null) {
+                        stringResource(R.string.profile_editor_save)
+                    } else {
+                        stringResource(R.string.profile_editor_working)
+                    },
                     modifier = if (editor.isBusy && editor.activeOperationId == null) {
                         Modifier.padding(start = 8.dp)
                     } else {
@@ -158,14 +179,14 @@ private fun ProfileEditor(
                         onClick = actions.requestProfileDeletion,
                         enabled = !editor.isBusy,
                     ) {
-                        Text("Delete")
+                        Text(stringResource(R.string.action_delete))
                     }
                 }
                 TextButton(
                     onClick = actions.dismissProfileEditor,
                     enabled = !editor.isBusy,
                 ) {
-                    Text("Close")
+                    Text(stringResource(R.string.action_close))
                 }
             }
         },
@@ -182,7 +203,7 @@ private fun ProfileOperations(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
-            text = "Key setup and verification",
+            text = stringResource(R.string.profile_editor_operations_title),
             style = MaterialTheme.typography.titleSmall,
         )
         editor.operations.forEach { operation ->
@@ -212,7 +233,7 @@ private fun ProfileOperations(
                 }
                 Text(
                     text = if (editor.hasUnsavedChanges) {
-                        "Save profile changes before running this action."
+                        stringResource(R.string.profile_editor_save_before_operation)
                     } else {
                         operation.supportingText
                     },
@@ -254,37 +275,55 @@ private fun ProfileField(
         else -> {
             val support = error
                 ?: if (field.hasStoredSecret && field.value.isEmpty()) {
-                    "A secret is stored. Leave this blank to keep it."
+                    stringResource(R.string.profile_editor_stored_secret)
                 } else {
                     field.supportingText
                 }
-            OutlinedTextField(
-                value = field.value,
-                onValueChange = onValueChange,
+            val accessibleLabel = if (field.required) {
+                stringResource(R.string.profile_editor_required, field.label)
+            } else {
+                field.label
+            }
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                enabled = enabled,
-                label = {
-                    Text(if (field.required) "${field.label} (required)" else field.label)
-                },
-                supportingText = support?.let { message -> { Text(message) } },
-                isError = error != null,
-                singleLine = field.type != ConnectionProfileFieldType.MULTILINE_SECRET,
-                minLines = if (field.type == ConnectionProfileFieldType.MULTILINE_SECRET) 5 else 1,
-                visualTransformation = if (field.isSecret) {
-                    PasswordVisualTransformation()
-                } else {
-                    VisualTransformation.None
-                },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = when (field.type) {
-                        ConnectionProfileFieldType.PORT -> KeyboardType.Number
-                        ConnectionProfileFieldType.PASSWORD,
-                        ConnectionProfileFieldType.MULTILINE_SECRET,
-                        -> KeyboardType.Password
-                        else -> KeyboardType.Text
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                Text(
+                    text = accessibleLabel,
+                    color = if (error == null) {
+                        MaterialTheme.colorScheme.onSurface
+                    } else {
+                        MaterialTheme.colorScheme.error
                     },
-                ),
-            )
+                    style = MaterialTheme.typography.labelLarge,
+                )
+                OutlinedTextField(
+                    value = field.value,
+                    onValueChange = onValueChange,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .semantics { contentDescription = accessibleLabel },
+                    enabled = enabled,
+                    supportingText = support?.let { message -> { Text(message) } },
+                    isError = error != null,
+                    singleLine = field.type != ConnectionProfileFieldType.MULTILINE_SECRET,
+                    minLines = if (field.type == ConnectionProfileFieldType.MULTILINE_SECRET) 5 else 1,
+                    visualTransformation = if (field.isSecret) {
+                        PasswordVisualTransformation()
+                    } else {
+                        VisualTransformation.None
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = when (field.type) {
+                            ConnectionProfileFieldType.PORT -> KeyboardType.Number
+                            ConnectionProfileFieldType.PASSWORD,
+                            ConnectionProfileFieldType.MULTILINE_SECRET,
+                            -> KeyboardType.Password
+                            else -> KeyboardType.Text
+                        },
+                    ),
+                )
+            }
         }
     }
 }
@@ -297,11 +336,17 @@ private fun ChoiceField(
     onValueChange: (String) -> Unit,
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .selectableGroup(),
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         Text(
-            text = if (field.required) "${field.label} (required)" else field.label,
+            text = if (field.required) {
+                stringResource(R.string.profile_editor_required, field.label)
+            } else {
+                field.label
+            },
             color = if (error == null) {
                 MaterialTheme.colorScheme.onSurface
             } else {
@@ -372,7 +417,7 @@ private fun ProfileOperationConfirmation(
                 onClick = actions.cancelProfileOperation,
                 enabled = !editor.isBusy,
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
     )
@@ -385,12 +430,9 @@ private fun DeleteProfileConfirmation(
 ) {
     AlertDialog(
         onDismissRequest = actions.cancelProfileDeletion,
-        title = { Text("Delete connection profile?") },
+        title = { Text(stringResource(R.string.profile_editor_delete_title)) },
         text = {
-            Text(
-                "This removes the profile, its stored credentials, and any saved " +
-                    "host identity that is not shared by another profile.",
-            )
+            Text(stringResource(R.string.profile_editor_delete_message))
         },
         confirmButton = {
             Button(
@@ -401,7 +443,7 @@ private fun DeleteProfileConfirmation(
                     contentColor = MaterialTheme.colorScheme.onError,
                 ),
             ) {
-                Text("Delete")
+                Text(stringResource(R.string.action_delete))
             }
         },
         dismissButton = {
@@ -409,7 +451,7 @@ private fun DeleteProfileConfirmation(
                 onClick = actions.cancelProfileDeletion,
                 enabled = !editor.isBusy,
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
     )
@@ -508,7 +550,7 @@ private fun previewConnectionProfileEditor() = ConnectionProfileEditorUiState.Ed
         ),
     ),
     canDelete = true,
-    notice = "Profile saved securely.",
+    notice = UiMessage.Verbatim("Profile saved securely."),
 )
 
 private fun previewProfileActions() = SessionHubActions(

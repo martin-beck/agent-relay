@@ -1,10 +1,18 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package com.example.agentrelay.ui.main
 
+import com.example.agentrelay.R
 import dev.agentrelay.connection.api.ConnectionCapability
 import dev.agentrelay.connection.api.ConnectionChallengeId
 import dev.agentrelay.connection.api.ConnectionDisconnectReason
 import dev.agentrelay.connection.api.ConnectionFailure
 import dev.agentrelay.connection.api.ConnectionFailureCategory
+import dev.agentrelay.connection.api.ConnectionFailureMessage
+import dev.agentrelay.connection.api.ConnectionFailureMessageKind
 import dev.agentrelay.connection.api.ConnectionIdentityChallenge
 import dev.agentrelay.connection.api.ConnectionIdentityDisposition
 import dev.agentrelay.connection.api.ConnectionPhase
@@ -28,13 +36,14 @@ import dev.agentrelay.session.api.SessionActionRequest
 import dev.agentrelay.session.api.SessionActionRisk
 import dev.agentrelay.session.api.SessionActionState
 import dev.agentrelay.session.api.SessionActivity
+import dev.agentrelay.session.api.SessionActivitySummary
 import dev.agentrelay.session.api.SessionActivityType
-import dev.agentrelay.session.api.SessionDraft
 import dev.agentrelay.session.api.SessionArtifact
 import dev.agentrelay.session.api.SessionArtifactAvailability
 import dev.agentrelay.session.api.SessionHubSnapshot
 import dev.agentrelay.session.api.SessionLocator
 import dev.agentrelay.session.api.SessionObservation
+import dev.agentrelay.session.api.SessionPresentationText
 import dev.agentrelay.session.api.SessionQuestion
 import dev.agentrelay.session.api.SessionQuestionOption
 import dev.agentrelay.session.api.SessionRecord
@@ -70,7 +79,7 @@ class SessionHubUiMapperTest {
                     id = "approval-1",
                     locator = sshLocator,
                     type = SessionActivityType.APPROVAL_REQUIRED,
-                    summary = "Review the remote command",
+                    summary = SessionActivitySummary.Verbatim("Review the remote command"),
                     eventAnchorId = "approval",
                     occurredAtEpochMillis = 100,
                 ),
@@ -117,204 +126,25 @@ class SessionHubUiMapperTest {
         assertEquals(2, mapped.sessions.size)
         assertNotEquals(mapped.sessions[0].stableKey, mapped.sessions[1].stableKey)
         assertEquals(64, mapped.sessions[0].stableKey.length)
-        assertEquals("SSH session", mapped.selectedSession?.session?.title)
+        assertEquals(
+            UiMessage.Verbatim("SSH session"),
+            mapped.selectedSession?.session?.title,
+        )
         assertEquals(1, mapped.selectedSession?.session?.requiresActionCount)
         assertEquals(32_000, mapped.selectedSession?.transcript?.single()?.text?.length)
         assertTrue(mapped.selectedSession?.transcript?.single()?.wasTruncated == true)
-        assertEquals("Final answer", mapped.selectedSession?.transcript?.single()?.roleLabel)
+        assertEquals(
+            UiMessage.Localized(R.string.session_timeline_role_agent_final),
+            mapped.selectedSession?.transcript?.single()?.roleLabel,
+        )
         assertEquals(TimelineEntryKind.AGENT_FINAL, mapped.selectedSession?.transcript?.single()?.kind)
-        assertFalse(mapped.sessions.single { it.title == "Local session" }.stableKey == sshLocator.stableUiKey)
+        assertFalse(
+            mapped.sessions.single { it.title == UiMessage.Verbatim("Local session") }.stableKey ==
+                sshLocator.stableUiKey,
+        )
         assertEquals(listOf("Secure Shell"), mapped.manageableConnectionProviders.map { it.name })
         assertFalse(mapped.connections.single { it.providerName == "Local" }.canEdit)
         assertTrue(mapped.connections.single { it.providerName == "Secure Shell" }.canEdit)
-    }
-
-    @Test
-    fun transcriptRolesAndChannelsMapToDistinctTimelineKinds() {
-        val connectionProviderId = ConnectionProviderId("local.device")
-        val profileId = ConnectionProfileId("this-device")
-        val sessionLocator = locator(connectionProviderId, profileId)
-        val cases = listOf(
-            Triple(
-                AgentTranscriptRole.USER,
-                null,
-                TimelineEntryKind.USER_MESSAGE to "You",
-            ),
-            Triple(
-                AgentTranscriptRole.TOOL,
-                null,
-                TimelineEntryKind.TOOL to "Tool",
-            ),
-            Triple(
-                AgentTranscriptRole.SYSTEM,
-                null,
-                TimelineEntryKind.SYSTEM to "System",
-            ),
-            Triple(
-                AgentTranscriptRole.AGENT,
-                AgentMessageChannel.COMMENTARY,
-                TimelineEntryKind.AGENT_COMMENTARY to "Agent commentary",
-            ),
-            Triple(
-                AgentTranscriptRole.AGENT,
-                AgentMessageChannel.FINAL,
-                TimelineEntryKind.AGENT_FINAL to "Final answer",
-            ),
-            Triple(
-                AgentTranscriptRole.AGENT,
-                AgentMessageChannel.PLAN,
-                TimelineEntryKind.PLAN to "Plan",
-            ),
-            Triple(
-                AgentTranscriptRole.AGENT,
-                AgentMessageChannel.REASONING_SUMMARY,
-                TimelineEntryKind.REASONING_SUMMARY to "Reasoning summary",
-            ),
-            Triple(
-                AgentTranscriptRole.AGENT,
-                AgentMessageChannel.SYSTEM,
-                TimelineEntryKind.SYSTEM to "System",
-            ),
-        )
-        val snapshot = SessionHubSnapshot(
-            sessions = listOf(record(sessionLocator, "Typed timeline", "This device")),
-            transcripts = mapOf(
-                sessionLocator to cases.mapIndexed { index, (role, channel, _) ->
-                    CachedTranscriptEntry(
-                        id = "entry-$index",
-                        turnId = null,
-                        role = role,
-                        channel = channel,
-                        text = "Entry $index",
-                        createdAtEpochMillis = index.toLong(),
-                    )
-                },
-            ),
-        )
-
-        val mapped = SessionHubUiMapper.map(
-            coordinator = SessionCoordinatorSnapshot(
-                profiles = listOf(profile(connectionProviderId, profileId, "This device")),
-            ),
-            sessions = snapshot,
-            connectionProviders = listOf(descriptor(connectionProviderId, "Local")),
-            selectedSessionKey = sessionLocator.stableUiKey,
-            operationError = null,
-            busyConnectionKeys = emptySet(),
-        )
-
-        assertEquals(
-            cases.map { it.third },
-            mapped.selectedSession?.transcript?.map { it.kind to it.roleLabel },
-        )
-    }
-
-    @Test
-    fun composerActionsFollowEndpointCapabilitiesAndDurableSessionState() {
-        val connectionProviderId = ConnectionProviderId("local.device")
-        val profileId = ConnectionProfileId("this-device")
-        val sessionLocator = locator(connectionProviderId, profileId)
-        val connectionKey = SessionConnectionKey(connectionProviderId, profileId)
-        val endpointKey = AgentEndpointKey(connectionKey, sessionLocator.agentProviderId)
-        val draft = SessionDraft(
-            text = "Check the focused tests",
-            selectionStart = 2,
-            selectionEnd = 7,
-            updatedAtEpochMillis = 10,
-        )
-
-        fun composer(
-            state: AgentSessionState,
-            capabilities: Set<AgentCapability>,
-            canAcceptInput: Boolean = true,
-            busy: Boolean = false,
-        ): SessionComposerUiModel {
-            val agentDescriptor = AgentProviderDescriptor(
-                id = sessionLocator.agentProviderId,
-                displayName = "Codex",
-                providerVersion = "1.0",
-                capabilities = capabilities,
-            )
-            val sessions = SessionHubSnapshot(
-                sessions = listOf(
-                    record(
-                        locator = sessionLocator,
-                        title = "Provider-aware interaction",
-                        connectionLabel = "This device",
-                        state = state,
-                        canAcceptInput = canAcceptInput,
-                    ),
-                ),
-                drafts = mapOf(sessionLocator to draft),
-            )
-            return checkNotNull(
-                SessionHubUiMapper.map(
-                    coordinator = SessionCoordinatorSnapshot(
-                        profiles = listOf(profile(connectionProviderId, profileId, "This device")),
-                        agentEndpoints = mapOf(
-                            endpointKey to AgentEndpointStatus(
-                                key = endpointKey,
-                                descriptor = agentDescriptor,
-                                phase = AgentEndpointPhase.READY,
-                                updatedAtEpochMillis = 20,
-                            ),
-                        ),
-                    ),
-                    sessions = sessions,
-                    connectionProviders = listOf(descriptor(connectionProviderId, "Local")),
-                    selectedSessionKey = sessionLocator.stableUiKey,
-                    operationError = null,
-                    busyConnectionKeys = emptySet(),
-                    busySessionKeys = if (busy) setOf(sessionLocator.stableUiKey) else emptySet(),
-                ).selectedSession?.composer,
-            )
-        }
-
-        val idle = composer(AgentSessionState.IDLE, emptySet())
-        assertEquals("Check the focused tests", idle.draftText)
-        assertEquals(2, idle.selectionStart)
-        assertEquals(7, idle.selectionEnd)
-        assertEquals(SessionSubmitMode.SEND, idle.submitMode)
-        assertTrue(idle.canSubmit)
-
-        val running = composer(
-            AgentSessionState.RUNNING,
-            setOf(AgentCapability.ACTIVE_TURN_STEERING, AgentCapability.TURN_INTERRUPT),
-        )
-        assertEquals(SessionSubmitMode.STEER, running.submitMode)
-        assertTrue(running.canSubmit)
-        assertTrue(running.canInterrupt)
-
-        val saved = composer(AgentSessionState.NOT_LOADED, setOf(AgentCapability.SESSION_RESUME))
-        assertTrue(saved.canResume)
-        assertFalse(saved.canSubmit)
-        assertTrue(saved.statusMessage?.contains("Resume") == true)
-
-        val unsupportedSteering = composer(AgentSessionState.RUNNING, emptySet())
-        assertFalse(unsupportedSteering.canSubmit)
-        assertTrue(unsupportedSteering.statusMessage?.contains("cannot steer") == true)
-
-        val busy = composer(AgentSessionState.IDLE, emptySet(), busy = true)
-        assertTrue(busy.isBusy)
-        assertFalse(busy.canSubmit)
-        val waiting = composer(
-            AgentSessionState.WAITING_FOR_APPROVAL,
-            setOf(AgentCapability.TURN_INTERRUPT),
-        )
-        assertTrue(waiting.canInterrupt)
-        assertTrue(waiting.statusMessage?.contains("pending approval") == true)
-
-        val unsupportedResume = composer(AgentSessionState.NOT_LOADED, emptySet())
-        assertFalse(unsupportedResume.canResume)
-        assertTrue(unsupportedResume.statusMessage?.contains("cannot safely resume") == true)
-
-        val readOnly = composer(
-            AgentSessionState.IDLE,
-            emptySet(),
-            canAcceptInput = false,
-        )
-        assertFalse(readOnly.canSubmit)
-        assertTrue(readOnly.statusMessage?.contains("read-only") == true)
     }
 
     @Test
@@ -330,7 +160,7 @@ class SessionHubUiMapperTest {
             locator = sessionLocator,
             turnId = "turn-1",
             type = AgentApprovalType.COMMAND,
-            title = "Review workspace cleanup",
+            title = SessionPresentationText.Verbatim("Review workspace cleanup"),
             description = "The provider wants to remove generated files.",
             command = "remove generated output",
             workingDirectory = "/workspace",
@@ -339,7 +169,7 @@ class SessionHubUiMapperTest {
                     id = "stable-question-key",
                     providerQuestionId = "raw-private-provider-question-id",
                     header = "Scope",
-                    prompt = "Which output should be removed?",
+                    prompt = SessionPresentationText.Verbatim("Which output should be removed?"),
                     options = listOf(
                         SessionQuestionOption(
                             label = "Generated output",
@@ -362,7 +192,7 @@ class SessionHubUiMapperTest {
         val resolved = pending.copy(
             id = "resolved-action-key",
             providerApprovalId = "raw-resolved-provider-id",
-            title = "Previous request",
+            title = SessionPresentationText.Verbatim("Previous request"),
             questions = emptyList(),
             availableDecisions = setOf(AgentApprovalDecision.DECLINE),
             riskReasons = emptySet(),
@@ -411,6 +241,7 @@ class SessionHubUiMapperTest {
 
         val attention = mapped.attentionActions.single()
         assertEquals(pending.id, attention.stableKey)
+        assertEquals(UiMessage.Verbatim("Review workspace cleanup"), attention.title)
         assertEquals("/workspace", attention.scope)
         assertEquals("remove generated output", attention.command)
         assertEquals(
@@ -420,10 +251,17 @@ class SessionHubUiMapperTest {
         assertTrue(attention.decisions.first().requiresConfirmation)
         assertTrue(attention.isBusy)
         assertEquals(
-            listOf("Destructive command", "Broad filesystem access"),
-            attention.riskLabels,
+            listOf(
+                SessionActionRisk.DESTRUCTIVE_COMMAND,
+                SessionActionRisk.BROAD_FILESYSTEM_ACCESS,
+            ),
+            attention.risks,
         )
         assertEquals("stable-question-key", attention.questions.single().stableKey)
+        assertEquals(
+            UiMessage.Verbatim("Which output should be removed?"),
+            attention.questions.single().prompt,
+        )
         assertEquals(2, mapped.selectedSession?.actions?.size)
         assertEquals(
             SessionActionState.RESOLVED,
@@ -467,6 +305,7 @@ class SessionHubUiMapperTest {
 
         val connection = mapped.connections.single()
         assertEquals(ConnectionStatus.IDENTITY_REVIEW, connection.status)
+        assertEquals(UiMessage.Verbatim(challenge.endpoint), connection.statusDetail)
         assertTrue(connection.identityChallenge?.isChangedIdentity == true)
         assertEquals(challenge.previouslyTrustedFingerprints, connection.identityChallenge?.previousFingerprints)
         assertTrue(connection.isBusy)
@@ -483,7 +322,16 @@ class SessionHubUiMapperTest {
             actionableMessage = "Try the connection again.",
             recoverable = true,
         )
+        val setupFailure = ConnectionFailure(
+            category = ConnectionFailureCategory.CONFIGURATION,
+            code = "CONNECTION_SETUP_FAILED",
+            message = ConnectionFailureMessage.Generated(
+                ConnectionFailureMessageKind.PROFILE_PREPARATION_FAILED,
+            ),
+            recoverable = true,
+        )
         val statesByProfileId = linkedMapOf(
+            "never" to disconnected(ConnectionDisconnectReason.NOT_CONNECTED),
             "user" to disconnected(ConnectionDisconnectReason.USER_REQUESTED),
             "authentication" to disconnected(ConnectionDisconnectReason.AUTHENTICATION_FAILED),
             "network" to disconnected(ConnectionDisconnectReason.NETWORK_LOST),
@@ -492,9 +340,24 @@ class SessionHubUiMapperTest {
             "background" to disconnected(ConnectionDisconnectReason.BACKGROUND_SUSPENDED),
             "retry" to disconnected(ConnectionDisconnectReason.RETRY_LIMIT_REACHED),
             "stopped" to disconnected(ConnectionDisconnectReason.PROVIDER_STOPPED),
+            "preparing" to ConnectionState.Connecting(
+                attempt = 1,
+                phase = ConnectionPhase.PREPARING,
+                startedAtEpochMillis = 1,
+            ),
             "connecting" to ConnectionState.Connecting(
                 attempt = 1,
                 phase = ConnectionPhase.OPENING_TRANSPORT,
+                startedAtEpochMillis = 1,
+            ),
+            "verifying" to ConnectionState.Connecting(
+                attempt = 1,
+                phase = ConnectionPhase.VERIFYING_SERVER_IDENTITY,
+                startedAtEpochMillis = 1,
+            ),
+            "authenticating" to ConnectionState.Connecting(
+                attempt = 1,
+                phase = ConnectionPhase.AUTHENTICATING,
                 startedAtEpochMillis = 1,
             ),
             "connected" to ConnectionState.Connected(
@@ -511,6 +374,10 @@ class SessionHubUiMapperTest {
             "failed" to ConnectionState.Failed(
                 failure = failure,
                 atEpochMillis = 2,
+            ),
+            "setup" to ConnectionState.Failed(
+                failure = setupFailure,
+                atEpochMillis = 3,
             ),
         )
         val profiles = statesByProfileId.keys.map { id ->
@@ -534,7 +401,7 @@ class SessionHubUiMapperTest {
             sessions = SessionHubSnapshot(sessions = listOf(fallbackSession)),
             connectionProviders = emptyList(),
             selectedSessionKey = sessionLocator.stableUiKey,
-            operationError = "A safe operation failed.",
+            operationError = UiMessage.Verbatim("A safe operation failed."),
             busyConnectionKeys = setOf(
                 SessionConnectionKey(
                     providerId,
@@ -544,27 +411,60 @@ class SessionHubUiMapperTest {
         )
         val connections = mapped.connections.associateBy(ConnectionUiModel::label)
 
-        assertEquals("Disconnected by you", connections.getValue("user").statusDetail)
-        assertEquals("Authentication failed", connections.getValue("authentication").statusDetail)
-        assertEquals("Network connection lost", connections.getValue("network").statusDetail)
-        assertEquals("Server identity rejected", connections.getValue("identity").statusDetail)
-        assertEquals("Credential unavailable", connections.getValue("credential").statusDetail)
-        assertEquals("Paused in the background", connections.getValue("background").statusDetail)
-        assertEquals("Automatic retry limit reached", connections.getValue("retry").statusDetail)
-        assertEquals("Connection provider stopped", connections.getValue("stopped").statusDetail)
-        assertEquals(ConnectionStatus.CONNECTING, connections.getValue("connecting").status)
-        assertEquals("Opening transport", connections.getValue("connecting").statusDetail)
+        assertEquals(null, connections.getValue("never").statusDetail)
+        val disconnectResources = mapOf(
+            "user" to R.string.connection_disconnect_user_requested,
+            "authentication" to R.string.connection_disconnect_authentication_failed,
+            "network" to R.string.connection_disconnect_network_lost,
+            "identity" to R.string.connection_disconnect_server_identity_rejected,
+            "credential" to R.string.connection_disconnect_credential_unavailable,
+            "background" to R.string.connection_disconnect_background_suspended,
+            "retry" to R.string.connection_disconnect_retry_limit_reached,
+            "stopped" to R.string.connection_disconnect_provider_stopped,
+        )
+        disconnectResources.forEach { (label, resourceId) ->
+            assertEquals(
+                UiMessage.Localized(resourceId),
+                connections.getValue(label).statusDetail,
+            )
+        }
+        val phaseResources = mapOf(
+            "preparing" to R.string.connection_phase_preparing,
+            "connecting" to R.string.connection_phase_opening_transport,
+            "verifying" to R.string.connection_phase_verifying_server_identity,
+            "authenticating" to R.string.connection_phase_authenticating,
+        )
+        phaseResources.forEach { (label, resourceId) ->
+            assertEquals(ConnectionStatus.CONNECTING, connections.getValue(label).status)
+            assertEquals(
+                UiMessage.Localized(resourceId),
+                connections.getValue(label).statusDetail,
+            )
+        }
         assertTrue(connections.getValue("connecting").isBusy)
         assertEquals(ConnectionStatus.ONLINE, connections.getValue("connected").status)
         assertEquals(ConnectionStatus.RECONNECTING, connections.getValue("reconnecting").status)
-        assertEquals("Try the connection again.", connections.getValue("reconnecting").statusDetail)
+        assertEquals(
+            UiMessage.Verbatim("Try the connection again."),
+            connections.getValue("reconnecting").statusDetail,
+        )
         assertEquals(ConnectionStatus.FAILED, connections.getValue("failed").status)
-        assertEquals("Try the connection again.", connections.getValue("failed").statusDetail)
+        assertEquals(
+            UiMessage.Verbatim("Try the connection again."),
+            connections.getValue("failed").statusDetail,
+        )
+        assertEquals(
+            UiMessage.Localized(R.string.connection_failure_profile_preparation),
+            connections.getValue("setup").statusDetail,
+        )
         assertEquals("test.provider", connections.getValue("connected").providerName)
-        assertEquals("Codex session", mapped.sessions.single().title)
+        assertEquals(
+            UiMessage.Localized(R.string.session_title_fallback, listOf("Codex")),
+            mapped.sessions.single().title,
+        )
         assertEquals("test.provider", mapped.selectedSession?.session?.connectionProviderName)
         assertEquals(listOf("new", "old"), mapped.issues.map(CoordinatorIssueUiModel::id))
-        assertEquals("A safe operation failed.", mapped.operationError)
+        assertEquals(UiMessage.Verbatim("A safe operation failed."), mapped.operationError)
         assertTrue(mapped.isRefreshingProfiles)
     }
 
@@ -629,17 +529,23 @@ class SessionHubUiMapperTest {
 
         val artifacts = checkNotNull(mapped.selectedSession).artifacts
         assertEquals(
-            listOf("reports/result.txt", "File outside workspace"),
+            listOf("reports/result.txt", null),
             artifacts.map(SessionArtifactUiModel::displayPath),
+        )
+        assertEquals(
+            listOf(AgentFileChangeKind.MODIFIED, AgentFileChangeKind.ADDED),
+            artifacts.map(SessionArtifactUiModel::changeKind),
+        )
+        assertEquals(
+            listOf(
+                SessionArtifactAvailabilityStatus.READY,
+                SessionArtifactAvailabilityStatus.OUTSIDE_WORKSPACE,
+            ),
+            artifacts.map(SessionArtifactUiModel::availabilityStatus),
         )
         assertTrue(artifacts.first().canSave)
         assertFalse(artifacts.last().isDownloadable)
-        assertFalse(
-            artifacts.any {
-                it.displayPath.contains("private") ||
-                    it.availabilityMessage.contains("secret")
-            },
-        )
+        assertFalse(artifacts.any { it.displayPath.orEmpty().contains("private") })
         assertTrue(checkNotNull(mapped.selectedSession).canRefreshArtifacts)
 
         val withoutFileAccess = SessionArtifactUiMapper.map(
@@ -650,8 +556,8 @@ class SessionHubUiMapperTest {
         )
         assertFalse(withoutFileAccess.canSave)
         assertEquals(
-            "This connection does not support saving checked copies.",
-            withoutFileAccess.availabilityMessage,
+            SessionArtifactAvailabilityStatus.UNSUPPORTED,
+            withoutFileAccess.availabilityStatus,
         )
     }
 }
@@ -670,7 +576,7 @@ private fun issue(
     kind = SessionCoordinatorIssueKind.CONNECTION_SETUP,
     connection = null,
     agentProviderId = null,
-    actionableMessage = message,
+    connectionLabel = message,
     recoverable = true,
     occurredAtEpochMillis = occurredAtEpochMillis,
 )

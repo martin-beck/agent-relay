@@ -1,0 +1,65 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
+site_name: Agent Relay
+site_description: Human-goal workflows and verified Android emulator evidence for Agent Relay
+site_url: https://martin-beck.github.io/agent-relay/
+repo_url: https://github.com/martin-beck/agent-relay
+repo_name: martin-beck/agent-relay
+edit_uri: edit/main/docs/
+docs_dir: docs
+site_dir: build/site
+exclude_docs: |
+  workflows/scenarios/
+theme:
+  name: material
+  features:
+    - navigation.indexes
+    - navigation.sections
+    - navigation.top
+    - search.highlight
+    - search.suggest
+  palette:
+    scheme: default
+    primary: indigo
+    accent: blue
+plugins:
+  - search
+markdown_extensions:
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+extra_css:
+  - assets/stylesheets/usage-guide.css
+nav:
+  - Home: index.md
+  - App workflows:
+      - Overview: WORKFLOWS.md
+      - Fresh start to first session: workflows/fresh-start-first-session.md
+      - Host identity review: workflows/host-identity-review.md
+      - Agent approval or question: workflows/attention-approval.md
+      - Session switching and steering: workflows/session-switching-steering.md
+      - Changed-file export: workflows/changed-file-export.md
+      - Notification attention: workflows/notification-attention.md
+      - Durable recovery: workflows/durable-recovery.md
+      - QR pairing: workflows/qr-pairing.md
+      - Offline voice input: workflows/voice-input.md
+      - Attention overview: workflows/attention-overview.md
+  - Usage: USAGE.md
+  - User satisfaction: USER_SATISFACTION.md
+  - Install: INSTALLING.md
+  - Build: BUILDING.md
+  - Development process: DEVELOPMENT.md
+  - Architecture: ARCHITECTURE.md
+  - Generated API reference: generated/api-reference.md
+  - Connection providers: CONNECTION_PROVIDERS.md
+  - Provider operations: PROVIDER_OPERATIONS.md
+  - Offline LLM testing: OFFLINE_LLM_TESTING.md
+  - Session hub: SESSION_HUB.md
+  - Speech: SPEECH.md
+  - Quality: QUALITY.md
+  - Product roadmap: PRODUCT_ROADMAP.md
+  - Release process: RELEASING.md
+  - Third-party notices: THIRD_PARTY.md

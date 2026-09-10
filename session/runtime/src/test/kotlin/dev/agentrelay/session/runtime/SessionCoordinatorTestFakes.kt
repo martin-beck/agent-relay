@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.session.runtime
 
 import dev.agentrelay.connection.api.ConnectionCapability
@@ -49,6 +54,7 @@ internal class FakeConnectionProvider(
     label: String,
     initialRuntime: FakeRuntime,
     var failProfileDiscovery: Boolean = false,
+    var failConnectionLookup: Boolean = false,
 ) : ConnectionProvider {
     override val descriptor = ConnectionProviderDescriptor(
         id = ConnectionProviderId(providerId),
@@ -72,6 +78,7 @@ internal class FakeConnectionProvider(
     }
 
     override fun connection(profileId: ConnectionProfileId): ManagedConnection {
+        check(!failConnectionLookup) { "Injected connection lookup failure" }
         require(profileId == summary.id)
         return managed
     }

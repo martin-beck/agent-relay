@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.session.android
 
 import dev.agentrelay.provider.api.AgentApprovalDecision
@@ -8,6 +13,8 @@ import dev.agentrelay.session.api.SessionActionRisk
 import dev.agentrelay.session.api.SessionActionState
 import dev.agentrelay.session.api.SessionQuestion
 import dev.agentrelay.session.api.SessionQuestionOption
+import dev.agentrelay.session.api.SessionPresentationText
+import dev.agentrelay.session.api.SessionPresentationTextKind
 
 internal fun SessionQuestionOption.toDocument() = SessionQuestionOptionDocument(
     label = label,
@@ -23,7 +30,8 @@ internal fun SessionQuestion.toDocument() = SessionQuestionDocument(
     id = id,
     providerQuestionId = providerQuestionId,
     header = header,
-    prompt = prompt,
+    prompt = (prompt as? SessionPresentationText.Verbatim)?.text,
+    promptKind = (prompt as? SessionPresentationText.Generated)?.kind?.name,
     options = options.map(SessionQuestionOption::toDocument),
     allowsOther = allowsOther,
     allowsMultiple = allowsMultiple,
@@ -33,7 +41,7 @@ private fun SessionQuestionDocument.toDomain() = SessionQuestion(
     id = id,
     providerQuestionId = providerQuestionId,
     header = header,
-    prompt = prompt,
+    prompt = persistedPresentationText(prompt, promptKind),
     options = options.map(SessionQuestionOptionDocument::toDomain),
     allowsOther = allowsOther,
     allowsMultiple = allowsMultiple,
@@ -45,7 +53,8 @@ internal fun SessionActionRequest.toDocument() = SessionActionRequestDocument(
     locator = locator.toDocument(),
     turnId = turnId,
     type = type.name,
-    title = title,
+    title = (title as? SessionPresentationText.Verbatim)?.text,
+    titleKind = (title as? SessionPresentationText.Generated)?.kind?.name,
     description = description,
     command = command,
     workingDirectory = workingDirectory,
@@ -70,7 +79,7 @@ internal fun SessionActionRequestDocument.toDomain() = SessionActionRequest(
     locator = locator.toDomain(),
     turnId = turnId,
     type = persistedEnumValue(type),
-    title = title,
+    title = persistedPresentationText(title, titleKind),
     description = description,
     command = command,
     workingDirectory = workingDirectory,
@@ -110,6 +119,16 @@ internal fun CachedTranscriptEntryDocument.toDomain() = CachedTranscriptEntry(
     createdAtEpochMillis = createdAtEpochMillis,
     metadata = metadata,
 )
+
+private fun persistedPresentationText(
+    verbatim: String?,
+    kind: String?,
+): SessionPresentationText {
+    check(verbatim == null || kind == null) { "Presentation text has contradictory forms" }
+    return kind?.let {
+        SessionPresentationText.Generated(persistedEnumValue<SessionPresentationTextKind>(it))
+    } ?: SessionPresentationText.Verbatim(checkNotNull(verbatim))
+}
 
 private fun <T> List<T>.requireUniqueValues(type: String): List<T> {
     check(distinct().size == size) { "Duplicate $type records" }

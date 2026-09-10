@@ -1,0 +1,37 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
+id: connection-failover
+title: Recover a connection through an alternate route
+summary: Preserve session context while a connection moves between bounded transports.
+status: planned
+order: 12
+goal: Continue useful work when the preferred route fails without weakening identity checks.
+preconditions:
+  - A host has two configured routes with distinct health and trust state.
+  - The active session has durable context and an explicit connection identity.
+automatic:
+  - Agent Relay detects route loss with bounded probes and records the transition.
+  - Failover keeps provider, workspace, session, and draft identities attached.
+  - A route is rejected when its host identity or capability scope is not trusted.
+attention:
+  - Review a changed host identity before accepting a replacement route.
+  - Decide whether an uncertain non-idempotent operation may be retried.
+  - Choose manual reconnect when every automatic route is exhausted.
+recovery:
+  - Backoff and retry budgets prevent an endless reconnect loop.
+  - The app restores the last safe context after process restart.
+  - Failed failover leaves the original cached context available for inspection.
+steps:
+  - id: observe-route-loss
+    title: Observe the preferred route fail
+    action: Make the primary synthetic route unavailable during an active session.
+    expected: The app reports degraded connectivity and preserves the session context.
+  - id: review-alternate-route
+    title: Review the alternate route
+    action: Inspect the candidate route and its identity evidence.
+    expected: Only a trusted, capability-compatible route is offered for failover.
+  - id: restore-session
+    title: Restore useful work
+    action: Accept the safe alternate route and reopen the session.
+    expected: Draft, unread state, and provider context remain attached without replaying commands.
