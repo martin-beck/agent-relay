@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.ssh.jsch
 
 import com.jcraft.jsch.IdentityRepository
@@ -6,16 +11,16 @@ import com.jcraft.jsch.JSchException
 import com.jcraft.jsch.Session
 import com.jcraft.jsch.UIKeyboardInteractive
 import com.jcraft.jsch.UserInfo
+import dev.agentrelay.ssh.api.ResolvedSshHost
 import dev.agentrelay.ssh.api.ResolvedSshAuthentication
 import dev.agentrelay.ssh.api.SshConnectPhase
 import dev.agentrelay.ssh.api.SshConnectPhaseListener
+import dev.agentrelay.ssh.api.SshConnectionRoute
 import dev.agentrelay.ssh.api.SshConnectionException
 import dev.agentrelay.ssh.api.SshConnector
 import dev.agentrelay.ssh.api.SshFailure
 import dev.agentrelay.ssh.api.SshFailureCategory
-import dev.agentrelay.ssh.api.SshHostKey
 import dev.agentrelay.ssh.api.SshHostKeyApprovalRequiredException
-import dev.agentrelay.ssh.api.SshProfile
 import dev.agentrelay.ssh.api.SshTransportConnection
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -54,16 +59,50 @@ class JschSshConnector(
     }
 
     override suspend fun connect(
-        profile: SshProfile,
-        authentication: ResolvedSshAuthentication,
-        trustedHostKeys: List<SshHostKey>,
+        route: SshConnectionRoute,
         phaseListener: SshConnectPhaseListener,
     ): SshTransportConnection = withContext(dispatcher) {
+        val sessions = mutableListOf<Session>()
+        try {
+            route.jumpHosts.forEach { jumpHost ->
+                sessions += connectHost(
+                    host = jumpHost,
+                    through = sessions.lastOrNull(),
+                    phaseListener = phaseListener,
+                )
+            }
+            val destination = connectHost(
+                host = route.destination,
+                through = sessions.lastOrNull(),
+                phaseListener = phaseListener,
+            )
+            sessions += destination
+            JschTransportConnection(
+                session = destination,
+                routeSessions = sessions,
+                hostId = route.destination.profile.id.value,
+                channelConnectTimeout = channelConnectTimeout,
+                dispatcher = dispatcher,
+            )
+        } catch (cancelled: kotlinx.coroutines.CancellationException) {
+            sessions.asReversed().forEach(Session::disconnect)
+            throw cancelled
+        } catch (failure: Throwable) {
+            sessions.asReversed().forEach(Session::disconnect)
+            throw failure
+        }
+    }
+
+    private fun connectHost(
+        host: ResolvedSshHost,
+        through: Session?,
+        phaseListener: SshConnectPhaseListener,
+    ): Session {
         phaseListener.onPhase(SshConnectPhase.OPENING_SOCKET)
         val jsch = JSch()
         val repository = StrictHostKeyRepository(
-            endpoint = profile.endpoint,
-            trustedKeys = trustedHostKeys,
+            endpoint = host.profile.endpoint,
+            trustedKeys = host.trustedHostKeys,
             nowEpochMillis = nowEpochMillis,
             onCheck = { trusted ->
                 phaseListener.onPhase(SshConnectPhase.VERIFYING_HOST_KEY)
@@ -74,25 +113,21 @@ class JschSshConnector(
         )
         jsch.hostKeyRepository = repository
         val session = jsch.getSession(
-            profile.username,
-            profile.endpoint.host,
-            profile.endpoint.port,
+            host.profile.username,
+            host.profile.endpoint.host,
+            host.profile.endpoint.port,
         )
+        through?.let { session.setProxy(JschJumpHostProxy(it)) }
         val temporarySecrets = mutableListOf<ByteArray>()
         try {
             configureSession(
                 jsch = jsch,
                 session = session,
-                authentication = authentication,
+                authentication = host.authentication,
                 temporarySecrets = temporarySecrets,
             )
             session.connect(connectTimeout.inWholeMilliseconds.toInt())
-            JschTransportConnection(
-                session = session,
-                hostId = profile.id.value,
-                channelConnectTimeout = channelConnectTimeout,
-                dispatcher = dispatcher,
-            )
+            return session
         } catch (cancelled: kotlinx.coroutines.CancellationException) {
             session.disconnect()
             throw cancelled

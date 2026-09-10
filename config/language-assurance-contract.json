@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "contract_version": "1.0.0",
+  "evidence_root": "build/reports/quality",
+  "invariants": [
+    {"id": "java-security-boundaries", "description": "Native build downloads and extraction fail closed."},
+    {"id": "shell-negative-paths", "description": "First-party scripts reject missing tools and recover safely."},
+    {"id": "dependency-integrity", "description": "Resolved dependencies are pinned and vulnerability policy is explicit."},
+    {"id": "python-validator-properties", "description": "Repository validators preserve branch-aware and property-tested behavior."},
+    {"id": "kotlin-api-contracts", "description": "Critical Kotlin modules preserve coverage floors and reviewed ABI dumps."}
+  ],
+  "gates": [
+    {
+      "id": "java-security",
+      "language": "java",
+      "owner": "AR-2183",
+      "command": "./gradlew -p buildSrc check",
+      "evidence": "java-build-logic.xml",
+      "invariants": ["java-security-boundaries"],
+      "remediation": "Inspect buildSrc test and static-analysis reports; repair the same branch and rerun the build-logic gate."
+    },
+    {
+      "id": "shell-negative-paths",
+      "language": "bash",
+      "owner": "AR-2185",
+      "command": "scripts/ci/run_shell_quality.sh all",
+      "evidence": "shell-quality.txt",
+      "invariants": ["shell-negative-paths"],
+      "remediation": "Run the pinned ShellCheck, shfmt, and Bats commands and repair the failing script or fixture."
+    },
+    {
+      "id": "dependency-integrity",
+      "language": "dependency",
+      "owner": "AR-2187",
+      "command": "python scripts/ci/verify_dependency_integrity.py",
+      "evidence": "dependency-integrity.json",
+      "invariants": ["dependency-integrity"],
+      "remediation": "Review verification metadata, lockfiles, and the pinned OSV policy; never weaken an exception to pass."
+    },
+    {
+      "id": "python-assurance",
+      "language": "python",
+      "owner": "AR-2188",
+      "command": "uv run pytest --cov-branch",
+      "evidence": "python-coverage.xml",
+      "invariants": ["python-validator-properties"],
+      "remediation": "Repair the validator/property test or its branch-coverage floor and rerun the Python gate."
+    },
+    {
+      "id": "kotlin-contracts",
+      "language": "kotlin",
+      "owner": "AR-2189",
+      "command": "./gradlew koverVerify checkKotlinAbi",
+      "evidence": "kotlin-contracts.txt",
+      "invariants": ["kotlin-api-contracts"],
+      "remediation": "Review the critical-module coverage floor or ABI diff; update baselines only for an intentional API change."
+    }
+  ]
+}

@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.serialization)
@@ -34,9 +39,12 @@ dependencies {
     androidTestImplementation(libs.androidx.test.core)
     androidTestImplementation(kotlin("test"))
     androidTestImplementation(libs.androidx.test.ext.junit)
-    androidTestImplementation(libs.androidx.test.runner)
+    androidTestRuntimeOnly(libs.androidx.test.runner)
     androidTestImplementation(libs.junit)
     androidTestImplementation(libs.kotlinx.coroutines.core)
 
     testImplementation(libs.junit)
+    api(libs.jsch)
+    implementation(libs.kotlinx.serialization.core)
+    api(project(":connection:api"))
 }

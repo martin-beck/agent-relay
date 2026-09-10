@@ -1,0 +1,274 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
+minimum_pre_commit_version: "4.6.2"
+fail_fast: false
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
+    hooks:
+      - id: check-added-large-files
+        args: ["--maxkb=1024"]
+      - id: check-case-conflict
+      - id: check-executables-have-shebangs
+      - id: check-merge-conflict
+      - id: check-shebang-scripts-are-executable
+      - id: check-symlinks
+      - id: check-toml
+      - id: check-xml
+      - id: check-yaml
+      - id: destroyed-symlinks
+      - id: detect-private-key
+      - id: end-of-file-fixer
+        exclude: ^(companion|connection|provider|session|workflow)/api/api/api\.api$
+      - id: forbid-submodules
+      - id: mixed-line-ending
+        args: ["--fix=lf"]
+      - id: trailing-whitespace
+
+  - repo: https://github.com/editorconfig-checker/editorconfig-checker
+    rev: b0a550a82df22ed8bbc48156d3d6fa9bf20c975c  # frozen: v3.11.2
+    hooks:
+      - id: editorconfig-checker
+        types: [text]
+        files: \.(properties|xml)$
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: 1f1e8bf348ff38fc88619a38d3ca4d9c56abea49  # frozen: v0.16.5
+    hooks:
+      - id: ruff-check
+        args: ["--fix"]
+        files: ^scripts/(ci|docs)/.*\.py$
+      - id: ruff-format
+        types_or: [python, pyi]
+        files: ^scripts/(ci|docs)/.*\.py$
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: 7ff8d35ae36a7d2b968f2f90b4c723e292e594ee  # frozen: v2.3.1
+    hooks:
+      - id: mypy
+        args: ["--config-file=pyproject.toml"]
+        additional_dependencies:
+          - defusedxml==0.7.1
+          - hypothesis==6.167.1
+          - Pillow==12.3.0
+          - PyYAML==6.0.3
+          - types-Pillow==10.2.0.20240822
+          - types-PyYAML==6.0.12.20260815
+        files: ^scripts/(ci|docs)/.*\.py$
+
+  - repo: local
+    hooks:
+      - id: python-tests
+        name: Test Python validators with branch coverage
+        entry: uv run pytest
+        language: system
+        pass_filenames: false
+        files: ^(pyproject\.toml|uv\.lock|scripts/(ci|docs)/.*\.py)$
+
+  - repo: https://github.com/adrienverge/yamllint
+    rev: cba56bcde1fdd01c1deb3f945e69764c291a6530  # frozen: v1.38.0
+    hooks:
+      - id: yamllint
+
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: b82a6c8896e491b9cb377a99ff3412131920681b  # frozen: v0.23.2
+    hooks:
+      - id: markdownlint-cli2
+        exclude: ^\.github/PULL_REQUEST_TEMPLATE\.md$
+
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: c4654a7e007c9619a5eb63c39a456572a0fa1851  # frozen: 0.38.0
+    hooks:
+      - id: check-dependabot
+      - id: check-github-issue-config
+      - id: check-github-issue-forms
+      - id: check-github-workflows
+      - id: check-github-workflows-require-timeout
+
+  - repo: https://github.com/rhysd/actionlint
+    rev: 914e7df21a07ef503a81201c76d2b11c789d3fca  # frozen: v1.7.12
+    hooks:
+      - id: actionlint
+
+  - repo: https://github.com/lycheeverse/lychee
+    rev: e85aaf5524b2f808e63bae55e594c843220f10f2  # frozen: lychee-v0.24.2
+    hooks:
+      - id: lychee
+        alias: lychee-local
+        name: Check local Markdown links
+        args:
+          - LYCHEE_VERSION=0.24.2
+          - --offline
+          - --root-dir
+          - .
+          - --include-fragments
+          - --no-progress
+          - --exclude
+          - ^file:///.*/agent-relay-state/?$
+        types: [markdown]
+      - id: lychee
+        alias: lychee-online
+        name: Check all Markdown links
+        args:
+          - LYCHEE_VERSION=0.24.2
+          - --root-dir
+          - .
+          - --include-fragments
+          - --no-progress
+          - --exclude
+          - ^(file:///.*/agent-relay-state/?|https://github\.com/martin-beck/agent-relay/(actions/workflows/(verify|ui)\.yml(/badge\.svg)?|security/advisories/new))$
+        types: [markdown]
+        stages: [manual]
+
+  - repo: https://github.com/crate-ci/typos
+    rev: c8866b658f1eb6ff60473fee711ef5304c63f898  # frozen: v1.50.1
+    hooks:
+      - id: typos
+        args: ["--force-exclude"]
+        exclude: ^(connection|provider)/api/api/api\.api$
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: 83d9cd684c87d95d656c1458ef04895a7f1cbd8e  # frozen: v8.30.1
+    hooks:
+      - id: gitleaks
+
+  - repo: local
+    hooks:
+      - id: shellcheck
+        name: Check first-party shell scripts with pinned ShellCheck
+        entry: scripts/ci/run_shell_quality.sh shellcheck
+        language: system
+        pass_filenames: false
+        files: ^(scripts/.*\.(bash|sh)|speech/sherpa/native/.*\.(bash|sh))$
+      - id: shfmt
+        name: Check first-party shell formatting with pinned shfmt
+        entry: scripts/ci/run_shell_quality.sh shfmt
+        language: system
+        pass_filenames: false
+        files: ^(scripts/.*\.(bash|sh)|speech/sherpa/native/.*\.(bash|sh))$
+      - id: bats-shell-tests
+        name: Test shell support scripts with pinned Bats
+        entry: scripts/ci/run_shell_quality.sh test
+        language: system
+        pass_filenames: false
+        files: >-
+          ^(scripts/.*\.(bash|sh)|
+          speech/sherpa/native/.*\.(bash|sh)|
+          tests/shell/.*\.bats)$
+      - id: vale
+        name: Check terminology and report prose readability with Vale
+        entry: vale
+        language: system
+        files: \.md$
+        exclude: ^\.github/PULL_REQUEST_TEMPLATE\.md$
+        verbose: true
+      - id: radon-complexity
+        name: Report Python cyclomatic complexity with Radon
+        entry: radon cc scripts/ci scripts/docs --show-complexity --average --total-average
+        language: system
+        pass_filenames: false
+        verbose: true
+        files: ^scripts/(ci|docs)/.*\.py$
+      - id: radon-maintainability
+        name: Report Python maintainability index with Radon
+        entry: radon mi scripts/ci scripts/docs --show
+        language: system
+        pass_filenames: false
+        verbose: true
+        files: ^scripts/(ci|docs)/.*\.py$
+      - id: lizard-complexity
+        name: Enforce cross-language cyclomatic complexity with Lizard
+        entry: lizard --CCN 20 --warnings_only .
+        language: system
+        pass_filenames: false
+        files: \.(java|kt|kts|py)$
+      - id: verify-source-headers
+        name: Verify Huawei and MIT source headers
+        entry: python scripts/ci/verify_source_headers.py
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: verify-android-locales
+        name: Verify Android locale resources
+        entry: python scripts/ci/verify_android_locales.py
+        language: system
+        pass_filenames: false
+        files: >-
+          ^(config/android-locales\.txt|app/src/main/res/(resources\.properties|values.*)|scripts/ci/verify_android_locales\.py)$
+      - id: verify-dependency-integrity
+        name: Verify dependency integrity metadata and locks
+        entry: python scripts/ci/verify_dependency_integrity.py
+        language: system
+        pass_filenames: false
+        files: >-
+          ^(config/dependency-lockfiles\.txt|
+          config/osv-accepted-vulnerabilities\.json|
+          config/osv-scanner(-release\.json|\.toml)|
+          gradle/verification-metadata\.xml|
+          .*gradle\.lockfile|
+          uv\.lock|
+          scripts/ci/verify_dependency_integrity\.py)$
+      - id: render-usage-workflows
+        name: Render executable usage workflow pages
+        entry: python scripts/docs/render_workflows.py --check
+        language: system
+        pass_filenames: false
+        files: >-
+          ^(docs/workflows/scenarios/.*\.ya?ml|
+          scripts/docs/render_workflows\.py|
+          docs/WORKFLOWS\.md|
+          docs/workflows/.*\.md)$
+      - id: verify-usage-workflow-images
+        name: Verify usage workflow image evidence
+        entry: python scripts/docs/verify_workflows.py
+        language: system
+        pass_filenames: false
+        files: >-
+          ^(docs/workflows/scenarios/.*\.ya?ml|
+          scripts/docs/(render|verify)_workflows\.py|
+          docs/assets/workflows/.*\.png)$
+      - id: verify-documentation-authority
+        name: Verify machine-readable documentation authority
+        entry: python scripts/docs/verify_documentation_authority.py
+        language: system
+        pass_filenames: false
+        files: >-
+          ^(docs/contracts/documentation-authority-v1\.json|
+          docs/(ARCHITECTURE|SOFTWARE_DESIGN|PRODUCT_ROADMAP|QUALITY|WORKFLOWS)\.md|
+          scripts/docs/verify_documentation_authority\.py)$
+      - id: verify-user-satisfaction
+        name: Verify user-satisfaction evidence boundaries
+        entry: python scripts/docs/verify_satisfaction_assurance.py
+        language: system
+        pass_filenames: false
+        files: >-
+          ^(docs/contracts/user-satisfaction-v1(\.schema)?\.json|
+          docs/workflows/scenarios/.*\.ya?ml|
+          docs/assets/workflows/.*\.png|
+          scripts/docs/verify_satisfaction_assurance\.py|
+          (app|connection|provider|session|workflow)/.*(src/(main|test)|docs/formal)/.*)$
+      - id: render-user-satisfaction
+        name: Render user-satisfaction status
+        entry: python scripts/docs/render_satisfaction.py --check
+        language: system
+        pass_filenames: false
+        files: >-
+          ^(docs/contracts/user-satisfaction-v1(\.schema)?\.json|
+          docs/USER_SATISFACTION\.md|
+          docs/workflows/scenarios/.*\.ya?ml|
+          scripts/docs/(render_satisfaction|verify_satisfaction_assurance)\.py)$
+      - id: taplo-format
+        name: Check TOML formatting with Taplo
+        entry: taplo format
+        language: node
+        additional_dependencies: ["@taplo/cli@0.7.0"]
+        types: [toml]
+      - id: zizmor
+        name: Audit GitHub Actions with zizmor
+        entry: zizmor --offline
+        language: python
+        additional_dependencies: ["zizmor==1.30.0"]
+        files: ^\.github/(dependabot\.ya?ml|workflows/.*\.ya?ml)$
+        types: [yaml]

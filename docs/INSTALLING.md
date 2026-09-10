@@ -4,8 +4,10 @@ Agent Relay does not currently publish a release, Play Store package, or signed
 production APK. The only installable artifact is a development debug build.
 
 > [!IMPORTANT]
-> The current APK opens a placeholder screen. Connection and agent-provider
-> modules are not yet wired into the UI.
+> The current APK exposes an early session hub, not a complete client. It can
+> create encrypted SSH profiles, connect generic profiles, and display
+> discovered sessions, but it cannot yet send prompts, answer approvals, or run as a
+> supported background service.
 
 ## Compatibility
 
@@ -57,6 +59,6 @@ during development.
 
 ## Release status
 
-A production release requires a stable application ID, integrated UI, completed
-device testing, explicit backup policy, external signing configuration, version
-policy, and a completed security review. See [Releasing](RELEASING.md).
+A production release requires a stable application ID, complete P0 UI, device
+testing, external signing configuration, version policy, and a completed
+security review. See [Releasing](RELEASING.md).

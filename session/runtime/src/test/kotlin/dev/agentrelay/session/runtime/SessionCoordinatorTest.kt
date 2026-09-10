@@ -1,25 +1,42 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.session.runtime
 
+import dev.agentrelay.connection.api.ConnectionFailureMessage
+import dev.agentrelay.connection.api.ConnectionFailureMessageKind
 import dev.agentrelay.connection.api.ConnectionProviderRegistry
 import dev.agentrelay.connection.api.ConnectionState
+import dev.agentrelay.provider.api.AgentApproval
 import dev.agentrelay.provider.api.AgentApprovalDecision
 import dev.agentrelay.provider.api.AgentApprovalId
+import dev.agentrelay.provider.api.AgentApprovalType
 import dev.agentrelay.provider.api.AgentEvent
 import dev.agentrelay.provider.api.AgentMessageChannel
 import dev.agentrelay.provider.api.AgentProviderRegistry
+import dev.agentrelay.provider.api.AgentQuestion
 import dev.agentrelay.provider.api.AgentSessionId
 import dev.agentrelay.provider.api.StartSessionOptions
 import dev.agentrelay.session.api.InMemorySessionHubStore
 import dev.agentrelay.session.api.PersistentSessionHubRepository
 import dev.agentrelay.session.api.SessionActivityType
+import dev.agentrelay.session.api.SessionActionRisk
+import dev.agentrelay.session.api.SessionActionState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -57,6 +74,41 @@ class SessionCoordinatorTest {
 
         assertEquals(1, broken.closeCount)
         assertEquals(1, local.closeCount)
+    }
+
+    @Test
+    fun controllerPreparationFailurePublishesTypedMessageAndIssue() = runTest {
+        val broken = FakeConnectionProvider(
+            providerId = "local",
+            profileId = "device",
+            label = "This device",
+            initialRuntime = FakeRuntime("device"),
+            failConnectionLookup = true,
+        )
+        val coordinator = coordinator(listOf(broken), FakeAgentFactory())
+
+        try {
+            coordinator.refreshProfiles()
+
+            val snapshot = coordinator.snapshot.value
+            val failure = assertIs<ConnectionState.Failed>(
+                snapshot.connectionStates.getValue(broken.key()),
+            ).failure
+            assertEquals(
+                ConnectionFailureMessage.Generated(
+                    ConnectionFailureMessageKind.PROFILE_PREPARATION_FAILED,
+                ),
+                failure.message,
+            )
+            assertTrue(
+                snapshot.issues.values.any { issue ->
+                    issue.kind == SessionCoordinatorIssueKind.CONNECTION_SETUP &&
+                        issue.connection == broken.key()
+                },
+            )
+        } finally {
+            coordinator.shutdown()
+        }
     }
 
     @Test
@@ -208,10 +260,37 @@ class SessionCoordinatorTest {
             coordinator.steerActiveTurn(existing, "focus on tests")
             coordinator.interrupt(existing)
             val approvalId = AgentApprovalId("approval-1")
-            val answers = mapOf("scope" to listOf("once"))
-            coordinator.respondToApproval(
+            connection.emit(
+                AgentEvent.ApprovalRequested(
+                    sessionId = existing.agentSessionId,
+                    approval = AgentApproval(
+                        id = approvalId,
+                        sessionId = existing.agentSessionId,
+                        turnId = null,
+                        type = AgentApprovalType.USER_INPUT,
+                        title = "Choose a scope",
+                        description = "Provide the narrowest useful scope",
+                        questions = listOf(
+                            AgentQuestion(
+                                id = "scope",
+                                header = "Scope",
+                                prompt = "Which scope should be used?",
+                            ),
+                        ),
+                        availableDecisions = setOf(
+                            AgentApprovalDecision.SUBMIT,
+                            AgentApprovalDecision.CANCEL,
+                        ),
+                    ),
+                ),
+            )
+            runCurrent()
+            val request = coordinator.repository.snapshot.value.actionRequests.single()
+            val privateAnswer = "temporary custom scope"
+            val answers = mapOf(request.questions.single().id to listOf(privateAnswer))
+            coordinator.respondToAction(
                 locator = existing,
-                approvalId = approvalId,
+                requestId = request.id,
                 decision = AgentApprovalDecision.SUBMIT,
                 answers = answers,
             )
@@ -235,11 +314,155 @@ class SessionCoordinatorTest {
             )
             assertEquals(listOf(AgentSessionId("shared-session")), connection.interrupted)
             assertEquals(
-                listOf(Triple(approvalId, AgentApprovalDecision.SUBMIT, answers)),
+                listOf(
+                    Triple(
+                        approvalId,
+                        AgentApprovalDecision.SUBMIT,
+                        mapOf("scope" to listOf(privateAnswer)),
+                    ),
+                ),
                 connection.approvalResponses,
             )
-            assertEquals("/workspace/ssh-host/result.txt", changes.single().remotePath)
+            val resolved = assertNotNull(
+                coordinator.repository.snapshot.value.actionRequest(existing, request.id),
+            )
+            assertEquals(SessionActionState.RESOLVED, resolved.state)
+            assertEquals(setOf(request.questions.single().id), resolved.answeredQuestionIds)
+            assertFalse(resolved.toString().contains(privateAnswer))
+            assertTrue(
+                coordinator.repository.snapshot.value.activities
+                    .single { it.actionRequestId == request.id }
+                    .isResolved,
+            )
+            assertEquals("/workspace/ssh-host/result.txt", changes.single().providerPath)
+            assertEquals("result.txt", changes.single().relativePath)
+            assertEquals(
+                changes,
+                coordinator.repository.snapshot.value.sessionArtifacts(existing),
+            )
             assertTrue(coordinator.repository.snapshot.value.session(started) != null)
+        } finally {
+            coordinator.shutdown()
+        }
+    }
+
+    @Test
+    fun artifactDownloadUsesReviewedWorkspaceRelativeConnectionStream() = runTest {
+        val content = "artifact body".encodeToByteArray()
+        val fileAccess = FakeRemoteFileAccess(content)
+        val local = FakeConnectionProvider(
+            providerId = "local",
+            profileId = "device",
+            label = "This device",
+            initialRuntime = FakeRuntime("artifact-host", fileAccess),
+        )
+        val coordinator = coordinator(listOf(local), FakeAgentFactory())
+
+        try {
+            coordinator.refreshProfiles()
+            runCurrent()
+            coordinator.connect(local.key())
+            runCurrent()
+            val locator = coordinator.repository.snapshot.value.sessions.single().locator
+            assertTrue(coordinator.snapshot.value.agentEndpoints.values.single().fileAccessAvailable)
+            val artifact = coordinator.changedFiles(locator).single()
+
+            val download = coordinator.prepareArtifactDownload(locator, artifact.id)
+            val received = download.chunks.toList()
+                .fold(ByteArray(0)) { result, chunk -> result + chunk }
+
+            assertEquals("/workspace/artifact-host", fileAccess.inspectedReference?.workspaceRoot)
+            assertEquals("result.txt", fileAccess.inspectedReference?.relativePath)
+            assertEquals(fileAccess.inspectedReference, fileAccess.readReference)
+            assertEquals("0".repeat(64), download.sourceSnapshot.revision.sha256)
+            assertContentEquals(content, received)
+        } finally {
+            coordinator.shutdown()
+        }
+    }
+
+    @Test
+    fun failedApprovalDeliveryRemainsUncertainWhenProviderEventIsReplayed() = runTest {
+        val local = FakeConnectionProvider(
+            providerId = "local",
+            profileId = "device",
+            label = "This device",
+            initialRuntime = FakeRuntime("local-host"),
+        )
+        val agents = FakeAgentFactory()
+        val coordinator = coordinator(listOf(local), agents)
+
+        try {
+            coordinator.refreshProfiles()
+            runCurrent()
+            coordinator.connect(local.key())
+            runCurrent()
+            val connection = agents.latest("local-host")
+            val locator = coordinator.repository.snapshot.value.sessions.single().locator
+            val approval = AgentApproval(
+                id = AgentApprovalId("dangerous-command"),
+                sessionId = locator.agentSessionId,
+                turnId = null,
+                type = AgentApprovalType.COMMAND,
+                title = "Remove generated output",
+                description = "Clean everything before rebuilding",
+                command = "rm -rf /",
+                workingDirectory = "/",
+                availableDecisions = setOf(
+                    AgentApprovalDecision.APPROVE_ONCE,
+                    AgentApprovalDecision.CANCEL,
+                ),
+            )
+            connection.emit(AgentEvent.ApprovalRequested(locator.agentSessionId, approval))
+            runCurrent()
+            val request = coordinator.repository.snapshot.value.actionRequests.single()
+            assertTrue(SessionActionRisk.DESTRUCTIVE_COMMAND in request.riskReasons)
+            assertTrue(SessionActionRisk.BROAD_FILESYSTEM_ACCESS in request.riskReasons)
+
+            assertFailsWith<IllegalArgumentException> {
+                coordinator.respondToAction(
+                    locator = locator,
+                    requestId = request.id,
+                    decision = AgentApprovalDecision.APPROVE_ONCE,
+                )
+            }
+            assertEquals(
+                SessionActionState.PENDING,
+                coordinator.repository.snapshot.value.actionRequests.single().state,
+            )
+            assertTrue(connection.approvalResponses.isEmpty())
+
+            connection.failApprovalResponses = true
+            val failure = assertFailsWith<SessionActionDeliveryUncertainException> {
+                coordinator.respondToAction(
+                    locator = locator,
+                    requestId = request.id,
+                    decision = AgentApprovalDecision.APPROVE_ONCE,
+                    additionalConfirmationGiven = true,
+                )
+            }
+            assertFalse(failure.message.orEmpty().contains("private transport"))
+            assertEquals(
+                SessionActionState.DELIVERING,
+                coordinator.repository.snapshot.value.actionRequests.single().state,
+            )
+            assertFalse(coordinator.repository.snapshot.value.activities.single().isResolved)
+
+            connection.failApprovalResponses = false
+            connection.emit(AgentEvent.ApprovalRequested(locator.agentSessionId, approval))
+            runCurrent()
+            assertEquals(
+                SessionActionState.DELIVERING,
+                coordinator.repository.snapshot.value.actionRequests.single().state,
+            )
+            assertFailsWith<IllegalArgumentException> {
+                coordinator.respondToAction(
+                    locator = locator,
+                    requestId = request.id,
+                    decision = AgentApprovalDecision.CANCEL,
+                )
+            }
+            assertTrue(connection.approvalResponses.isEmpty())
         } finally {
             coordinator.shutdown()
         }

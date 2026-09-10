@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "replay-success",
+  "kind": "counterexample",
+  "model": "WorkflowConcurrency",
+  "trace": ["start", "acquire:0:0", "complete:0"],
+  "expected": {
+    "outcome": "accepted"
+  },
+  "evidence": {
+    "class": "contract-test",
+    "boundary": "A known effect may complete after a deterministic replay."
+  },
+  "implementation": "scripts/ci/verify_workflow_concurrency.py",
+  "input_sha256": "e0466a4b8bfce4218ce9cf5033b2291a41bd271e76f59d5af8a2e29de5e35fa5",
+  "implementation_sha256": "1495499597fcfcd06cf89bc2f2685468e2f48bb137223fc61c74d5051d2849cf"
+}

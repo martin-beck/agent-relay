@@ -1,0 +1,72 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
+name: External documentation publication
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: Explicitly authorize the configured external publication
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: external-documentation-publication
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: ${{ inputs.confirm == true }}
+    name: Publish validated documentation archive
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DOCS_PUBLICATION_URL: ${{ vars.DOCS_PUBLICATION_URL }}
+      DOCS_PUBLICATION_TOKEN: ${{ secrets.DOCS_PUBLICATION_TOKEN }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          version: "0.12.8"
+          enable-cache: false
+
+      - name: Install locked documentation tools
+        run: uv sync --locked --only-group quality --only-group docs
+
+      - name: Build and validate the documentation site
+        run: |
+          set -euo pipefail
+          uv run python scripts/docs/render_workflows.py --check
+          uv run python scripts/docs/verify_workflows.py
+          uv run python scripts/docs/verify_documentation_privacy.py
+          uv run mkdocs build --strict
+
+      - name: Publish archive with checksum and secret hygiene
+        env:
+          DESTINATION: ${{ env.DOCS_PUBLICATION_URL }}
+        run: |
+          set -euo pipefail
+          test -n "${DESTINATION}"
+          test -n "${DOCS_PUBLICATION_TOKEN}"
+          uv run python scripts/docs/publish_external.py \
+            --site-dir build/site \
+            --archive build/documentation-site.tar.gz \
+            --checksum build/documentation-site.sha256 \
+            --destination "${DESTINATION}"
+          {
+            echo '## External documentation publication checksum'
+            echo
+            echo '```'
+            cat build/documentation-site.sha256
+            echo '```'
+          } >> "${GITHUB_STEP_SUMMARY}"

@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.provider.api
 
 import kotlin.test.assertEquals
@@ -49,6 +54,35 @@ class AgentProviderRegistryTest {
     fun providerIdentifiersRejectUnstableValues() {
         listOf("", "UPPERCASE", "contains spaces", "a").forEach { value ->
             assertFailsWith<IllegalArgumentException> { AgentProviderId(value) }
+        }
+    }
+
+    @Test
+    fun providerDescriptorsRequireStableMetadata() {
+        assertFailsWith<IllegalArgumentException> {
+            AgentProviderDescriptor(
+                id = AgentProviderId("test.valid"),
+                displayName = " ",
+                providerVersion = "1.0.0",
+                capabilities = emptySet(),
+            )
+        }
+        assertFailsWith<IllegalArgumentException> {
+            AgentProviderDescriptor(
+                id = AgentProviderId("test.valid"),
+                displayName = "Valid",
+                providerVersion = "",
+                capabilities = emptySet(),
+            )
+        }
+        assertFailsWith<IllegalArgumentException> {
+            AgentProviderDescriptor(
+                id = AgentProviderId("test.valid"),
+                displayName = "Valid",
+                providerVersion = "1.0.0",
+                apiVersion = 0,
+                capabilities = emptySet(),
+            )
         }
     }
 

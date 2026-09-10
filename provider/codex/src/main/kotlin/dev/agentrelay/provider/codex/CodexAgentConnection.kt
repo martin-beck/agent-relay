@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.provider.codex
 
 import dev.agentrelay.provider.api.AgentApprovalDecision
@@ -94,14 +99,16 @@ internal class CodexAgentConnection private constructor(
     }
 
     override suspend fun steerActiveTurn(sessionId: AgentSessionId, text: String) {
-        val turnId = activeTurns[sessionId]
-            ?: throw IllegalStateException("Session has no active turn")
+        val turnId = checkNotNull(activeTurns[sessionId]) {
+            "Session has no active turn"
+        }
         client.steer(sessionId, turnId, text)
     }
 
     override suspend fun interrupt(sessionId: AgentSessionId) {
-        val turnId = activeTurns[sessionId]
-            ?: throw IllegalStateException("Session has no active turn")
+        val turnId = checkNotNull(activeTurns[sessionId]) {
+            "Session has no active turn"
+        }
         client.interrupt(sessionId, turnId)
     }
 

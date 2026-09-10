@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.session.runtime
 
 import dev.agentrelay.connection.api.ConnectionCapability
@@ -49,6 +54,7 @@ internal class FakeConnectionProvider(
     label: String,
     initialRuntime: FakeRuntime,
     var failProfileDiscovery: Boolean = false,
+    var failConnectionLookup: Boolean = false,
 ) : ConnectionProvider {
     override val descriptor = ConnectionProviderDescriptor(
         id = ConnectionProviderId(providerId),
@@ -72,6 +78,7 @@ internal class FakeConnectionProvider(
     }
 
     override fun connection(profileId: ConnectionProfileId): ManagedConnection {
+        check(!failConnectionLookup) { "Injected connection lookup failure" }
         require(profileId == summary.id)
         return managed
     }
@@ -153,7 +160,10 @@ internal class FakeManagedConnection(
     )
 }
 
-internal data class FakeRuntime(override val hostId: String) : RemoteAgentRuntime {
+internal data class FakeRuntime(
+    override val hostId: String,
+    override val fileAccess: dev.agentrelay.provider.api.RemoteFileAccess? = null,
+) : RemoteAgentRuntime {
     override suspend fun execute(command: RemoteCommand, timeout: Duration): RemoteCommandResult =
         error("Fake agent providers do not execute commands")
 
@@ -227,6 +237,7 @@ internal class FakeAgentConnection(
     val steeredInputs = mutableListOf<Pair<AgentSessionId, String>>()
     val interrupted = mutableListOf<AgentSessionId>()
     val approvalResponses = mutableListOf<Triple<AgentApprovalId, AgentApprovalDecision, Map<String, List<String>>>>()
+    var failApprovalResponses = false
 
     override suspend fun refreshSessions(): List<AgentSession> = sessions.value
 
@@ -288,6 +299,9 @@ internal class FakeAgentConnection(
         decision: AgentApprovalDecision,
         answers: Map<String, List<String>>,
     ) {
+        if (failApprovalResponses) {
+            error("Injected provider response failure with private transport details")
+        }
         approvalResponses += Triple(approvalId, decision, answers)
     }
 

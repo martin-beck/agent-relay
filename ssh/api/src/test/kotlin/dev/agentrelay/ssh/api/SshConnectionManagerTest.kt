@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.ssh.api
 
 import dev.agentrelay.provider.api.RemoteAgentRuntime
@@ -42,6 +47,44 @@ class SshConnectionManagerTest {
         assertIs<SshConnectionState.Connected>(session.state.value)
         assertTrue(session.runtimeOrNull() != null)
         assertEquals(listOf(candidate), hostKeys.trustedKeys(PROFILE.endpoint))
+        session.disconnect()
+        manager.close()
+    }
+
+    @Test
+    fun unknownJumpHostKeyUsesTheSameExplicitTrustFlowBeforeDestinationConnects() = runTest {
+        val jumpHost = PROFILE.copy(
+            id = SshProfileId("jump-host"),
+            endpoint = SshEndpoint("jump.example.test"),
+        )
+        val destination = PROFILE.copy(
+            id = SshProfileId("destination"),
+            endpoint = SshEndpoint("destination.example.test"),
+            jumpHostProfileId = jumpHost.id,
+        )
+        val hostKeys = InMemorySshHostKeyStore()
+        val candidate = hostKey("SHA256:AAAAAAAAAAAAAAAAAAAAAA")
+            .copy(endpoint = jumpHost.endpoint)
+        val connector = TrustCheckingConnector(candidate)
+        val manager = manager(
+            connector = connector,
+            hostKeys = hostKeys,
+            profiles = listOf(destination, jumpHost),
+        )
+        val session = manager.session(destination.id)
+
+        session.connect()
+        runCurrent()
+
+        val waiting = assertIs<SshConnectionState.AwaitingHostKeyTrust>(session.state.value)
+        assertEquals(jumpHost.endpoint, waiting.challenge.candidate.endpoint)
+        assertNull(session.runtimeOrNull())
+
+        assertTrue(session.approveHostKey(waiting.challenge))
+        runCurrent()
+
+        assertIs<SshConnectionState.Connected>(session.state.value)
+        assertEquals(listOf(candidate), hostKeys.trustedKeys(jumpHost.endpoint))
         session.disconnect()
         manager.close()
     }
@@ -175,6 +218,103 @@ class SshConnectionManagerTest {
     }
 
     @Test
+    fun configuredJumpHostsResolveOutermostFirstWithoutChangingTheDestinationIdentity() = runTest {
+        val outer = PROFILE.copy(
+            id = SshProfileId("outer"),
+            endpoint = SshEndpoint("outer.example.test"),
+        )
+        val inner = PROFILE.copy(
+            id = SshProfileId("inner"),
+            endpoint = SshEndpoint("inner.example.test"),
+            jumpHostProfileId = outer.id,
+        )
+        val destination = PROFILE.copy(
+            id = SshProfileId("destination"),
+            endpoint = SshEndpoint("destination.example.test"),
+            jumpHostProfileId = inner.id,
+        )
+        val connector = AlwaysConnectedConnector()
+        val manager = manager(
+            connector = connector,
+            hostKeys = InMemorySshHostKeyStore(),
+            profiles = listOf(destination, inner, outer),
+        )
+
+        manager.session(destination.id).connect()
+        runCurrent()
+
+        assertEquals(
+            listOf(outer.id, inner.id, destination.id),
+            connector.routes.single(),
+        )
+        assertEquals(listOf(destination.id), connector.profileIds)
+        manager.session(destination.id).disconnect()
+        manager.close()
+    }
+
+    @Test
+    fun missingJumpHostFailsAsAnActionableConfigurationErrorBeforeTransport() = runTest {
+        val destination = PROFILE.copy(
+            jumpHostProfileId = SshProfileId("missing-jump-host"),
+        )
+        val connector = AlwaysConnectedConnector()
+        val manager = manager(
+            connector = connector,
+            hostKeys = InMemorySshHostKeyStore(),
+            profiles = listOf(destination),
+        )
+
+        manager.session(destination.id).connect()
+        runCurrent()
+
+        val failure = assertIs<SshConnectionState.Failed>(
+            manager.session(destination.id).state.value,
+        ).failure
+        assertEquals(SshFailureCategory.CONFIGURATION, failure.category)
+        assertEquals("SSH_JUMP_HOST_MISSING", failure.code)
+        assertFalse(failure.recoverable)
+        assertTrue(connector.routes.isEmpty())
+        manager.close()
+    }
+
+    @Test
+    fun corruptJumpHostCycleFailsBeforeAnyCredentialReachesTheTransport() = runTest {
+        val first = PROFILE.copy(
+            id = SshProfileId("first"),
+            endpoint = SshEndpoint("first.example.test"),
+            jumpHostProfileId = SshProfileId("second"),
+        )
+        val second = PROFILE.copy(
+            id = SshProfileId("second"),
+            endpoint = SshEndpoint("second.example.test"),
+            jumpHostProfileId = first.id,
+        )
+        val destination = PROFILE.copy(
+            id = SshProfileId("destination"),
+            endpoint = SshEndpoint("destination.example.test"),
+            jumpHostProfileId = first.id,
+        )
+        val connector = AlwaysConnectedConnector()
+        val manager = manager(
+            connector = connector,
+            hostKeys = InMemorySshHostKeyStore(),
+            profiles = listOf(destination, first, second),
+        )
+
+        manager.session(destination.id).connect()
+        runCurrent()
+
+        val failure = assertIs<SshConnectionState.Failed>(
+            manager.session(destination.id).state.value,
+        ).failure
+        assertEquals(SshFailureCategory.CONFIGURATION, failure.category)
+        assertEquals("SSH_JUMP_HOST_CYCLE", failure.code)
+        assertFalse(failure.recoverable)
+        assertTrue(connector.routes.isEmpty())
+        manager.close()
+    }
+
+    @Test
     fun backgroundSuspensionIsDistinctAndResumable() = runTest {
         val connector = AlwaysConnectedConnector()
         val manager = manager(connector, InMemorySshHostKeyStore())
@@ -243,11 +383,13 @@ class SshConnectionManagerTest {
 
     private class TrustCheckingConnector(private val candidate: SshHostKey) : SshConnector {
         override suspend fun connect(
-            profile: SshProfile,
-            authentication: ResolvedSshAuthentication,
-            trustedHostKeys: List<SshHostKey>,
+            route: SshConnectionRoute,
             phaseListener: SshConnectPhaseListener,
         ): SshTransportConnection {
+            val trustedHostKeys = route.hostsInConnectionOrder
+                .firstOrNull { it.profile.endpoint == candidate.endpoint }
+                ?.trustedHostKeys
+                ?: error("Candidate endpoint is not present in the SSH route")
             val exact = trustedHostKeys.any {
                 it.algorithm == candidate.algorithm && it.publicKeyBase64 == candidate.publicKeyBase64
             }
@@ -270,14 +412,14 @@ class SshConnectionManagerTest {
 
     private class AlwaysConnectedConnector : SshConnector {
         val profileIds = mutableListOf<SshProfileId>()
+        val routes = mutableListOf<List<SshProfileId>>()
 
         override suspend fun connect(
-            profile: SshProfile,
-            authentication: ResolvedSshAuthentication,
-            trustedHostKeys: List<SshHostKey>,
+            route: SshConnectionRoute,
             phaseListener: SshConnectPhaseListener,
         ): SshTransportConnection {
-            profileIds += profile.id
+            profileIds += route.destination.profile.id
+            routes += route.hostsInConnectionOrder.map { it.profile.id }
             phaseListener.onPhase(SshConnectPhase.AUTHENTICATING)
             return FakeConnection()
         }
@@ -287,9 +429,7 @@ class SshConnectionManagerTest {
         var attempts = 0
 
         override suspend fun connect(
-            profile: SshProfile,
-            authentication: ResolvedSshAuthentication,
-            trustedHostKeys: List<SshHostKey>,
+            route: SshConnectionRoute,
             phaseListener: SshConnectPhaseListener,
         ): SshTransportConnection {
             attempts += 1

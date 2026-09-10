@@ -6,9 +6,13 @@ Describe the user-facing or architecture outcome.
 
 List the exact local checks and any device or opt-in live evidence.
 
+- [ ] `uv run pre-commit run --all-files --show-diff-on-failure`
 - [ ] `./gradlew spotlessCheck test lintDebug assembleDebug --stacktrace`
 - [ ] Relevant focused tests
-- [ ] Device tests when Android platform behavior changed
+- [ ] Semantic UI tests for changed success, empty, loading, error, offline, and
+      unsupported states
+- [ ] Accessibility, compact/expanded, and device evidence when UI behavior changed
+- [ ] Reviewed Roborazzi baseline/diff evidence when rendered UI changed
 
 ## Privacy and security
 

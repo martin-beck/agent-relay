@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.session.api
 
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -11,6 +16,8 @@ data class SessionEventUpdate(
     val observation: SessionObservation? = null,
     val transcriptEntry: CachedTranscriptEntry? = null,
     val activity: SessionActivity? = null,
+    val actionRequest: SessionActionRequest? = null,
+    val artifact: SessionArtifact? = null,
 ) {
     init {
         require(observation == null || observation.locator == locator) {
@@ -19,7 +26,26 @@ data class SessionEventUpdate(
         require(activity == null || activity.locator == locator) {
             "Event activity locator does not match"
         }
-        require(observation != null || transcriptEntry != null || activity != null) {
+        require(actionRequest == null || actionRequest.locator == locator) {
+            "Event action request locator does not match"
+        }
+        require(artifact == null || artifact.locator == locator) {
+            "Event artifact locator does not match"
+        }
+        require(
+            activity?.actionRequestId == null ||
+                actionRequest == null ||
+                activity.actionRequestId == actionRequest.id,
+        ) {
+            "Event activity and action request identities do not match"
+        }
+        require(
+            observation != null ||
+                transcriptEntry != null ||
+                activity != null ||
+                actionRequest != null ||
+                artifact != null,
+        ) {
             "Session event update must contain a durable change"
         }
     }
@@ -48,6 +74,18 @@ interface SessionHubRepository {
         draft: SessionDraft,
     )
 
+    suspend fun setActiveSession(locator: SessionLocator?)
+
+    suspend fun updateRecoveryState(locator: SessionLocator, state: SessionRecoveryState)
+
+    suspend fun enqueueCommand(locator: SessionLocator, command: DurableCommand): CommandEnqueueResult
+
+    suspend fun markCommandInFlight(locator: SessionLocator, commandId: String): Boolean
+
+    suspend fun markCommandUnknown(locator: SessionLocator, commandId: String): Boolean
+
+    suspend fun acknowledgeCommand(locator: SessionLocator, commandId: String): Boolean
+
     suspend fun recordActivity(activity: SessionActivity)
 
     suspend fun markSessionRead(
@@ -58,6 +96,21 @@ interface SessionHubRepository {
     suspend fun resolveActivity(
         locator: SessionLocator,
         activityId: String,
+    )
+
+    suspend fun beginActionResponse(
+        locator: SessionLocator,
+        requestId: String,
+        decision: dev.agentrelay.provider.api.AgentApprovalDecision,
+        answeredQuestionIds: Set<String>,
+        additionalConfirmationGiven: Boolean = false,
+        startedAtEpochMillis: Long,
+    )
+
+    suspend fun completeActionResponse(
+        locator: SessionLocator,
+        requestId: String,
+        completedAtEpochMillis: Long,
     )
 
     suspend fun cacheTranscript(
@@ -94,12 +147,6 @@ class PersistentSessionHubRepository private constructor(
 
     override suspend fun applyEvent(update: SessionEventUpdate) {
         mutate { current ->
-            if (update.activity != null && current.activities.any {
-                    it.locator == update.activity.locator && it.id == update.activity.id
-                }
-            ) {
-                return@mutate current
-            }
             val existing = current.session(update.locator)
             require(existing != null || update.observation != null) {
                 "An event for an unknown session requires an observation"
@@ -134,10 +181,28 @@ class PersistentSessionHubRepository private constructor(
                 }
             } ?: current.activities
 
+            val updatedActionRequests = update.actionRequest?.let { request ->
+                val existingRequest = current.actionRequest(request.locator, request.id)
+                when (existingRequest?.state) {
+                    SessionActionState.DELIVERING,
+                    SessionActionState.RESOLVED,
+                    -> current.actionRequests
+                    SessionActionState.PENDING,
+                    null,
+                    -> current.actionRequests.filterNot {
+                        it.locator == request.locator && it.id == request.id
+                    } + request
+                }
+            } ?: current.actionRequests
+
+            val updatedArtifacts = current.updatedArtifacts(update)
+
             val next = current.copy(
                 sessions = updatedSessions,
                 activities = updatedActivities,
                 transcripts = updatedTranscripts,
+                actionRequests = updatedActionRequests,
+                artifacts = updatedArtifacts,
             )
             if (next == current) current else next
         }
@@ -166,6 +231,79 @@ class PersistentSessionHubRepository private constructor(
             current.copy(drafts = current.drafts + (locator to draft))
         }
     }
+
+    override suspend fun setActiveSession(locator: SessionLocator?) {
+        mutate { current ->
+            require(locator == null || current.session(locator) != null) { "No session found for active session" }
+            current.copy(activeSession = locator)
+        }
+    }
+
+    override suspend fun updateRecoveryState(locator: SessionLocator, state: SessionRecoveryState) {
+        mutate { current ->
+            current.requireSession(locator)
+            current.copy(recovery = current.recovery + (locator to state))
+        }
+    }
+
+    override suspend fun enqueueCommand(
+        locator: SessionLocator,
+        command: DurableCommand,
+    ): CommandEnqueueResult = mutex.withLock {
+        val current = mutableSnapshot.value
+        current.requireSession(locator)
+        val existing = current.command(locator, command.id)
+        if (existing != null) {
+            if (existing.payload == command.payload) return@withLock CommandEnqueueResult.DUPLICATE
+            val conflicted = current.copy(
+                commandOutbox = current.commandOutbox.updatedCommand(
+                    locator,
+                    existing.copy(state = CommandOutboxState.CONFLICT),
+                ),
+            )
+            store.save(conflicted)
+            mutableSnapshot.value = conflicted
+            return@withLock CommandEnqueueResult.CONFLICT
+        }
+        val commands = current.commandOutbox[locator].orEmpty()
+        require(commands.size < MAX_PENDING_COMMANDS) { "Command outbox is full" }
+        val next = current.copy(commandOutbox = current.commandOutbox + (locator to (commands + command)))
+            .normalized(retentionPolicy)
+        store.save(next)
+        mutableSnapshot.value = next
+        CommandEnqueueResult.ENQUEUED
+    }
+
+    override suspend fun markCommandInFlight(locator: SessionLocator, commandId: String): Boolean =
+        transitionCommand(locator, commandId) { command ->
+            if (command.state != CommandOutboxState.QUEUED) {
+                null
+            } else {
+                command.copy(state = CommandOutboxState.IN_FLIGHT)
+            }
+        }
+
+    override suspend fun markCommandUnknown(locator: SessionLocator, commandId: String): Boolean =
+        transitionCommand(locator, commandId) { command ->
+            if (command.state != CommandOutboxState.IN_FLIGHT) {
+                null
+            } else {
+                command.copy(state = CommandOutboxState.UNKNOWN_DELIVERY)
+            }
+        }
+
+    override suspend fun acknowledgeCommand(locator: SessionLocator, commandId: String): Boolean =
+        transitionCommand(locator, commandId) { command ->
+            when (command.state) {
+                CommandOutboxState.IN_FLIGHT,
+                CommandOutboxState.UNKNOWN_DELIVERY,
+                -> command.copy(state = CommandOutboxState.ACKNOWLEDGED)
+                CommandOutboxState.ACKNOWLEDGED,
+                CommandOutboxState.QUEUED,
+                CommandOutboxState.CONFLICT,
+                -> null
+            }
+        }
 
     override suspend fun recordActivity(activity: SessionActivity) {
         mutate { current ->
@@ -205,9 +343,88 @@ class PersistentSessionHubRepository private constructor(
             val activity = current.activities.firstOrNull { it.locator == locator && it.id == activityId }
                 ?: throw NoSuchElementException("No session activity found")
             require(activity.requiresAction) { "Session activity is not awaiting an action" }
+            require(activity.actionRequestId == null) {
+                "Provider action activity must be resolved through its offered decision"
+            }
             current.copy(
                 activities = current.activities.map {
                     if (it.locator == locator && it.id == activityId) it.copy(isResolved = true) else it
+                },
+            )
+        }
+    }
+
+    override suspend fun beginActionResponse(
+        locator: SessionLocator,
+        requestId: String,
+        decision: dev.agentrelay.provider.api.AgentApprovalDecision,
+        answeredQuestionIds: Set<String>,
+        additionalConfirmationGiven: Boolean,
+        startedAtEpochMillis: Long,
+    ) {
+        require(startedAtEpochMillis >= 0L)
+        mutate { current ->
+            val request = current.actionRequest(locator, requestId)
+                ?: throw NoSuchElementException("No action request found")
+            require(request.state == SessionActionState.PENDING) { "Action request is not pending" }
+            require(decision in request.availableDecisions) { "Decision was not offered by the provider" }
+            require(!request.requiresAdditionalConfirmation(decision) || additionalConfirmationGiven) {
+                "Additional confirmation is required for this decision"
+            }
+            val questionIds = request.questions.mapTo(mutableSetOf()) { it.id }
+            require(answeredQuestionIds.all(questionIds::contains)) { "Answers reference an unknown question" }
+            if (decision == dev.agentrelay.provider.api.AgentApprovalDecision.SUBMIT) {
+                require(answeredQuestionIds == questionIds) { "Every question requires an answer" }
+            } else {
+                require(answeredQuestionIds.isEmpty()) { "Only a submitted answer may include question ids" }
+            }
+            current.copy(
+                actionRequests = current.actionRequests.map {
+                    if (it.locator == locator && it.id == requestId) {
+                        it.copy(
+                            state = SessionActionState.DELIVERING,
+                            decision = decision,
+                            answeredQuestionIds = answeredQuestionIds,
+                            additionalConfirmationGiven = additionalConfirmationGiven,
+                            decisionAtEpochMillis = startedAtEpochMillis,
+                        )
+                    } else {
+                        it
+                    }
+                },
+            )
+        }
+    }
+
+    override suspend fun completeActionResponse(
+        locator: SessionLocator,
+        requestId: String,
+        completedAtEpochMillis: Long,
+    ) {
+        require(completedAtEpochMillis >= 0L)
+        mutate { current ->
+            val request = current.actionRequest(locator, requestId)
+                ?: throw NoSuchElementException("No action request found")
+            require(request.state == SessionActionState.DELIVERING) {
+                "Action request is not being delivered"
+            }
+            current.copy(
+                actionRequests = current.actionRequests.map {
+                    if (it.locator == locator && it.id == requestId) {
+                        it.copy(
+                            state = SessionActionState.RESOLVED,
+                            decisionAtEpochMillis = completedAtEpochMillis,
+                        )
+                    } else {
+                        it
+                    }
+                },
+                activities = current.activities.map {
+                    if (it.locator == locator && it.actionRequestId == requestId) {
+                        it.copy(isResolved = true)
+                    } else {
+                        it
+                    }
                 },
             )
         }
@@ -234,8 +451,13 @@ class PersistentSessionHubRepository private constructor(
                 current.copy(
                     sessions = current.sessions.filterNot { it.locator == locator },
                     drafts = current.drafts - locator,
+                    activeSession = current.activeSession?.takeUnless { it == locator },
+                    recovery = current.recovery - locator,
+                    commandOutbox = current.commandOutbox - locator,
                     activities = current.activities.filterNot { it.locator == locator },
                     transcripts = current.transcripts - locator,
+                    actionRequests = current.actionRequests.filterNot { it.locator == locator },
+                    artifacts = current.artifacts.filterNot { it.locator == locator },
                 )
             }
         }
@@ -252,6 +474,22 @@ class PersistentSessionHubRepository private constructor(
             store.save(next)
             mutableSnapshot.value = next
         }
+    }
+
+    private suspend fun transitionCommand(
+        locator: SessionLocator,
+        commandId: String,
+        transition: (DurableCommand) -> DurableCommand?,
+    ): Boolean = mutex.withLock {
+        val current = mutableSnapshot.value
+        current.requireSession(locator)
+        val existing = current.command(locator, commandId) ?: return@withLock false
+        val updated = transition(existing) ?: return@withLock false
+        val next = current.copy(commandOutbox = current.commandOutbox.updatedCommand(locator, updated))
+            .normalized(retentionPolicy)
+        store.save(next)
+        mutableSnapshot.value = next
+        true
     }
 
     companion object {
@@ -286,3 +524,38 @@ class InMemorySessionHubStore(
 
 private fun SessionHubSnapshot.requireSession(locator: SessionLocator): SessionRecord =
     session(locator) ?: throw NoSuchElementException("No session found for the supplied locator")
+
+private fun Map<SessionLocator, List<DurableCommand>>.updatedCommand(
+    locator: SessionLocator,
+    command: DurableCommand,
+): Map<SessionLocator, List<DurableCommand>> = this + (
+    locator to getValue(locator).map { existing ->
+        if (existing.id == command.id) command else existing
+    }
+    )
+
+private fun SessionHubSnapshot.updatedArtifacts(update: SessionEventUpdate): List<SessionArtifact> {
+    val workspaceChanged = update.observation?.let { incoming ->
+        session(update.locator)?.observation?.let { previous ->
+            previous.projectPath != incoming.projectPath
+        } ?: false
+    } ?: false
+    val candidates = if (workspaceChanged) {
+        artifacts.filterNot { it.locator == update.locator }
+    } else {
+        artifacts
+    }
+    val artifact = update.artifact ?: return candidates
+    val existingIndex = candidates.indexOfFirst {
+        it.locator == artifact.locator && it.id == artifact.id
+    }
+    if (existingIndex < 0) {
+        return candidates + artifact
+    }
+    if (candidates[existingIndex] == artifact) {
+        return candidates
+    }
+    return candidates.toMutableList().apply {
+        this[existingIndex] = artifact
+    }
+}

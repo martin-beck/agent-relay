@@ -1,21 +1,30 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.session.runtime
 
 import dev.agentrelay.connection.api.ConnectionChallengeId
 import dev.agentrelay.connection.api.ConnectionDisconnectReason
 import dev.agentrelay.connection.api.ConnectionFailure
 import dev.agentrelay.connection.api.ConnectionFailureCategory
+import dev.agentrelay.connection.api.ConnectionFailureMessage
+import dev.agentrelay.connection.api.ConnectionFailureMessageKind
 import dev.agentrelay.connection.api.ConnectionIdentityDecision
 import dev.agentrelay.connection.api.ConnectionProfileSummary
 import dev.agentrelay.connection.api.ConnectionProviderRegistry
 import dev.agentrelay.connection.api.ConnectionState
 import dev.agentrelay.provider.api.AgentApprovalDecision
-import dev.agentrelay.provider.api.AgentApprovalId
 import dev.agentrelay.provider.api.AgentCapability
-import dev.agentrelay.provider.api.AgentChangedFile
 import dev.agentrelay.provider.api.AgentProviderRegistry
 import dev.agentrelay.provider.api.AgentSession
+import dev.agentrelay.provider.api.RemoteFileReference
 import dev.agentrelay.provider.api.StartSessionOptions
 import dev.agentrelay.session.api.CachedTranscriptEntry
+import dev.agentrelay.session.api.SessionArtifact
+import dev.agentrelay.session.api.SessionArtifactAvailability
+import dev.agentrelay.session.api.SessionEventUpdate
 import dev.agentrelay.session.api.SessionHubRepository
 import dev.agentrelay.session.api.SessionLocator
 import kotlinx.coroutines.CancellationException
@@ -44,6 +53,7 @@ class SessionCoordinator(
     private val controllers = mutableMapOf<SessionConnectionKey, ProfileRuntimeController>()
     private val mutableSnapshot = MutableStateFlow(SessionCoordinatorSnapshot())
     private var closed = false
+    private val actionResponses = SessionActionResponseCoordinator(repository, ::now)
 
     val snapshot: StateFlow<SessionCoordinatorSnapshot> = mutableSnapshot.asStateFlow()
 
@@ -77,7 +87,7 @@ class SessionCoordinator(
                             kind = SessionCoordinatorIssueKind.PROFILE_DISCOVERY,
                             connection = null,
                             agentProviderId = null,
-                            actionableMessage = descriptor.displayName + " profiles could not be loaded",
+                            connectionProviderLabel = descriptor.displayName.take(256),
                             recoverable = true,
                             occurredAtEpochMillis = now(),
                         )
@@ -178,21 +188,77 @@ class SessionCoordinator(
         active.connection.interrupt(locator.agentSessionId)
     }
 
-    suspend fun respondToApproval(
+    suspend fun respondToAction(
         locator: SessionLocator,
-        approvalId: AgentApprovalId,
+        requestId: String,
         decision: AgentApprovalDecision,
         answers: Map<String, List<String>> = emptyMap(),
+        additionalConfirmationGiven: Boolean = false,
     ) {
         val active = controller(locator.connectionKey()).active(locator.agentProviderId)
         requireCapability(active, AgentCapability.APPROVALS)
-        active.connection.respondToApproval(approvalId, decision, answers)
+        actionResponses.respond(
+            active = active,
+            locator = locator,
+            requestId = requestId,
+            decision = decision,
+            answers = answers,
+            additionalConfirmationGiven = additionalConfirmationGiven,
+        )
     }
 
-    suspend fun changedFiles(locator: SessionLocator): List<AgentChangedFile> {
+    suspend fun changedFiles(locator: SessionLocator): List<SessionArtifact> {
         val active = controller(locator.connectionKey()).active(locator.agentProviderId)
         requireCapability(active, AgentCapability.FILE_CHANGES)
-        return active.connection.changedFiles(locator.agentSessionId)
+        val observation = repository.snapshot.value.session(locator)?.observation
+            ?: throw NoSuchElementException("No session found")
+        val artifacts = active.connection.changedFiles(locator.agentSessionId)
+            .map { file ->
+                SessionArtifactMapper.map(
+                    file = file,
+                    locator = locator,
+                    workspaceRoot = observation.projectPath,
+                    now = now(),
+                )
+            }
+            .distinctBy(SessionArtifact::id)
+        artifacts.forEach { artifact ->
+            repository.applyEvent(
+                SessionEventUpdate(
+                    locator = locator,
+                    artifact = artifact,
+                ),
+            )
+        }
+        return artifacts
+    }
+
+    suspend fun prepareArtifactDownload(
+        locator: SessionLocator,
+        artifactId: String,
+    ): PreparedArtifactDownload {
+        val artifact = repository.snapshot.value.sessionArtifacts(locator)
+            .firstOrNull { it.id == artifactId }
+            ?: throw NoSuchElementException("No session artifact found")
+        require(artifact.availability == SessionArtifactAvailability.DOWNLOADABLE) {
+            "Session artifact is not downloadable"
+        }
+        val workspaceRoot = repository.snapshot.value.session(locator)
+            ?.observation
+            ?.projectPath
+            ?: error("Session workspace is unavailable")
+        val active = controller(locator.connectionKey()).active(locator.agentProviderId)
+        requireCapability(active, AgentCapability.FILE_CHANGES)
+        val fileAccess = requireNotNull(active.runtime.fileAccess) {
+            "Connection does not support workspace file access"
+        }
+        val reference = RemoteFileReference(workspaceRoot, checkNotNull(artifact.relativePath))
+        val sourceSnapshot = fileAccess.inspect(reference, calculateSha256 = true)
+        return PreparedArtifactDownload(
+            artifact = artifact,
+            sourceSnapshot = sourceSnapshot,
+            chunks = fileAccess.read(reference, sourceSnapshot.revision),
+        )
     }
 
     suspend fun shutdown() {
@@ -343,7 +409,9 @@ class SessionCoordinator(
         val failure = ConnectionFailure(
             category = ConnectionFailureCategory.CONFIGURATION,
             code = "CONNECTION_SETUP_FAILED",
-            actionableMessage = "Connection profile could not be prepared",
+            message = ConnectionFailureMessage.Generated(
+                ConnectionFailureMessageKind.PROFILE_PREPARATION_FAILED,
+            ),
             recoverable = true,
         )
         stateMutex.withLock {
@@ -356,7 +424,7 @@ class SessionCoordinator(
                         kind = SessionCoordinatorIssueKind.CONNECTION_SETUP,
                         connection = key,
                         agentProviderId = null,
-                        actionableMessage = "Connection " + profile.label.take(256) + " could not be prepared",
+                        connectionLabel = profile.label.take(256),
                         recoverable = true,
                         occurredAtEpochMillis = now(),
                     )
@@ -397,11 +465,6 @@ class SessionCoordinator(
         }
     }
 
-    private fun SessionLocator.connectionKey() = SessionConnectionKey(
-        providerId = connectionProviderId,
-        profileId = connectionProfileId,
-    )
-
     private fun profileIssueId(providerId: String): String = PROFILE_ISSUE_PREFIX + providerId
 
     private fun setupIssueId(key: SessionConnectionKey): String =
@@ -413,3 +476,17 @@ class SessionCoordinator(
         const val PROFILE_ISSUE_PREFIX = "profile-discovery:"
     }
 }
+
+private fun SessionLocator.connectionKey() = SessionConnectionKey(
+    providerId = connectionProviderId,
+    profileId = connectionProfileId,
+)
+class SessionActionDeliveryUncertainException :
+    IllegalStateException(
+        "The provider response could not be confirmed. Do not retry this request; wait for a newly identified provider request.",
+    )
+
+class SessionActionAuditFailureException :
+    IllegalStateException(
+        "The provider accepted the response, but its local audit state could not be confirmed.",
+    )

@@ -1,7 +1,15 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.session.api
 
 import dev.agentrelay.connection.api.ConnectionProfileId
 import dev.agentrelay.connection.api.ConnectionProviderId
+import dev.agentrelay.provider.api.AgentApprovalDecision
+import dev.agentrelay.provider.api.AgentApprovalType
+import dev.agentrelay.provider.api.AgentFileChangeKind
 import dev.agentrelay.provider.api.AgentMessageChannel
 import dev.agentrelay.provider.api.AgentProviderId
 import dev.agentrelay.provider.api.AgentSessionId
@@ -84,6 +92,74 @@ class PersistentSessionHubRepositoryTest {
         assertEquals(1, restored.session(session)?.unreadCount)
         assertEquals("approval-1", restored.inbox().single().id)
         assertEquals("Durable result", restored.transcripts[session]?.single()?.text)
+    }
+
+    @Test
+    fun recoveryStateSurvivesReopenAndActiveSessionIsIdempotent() = runTest {
+        val store = InMemorySessionHubStore()
+        val repository = PersistentSessionHubRepository.open(store)
+        val session = locator("local.device", "local", "recovery-thread")
+        repository.upsertSession(observation(session, updatedAt = 1L))
+        repository.setActiveSession(session)
+        repository.setActiveSession(session)
+        repository.updateRecoveryState(
+            session,
+            SessionRecoveryState(
+                scrollPosition = 42,
+                eventCursor = "event-7",
+                pendingCommandIds = setOf("command-1"),
+            ),
+        )
+
+        val restored = PersistentSessionHubRepository.open(store).snapshot.value
+        assertEquals(session, restored.activeSession)
+        assertEquals(42, restored.recovery[session]?.scrollPosition)
+        assertEquals("event-7", restored.recovery[session]?.eventCursor)
+        assertEquals(setOf("command-1"), restored.recovery[session]?.pendingCommandIds)
+
+        repository.removeSession(session)
+        assertTrue(repository.snapshot.value.activeSession == null)
+        assertTrue(repository.snapshot.value.recovery[session] == null)
+    }
+
+    @Test
+    fun commandOutboxPersistsTransitionsAndRejectsConflictingReuse() = runTest {
+        val store = InMemorySessionHubStore()
+        val repository = PersistentSessionHubRepository.open(store)
+        val session = locator("local.device", "local", "outbox-thread")
+        repository.upsertSession(observation(session, updatedAt = 1L))
+        val command = DurableCommand("command-1", "run tests", 2L)
+
+        assertEquals(CommandEnqueueResult.ENQUEUED, repository.enqueueCommand(session, command))
+        assertEquals(CommandEnqueueResult.DUPLICATE, repository.enqueueCommand(session, command))
+        assertEquals(
+            CommandEnqueueResult.CONFLICT,
+            repository.enqueueCommand(session, command.copy(payload = "delete data")),
+        )
+        assertEquals(CommandOutboxState.CONFLICT, repository.snapshot.value.commandOutbox[session]?.single()?.state)
+        assertFalse(repository.markCommandInFlight(session, command.id))
+
+        val restored = PersistentSessionHubRepository.open(store).snapshot.value
+        assertEquals(CommandOutboxState.CONFLICT, restored.commandOutbox[session]?.single()?.state)
+    }
+
+    @Test
+    fun unknownDeliveryCanOnlyBeAcknowledgedAndIsNeverAutomaticallyReplayable() = runTest {
+        val repository = PersistentSessionHubRepository.open(InMemorySessionHubStore())
+        val session = locator("local.device", "local", "unknown-delivery")
+        repository.upsertSession(observation(session, updatedAt = 1L))
+        val command = DurableCommand("command-unknown", "safe command", 2L)
+        repository.enqueueCommand(session, command)
+
+        assertTrue(repository.markCommandInFlight(session, command.id))
+        assertTrue(repository.markCommandUnknown(session, command.id))
+        assertFalse(repository.markCommandInFlight(session, command.id))
+        assertTrue(repository.acknowledgeCommand(session, command.id))
+        assertFalse(repository.acknowledgeCommand(session, command.id))
+        assertEquals(
+            CommandOutboxState.ACKNOWLEDGED,
+            repository.snapshot.value.commandOutbox[session]?.single()?.state,
+        )
     }
 
     @Test
@@ -191,6 +267,157 @@ class PersistentSessionHubRepositoryTest {
     }
 
     @Test
+    fun providerActionDeliveryIsDurableValidatedAndReplaySafe() = runTest {
+        val store = InMemorySessionHubStore()
+        val repository = PersistentSessionHubRepository.open(store)
+        val session = locator("ssh.secure-shell", "workstation", "action-session")
+        repository.upsertSession(observation(session, updatedAt = 1L))
+        val request = actionRequest("action-one", session, 2L)
+        val linkedActivity = activity(
+            id = "approval-one",
+            locator = session,
+            type = SessionActivityType.QUESTION,
+            at = 2L,
+        ).copy(actionRequestId = request.id)
+        repository.applyEvent(
+            SessionEventUpdate(
+                locator = session,
+                activity = linkedActivity,
+                actionRequest = request,
+            ),
+        )
+
+        assertEquals(SessionActionState.PENDING, repository.snapshot.value.actionRequests.single().state)
+        assertFailsWith<IllegalArgumentException> {
+            repository.resolveActivity(session, linkedActivity.id)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            repository.beginActionResponse(
+                locator = session,
+                requestId = request.id,
+                decision = AgentApprovalDecision.APPROVE_ONCE,
+                answeredQuestionIds = emptySet(),
+                startedAtEpochMillis = 3L,
+            )
+        }
+
+        val questionId = request.questions.single().id
+        repository.beginActionResponse(
+            locator = session,
+            requestId = request.id,
+            decision = AgentApprovalDecision.SUBMIT,
+            answeredQuestionIds = setOf(questionId),
+            startedAtEpochMillis = 3L,
+        )
+        assertEquals(SessionActionState.DELIVERING, repository.snapshot.value.actionRequests.single().state)
+        assertEquals(setOf(questionId), repository.snapshot.value.actionRequests.single().answeredQuestionIds)
+
+        val reopened = PersistentSessionHubRepository.open(store)
+        assertEquals(SessionActionState.DELIVERING, reopened.snapshot.value.actionRequests.single().state)
+        reopened.applyEvent(
+            SessionEventUpdate(
+                locator = session,
+                activity = linkedActivity,
+                actionRequest = request.copy(receivedAtEpochMillis = 4L),
+            ),
+        )
+        assertEquals(SessionActionState.DELIVERING, reopened.snapshot.value.actionRequests.single().state)
+        assertFailsWith<IllegalArgumentException> {
+            reopened.beginActionResponse(
+                locator = session,
+                requestId = request.id,
+                decision = AgentApprovalDecision.CANCEL,
+                answeredQuestionIds = emptySet(),
+                startedAtEpochMillis = 5L,
+            )
+        }
+        reopened.completeActionResponse(session, request.id, completedAtEpochMillis = 6L)
+
+        assertEquals(SessionActionState.RESOLVED, reopened.snapshot.value.actionRequests.single().state)
+        assertTrue(reopened.snapshot.value.activities.single().isResolved)
+        reopened.applyEvent(
+            SessionEventUpdate(
+                locator = session,
+                activity = linkedActivity,
+                actionRequest = request.copy(receivedAtEpochMillis = 7L),
+            ),
+        )
+        assertEquals(SessionActionState.RESOLVED, reopened.snapshot.value.actionRequests.single().state)
+        assertTrue(reopened.snapshot.value.activities.single().isResolved)
+    }
+
+    @Test
+    fun artifactEventsAreAtomicIdempotentAndRemovedWithTheirSession() = runTest {
+        val store = RecordingStore()
+        val repository = PersistentSessionHubRepository.open(store)
+        val session = locator("local.device", "local", "artifact-session")
+        repository.upsertSession(observation(session, updatedAt = 1L))
+        val artifact = SessionArtifact(
+            id = "artifact-one",
+            locator = session,
+            providerPath = "/workspace/project/report.txt",
+            relativePath = "report.txt",
+            oldProviderPath = null,
+            oldRelativePath = null,
+            kind = AgentFileChangeKind.MODIFIED,
+            turnId = "turn-one",
+            availability = SessionArtifactAvailability.DOWNLOADABLE,
+            observedAtEpochMillis = 2L,
+        )
+        val update = SessionEventUpdate(locator = session, artifact = artifact)
+
+        repository.applyEvent(update)
+        val savesAfterFirstEvent = store.saveCount
+        repository.applyEvent(update)
+
+        assertEquals(savesAfterFirstEvent, store.saveCount)
+        assertEquals(listOf(artifact), repository.snapshot.value.sessionArtifacts(session))
+        val reclassified = artifact.copy(
+            relativePath = null,
+            availability = SessionArtifactAvailability.OUTSIDE_WORKSPACE,
+            observedAtEpochMillis = 3L,
+        )
+        repository.applyEvent(SessionEventUpdate(locator = session, artifact = reclassified))
+        assertEquals(
+            listOf(reclassified),
+            repository.snapshot.value.sessionArtifacts(session),
+        )
+
+        repository.applyEvent(
+            SessionEventUpdate(
+                locator = session,
+                observation = observation(session, updatedAt = 4L).copy(
+                    projectPath = "/workspace/replacement",
+                ),
+            ),
+        )
+        assertTrue(repository.snapshot.value.artifacts.isEmpty())
+
+        repository.removeSession(session)
+        assertTrue(repository.snapshot.value.artifacts.isEmpty())
+    }
+
+    @Test
+    fun artifactModelRejectsUnsafeTransferPaths() {
+        val session = locator("local.device", "local", "artifact-validation")
+
+        assertFailsWith<IllegalArgumentException> {
+            SessionArtifact(
+                id = "unsafe",
+                locator = session,
+                providerPath = "../secret",
+                relativePath = "../secret",
+                oldProviderPath = null,
+                oldRelativePath = null,
+                kind = AgentFileChangeKind.MODIFIED,
+                turnId = null,
+                availability = SessionArtifactAvailability.DOWNLOADABLE,
+                observedAtEpochMillis = 1L,
+            )
+        }
+    }
+
+    @Test
     fun failedPersistenceNeverPublishesPartialState() = runTest {
         val session = locator("local.device", "local", "failure-test")
         val initial = SessionHubSnapshot(
@@ -286,9 +513,38 @@ class PersistentSessionHubRepositoryTest {
         id = id,
         locator = locator,
         type = type,
-        summary = id,
+        summary = SessionActivitySummary.Verbatim(id),
         eventAnchorId = "event-$id",
         occurredAtEpochMillis = at,
+    )
+
+    private fun actionRequest(
+        id: String,
+        locator: SessionLocator,
+        at: Long,
+    ) = SessionActionRequest(
+        id = id,
+        providerApprovalId = "provider-$id",
+        locator = locator,
+        turnId = "turn-$id",
+        type = AgentApprovalType.USER_INPUT,
+        title = SessionPresentationText.Verbatim("Choose scope"),
+        description = "Select one scope",
+        command = null,
+        workingDirectory = "/workspace/project",
+        questions = listOf(
+            SessionQuestion(
+                id = "question-$id",
+                providerQuestionId = "scope",
+                header = "Scope",
+                prompt = SessionPresentationText.Verbatim("Which scope?"),
+                options = listOf(SessionQuestionOption("once"), SessionQuestionOption("session")),
+                allowsOther = false,
+            ),
+        ),
+        availableDecisions = setOf(AgentApprovalDecision.SUBMIT, AgentApprovalDecision.CANCEL),
+        riskReasons = emptySet(),
+        receivedAtEpochMillis = at,
     )
 
     private fun transcript(id: String, at: Long) = CachedTranscriptEntry(

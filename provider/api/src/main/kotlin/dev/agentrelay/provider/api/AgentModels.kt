@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.provider.api
 
 @JvmInline
@@ -49,7 +54,13 @@ data class AgentProviderDescriptor(
     val providerVersion: String,
     val apiVersion: Int = AGENT_PROVIDER_API_VERSION,
     val capabilities: Set<AgentCapability>,
-)
+) {
+    init {
+        require(displayName.isNotBlank()) { "Provider display name must not be blank" }
+        require(providerVersion.isNotBlank()) { "Provider version must not be blank" }
+        require(apiVersion > 0) { "Provider API version must be positive" }
+    }
+}
 
 const val AGENT_PROVIDER_API_VERSION = 1
 

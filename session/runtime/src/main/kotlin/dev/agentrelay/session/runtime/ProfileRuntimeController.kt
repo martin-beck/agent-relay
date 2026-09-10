@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.session.runtime
 
 import dev.agentrelay.connection.api.ConnectionChallengeId
@@ -18,6 +23,8 @@ import dev.agentrelay.provider.api.AgentTranscriptEntry
 import dev.agentrelay.provider.api.ProviderReadiness
 import dev.agentrelay.provider.api.RemoteAgentRuntime
 import dev.agentrelay.session.api.SessionActivity
+import dev.agentrelay.session.api.SessionActivitySummary
+import dev.agentrelay.session.api.SessionActivitySummaryKind
 import dev.agentrelay.session.api.SessionActivityType
 import dev.agentrelay.session.api.SessionEventUpdate
 import dev.agentrelay.session.api.SessionHubRepository
@@ -59,6 +66,7 @@ internal data class ActiveAgentHandle(
     val descriptor: AgentProviderDescriptor,
     val connection: AgentProviderConnection,
     val readiness: ProviderReadiness.Ready,
+    val runtime: RemoteAgentRuntime,
 )
 
 internal class ProfileRuntimeController(
@@ -123,8 +131,9 @@ internal class ProfileRuntimeController(
 
     suspend fun active(agentProviderId: AgentProviderId): ActiveAgentHandle =
         activeMutex.withLock {
-            activeAgents[agentProviderId]
-                ?: throw IllegalStateException("Agent provider is not connected for this profile")
+            checkNotNull(activeAgents[agentProviderId]) {
+                "Agent provider is not connected for this profile"
+            }
         }
 
     suspend fun refreshAgentSessions(agentProviderId: AgentProviderId): List<AgentSession> {
@@ -242,7 +251,7 @@ internal class ProfileRuntimeController(
             require(connection.descriptor == descriptor) {
                 "Agent provider connection descriptor does not match its factory"
             }
-            val active = ActiveAgentHandle(descriptor, connection, readiness)
+            val active = ActiveAgentHandle(descriptor, connection, readiness, runtime)
             activeMutex.withLock {
                 activeAgents[descriptor.id] = active
             }
@@ -350,22 +359,22 @@ internal class ProfileRuntimeController(
     ) {
         val locator = SessionDataMapper.locator(endpoint(descriptor.id), event.sessionId)
         val now = now()
-        val projection = SessionDataMapper.event(event, locator, now)
-        if (
-            projection.activity == null &&
-            projection.transcriptEntry == null &&
-            projection.state == null &&
-            projection.preview == null
-        ) {
+        val current = repository.snapshot.value.session(locator)?.observation
+        val projection = SessionDataMapper.event(
+            event = event,
+            locator = locator,
+            now = now,
+            workspaceRoot = current?.projectPath,
+        )
+        if (projection.isEmpty) {
             return
         }
         try {
-            val current = repository.snapshot.value.session(locator)?.observation
             val base = current ?: SessionDataMapper.placeholderObservation(
                 profile = profile,
                 descriptor = descriptor,
                 locator = locator,
-                preview = projection.preview ?: "Agent session activity",
+                preview = projection.preview.orEmpty(),
                 now = now,
             )
             val observation = base.copy(
@@ -379,6 +388,8 @@ internal class ProfileRuntimeController(
                     observation = observation,
                     transcriptEntry = projection.transcriptEntry,
                     activity = projection.activity,
+                    actionRequest = projection.actionRequest,
+                    artifact = projection.artifact,
                 ),
             )
             clearPersistenceIssue(descriptor)
@@ -406,7 +417,10 @@ internal class ProfileRuntimeController(
                                 id = "reconnected:" + now + ":" + runtimeGeneration,
                                 locator = record.locator,
                                 type = SessionActivityType.RECONNECTED,
-                                summary = (profile.label.take(16_000) + " reconnected").trim(),
+                                summary = SessionActivitySummary.Generated(
+                                    SessionActivitySummaryKind.CONNECTION_RECONNECTED,
+                                    profile.label.take(256),
+                                ),
                                 eventAnchorId = anchor,
                                 occurredAtEpochMillis = now,
                             ),
@@ -456,6 +470,7 @@ internal class ProfileRuntimeController(
                 key = endpoint(descriptor.id),
                 descriptor = descriptor,
                 phase = phase,
+                fileAccessAvailable = phase == AgentEndpointPhase.READY && runtimeSignal.value?.fileAccess != null,
                 readiness = readiness,
                 sessionCount = sessionCount,
                 updatedAtEpochMillis = now(),
@@ -472,7 +487,10 @@ internal class ProfileRuntimeController(
                 kind = SessionCoordinatorIssueKind.PROVIDER_SYNCHRONIZATION,
                 connection = key,
                 agentProviderId = descriptor.id,
-                actionableMessage = descriptor.displayName + " could not be synchronized on " + profile.label.take(256),
+                connectionLabel = profile.label.take(256),
+                agentProviderLabel = descriptor.displayName
+                    .takeIf(String::isNotBlank)?.take(256)
+                    ?: descriptor.id.value.take(256),
                 recoverable = true,
                 occurredAtEpochMillis = now(),
             ),
@@ -492,7 +510,9 @@ internal class ProfileRuntimeController(
                 kind = SessionCoordinatorIssueKind.SESSION_PERSISTENCE,
                 connection = key,
                 agentProviderId = descriptor.id,
-                actionableMessage = "Session state could not be saved for " + descriptor.displayName,
+                agentProviderLabel = descriptor.displayName
+                    .takeIf(String::isNotBlank)?.take(256)
+                    ?: descriptor.id.value.take(256),
                 recoverable = true,
                 occurredAtEpochMillis = now(),
             ),

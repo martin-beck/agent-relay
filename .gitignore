@@ -1,5 +1,6 @@
 *.iml
 .gradle
+.kotlin/
 /local.properties
 /.idea/caches
 /.idea/libraries
@@ -8,8 +9,17 @@
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
 .DS_Store
+__pycache__/
+*.py[cod]
+.mypy_cache/
+.ruff_cache/
+.venv/
+.scannerwork/
+.coverage
+htmlcov/
 **/build/
 /captures
 .externalNativeBuild
 .cxx
 local.properties
+.cifuzz-corpus/

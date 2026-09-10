@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "pilot": {
+    "name": "fm-agent-specification-pilot",
+    "version": "0.1.0",
+    "mode": "specification-only",
+    "network": "disabled",
+    "source_upload": false,
+    "max_bytes_per_module": 100000
+  },
+  "modules": [
+    {
+      "id": "python-counterexample-verifier",
+      "path": "scripts/ci/verify_counterexamples.py",
+      "language": "python"
+    },
+    {
+      "id": "java-verified-download-task",
+      "path": "buildSrc/src/main/java/dev/agentrelay/buildlogic/VerifiedDownloadTask.java",
+      "language": "java"
+    }
+  ],
+  "evidence_boundary": {
+    "mechanically_checked": ["source-hash", "syntax", "bounded-structure"],
+    "advisory_only": ["model-reasoning", "bug-absence", "security-proof"],
+    "environmental_assumptions": ["pinned-checkout", "standard-library-parser"]
+  }
+}

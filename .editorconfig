@@ -28,6 +28,18 @@ ktlint_standard_multiline-loop = disabled
 [*.{json,toml,yaml,yml}]
 indent_size = 2
 
+[*.py]
+indent_size = 4
+max_line_length = 100
+
+[*.xml]
+indent_size = 4
+
+# Gradle regenerates this file with three-space XML indentation.
+[gradle/verification-metadata.xml]
+indent_size = 3
+
 [*.md]
+indent_size = 2
 trim_trailing_whitespace = false
 max_line_length = off

@@ -1,0 +1,14 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
+extends: default
+
+rules:
+  comments:
+    min-spaces-from-content: 1
+  document-start: disable
+  line-length:
+    max: 120
+    allow-non-breakable-inline-mappings: true
+  truthy:
+    allowed-values: ["true", "false", "on"]

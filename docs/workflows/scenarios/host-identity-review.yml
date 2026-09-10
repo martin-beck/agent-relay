@@ -1,0 +1,37 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
+id: host-identity-review
+title: Review an unknown or changed host identity
+summary: Keep a remote connection closed until its cryptographic host identity is explicitly reviewed.
+status: verified
+order: 2
+goal: Detect host replacement or interception before sending credentials or agent traffic.
+preconditions:
+  - A Secure Shell profile has attempted a connection.
+  - The presented fingerprint is unknown or differs from the stored fingerprint.
+automatic:
+  - Agent Relay stops the connection before authentication.
+  - The card shows the algorithm, endpoint label, current fingerprint, and prior fingerprints.
+  - Rejecting the identity leaves the saved trust record unchanged.
+attention:
+  - Verify the fingerprint through an independent trusted channel.
+  - Replace a changed identity only when the infrastructure change is expected.
+recovery:
+  - Reject the candidate when the change is unexplained.
+  - Reconnect after the remote administrator confirms the expected fingerprint.
+  - Investigate repeated changes outside the app before continuing.
+verified_test: com.example.agentrelay.ui.main.UsageJourneyTest#capturesVerifiedJourneys
+steps:
+  - id: changed-host-identity
+    title: Inspect both fingerprints
+    action: Open the connection card after Agent Relay reports a changed host identity.
+    expected: The new and previously trusted fingerprints are visible before any decision.
+    screenshot: changed-host-identity.png
+    alt: Connection card comparing new and previous synthetic Secure Shell host fingerprints.
+  - id: trusted-host-online
+    title: Continue only after verification
+    action: Select Replace identity after verifying the change through a trusted channel.
+    expected: The fixture connection becomes online and agent discovery can continue.
+    screenshot: trusted-host-online.png
+    alt: Secure Shell connection card online after explicit replacement of the verified host identity.

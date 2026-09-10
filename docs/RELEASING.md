@@ -23,6 +23,8 @@ A first release requires all of the following:
 From a clean checkout:
 
 ```bash
+uv sync --locked --only-group quality
+uv run pre-commit run --all-files --show-diff-on-failure
 ./gradlew clean spotlessCheck test lintDebug assembleDebug --stacktrace
 ./gradlew :storage:android:connectedDebugAndroidTest   :ssh:android:connectedDebugAndroidTest
 ```

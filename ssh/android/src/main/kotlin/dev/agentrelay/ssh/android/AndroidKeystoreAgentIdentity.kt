@@ -1,9 +1,16 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.ssh.android
 
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import com.jcraft.jsch.Identity
 import com.jcraft.jsch.IdentityRepository
+import dev.agentrelay.ssh.api.SshAgentKeyManager
+import dev.agentrelay.ssh.api.SshAgentPublicKey
 import dev.agentrelay.ssh.jsch.JschAgentIdentityProvider
 import java.math.BigInteger
 import dev.agentrelay.storage.android.SecureStoreCorruptException
@@ -19,20 +26,13 @@ import java.security.spec.ECGenParameterSpec
 import java.util.Base64
 import java.util.Vector
 
-data class AndroidAgentPublicKey(
-    val keyId: String,
-    val algorithm: String,
-    val sha256Fingerprint: String,
-    val openSshPublicKey: String,
-)
-
 class AndroidKeystoreAgentKeyManager(
     private val keyStoreProvider: String = ANDROID_KEYSTORE,
-) {
-    fun create(
+) : SshAgentKeyManager {
+    override fun create(
         keyId: String,
-        requireUserAuthentication: Boolean = false,
-    ): AndroidAgentPublicKey {
+        requireUserAuthentication: Boolean,
+    ): SshAgentPublicKey {
         validateKeyId(keyId)
         val alias = aliasFor(keyId)
         val keyStore = keyStore()
@@ -54,7 +54,7 @@ class AndroidKeystoreAgentKeyManager(
             ?: throw SecureStoreUnavailableException()
     }
 
-    fun publicKey(keyId: String): AndroidAgentPublicKey? {
+    override fun publicKey(keyId: String): SshAgentPublicKey? {
         validateKeyId(keyId)
         val certificate = keyStore().getCertificate(aliasFor(keyId)) ?: return null
         val publicKey = certificate.publicKey as? ECPublicKey
@@ -63,7 +63,7 @@ class AndroidKeystoreAgentKeyManager(
         val fingerprint = Base64.getEncoder().withoutPadding().encodeToString(
             MessageDigest.getInstance("SHA-256").digest(blob),
         )
-        return AndroidAgentPublicKey(
+        return SshAgentPublicKey(
             keyId = keyId,
             algorithm = EcdsaSshEncoding.ALGORITHM,
             sha256Fingerprint = "SHA256:$fingerprint",
@@ -72,7 +72,7 @@ class AndroidKeystoreAgentKeyManager(
         )
     }
 
-    fun delete(keyId: String): Boolean {
+    override fun delete(keyId: String): Boolean {
         validateKeyId(keyId)
         val keyStore = keyStore()
         val alias = aliasFor(keyId)

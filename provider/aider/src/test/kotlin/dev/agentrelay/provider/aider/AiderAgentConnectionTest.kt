@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.provider.aider
 
 import dev.agentrelay.provider.api.AgentEvent
@@ -197,7 +202,6 @@ class AiderAgentConnectionTest {
             FakeClient(
                 sessionId,
                 options.model,
-                options.workingDirectory ?: "/work",
                 blocking,
             ).also { clients[sessionId] = it }
 
@@ -207,7 +211,6 @@ class AiderAgentConnectionTest {
                 FakeClient(
                     session.id,
                     session.model,
-                    session.workingDirectory ?: "/work",
                     blocking,
                 )
             }
@@ -217,7 +220,6 @@ class AiderAgentConnectionTest {
     private class FakeClient(
         override val sessionId: AgentSessionId,
         override val currentModel: String?,
-        workspace: String,
         private val blocking: Boolean,
     ) : AiderClient {
         override val stateDirectory = "$STATE_ROOT/${sessionId.value}"

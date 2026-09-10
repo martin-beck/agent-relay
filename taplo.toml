@@ -1,0 +1,14 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
+include = ["**/*.toml"]
+exclude = [".gradle/**", ".venv/**", "**/build/**"]
+
+[formatting]
+align_comments = false
+align_entries = false
+array_trailing_comma = true
+column_width = 120
+indent_string = "  "
+reorder_keys = false
+trailing_newline = true

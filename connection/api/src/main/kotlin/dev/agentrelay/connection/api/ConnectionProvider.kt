@@ -1,9 +1,17 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.connection.api
 
 import java.io.Closeable
 
 interface ConnectionProvider : Closeable {
     val descriptor: ConnectionProviderDescriptor
+
+    val profileManager: ConnectionProfileManager?
+        get() = null
 
     suspend fun profiles(): List<ConnectionProfileSummary>
 
@@ -34,6 +42,12 @@ class ConnectionProviderRegistry(providers: Iterable<ConnectionProvider>) : Clos
             compareBy<ConnectionProfileSummary> { it.providerId.value }
                 .thenBy { it.label },
         )
+
+    fun profileManager(providerId: ConnectionProviderId): ConnectionProfileManager =
+        provider(providerId).profileManager
+            ?: throw UnsupportedOperationException(
+                "Connection provider does not support profile management",
+            )
 
     override fun close() {
         registered.values.forEach(ConnectionProvider::close)

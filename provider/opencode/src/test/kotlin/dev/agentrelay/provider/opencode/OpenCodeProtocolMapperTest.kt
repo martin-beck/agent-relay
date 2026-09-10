@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.provider.opencode
 
 import dev.agentrelay.provider.api.AgentApprovalDecision
@@ -184,6 +189,97 @@ class OpenCodeProtocolMapperTest {
             listOf(AgentFileChangeKind.ADDED, AgentFileChangeKind.DELETED),
             files.map { assertIs<AgentEvent.FileChanged>(it).file.kind },
         )
+    }
+
+    @Test
+    fun openDeskEventsMapPermissionsAndQuestionsWithoutClaimingDiffs() {
+        val streamed = OpenCodeEventMapper.map(
+            objectFrom(
+                """
+                {
+                  "type":"message.part.delta",
+                  "properties":{
+                    "sessionID":"ses-1",
+                    "messageID":"msg-1",
+                    "partID":"part-1",
+                    "field":"text",
+                    "delta":"Ready"
+                  }
+                }
+                """.trimIndent(),
+            ),
+            OpenCodeProtocolDialect.OPENDESK,
+            "OpenDesk",
+        )
+        assertEquals("Ready", assertIs<AgentEvent.TextDelta>(streamed.single()).text)
+
+        val permission = OpenCodeEventMapper.map(
+            objectFrom(
+                """
+                {
+                  "type":"permission.asked",
+                  "properties":{
+                    "id":"per-1",
+                    "sessionID":"ses-1",
+                    "permission":"bash",
+                    "patterns":["./gradlew test"],
+                    "metadata":{"input":{"command":"./gradlew test","cwd":"/workspace"}}
+                  }
+                }
+                """.trimIndent(),
+            ),
+            OpenCodeProtocolDialect.OPENDESK,
+            "OpenDesk",
+        )
+        val requestedPermission =
+            assertIs<AgentEvent.ApprovalRequested>(permission.single()).approval
+        assertEquals("./gradlew test", requestedPermission.command)
+        assertEquals("/workspace", requestedPermission.workingDirectory)
+
+        val question = OpenCodeEventMapper.map(
+            objectFrom(
+                """
+                {
+                  "type":"question.asked",
+                  "properties":{
+                    "id":"que-1",
+                    "sessionID":"ses-1",
+                    "questions":[{
+                      "question":"Which mode should be used?",
+                      "header":"Mode",
+                      "options":[{"label":"Fast","description":"Use the faster path"}],
+                      "multiple":false,
+                      "custom":true
+                    }]
+                  }
+                }
+                """.trimIndent(),
+            ),
+            OpenCodeProtocolDialect.OPENDESK,
+            "OpenDesk",
+        )
+        val requestedQuestion = assertIs<AgentEvent.ApprovalRequested>(question.single()).approval
+        assertEquals("que-1:0", requestedQuestion.questions.single().id)
+        assertEquals("Fast", requestedQuestion.questions.single().options.single().label)
+        assertEquals(
+            setOf(
+                AgentApprovalDecision.SUBMIT,
+                AgentApprovalDecision.DECLINE,
+                AgentApprovalDecision.CANCEL,
+            ),
+            requestedQuestion.availableDecisions,
+        )
+
+        val ignoredDiff = OpenCodeEventMapper.map(
+            objectFrom(
+                """
+                {"type":"session.diff","properties":{"sessionID":"ses-1","diff":[]}}
+                """.trimIndent(),
+            ),
+            OpenCodeProtocolDialect.OPENDESK,
+            "OpenDesk",
+        )
+        assertTrue(ignoredDiff.isEmpty())
     }
 
     private fun objectFrom(value: String) = json.parseToJsonElement(value).jsonObject

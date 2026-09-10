@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.ssh.api
 
 import dev.agentrelay.connection.api.ConnectionCapability
@@ -11,7 +16,10 @@ import dev.agentrelay.connection.api.ConnectionIdentityDecision
 import dev.agentrelay.connection.api.ConnectionIdentityDisposition
 import dev.agentrelay.connection.api.ConnectionPhase
 import dev.agentrelay.connection.api.ConnectionProfileId
+import dev.agentrelay.connection.api.ConnectionProfileManager
+import dev.agentrelay.connection.api.ConnectionProfileSaveResult
 import dev.agentrelay.connection.api.ConnectionProfileSummary
+import dev.agentrelay.connection.api.ConnectionProfileUpdate
 import dev.agentrelay.connection.api.ConnectionProvider
 import dev.agentrelay.connection.api.ConnectionProviderDescriptor
 import dev.agentrelay.connection.api.ConnectionProviderId
@@ -33,8 +41,24 @@ import java.util.concurrent.ConcurrentHashMap
 class SshConnectionProvider(
     private val profileStore: SshProfileStore,
     private val manager: SshConnectionManager,
+    private val delegateProfileManager: ConnectionProfileManager,
     stateDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : ConnectionProvider {
+    override val profileManager: ConnectionProfileManager = object : ConnectionProfileManager by delegateProfileManager {
+        override suspend fun save(
+            update: ConnectionProfileUpdate,
+        ): ConnectionProfileSaveResult {
+            val result = delegateProfileManager.save(update)
+            update.profileId?.let { disconnectAndForget(it) }
+            return result
+        }
+
+        override suspend fun delete(profileId: ConnectionProfileId) {
+            disconnectAndForget(profileId)
+            delegateProfileManager.delete(profileId)
+        }
+    }
+
     override val descriptor = ConnectionProviderDescriptor(
         id = ID,
         displayName = "Secure Shell",
@@ -66,6 +90,10 @@ class SshConnectionProvider(
         connections.clear()
         scope.cancel()
         manager.close()
+    }
+
+    private suspend fun disconnectAndForget(profileId: ConnectionProfileId) {
+        connections.remove(profileId)?.disconnect()
     }
 
     private inner class SshManagedConnection(

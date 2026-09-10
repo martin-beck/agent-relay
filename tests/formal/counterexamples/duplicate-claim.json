@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "id": "duplicate-claim",
+  "kind": "counterexample",
+  "model": "WorkflowConcurrency",
+  "trace": ["start", "acquire:0:0", "acquire:1:0"],
+  "expected": {
+    "outcome": "rejected",
+    "error": "step is already leased"
+  },
+  "evidence": {
+    "class": "bounded-model-result",
+    "boundary": "The finite concurrency model rejects a second lease for one step."
+  },
+  "implementation": "scripts/ci/verify_workflow_concurrency.py",
+  "input_sha256": "76286ba0d2f138223f2460725a9a2e6da67cc07994bd108d28996c04b4a55c75",
+  "implementation_sha256": "1495499597fcfcd06cf89bc2f2685468e2f48bb137223fc61c74d5051d2849cf"
+}

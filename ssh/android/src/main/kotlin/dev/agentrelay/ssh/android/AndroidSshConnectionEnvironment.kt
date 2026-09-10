@@ -1,10 +1,17 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.ssh.android
 
 import android.content.Context
 import dev.agentrelay.connection.api.ConnectionProvider
 import dev.agentrelay.ssh.api.SshConnectionManager
+import dev.agentrelay.ssh.api.SshConnectionProfileManager
 import dev.agentrelay.ssh.api.SshCredentialStore
 import dev.agentrelay.ssh.api.SshHostKeyStore
+import dev.agentrelay.ssh.api.SshManagedKeyService
 import dev.agentrelay.ssh.api.SshProfileStore
 import dev.agentrelay.ssh.api.SshConnectionProvider
 import dev.agentrelay.ssh.jsch.JschSshConnector
@@ -36,10 +43,25 @@ class AndroidSshConnectionEnvironment private constructor(
                 hostKeyStore = hostKeys,
                 connector = connector,
             )
+            val managedKeys = SshManagedKeyService(
+                profiles = profiles,
+                credentialStore = credentials,
+                hostKeys = hostKeys,
+                agentKeys = agentKeys,
+                connector = connector,
+            )
+            val profileManager = SshConnectionProfileManager(
+                profiles = profiles,
+                credentials = credentials,
+                hostKeys = hostKeys,
+                agentKeys = agentKeys,
+                managedKeys = managedKeys,
+            )
             return AndroidSshConnectionEnvironment(
                 provider = SshConnectionProvider(
                     profileStore = profiles,
                     manager = manager,
+                    delegateProfileManager = profileManager,
                 ),
                 profiles = profiles,
                 credentials = credentials,

@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "$schema",
+    "schemaVersion",
+    "statusAuthority",
+    "requiredPhases",
+    "verifiedJourneys",
+    "childContracts"
+  ],
+  "properties": {
+    "$schema": {"const": "user-satisfaction-v1.schema.json"},
+    "schemaVersion": {"const": 1},
+    "statusAuthority": {"const": "docs/contracts/user-satisfaction-v1.json"},
+    "requiredPhases": {
+      "type": "array",
+      "items": {"enum": ["state-outcome", "review-scope", "approve-decision", "recover-interruption", "explain-result"]},
+      "minItems": 5,
+      "maxItems": 5,
+      "uniqueItems": true
+    },
+    "verifiedJourneys": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/verifiedJourney"}
+    },
+    "childContracts": {
+      "type": "array",
+      "minItems": 10,
+      "maxItems": 10,
+      "items": {"$ref": "#/$defs/childContract"}
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "identifier": {"type": "string", "pattern": "^[a-z][a-z0-9-]{2,63}$"},
+    "phase": {"enum": ["state-outcome", "review-scope", "approve-decision", "recover-interruption", "explain-result"]},
+    "pathList": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "verifiedJourney": {
+      "type": "object",
+      "required": ["id", "title", "phase", "scenario", "userValue"],
+      "properties": {
+        "id": {"$ref": "#/$defs/identifier"},
+        "title": {"type": "string", "minLength": 1, "maxLength": 120},
+        "phase": {"$ref": "#/$defs/phase"},
+        "scenario": {"type": "string", "pattern": "^docs/workflows/scenarios/[a-z0-9-]+\\.yml$"},
+        "userValue": {"type": "string", "minLength": 1, "maxLength": 240}
+      },
+      "additionalProperties": false
+    },
+    "childContract": {
+      "type": "object",
+      "required": ["ar", "id", "title", "phase", "maturity", "sources", "tests", "formalEvidence", "limitation"],
+      "properties": {
+        "ar": {"type": "string", "pattern": "^AR-21(6[0-9])$"},
+        "id": {"$ref": "#/$defs/identifier"},
+        "title": {"type": "string", "minLength": 1, "maxLength": 120},
+        "phase": {"$ref": "#/$defs/phase"},
+        "maturity": {"const": "contract-verified"},
+        "sources": {"allOf": [{"$ref": "#/$defs/pathList"}, {"minItems": 1}]},
+        "tests": {"allOf": [{"$ref": "#/$defs/pathList"}, {"minItems": 1}]},
+        "formalEvidence": {"$ref": "#/$defs/pathList"},
+        "limitation": {"type": "string", "minLength": 1, "maxLength": 300}
+      },
+      "additionalProperties": false
+    }
+  }
+}

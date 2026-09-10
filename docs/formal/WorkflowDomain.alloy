@@ -1,0 +1,51 @@
+module WorkflowDomain
+// Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+// SPDX-License-Identifier: MIT
+
+
+// Finite bounds are supplied by `for` in the verifier configuration.
+abstract sig Task, Run, Step, Event, Attention, Projection {}
+abstract sig TaskState {}
+one sig Proposed, Approved, RunningTask, PausedTask, CompletedTask,
+  FailedTask, CancelledTask extends TaskState {}
+abstract sig RunState {}
+one sig Queued, RunningRun, PausedRun, Succeeded, FailedRun, Uncertain,
+  CancelledRun extends RunState {}
+abstract sig StepState {}
+one sig Pending, RunningStep, SucceededStep, FailedStep, Retrying,
+  UncertainStep, CancelledStep extends StepState {}
+abstract sig AttentionState {}
+one sig Open, Snoozed, Escalated, Resolved, Invalidated, Expired
+  extends AttentionState {}
+
+sig TaskRecord { state: one TaskState, revision: one Int }
+sig RunRecord { state: one RunState, task: one Task, revision: one Int }
+sig StepRecord { state: one StepState, run: one Run, attempt: one Int,
+  lease: lone Lease }
+sig Lease { step: one StepRecord, attempt: one Int }
+sig EventRecord { sequence: one Int, cursor: lone Cursor }
+sig Cursor { sequence: one Int }
+sig AttentionRecord { state: one AttentionState }
+sig ProjectionRecord { lastSequence: one Int }
+
+fact BoundsAndTypes {
+  all t: TaskRecord | t.revision >= 0
+  all r: RunRecord | r.revision >= 0
+  all s: StepRecord | s.attempt >= 0
+  all l: Lease | l.attempt > 0 and l.attempt = l.step.attempt
+  all s: StepRecord | some s.lease implies s.state not in
+    (SucceededStep + FailedStep + CancelledStep)
+  all e: EventRecord | some e.cursor implies e.cursor.sequence <= e.sequence
+  all p: ProjectionRecord | p.lastSequence >= 0
+}
+
+assert LeaseSafety {
+  all s: StepRecord | some s.lease implies s.lease.step = s
+}
+assert CursorOrdering { all e: EventRecord | some e.cursor implies
+  e.cursor.sequence <= e.sequence }
+assert RevisionNonNegative { all t: TaskRecord | t.revision >= 0 }
+
+check LeaseSafety for 2 but exactly 2 Int
+check CursorOrdering for 4 but exactly 4 Int
+check RevisionNonNegative for 2 but exactly 2 Int

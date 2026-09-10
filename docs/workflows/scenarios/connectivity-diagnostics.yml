@@ -1,0 +1,37 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
+id: connectivity-diagnostics
+title: Diagnose a degraded connection
+summary: Inspect privacy-preserving connectivity evidence and choose a bounded next action.
+status: planned
+order: 13
+goal: Explain why a route is unhealthy without collecting secrets or raw sensitive paths.
+preconditions:
+  - A synthetic connection has a named fault such as delay, reset, truncation, or partition.
+  - Diagnostic collection is enabled only for the selected connection and time window.
+automatic:
+  - Agent Relay records bounded probe outcomes, timing classes, and route transitions.
+  - Diagnostic summaries redact credentials, raw command content, and unrelated host data.
+  - Repeated evidence is deduplicated and tagged with the connection identity.
+attention:
+  - Select the diagnostic scope and retention period.
+  - Decide whether to retry, switch route, or export a redacted report.
+  - Review any identity mismatch outside the diagnostic summary.
+recovery:
+  - Collection stops at its deadline and reports partial evidence explicitly.
+  - A failed probe cannot silently authorize a new host identity.
+  - Clearing diagnostics removes the local bundle without affecting connection credentials.
+steps:
+  - id: open-health
+    title: Open connection health
+    action: Select a synthetic connection showing degraded status.
+    expected: The app identifies the affected route and the last bounded probe outcome.
+  - id: inspect-diagnostics
+    title: Inspect redacted evidence
+    action: Open the diagnostic summary for the named fault.
+    expected: Timing class, fault category, and recovery options are visible without secrets.
+  - id: choose-next-action
+    title: Choose a safe next action
+    action: Select retry, alternate route, or redacted export.
+    expected: The selected action shows its scope and remains bounded by the diagnostic policy.

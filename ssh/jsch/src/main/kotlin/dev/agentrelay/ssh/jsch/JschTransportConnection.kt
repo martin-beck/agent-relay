@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.ssh.jsch
 
 import com.jcraft.jsch.Session
@@ -13,10 +18,19 @@ import kotlin.time.measureTime
 
 internal class JschTransportConnection(
     private val session: Session,
+    routeSessions: List<Session> = listOf(session),
     hostId: String,
     channelConnectTimeout: Duration,
     dispatcher: CoroutineDispatcher,
 ) : SshTransportConnection {
+    private val routeSessions = routeSessions.toList()
+
+    init {
+        require(this.routeSessions.isNotEmpty() && this.routeSessions.last() === session) {
+            "The destination must be the final SSH route session"
+        }
+    }
+
     override val runtime = JschRemoteAgentRuntime(
         session = session,
         hostId = hostId,
@@ -25,7 +39,7 @@ internal class JschTransportConnection(
     )
 
     override val isConnected: Boolean
-        get() = session.isConnected
+        get() = routeSessions.all(Session::isConnected)
 
     override suspend fun heartbeat(): Duration {
         val elapsed = measureTime {
@@ -49,6 +63,6 @@ internal class JschTransportConnection(
     }
 
     override fun close() {
-        session.disconnect()
+        routeSessions.asReversed().forEach(Session::disconnect)
     }
 }

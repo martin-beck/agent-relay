@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.provider.api
 
 import kotlin.time.Duration
@@ -36,6 +41,8 @@ interface RemoteDuplexProcess {
 
 interface RemoteAgentRuntime {
     val hostId: String
+    val fileAccess: RemoteFileAccess?
+        get() = null
 
     suspend fun execute(command: RemoteCommand, timeout: Duration = 15.seconds): RemoteCommandResult
 

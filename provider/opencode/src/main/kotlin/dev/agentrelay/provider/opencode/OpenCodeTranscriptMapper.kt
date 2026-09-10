@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.provider.opencode
 
 import dev.agentrelay.provider.api.AgentMessageChannel
@@ -9,7 +14,11 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 
 internal object OpenCodeTranscriptMapper {
-    fun fromJson(sessionId: AgentSessionId, messages: JsonArray): List<AgentTranscriptEntry> =
+    fun fromJson(
+        sessionId: AgentSessionId,
+        messages: JsonArray,
+        metadataNamespace: String = "opencode",
+    ): List<AgentTranscriptEntry> =
         messages.flatMap { messageElement ->
             val message = messageElement.objectOrNull() ?: return@flatMap emptyList()
             val info = message.objectValue("info") ?: return@flatMap emptyList()
@@ -18,7 +27,7 @@ internal object OpenCodeTranscriptMapper {
             val createdAt = info.objectValue("time")?.long("created").millisecondsToEpochSeconds()
             message.arrayValue("parts").orEmpty().mapIndexedNotNull { index, partElement ->
                 val part = partElement.objectOrNull() ?: return@mapIndexedNotNull null
-                part.toEntry(sessionId, messageId, role, createdAt, index)
+                part.toEntry(sessionId, messageId, role, createdAt, index, metadataNamespace)
             }
         }
 
@@ -28,6 +37,7 @@ internal object OpenCodeTranscriptMapper {
         wireRole: String?,
         createdAt: Long?,
         index: Int,
+        metadataNamespace: String,
     ): AgentTranscriptEntry? {
         val partType = string("type") ?: return null
         val id = string("id") ?: "$messageId:$index"
@@ -49,7 +59,7 @@ internal object OpenCodeTranscriptMapper {
                         },
                         text = text,
                         createdAtEpochSeconds = createdAt,
-                        metadata = mapOf("opencode.partType" to partType),
+                        metadata = mapOf("$metadataNamespace.partType" to partType),
                     )
                 }
             }
@@ -73,9 +83,9 @@ internal object OpenCodeTranscriptMapper {
                         text = text,
                         createdAtEpochSeconds = createdAt,
                         metadata = buildMap {
-                            put("opencode.partType", partType)
-                            string("tool")?.let { put("opencode.tool", it) }
-                            state?.string("status")?.let { put("opencode.toolStatus", it) }
+                            put("$metadataNamespace.partType", partType)
+                            string("tool")?.let { put("$metadataNamespace.tool", it) }
+                            state?.string("status")?.let { put("$metadataNamespace.toolStatus", it) }
                         },
                     )
                 }

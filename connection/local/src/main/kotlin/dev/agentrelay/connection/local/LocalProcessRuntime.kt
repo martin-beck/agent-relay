@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.connection.local
 
 import dev.agentrelay.provider.api.RemoteAgentRuntime
@@ -49,6 +54,12 @@ class LocalProcessRuntime(
     private val activeProcesses = ConcurrentHashMap<Process, Unit>()
     private val activeDuplexProcesses = ConcurrentHashMap.newKeySet<LocalDuplexProcess>()
     private val closed = AtomicBoolean(false)
+    override val fileAccess: dev.agentrelay.provider.api.RemoteFileAccess = LocalRemoteFileAccess(
+        canonicalRoot.toPath(),
+        dispatcher,
+    ) {
+        check(!closed.get()) { "Local connection is closed" }
+    }
 
     init {
         require(hostId.isNotBlank()) { "Local host id must not be blank" }

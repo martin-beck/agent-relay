@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.ssh.jsch
 
 import com.jcraft.jsch.ChannelExec
@@ -43,6 +48,8 @@ class JschRemoteAgentRuntime internal constructor(
     private val channelConnectTimeout: Duration,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : RemoteAgentRuntime {
+    override val fileAccess: dev.agentrelay.provider.api.RemoteFileAccess =
+        JschRemoteFileAccess(session, channelConnectTimeout, dispatcher)
     init {
         require(channelConnectTimeout.isPositive()) { "SSH channel connect timeout must be positive" }
         require(channelConnectTimeout.inWholeMilliseconds <= Int.MAX_VALUE)
@@ -97,11 +104,11 @@ class JschRemoteAgentRuntime internal constructor(
                 stderr = stderr,
                 dispatcher = dispatcher,
             )
+        } catch (cancelled: CancellationException) {
+            channel.disconnect()
+            throw cancelled
         } catch (failure: Throwable) {
             channel.disconnect()
-            if (failure is CancellationException) {
-                throw failure
-            }
             throw channelFailure(failure)
         }
     }

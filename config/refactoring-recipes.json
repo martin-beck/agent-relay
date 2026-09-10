@@ -1,0 +1,27 @@
+{
+  "$schema": "./refactoring-recipes.schema.json",
+  "schemaVersion": 1,
+  "recipes": [
+    {
+      "id": "kotlin-explicit-boolean-wrapper",
+      "engine": "ast-grep",
+      "toolVersion": "0.40.5",
+      "risk": "R1",
+      "languages": ["kotlin"],
+      "parser": "kotlin",
+      "include": ["fixtures/structural/kotlin"],
+      "exclude": ["fixtures/structural/kotlin/negative"],
+      "prohibitions": ["generated", "vendored", "private", "binary", "build", "coordinator"],
+      "preconditions": ["python3 scripts/structuralctl.py --help"],
+      "invariants": ["Only explicit Boolean.valueOf calls are rewritten", "The expression value is unchanged"],
+      "behaviorChange": "none",
+      "budgets": {"maxMatches": 10, "maxFiles": 2, "maxChangedLines": 10, "convergesInOnePass": true},
+      "fixtures": {"positive": ["fixtures/structural/kotlin/positive/input.kt"], "negative": ["fixtures/structural/kotlin/negative/input.kt"], "golden": ["fixtures/structural/kotlin/golden/output.kt"]},
+      "verification": {"focused": ["python3 -m pytest scripts/test_structuralctl.py"], "full": ["uv run pytest"]},
+      "application": {"command": ["python3 scripts/refactorctl.py apply kotlin-explicit-boolean-wrapper --task AR-NNNN --owner WORKER"], "convergence": "one-pass"},
+      "ownership": {"maintainer": "agent-relay", "status": "allowlisted"},
+      "compatibility": {"catalogVersion": 1, "minimumRefactorctl": "1"},
+      "rule": {"pattern": "Boolean.valueOf($VALUE)", "rewrite": "$VALUE.toBoolean()"}
+    }
+  ]
+}

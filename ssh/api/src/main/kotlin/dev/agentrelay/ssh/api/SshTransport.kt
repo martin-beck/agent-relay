@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
 package dev.agentrelay.ssh.api
 
 import dev.agentrelay.provider.api.RemoteAgentRuntime
@@ -25,9 +30,7 @@ interface SshTransportConnection : AutoCloseable {
 
 interface SshConnector {
     suspend fun connect(
-        profile: SshProfile,
-        authentication: ResolvedSshAuthentication,
-        trustedHostKeys: List<SshHostKey>,
+        route: SshConnectionRoute,
         phaseListener: SshConnectPhaseListener = SshConnectPhaseListener {},
     ): SshTransportConnection
 }

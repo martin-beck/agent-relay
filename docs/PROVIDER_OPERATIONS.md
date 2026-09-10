@@ -35,6 +35,7 @@ repository records only the resulting capability boundary:
 | --- | --- |
 | Claude Code stream JSON | Exact final response, no tools, clean shutdown |
 | OpenCode server and SSE | Typed lifecycle/events and clean server shutdown |
+| OpenDesk HTTP/SSE with local Ollama | Session discovery, assistant completion, token deltas, clean shutdown |
 | Continue headless/server modes | Read-only response and loopback-only lifecycle |
 | Cline ACP | Plan-mode session lifecycle with auto-approval disabled |
 | Aider safe helper | Structured response, no changes, clean descendant shutdown |
@@ -72,6 +73,55 @@ AGENT_RELAY_LIVE_OPENCODE=1 ./gradlew \
 The opt-in live check verifies these boundaries without recording host
 identifiers, account names, endpoint details, session identifiers, or raw
 transcripts in this repository.
+
+## OpenDesk server integration
+
+The OpenDesk module starts `opendesk serve --mode opencode` on a random
+loopback port with a fresh 256-bit password. It uses the OpenCode-compatible
+HTTP surface where the protocols match and an explicit OpenDesk dialect where
+they do not. The executable lookup supports ordinary `PATH` installs,
+`~/.local/bin`, and the newest npm installation under nvm. Node's executable
+directory is added only to the launched OpenDesk process.
+
+OpenDesk session discovery uses
+`/experimental/session?scope=project`, then obtains status and opens an SSE
+stream for each session directory. Session creation, detail, history,
+asynchronous prompts, and interruption use the corresponding `/session`
+routes. Permission and question events map to durable Agent Relay approvals;
+responses use `/permission/:id/reply`, `/question/:id/reply`, and
+`/question/:id/reject`. OpenDesk token events use
+`message.part.delta`, which the shared protocol core maps separately from
+OpenCode's part updates.
+
+The adapter advertises discovery, start, resume, history, live streaming,
+interruption, and approvals. It does not advertise active-turn steering or
+forking. OpenDesk 0.3.5 returns an empty placeholder from its diff endpoint, so
+the adapter also does not advertise provider-reported file changes.
+
+Production startup uses OpenDesk's normal application data directory. Tests
+and controlled embeddings can supply a separate config directory, which is
+passed through OpenDesk's supported `--config-directory` option. Configure
+the selected OpenDesk profile with an enabled OpenAI-compatible provider that
+targets the local Ollama service, then select a model exposed by that service.
+Provider credentials and request bodies remain outside process arguments.
+
+The installed-binary inference test creates an isolated OpenDesk profile and
+workspace, exercises the real local Ollama model, verifies global discovery,
+waits for a marker-bearing assistant transcript, requires a mapped SSE token
+event, and checks that all child processes and loopback listeners stop. Set the model
+alias privately when the default validation model is unavailable:
+
+```bash
+AGENT_RELAY_LIVE_OPENDESK=1 \
+AGENT_RELAY_LIVE_OPENDESK_MODEL='<local-model-alias>' \
+  ./gradlew :provider:opendesk:test \
+  --tests dev.agentrelay.provider.opendesk.OpenDeskLiveIntegrationTest
+```
+
+The remote environment must provide `bash`, `curl`, `python3`, Node.js,
+OpenDesk, a reachable loopback Ollama service, and the selected model. The test
+is opt-in and does not publish its temporary paths, session identifiers,
+transcript, model selection, or timing.
 
 ## Continue server integration
 
