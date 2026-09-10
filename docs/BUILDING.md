@@ -415,6 +415,28 @@ result. Explicit public or external publication paths remain strict.
 
 ## CI
 
+### Public contributor checks
+
+Pull requests run `Public contributor validation` only on an ephemeral GitHub-hosted runner. The
+lane has a read-only token, credential-free checkout, no repository variables or secrets, no shared
+cache or artifact exchange, and no environment or publication authority. It runs the locked Python
+suite; repository, workflow, secret, and source-header checks; and JVM tests, Kotlin formatting,
+Detekt, and ABI validation. It does not build native code, start an emulator, assemble an APK, or
+claim the complete gate.
+
+Self-hosted verification, UI, and AWQ workflows do not accept `pull_request` events. After reviewing
+an exact contributor commit and its workflow diff, a maintainer may push that immutable commit to a
+repository-owned `trusted-ci/<commit>` branch. That push runs the complete self-hosted gates at the
+new repository commit; never promote a mutable fork ref or an unreviewed workflow change. A merge to
+`main` runs the same trusted gates again.
+
+Before making the repository public, its owner must also require approval for every external
+contributor workflow and restrict each self-hosted runner group to the trusted workflow files pinned
+to the default branch, or remove the runners from the public repository. Source policy tests cannot
+verify account-level runner configuration. GitHub warns that public forks can otherwise request
+self-hosted jobs by changing workflow files, so repository visibility must not change until that
+external control is independently verified.
+
 `.github/workflows/verify.yml` runs the required quality/build and deterministic
 visual-regression jobs. Actions are
 pinned to immutable commit SHAs, dependency updates are proposed by Dependabot,
