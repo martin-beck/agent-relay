@@ -33,7 +33,7 @@ def _fail(message: str) -> NoReturn:
     raise AssertionError(message)
 
 
-def validate_fixture(data: dict[str, Any], *, schema: dict[str, Any] | None = None) -> None:  # noqa: C901
+def _validate_identity(data: dict[str, Any], schema: dict[str, Any] | None) -> None:
     if (
         schema is not None
         and schema.get("$id") != "https://agent-relay.dev/schemas/offline-provider-fixture-v1.json"
@@ -41,21 +41,22 @@ def validate_fixture(data: dict[str, Any], *, schema: dict[str, Any] | None = No
         _fail("unexpected schema identity")
     if data.get("schemaVersion") != 1:
         _fail("unsupported fixture schema")
-    if not isinstance(data.get("fixtureId"), str) or not re.fullmatch(
-        r"[a-z][a-z0-9.-]{2,63}", data["fixtureId"]
-    ):
+    fixture_id = data.get("fixtureId")
+    if not isinstance(fixture_id, str) or not re.fullmatch(r"[a-z][a-z0-9.-]{2,63}", fixture_id):
         _fail("invalid fixture id")
     evidence = data.get("evidence")
-    if evidence != {
-        "tier": "synthetic-runtime",
-        "synthetic": True,
-        "sourceRevision": evidence.get("sourceRevision") if isinstance(evidence, dict) else None,
-    }:
-        _fail("fixture evidence must be synthetic-runtime")
-    if not isinstance(evidence.get("sourceRevision"), str) or not re.fullmatch(
-        r"[0-9a-f]{7,64}", evidence["sourceRevision"]
+    if (
+        not isinstance(evidence, dict)
+        or evidence.get("tier") != "synthetic-runtime"
+        or evidence.get("synthetic") is not True
     ):
+        _fail("fixture evidence must be synthetic-runtime")
+    revision = evidence.get("sourceRevision")
+    if not isinstance(revision, str) or not re.fullmatch(r"[0-9a-f]{7,64}", revision):
         _fail("invalid source revision")
+
+
+def _validate_limits(data: dict[str, Any]) -> dict[str, Any]:
     limits = data.get("limits")
     if not isinstance(limits, dict):
         _fail("limits are required")
@@ -70,6 +71,10 @@ def validate_fixture(data: dict[str, Any], *, schema: dict[str, Any] | None = No
         value = limits.get(key)
         if not isinstance(value, int) or isinstance(value, bool) or not low <= value <= high:
             _fail(f"invalid limit: {key}")
+    return limits
+
+
+def _validate_matching(data: dict[str, Any]) -> None:
     matching = data.get("matching")
     if (
         not isinstance(matching, dict)
@@ -93,25 +98,36 @@ def validate_fixture(data: dict[str, Any], *, schema: dict[str, Any] | None = No
         normalized_fields.add(item["field"])
     if set(matching["requestFields"]) - normalized_fields:
         _fail("every request field needs explicit normalization")
+
+
+def _validate_frame(frame: Any, previous: int, limits: dict[str, Any]) -> int:
+    if (
+        not isinstance(frame, dict)
+        or frame.get("direction") not in {"request", "response"}
+        or frame.get("kind")
+        not in {"agent-event", "tool-call", "tool-result", "approval", "terminal"}
+    ):
+        _fail("invalid frame")
+    at = frame.get("atMillis")
+    if not isinstance(at, int) or at < previous or at > limits["maxVirtualMillis"]:
+        _fail("timeline is not bounded and ordered")
+    payload = json.dumps(frame.get("payload"), separators=(",", ":"), sort_keys=True)
+    if len(payload.encode()) > limits["maxBodyBytes"] or SECRET.search(payload):
+        _fail("payload is oversized or secret-like")
+    return at
+
+
+def _validate_timeline(data: dict[str, Any], limits: dict[str, Any]) -> list[Any]:
     timeline = data.get("timeline")
     if not isinstance(timeline, list) or not timeline or len(timeline) > limits["maxFrames"]:
         _fail("invalid or over-limit timeline")
     previous = -1
     for frame in timeline:
-        if (
-            not isinstance(frame, dict)
-            or frame.get("direction") not in {"request", "response"}
-            or frame.get("kind")
-            not in {"agent-event", "tool-call", "tool-result", "approval", "terminal"}
-        ):
-            _fail("invalid frame")
-        at = frame.get("atMillis")
-        if not isinstance(at, int) or at < previous or at > limits["maxVirtualMillis"]:
-            _fail("timeline is not bounded and ordered")
-        previous = at
-        payload = json.dumps(frame.get("payload"), separators=(",", ":"), sort_keys=True)
-        if len(payload.encode()) > limits["maxBodyBytes"] or SECRET.search(payload):
-            _fail("payload is oversized or secret-like")
+        previous = _validate_frame(frame, previous, limits)
+    return timeline
+
+
+def _validate_faults(data: dict[str, Any], limits: dict[str, Any]) -> None:
     faults = data.get("faults", [])
     if not isinstance(faults, list) or len(faults) > 32:
         _fail("invalid faults")
@@ -127,6 +143,9 @@ def validate_fixture(data: dict[str, Any], *, schema: dict[str, Any] | None = No
             not isinstance(fault["seed"], int) or not 0 <= fault["seed"] <= 2147483647
         ):
             _fail("invalid deterministic seed")
+
+
+def _validate_outcome(data: dict[str, Any], timeline: list[Any], limits: dict[str, Any]) -> None:
     outcome = data.get("outcome")
     if not isinstance(outcome, dict) or outcome.get("status") not in {
         "success",
@@ -142,6 +161,15 @@ def validate_fixture(data: dict[str, Any], *, schema: dict[str, Any] | None = No
         _fail("leftover or unconsumed frames")
     if outcome["status"] == "uncertain" and limits["maxRetries"] != 0:
         _fail("uncertain delivery must not retry")
+
+
+def validate_fixture(data: dict[str, Any], *, schema: dict[str, Any] | None = None) -> None:
+    _validate_identity(data, schema)
+    limits = _validate_limits(data)
+    _validate_matching(data)
+    timeline = _validate_timeline(data, limits)
+    _validate_faults(data, limits)
+    _validate_outcome(data, timeline, limits)
 
 
 def verify_fixture() -> None:
