@@ -20,7 +20,7 @@
     {
       "atMillis": 0,
       "direction": "request",
-      "bodyDigest": "0000000000000000000000000000000000000000000000000000000000000000",
+      "bodyDigest": "9aa4aaa5b22882832859cd503d680f6b678079095e87663c72e5e0dd5db7ab60",
       "body": {
         "role": "user",
         "content": "synthetic request",
@@ -32,7 +32,7 @@
     {
       "atMillis": 20,
       "direction": "response",
-      "bodyDigest": "1111111111111111111111111111111111111111111111111111111111111111",
+      "bodyDigest": "d23f12187e62b232b6e66ce9477f64647d1cfe005fcdd8719835cb09cdea46a2",
       "body": {
         "type": "tool_call",
         "name": "clock",
@@ -44,7 +44,7 @@
     {
       "atMillis": 40,
       "direction": "request",
-      "bodyDigest": "2222222222222222222222222222222222222222222222222222222222222222",
+      "bodyDigest": "62ea53dc60b93ffe88c44aa9e7e2d2ab324ce5f83f6de1956b199cd1eab4fc9b",
       "body": {
         "role": "tool",
         "content": "synthetic result"
@@ -53,7 +53,7 @@
     {
       "atMillis": 60,
       "direction": "response",
-      "bodyDigest": "3333333333333333333333333333333333333333333333333333333333333333",
+      "bodyDigest": "dc14103830d1c80ee733b662f1789e0f40f99ae9191a16a1d76f1250d62cd484",
       "body": {
         "type": "final",
         "content": "synthetic response"

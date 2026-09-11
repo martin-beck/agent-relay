@@ -5,21 +5,25 @@
 from __future__ import annotations
 
 import copy
+import io
 import json
 import os
 import tempfile
 import time
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 
 from run_local_inference_conformance import (
     ConformanceBlocked,
     load_manifest,
+    main,
     require_network_namespace,
     run,
     validate_driver_evidence,
     validate_manifest,
+    write_junit,
 )
 
 
@@ -203,6 +207,61 @@ class LocalInferenceConformanceTest(unittest.TestCase):
             evidence["checks"] = checks
             with self.assertRaisesRegex(ConformanceBlocked, "invalid checks"):
                 validate_driver_evidence(evidence, load_manifest(), staged)
+        evidence = driver_evidence()
+        evidence["checks"] = ["stream"]
+        with self.assertRaisesRegex(ConformanceBlocked, "invalid checks"):
+            validate_driver_evidence(evidence, load_manifest(), staged)
+
+    def test_junit_contains_only_bounded_result_labels(self) -> None:
+        evidence = driver_evidence()
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "local-inference.xml"
+            write_junit(evidence, path)
+            rendered = path.read_text(encoding="utf-8")
+        self.assertIn("local-inference-conformance", rendered)
+        self.assertIn('name="teardown"', rendered)
+        self.assertNotIn("model", rendered)
+
+    def test_cli_emits_redacted_junit_and_fails_for_blocked_execution(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            junit = Path(temporary) / "local-inference.xml"
+            output = io.StringIO()
+            arguments = ["run_local_inference_conformance.py", "--junit", str(junit)]
+            with (
+                patch(
+                    "run_local_inference_conformance.run",
+                    side_effect=ConformanceBlocked(
+                        "private /home/operator prompt with Bearer abcdefghijklmnop"
+                    ),
+                ),
+                patch("sys.argv", arguments),
+                redirect_stdout(output),
+            ):
+                self.assertEqual(main(), 1)
+            rendered = output.getvalue()
+            self.assertEqual(json.loads(rendered)["result"], "failed")
+            self.assertNotIn("/home/", rendered)
+            self.assertNotIn("Bearer", rendered)
+            junit_text = junit.read_text(encoding="utf-8")
+            self.assertIn('failures="1"', junit_text)
+            self.assertNotIn("/home/", junit_text)
+
+    def test_cli_returns_failure_for_driver_reported_failure(self) -> None:
+        evidence = driver_evidence()
+        evidence["result"] = "failed"
+        evidence["failureClass"] = "infrastructure"
+        with tempfile.TemporaryDirectory() as temporary:
+            arguments = [
+                "run_local_inference_conformance.py",
+                "--junit",
+                str(Path(temporary) / "result.xml"),
+            ]
+            with (
+                patch("run_local_inference_conformance.run", return_value=evidence),
+                patch("sys.argv", arguments),
+                redirect_stdout(io.StringIO()),
+            ):
+                self.assertEqual(main(), 1)
 
     def test_staged_tuple_rejects_incomplete_provenance_and_invalid_timeout(self) -> None:
         base_env = {
@@ -299,6 +358,34 @@ class LocalInferenceConformanceTest(unittest.TestCase):
                     "run_local_inference_conformance.require_network_namespace", return_value=None
                 ),
                 self.assertRaisesRegex(ConformanceBlocked, "time budget"),
+            ):
+                run()
+            self.assertLess(time.monotonic() - started, 5)
+
+    def test_run_terminates_a_driver_while_output_crosses_the_cap(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            driver = Path(temporary) / "noisy-driver"
+            driver.write_text(
+                "#!/bin/sh\nwhile :; do printf 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'; done\n",
+                encoding="utf-8",
+            )
+            driver.chmod(0o700)
+            env = {
+                "AGENT_RELAY_LOCAL_INFERENCE_ENABLE": "1",
+                "AGENT_RELAY_OUTBOUND_NETWORK": "deny",
+                "AGENT_RELAY_HARDWARE_CLASS": "self-hosted-cpu-x86_64",
+                "AGENT_RELAY_LOCAL_INFERENCE_TUPLE_JSON": json.dumps(staged_tuple()),
+                "AGENT_RELAY_LOCAL_INFERENCE_COMMAND_JSON": json.dumps([str(driver)]),
+                "AGENT_RELAY_LOCAL_INFERENCE_TIMEOUT": "10",
+            }
+            started = time.monotonic()
+            with (
+                patch.dict(os.environ, env, clear=True),
+                patch(
+                    "run_local_inference_conformance.require_network_namespace",
+                    return_value=None,
+                ),
+                self.assertRaisesRegex(ConformanceBlocked, "output budget"),
             ):
                 run()
             self.assertLess(time.monotonic() - started, 5)
