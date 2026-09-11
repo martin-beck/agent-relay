@@ -129,6 +129,7 @@ class PublicContributorWorkflowTest(unittest.TestCase):
         self.assertIn("unset RUNNER_REGISTRATION_TOKEN", entrypoint)
         self.assertIn("exec env -i", entrypoint)
         self.assertIn("exec ./run.sh", entrypoint)
+        self.assertIn("/runner/home/.android/cache", entrypoint)
         self.assertIn(PUBLIC_RUNNER, entrypoint)
 
         for required in (
@@ -165,6 +166,7 @@ class PublicContributorWorkflowTest(unittest.TestCase):
         self.assertIn(" gpg ", dockerfile)
         self.assertIn("libatomic1", dockerfile)
         self.assertIn("gpg-agent", dockerfile)
+        self.assertIn("--home-dir /runner/home", dockerfile)
         self.assertIn(
             "70920811a4f8ad4328818682bca5c6469c1c942fab52448868071d0063816613",
             dockerfile,

@@ -15,6 +15,8 @@ fi
 : "${RUNNER_NAME:?RUNNER_NAME is required}"
 cp -a /opt/runner-dist/. /runner/
 mkdir --mode=0700 /runner/home /runner/toolcache
+mkdir --mode=0700 /runner/home/.android
+mkdir --mode=0700 /runner/home/.android/cache
 ./config.sh \
   --unattended \
   --ephemeral \

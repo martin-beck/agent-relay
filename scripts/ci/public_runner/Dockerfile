@@ -17,7 +17,7 @@ RUN apt-get update \
     && mkdir --mode=0755 /opt/runner-dist \
     && tar --extract --gzip --file /tmp/actions-runner.tar.gz --directory /opt/runner-dist \
     && rm /tmp/actions-runner.tar.gz \
-    && useradd --create-home --home-dir /home/runner --uid 10001 runner
+    && useradd --no-create-home --home-dir /runner/home --uid 10001 runner
 
 COPY --chmod=0755 scripts/ci/public_runner/entrypoint.sh /usr/local/bin/public-runner-entrypoint
 
