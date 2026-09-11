@@ -89,6 +89,11 @@ class PublicContributorWorkflowTest(unittest.TestCase):
             step for step in steps if step["name"] == "Set up isolated Android SDK"
         )
         self.assertEqual("", setup_android["with"]["packages"])
+        native_toolchain = next(
+            step for step in steps if step["name"] == "Install required Android toolchain"
+        )
+        self.assertIn("platforms;android-36", native_toolchain["run"])
+        self.assertIn("scripts/ci/install_android_native_toolchain.sh", native_toolchain["run"])
         for step in steps:
             action = step.get("uses")
             if action is not None:
