@@ -5,7 +5,10 @@
 
 from __future__ import annotations
 
+import os
 import re
+import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 from typing import Any, cast
@@ -126,6 +129,7 @@ class PublicContributorWorkflowTest(unittest.TestCase):
         for required in (
             "--rm",
             "--detach",
+            "--pull=never",
             "--read-only",
             "--cap-drop=ALL",
             "no-new-privileges",
@@ -144,6 +148,9 @@ class PublicContributorWorkflowTest(unittest.TestCase):
         ):
             self.assertNotIn(forbidden, supervisor)
         self.assertIn("registration-token", supervisor)
+        self.assertIn("PUBLIC_RUNNER_IMAGE_ID must be an exact sha256 image ID", supervisor)
+        self.assertIn("image inspect --format '{{.Id}}'", supervisor)
+        self.assertIn('runner_image="$resolved_image_id"', supervisor)
         self.assertIn("flock --nonblock", supervisor)
         self.assertIn("cleanup_stale_registrations", supervisor)
         self.assertIn(PUBLIC_RUNNER, supervisor)
@@ -153,6 +160,47 @@ class PublicContributorWorkflowTest(unittest.TestCase):
         self.assertIn(
             "70920811a4f8ad4328818682bca5c6469c1c942fab52448868071d0063816613",
             dockerfile,
+        )
+
+    def test_public_runner_rejects_a_substituted_local_image(self) -> None:
+        supervisor = PUBLIC_RUNNER_DIR / "supervise.sh"
+        inspected_id = "sha256:" + ("a" * 64)
+        expected_id = "sha256:" + ("b" * 64)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            binary_directory = root / "bin"
+            runtime_directory = root / "runtime"
+            binary_directory.mkdir()
+            runtime_directory.mkdir()
+            docker = binary_directory / "docker"
+            docker.write_text(
+                "#!/bin/sh\n"
+                'test "$1 $2" = "image inspect" || exit 99\n'
+                f"printf '%s\\n' {inspected_id}\n",
+                encoding="utf-8",
+            )
+            docker.chmod(0o700)
+            environment = {
+                **os.environ,
+                "PATH": f"{binary_directory}:/usr/bin:/bin",
+                "PUBLIC_RUNNER_DOCKER_COMMAND": "docker",
+                "PUBLIC_RUNNER_IMAGE_ID": expected_id,
+                "PUBLIC_RUNNER_REPOSITORY": "owner/repository",
+                "XDG_RUNTIME_DIR": str(runtime_directory),
+            }
+            result = subprocess.run(  # noqa: S603
+                [str(supervisor)],
+                check=False,
+                capture_output=True,
+                env=environment,
+                text=True,
+                timeout=5,
+            )
+
+        self.assertEqual(1, result.returncode)
+        self.assertIn(
+            "Disposable runner image does not match PUBLIC_RUNNER_IMAGE_ID.",
+            result.stderr,
         )
 
 

@@ -439,7 +439,10 @@ service account whose GitHub CLI authentication can only administer runners for 
 docker build --pull \
   --file scripts/ci/public_runner/Dockerfile \
   --tag agent-relay-public-runner:2.337.0 .
+runner_image_id="$(docker image inspect \
+  --format '{{.Id}}' agent-relay-public-runner:2.337.0)"
 PUBLIC_RUNNER_REPOSITORY=owner/repository \
+  PUBLIC_RUNNER_IMAGE_ID="$runner_image_id" \
   scripts/ci/public_runner/supervise.sh
 ```
 
@@ -447,9 +450,11 @@ The supervisor requires GitHub CLI, jq, OpenSSL, `flock`, and Docker. Its Docker
 `PUBLIC_RUNNER_DOCKER_COMMAND` when the service account uses a rootless or mediated Docker client.
 Keep the supervisor credential outside the repository and container. Do not grant the container a
 host directory, device, privileged mode, host network, Docker API, or reusable cache. The supervisor
-holds a host-local singleton lock and deletes stale registrations carrying only its exact dedicated
-label before registering a replacement. Operational logs must identify runners only by their random
-public-lane name.
+requires the exact local `sha256:` image ID, resolves the configured tag before each service start,
+refuses a mismatch, and disables image pulls while the registration credential is present. Rebuild
+and explicitly update the expected ID to rotate the image. It also holds a host-local singleton lock
+and deletes stale registrations carrying only its exact dedicated label before registering a
+replacement. Operational logs must identify runners only by their random public-lane name.
 
 Self-hosted verification, UI, and AWQ workflows do not accept `pull_request` events. After reviewing
 an exact contributor commit and its workflow diff, a maintainer may push that immutable commit to a

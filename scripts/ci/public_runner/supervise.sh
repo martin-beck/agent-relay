@@ -20,6 +20,11 @@ flock --nonblock 9 || {
 
 runner_label=agent-relay-public-ci
 runner_image="${PUBLIC_RUNNER_IMAGE:-agent-relay-public-runner:2.337.0}"
+: "${PUBLIC_RUNNER_IMAGE_ID:?PUBLIC_RUNNER_IMAGE_ID must be an exact sha256 image ID}"
+[[ "$PUBLIC_RUNNER_IMAGE_ID" =~ ^sha256:[0-9a-f]{64}$ ]] || {
+  printf "PUBLIC_RUNNER_IMAGE_ID must be an exact sha256 image ID.\n" >&2
+  exit 2
+}
 runner_memory="${PUBLIC_RUNNER_MEMORY:-12g}"
 runner_cpus="${PUBLIC_RUNNER_CPUS:-8}"
 runner_tmpfs_size="${PUBLIC_RUNNER_TMPFS_SIZE:-20g}"
@@ -32,6 +37,15 @@ case "${PUBLIC_RUNNER_DOCKER_COMMAND:-docker}" in
     exit 2
     ;;
 esac
+
+resolved_image_id="$(
+  "${docker_command[@]}" image inspect --format '{{.Id}}' "$runner_image"
+)"
+if [[ "$resolved_image_id" != "$PUBLIC_RUNNER_IMAGE_ID" ]]; then
+  printf "Disposable runner image does not match PUBLIC_RUNNER_IMAGE_ID.\n" >&2
+  exit 1
+fi
+runner_image="$resolved_image_id"
 
 repository_url="$(gh repo view "$PUBLIC_RUNNER_REPOSITORY" --json url --jq .url)"
 environment_file=""
@@ -82,6 +96,7 @@ while true; do
   "${docker_command[@]}" run \
     --detach \
     --rm \
+    --pull=never \
     --name "$runner_name" \
     --hostname public-ci \
     --read-only \
