@@ -160,6 +160,7 @@ class PublicContributorWorkflowTest(unittest.TestCase):
         self.assertIn("RUNNER_VERSION=2.337.0", dockerfile)
         self.assertIn(" gpg ", dockerfile)
         self.assertIn("libatomic1", dockerfile)
+        self.assertIn("gpg-agent", dockerfile)
         self.assertIn(
             "70920811a4f8ad4328818682bca5c6469c1c942fab52448868071d0063816613",
             dockerfile,
