@@ -165,6 +165,7 @@ class PublicContributorWorkflowTest(unittest.TestCase):
         self.assertIn('runner_image="$resolved_image_id"', supervisor)
         self.assertIn("flock --nonblock", supervisor)
         self.assertIn("cleanup_stale_registrations", supervisor)
+        self.assertIn("PUBLIC_RUNNER_MEMORY:-24g", supervisor)
         self.assertIn(PUBLIC_RUNNER, supervisor)
 
         self.assertRegex(dockerfile, r"FROM ubuntu@sha256:[0-9a-f]{64}")
@@ -172,6 +173,7 @@ class PublicContributorWorkflowTest(unittest.TestCase):
         self.assertIn(" gpg ", dockerfile)
         self.assertIn("libatomic1", dockerfile)
         self.assertIn("gpg-agent", dockerfile)
+        self.assertIn(" patch ", dockerfile)
         self.assertIn("--home-dir /runner/home", dockerfile)
         self.assertIn(
             "70920811a4f8ad4328818682bca5c6469c1c942fab52448868071d0063816613",

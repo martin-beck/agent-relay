@@ -25,7 +25,7 @@ runner_image="${PUBLIC_RUNNER_IMAGE:-agent-relay-public-runner:2.337.0}"
   printf "PUBLIC_RUNNER_IMAGE_ID must be an exact sha256 image ID.\n" >&2
   exit 2
 }
-runner_memory="${PUBLIC_RUNNER_MEMORY:-12g}"
+runner_memory="${PUBLIC_RUNNER_MEMORY:-24g}"
 runner_cpus="${PUBLIC_RUNNER_CPUS:-8}"
 runner_tmpfs_size="${PUBLIC_RUNNER_TMPFS_SIZE:-20g}"
 restart_delay="${PUBLIC_RUNNER_RESTART_DELAY_SECONDS:-5}"
