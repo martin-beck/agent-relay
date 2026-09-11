@@ -51,9 +51,9 @@ cmake_actual="$("$cmake_root/bin/cmake" --version | sed -n '1s/^cmake version //
   exit 1
 }
 
-sdkmanager_path="$android_sdk_root/cmdline-tools/latest/bin/sdkmanager"
+sdkmanager_path="${ANDROID_SDKMANAGER_PATH:-$android_sdk_root/cmdline-tools/latest/bin/sdkmanager}"
 [[ -x "$sdkmanager_path" ]] || {
-  printf 'Android sdkmanager was not found at the canonical runner path\n' >&2
+  printf 'Android sdkmanager was not found at the configured path\n' >&2
   exit 1
 }
 ndk_properties="$android_sdk_root/ndk/$ndk_version/source.properties"

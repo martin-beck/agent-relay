@@ -93,6 +93,7 @@ class PublicContributorWorkflowTest(unittest.TestCase):
             step for step in steps if step["name"] == "Install required Android toolchain"
         )
         self.assertIn("platforms;android-36", native_toolchain["run"])
+        self.assertIn("ANDROID_SDKMANAGER_PATH", native_toolchain["run"])
         self.assertIn("scripts/ci/install_android_native_toolchain.sh", native_toolchain["run"])
         for step in steps:
             action = step.get("uses")

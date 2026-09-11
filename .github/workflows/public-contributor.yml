@@ -70,7 +70,8 @@ jobs:
       - name: Install required Android toolchain
         run: |
           sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
-          scripts/ci/install_android_native_toolchain.sh
+          ANDROID_SDKMANAGER_PATH="$(command -v sdkmanager)" \
+            scripts/ci/install_android_native_toolchain.sh
 
       - name: Validate wrapper without shared caches
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
