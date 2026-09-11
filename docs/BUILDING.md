@@ -422,6 +422,9 @@ runner label. A host-side supervisor registers one randomly named ephemeral runn
 locked-down container, accepts at most one job, and removes the container afterward. The container
 has a read-only image, job-private memory-backed work and temporary directories, a private PID and
 network namespace, no host mounts or Docker socket, no Linux capabilities, and no shared caches.
+Its dedicated bridge has a fail-closed `DOCKER-USER` policy that rejects host-local, private,
+carrier-grade NAT, link-local, documentation, multicast, and reserved IPv4 destinations. IPv6 is
+disabled for the network and container. Public dependency endpoints remain reachable.
 The runner receives the unavoidable one-job registration credential only during setup, immediately
 removes its host-side environment file, and re-executes with a clean job environment. It receives no
 repository variables or secrets,
@@ -439,6 +442,10 @@ service account whose GitHub CLI authentication can only administer runners for 
 docker build --pull \
   --file scripts/ci/public_runner/Dockerfile \
   --tag agent-relay-public-runner:2.337.0 .
+sudo install --owner=root --group=root --mode=0755 \
+  scripts/ci/public_runner/network_guard.sh \
+  /usr/local/libexec/agent-relay-public-network-guard
+sudo /usr/local/libexec/agent-relay-public-network-guard install
 runner_image_id="$(docker image inspect \
   --format '{{.Id}}' agent-relay-public-runner:2.337.0)"
 PUBLIC_RUNNER_REPOSITORY=owner/repository \
@@ -450,6 +457,16 @@ The supervisor requires GitHub CLI, jq, OpenSSL, `flock`, and Docker. Its Docker
 `PUBLIC_RUNNER_DOCKER_COMMAND` when the service account uses a rootless or mediated Docker client.
 Keep the supervisor credential outside the repository and container. Do not grant the container a
 host directory, device, privileged mode, host network, Docker API, or reusable cache. The supervisor
+refuses to register a runner unless the root-owned network guard verifies the dedicated bridge and
+every firewall rule. Install the guard through system configuration management so Docker or host
+firewall reloads reapply it before the supervisor restarts. Do not run the service with a general
+GitHub CLI login: use a fine-grained credential selected only for this repository with the minimum
+repository Administration write permission that GitHub requires for runner registration, and no
+account, organization, workflow, contents, package, or other repository permissions. The supervisor
+service must remain enabled so a fresh idle registration replaces every completed job; disabling it
+intentionally makes the public lane unavailable.
+
+The supervisor
 requires the exact local `sha256:` image ID, resolves the configured tag before each service start,
 refuses a mismatch, and disables image pulls while the registration credential is present. Rebuild
 and explicitly update the expected ID to rotate the image. It also holds a host-local singleton lock

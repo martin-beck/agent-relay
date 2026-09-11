@@ -19,6 +19,7 @@ flock --nonblock 9 || {
 }
 
 runner_label=agent-relay-public-ci
+runner_network=agent-relay-public-ci
 runner_image="${PUBLIC_RUNNER_IMAGE:-agent-relay-public-runner:2.337.0}"
 : "${PUBLIC_RUNNER_IMAGE_ID:?PUBLIC_RUNNER_IMAGE_ID must be an exact sha256 image ID}"
 [[ "$PUBLIC_RUNNER_IMAGE_ID" =~ ^sha256:[0-9a-f]{64}$ ]] || {
@@ -47,9 +48,18 @@ if [[ "$resolved_image_id" != "$PUBLIC_RUNNER_IMAGE_ID" ]]; then
 fi
 runner_image="$resolved_image_id"
 
+network_guard="${PUBLIC_RUNNER_NETWORK_GUARD:-/usr/local/libexec/agent-relay-public-network-guard}"
+[[ "$network_guard" == /usr/local/libexec/agent-relay-public-network-guard ]] || {
+  printf "PUBLIC_RUNNER_NETWORK_GUARD must name the root-owned installed guard.\n" >&2
+  exit 2
+}
+sudo -n "$network_guard" verify
+
 repository_url="$(gh repo view "$PUBLIC_RUNNER_REPOSITORY" --json url --jq .url)"
 environment_file=""
 active_container=""
+guard_monitor_pid=""
+guard_failure_file=""
 
 cleanup() {
   if [[ -n "$environment_file" ]]; then
@@ -57,6 +67,12 @@ cleanup() {
   fi
   if [[ -n "$active_container" ]]; then
     "${docker_command[@]}" stop --time=30 "$active_container" > /dev/null 2>&1 || true
+  fi
+  if [[ -n "$guard_monitor_pid" ]]; then
+    kill "$guard_monitor_pid" > /dev/null 2>&1 || true
+  fi
+  if [[ -n "$guard_failure_file" ]]; then
+    rm -f "$guard_failure_file"
   fi
 }
 trap cleanup EXIT
@@ -75,7 +91,19 @@ cleanup_stale_registrations() {
   )
 }
 
+monitor_network_guard() {
+  local container_name=$1
+  while sleep 1; do
+    if ! sudo -n "$network_guard" verify > /dev/null 2>&1; then
+      : > "$guard_failure_file"
+      "${docker_command[@]}" stop --time=1 "$container_name" > /dev/null 2>&1 || true
+      return
+    fi
+  done
+}
+
 while true; do
+  sudo -n "$network_guard" verify
   cleanup_stale_registrations
   runner_name="public-ci-$(openssl rand -hex 8)"
   registration_token="$(
@@ -106,7 +134,8 @@ while true; do
     --memory="$runner_memory" \
     --memory-swap="$runner_memory" \
     --cpus="$runner_cpus" \
-    --network=bridge \
+    --network="$runner_network" \
+    --sysctl=net.ipv6.conf.all.disable_ipv6=1 \
     --tmpfs="/runner:rw,exec,nosuid,nodev,size=$runner_tmpfs_size,uid=10001,gid=10001,mode=0700" \
     --tmpfs=/tmp:rw,exec,nosuid,nodev,size=2g,uid=10001,gid=10001,mode=0700 \
     --env=HOME=/runner/home \
@@ -116,11 +145,24 @@ while true; do
   rm -f "$environment_file"
   environment_file=""
 
+  guard_failure_file="$(mktemp)"
+  rm -f "$guard_failure_file"
+  monitor_network_guard "$active_container" &
+  guard_monitor_pid=$!
   "${docker_command[@]}" logs --follow "$active_container" &
   logs_pid=$!
   runner_exit="$("${docker_command[@]}" wait "$active_container")"
+  kill "$guard_monitor_pid" > /dev/null 2>&1 || true
+  wait "$guard_monitor_pid" 2> /dev/null || true
+  guard_monitor_pid=""
   wait "$logs_pid" || true
   active_container=""
+  if [[ -e "$guard_failure_file" ]]; then
+    printf "Public runner network guard failed; supervisor is stopping.\n" >&2
+    exit 1
+  fi
+  rm -f "$guard_failure_file"
+  guard_failure_file=""
   [[ "$runner_exit" =~ ^[0-9]+$ ]] || runner_exit=1
   if ((runner_exit != 0)); then
     printf "Disposable public runner exited with status %d; retrying.\n" "$runner_exit" >&2

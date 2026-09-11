@@ -128,6 +128,7 @@ class PublicContributorWorkflowTest(unittest.TestCase):
         entrypoint = (PUBLIC_RUNNER_DIR / "entrypoint.sh").read_text(encoding="utf-8")
         supervisor = (PUBLIC_RUNNER_DIR / "supervise.sh").read_text(encoding="utf-8")
         dockerfile = (PUBLIC_RUNNER_DIR / "Dockerfile").read_text(encoding="utf-8")
+        network_guard = (PUBLIC_RUNNER_DIR / "network_guard.sh").read_text(encoding="utf-8")
 
         self.assertIn("--ephemeral", entrypoint)
         self.assertIn("--no-default-labels", entrypoint)
@@ -145,7 +146,8 @@ class PublicContributorWorkflowTest(unittest.TestCase):
             "--read-only",
             "--cap-drop=ALL",
             "no-new-privileges",
-            "--network=bridge",
+            '--network="$runner_network"',
+            "--sysctl=net.ipv6.conf.all.disable_ipv6=1",
             "runner:rw,exec,nosuid,nodev",
             "tmp:rw,exec,nosuid,nodev",
         ):
@@ -166,7 +168,20 @@ class PublicContributorWorkflowTest(unittest.TestCase):
         self.assertIn("flock --nonblock", supervisor)
         self.assertIn("cleanup_stale_registrations", supervisor)
         self.assertIn("PUBLIC_RUNNER_MEMORY:-24g", supervisor)
+        self.assertIn("agent-relay-public-network-guard", supervisor)
+        self.assertIn('sudo -n "$network_guard" verify', supervisor)
         self.assertIn(PUBLIC_RUNNER, supervisor)
+
+        self.assertIn("network_subnet=172.30.0.0/24", network_guard)
+        self.assertIn("--dst-type LOCAL", network_guard)
+        self.assertIn("169.254.0.0/16", network_guard)
+        self.assertIn("192.168.0.0/16", network_guard)
+        self.assertIn("iptables -I DOCKER-USER 1", network_guard)
+        self.assertIn('-j "$firewall_chain"', network_guard)
+        self.assertIn("-j DROP", network_guard)
+        self.assertIn("verify_firewall", network_guard)
+        self.assertIn("monitor_network_guard", supervisor)
+        self.assertIn("Public runner network guard failed", supervisor)
 
         self.assertRegex(dockerfile, r"FROM ubuntu@sha256:[0-9a-f]{64}")
         self.assertIn("RUNNER_VERSION=2.337.0", dockerfile)
