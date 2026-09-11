@@ -85,6 +85,10 @@ class PublicContributorWorkflowTest(unittest.TestCase):
         checkout = steps[0]
         self.assertIs(checkout["with"]["persist-credentials"], False)
         self.assertEqual(0, checkout["with"]["fetch-depth"])
+        setup_android = next(
+            step for step in steps if step["name"] == "Set up isolated Android SDK"
+        )
+        self.assertEqual("", setup_android["with"]["packages"])
         for step in steps:
             action = step.get("uses")
             if action is not None:
