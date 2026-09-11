@@ -84,6 +84,7 @@ class PublicContributorWorkflowTest(unittest.TestCase):
         steps = workflow["jobs"]["validate"]["steps"]
         checkout = steps[0]
         self.assertIs(checkout["with"]["persist-credentials"], False)
+        self.assertEqual(0, checkout["with"]["fetch-depth"])
         for step in steps:
             action = step.get("uses")
             if action is not None:
