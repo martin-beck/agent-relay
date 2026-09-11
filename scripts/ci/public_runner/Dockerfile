@@ -8,7 +8,7 @@ ARG RUNNER_SHA256=70920811a4f8ad4328818682bca5c6469c1c942fab52448868071d00638166
 
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends \
-        ca-certificates curl git jq libicu74 libkrb5-3 libssl3 openssl unzip xz-utils zip zlib1g \
+        ca-certificates curl git jq libatomic1 libicu74 libkrb5-3 libssl3 openssl unzip xz-utils zip zlib1g \
     && rm -rf /var/lib/apt/lists/* \
     && curl --fail --location --proto "=https" --tlsv1.2 \
         --output /tmp/actions-runner.tar.gz \

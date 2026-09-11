@@ -158,6 +158,7 @@ class PublicContributorWorkflowTest(unittest.TestCase):
 
         self.assertRegex(dockerfile, r"FROM ubuntu@sha256:[0-9a-f]{64}")
         self.assertIn("RUNNER_VERSION=2.337.0", dockerfile)
+        self.assertIn("libatomic1", dockerfile)
         self.assertIn(
             "70920811a4f8ad4328818682bca5c6469c1c942fab52448868071d0063816613",
             dockerfile,
