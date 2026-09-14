@@ -55,7 +55,7 @@ repos:
           - Pillow==12.3.0
           - PyYAML==6.0.3
           - types-Pillow==10.2.0.20240822
-          - types-PyYAML==6.0.12.20260815
+          - types-PyYAML==6.0.12.20260906
         files: ^scripts/(bootstrap\.py|(ci|docs)/.*\.py)$
 
   - repo: local
