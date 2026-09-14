@@ -28,7 +28,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/editorconfig-checker/editorconfig-checker
-    rev: b0a550a82df22ed8bbc48156d3d6fa9bf20c975c  # frozen: v3.11.2
+    rev: e98e4ec6d3bb64b4b62ec4f0ce6cacdfba12f9a0  # frozen: v4.0.1
     hooks:
       - id: editorconfig-checker
         types: [text]
