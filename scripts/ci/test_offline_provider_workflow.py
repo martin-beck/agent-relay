@@ -12,6 +12,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW = ROOT / ".github/workflows/offline-provider.yml"
+TOOLCHAIN_WRAPPER = ROOT / "scripts/with-toolchain"
 
 
 class OfflineProviderWorkflowTest(unittest.TestCase):
@@ -71,6 +72,12 @@ class OfflineProviderWorkflowTest(unittest.TestCase):
         )
         self.assertIn("offline-provider-junit.xml", command)
         self.assertIn("offline-provider-summary.json", command)
+
+    def test_toolchain_wrapper_uses_repository_uv_for_python_bootstrap(self) -> None:
+        wrapper = TOOLCHAIN_WRAPPER.read_text(encoding="utf-8")
+        self.assertIn('uv_bin="$(command -v -- uv)"', wrapper)
+        self.assertIn('"$uv_bin" run --python 3.12', wrapper)
+        self.assertNotIn('python3 "$repo_root/scripts/bootstrap.py"', wrapper)
 
     def test_actions_are_immutable_and_artifact_is_bounded(self) -> None:
         steps = self.workflow()["jobs"]["deterministic-replay"]["steps"]
