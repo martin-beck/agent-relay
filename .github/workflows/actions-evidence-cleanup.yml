@@ -1,0 +1,49 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
+name: Actions evidence cleanup
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: Apply the independently reviewed exact-ID manifest
+        required: true
+        default: false
+        type: boolean
+      confirmation:
+        description: For apply only, enter DELETE_EXACT_ACTIONS_EVIDENCE exactly
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: actions-evidence-cleanup
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    name: Verify or apply exact evidence manifest
+    if: github.repository_visibility != 'public'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify or apply exact manifest
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          RETENTION_APPLY: ${{ inputs.apply }}
+          RETENTION_CONFIRMATION: ${{ inputs.confirmation }}
+        run: |
+          arguments=(--manifest config/actions-evidence-cleanup-manifest.json)
+          if [[ "${RETENTION_APPLY}" == "true" ]]; then
+            arguments+=(--apply --confirm "${RETENTION_CONFIRMATION}")
+          fi
+          python3 scripts/ci/actions_evidence_cleanup.py "${arguments[@]}"

@@ -473,11 +473,19 @@ and explicitly update the expected ID to rotate the image. It also holds a host-
 and deletes stale registrations carrying only its exact dedicated label before registering a
 replacement. Operational logs must identify runners only by their random public-lane name.
 
-Self-hosted verification, UI, and AWQ workflows do not accept `pull_request` events. After reviewing
-an exact contributor commit and its workflow diff, a maintainer may push that immutable commit to a
-repository-owned `trusted-ci/<commit>` branch. That push runs the complete self-hosted gates at the
-new repository commit; never promote a mutable fork ref or an unreviewed workflow change. A merge to
-`main` runs the same trusted gates again.
+Verification, UI, documentation-maintenance, and AWQ workflows do not accept `pull_request` events.
+Their public evidence runs on GitHub-hosted runners so the Actions job header and generated logs
+cannot disclose private self-hosted runner names or filesystem paths. The offline-provider trusted
+job is explicitly enabled only when the repository is public and uses `ubuntu-latest`; its
+same-repository pull-request guard remains in force, so fork-controlled code never enters that
+trusted lane. Private repositories therefore fail closed without emitting trusted offline-provider
+evidence. The separate public-contributor validation remains on the unprivileged
+`agent-relay-public-ci` lane.
+After reviewing an exact contributor commit and its workflow diff, a maintainer may push that
+immutable commit to a repository-owned `trusted-ci/<commit>` branch; that push still runs the complete
+trusted gates at the new repository commit. A merge to `main` runs the same trusted gates again. The
+separate local-inference and evidence-cleanup workflows remain private-only because their operations
+require pre-staged models or write-capable Actions permissions.
 
 Before making the repository public, its owner must also require approval for every external
 contributor workflow and restrict each persistent self-hosted runner group to trusted workflow files

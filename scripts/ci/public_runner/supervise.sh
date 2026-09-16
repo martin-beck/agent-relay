@@ -78,11 +78,30 @@ cleanup() {
 trap cleanup EXIT
 
 cleanup_stale_registrations() {
-  local runner_id
+  local runner_id response_file delete_status
   while IFS= read -r runner_id; do
     [[ "$runner_id" =~ ^[0-9]+$ ]] || continue
-    gh api --method DELETE \
-      "repos/$PUBLIC_RUNNER_REPOSITORY/actions/runners/$runner_id"
+    response_file="$(mktemp)"
+    if gh api --method DELETE \
+      "repos/$PUBLIC_RUNNER_REPOSITORY/actions/runners/$runner_id" \
+      > "$response_file" 2>&1; then
+      rm -f "$response_file"
+      continue
+    fi
+    delete_status=$?
+    if jq -e '
+      (.status == 422 or .status == "422") and
+      .message == "Cannot delete a runner that is currently running a job"
+    ' < "$response_file" > /dev/null 2>&1 ||
+      grep -Fqx \
+        "gh: Cannot delete a runner that is currently running a job (HTTP 422)" \
+        "$response_file"; then
+      rm -f "$response_file"
+      return 75
+    fi
+    rm -f "$response_file"
+    printf "Failed to remove a stale public runner registration.\n" >&2
+    return "$delete_status"
   done < <(
     gh api "repos/$PUBLIC_RUNNER_REPOSITORY/actions/runners" --paginate |
       jq --raw-output --arg label "$runner_label" ".runners[]
@@ -104,7 +123,17 @@ monitor_network_guard() {
 
 while true; do
   sudo -n "$network_guard" verify
-  cleanup_stale_registrations
+  if cleanup_stale_registrations; then
+    :
+  else
+    cleanup_status=$?
+    if ((cleanup_status == 75)); then
+      printf "A stale public runner is still busy; waiting before retrying cleanup.\n" >&2
+      sleep "$restart_delay"
+      continue
+    fi
+    exit "$cleanup_status"
+  fi
   runner_name="public-ci-$(openssl rand -hex 8)"
   registration_token="$(
     gh api --method POST \

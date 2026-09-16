@@ -27,8 +27,9 @@ class OfflineProviderWorkflowTest(unittest.TestCase):
         self.assertEqual(set(trigger_map), {"workflow_dispatch", "push", "pull_request"})
         self.assertEqual(workflow["permissions"], {"contents": "read"})
         job = workflow["jobs"]["deterministic-replay"]
+        self.assertIn("github.repository_visibility == 'public'", job["if"])
         self.assertIn("head.repo.full_name == github.repository", job["if"])
-        self.assertEqual(job["runs-on"], ["self-hosted", "linux", "x64", "agent-relay-build-ci"])
+        self.assertEqual(job["runs-on"], "ubuntu-latest")
         self.assertEqual(job["timeout-minutes"], 45)
         self.assertEqual(job["env"]["AGENT_RELAY_TOOLCHAIN_TARGET"], "quality")
         checkout = job["steps"][0]

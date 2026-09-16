@@ -23,7 +23,7 @@ jobs:
   current-phone:
     name: UI and accessibility (current phone)
     if: github.event_name == 'push'
-    runs-on: [self-hosted, linux, x64, agent-relay-device-ci]
+    runs-on: ubuntu-latest
     timeout-minutes: 40
 
     steps:
@@ -46,9 +46,7 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
-          # The self-hosted temp path is too long for setup-java's GPG agent sockets.
-          # setup-java still verifies the vendor-published SHA-256 checksum.
-          verify-signature: false
+          verify-signature: true
 
       - name: Validate wrapper and set up Gradle
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
@@ -226,7 +224,7 @@ jobs:
   extended-matrix:
     name: UI matrix (${{ matrix.name }})
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    runs-on: [self-hosted, linux, x64, agent-relay-device-ci]
+    runs-on: ubuntu-latest
     timeout-minutes: 40
     strategy:
       fail-fast: false
@@ -268,9 +266,7 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
-          # The self-hosted temp path is too long for setup-java's GPG agent sockets.
-          # setup-java still verifies the vendor-published SHA-256 checksum.
-          verify-signature: false
+          verify-signature: true
 
       - name: Validate wrapper and set up Gradle
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0

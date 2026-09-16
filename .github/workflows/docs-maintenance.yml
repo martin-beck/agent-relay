@@ -18,7 +18,7 @@ concurrency:
 jobs:
   verify:
     name: Documentation drift and evidence maintenance
-    runs-on: [self-hosted, linux, x64, agent-relay-build-ci]
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - name: Check out source

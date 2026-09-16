@@ -191,6 +191,7 @@ class ArtifactRetentionWorkflowTest(unittest.TestCase):
         workflow = yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
         job = workflow["jobs"]["retention"]
         self.assertEqual(job["runs-on"], ["self-hosted", "linux", "x64", "agent-relay-build-ci"])
+        self.assertIn("github.repository_visibility != 'public'", job["if"])
         rendered = workflow_path.read_text(encoding="utf-8")
         self.assertNotIn("actions/upload-artifact", rendered)
         self.assertIn("--max-deletions", rendered)

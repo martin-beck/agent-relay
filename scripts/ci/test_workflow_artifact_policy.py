@@ -65,17 +65,16 @@ class WorkflowArtifactPolicyTest(unittest.TestCase):
         self.assertEqual(len(pages_uploads), 1)
         self.assertNotIn("continue-on-error", pages_uploads[0])
 
-    def test_documentation_maintenance_uses_build_pool_and_short_optional_retention(self) -> None:
+    def test_documentation_maintenance_uses_hosted_runner_and_short_optional_retention(
+        self,
+    ) -> None:
         workflow = yaml.safe_load(DOCUMENTATION_WORKFLOW.read_text(encoding="utf-8"))
         job = workflow["jobs"]["verify"]
         upload = next(
             step for step in job["steps"] if str(step.get("uses", "")).startswith(UPLOAD_ACTION)
         )
 
-        self.assertEqual(
-            ["self-hosted", "linux", "x64", "agent-relay-build-ci"],
-            job["runs-on"],
-        )
+        self.assertEqual("ubuntu-latest", job["runs-on"])
         self.assertEqual(3, upload["with"]["retention-days"])
         self.assertEqual("error", upload["with"]["if-no-files-found"])
         self.assertIs(upload["continue-on-error"], True)

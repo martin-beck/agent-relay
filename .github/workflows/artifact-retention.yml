@@ -38,6 +38,7 @@ concurrency:
 jobs:
   retention:
     name: Plan or apply bounded artifact retention
+    if: github.repository_visibility != 'public'
     runs-on: [self-hosted, linux, x64, agent-relay-build-ci]
     timeout-minutes: 10
     env:
