@@ -62,6 +62,12 @@ class PublicContributorWorkflowTest(unittest.TestCase):
         for path, workflow in self.workflows.items():
             if "pull_request" not in events(workflow):
                 continue
+            if path == WORKFLOW_DIR / "offline-provider.yml":
+                self.assertIn(
+                    "github.event.pull_request.head.repo.full_name == github.repository",
+                    workflow["jobs"]["deterministic-replay"]["if"],
+                )
+                continue
             self.assertEqual(PUBLIC_WORKFLOW, path)
             self.assertEqual({"contents": "read"}, workflow["permissions"])
             for job in workflow["jobs"].values():
@@ -122,7 +128,13 @@ class PublicContributorWorkflowTest(unittest.TestCase):
                 "self-hosted" in str(job.get("runs-on", "")) for job in workflow["jobs"].values()
             )
             if contains_self_hosted:
-                self.assertNotIn("pull_request", events(workflow), path)
+                if "pull_request" not in events(workflow):
+                    continue
+                self.assertEqual(WORKFLOW_DIR / "offline-provider.yml", path)
+                self.assertIn(
+                    "github.event.pull_request.head.repo.full_name == github.repository",
+                    workflow["jobs"]["deterministic-replay"]["if"],
+                )
 
     def test_public_runner_is_single_job_and_disposable(self) -> None:
         entrypoint = (PUBLIC_RUNNER_DIR / "entrypoint.sh").read_text(encoding="utf-8")
