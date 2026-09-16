@@ -20,7 +20,7 @@ concurrency:
 jobs:
   verify:
     name: Quality, test, lint, and build
-    runs-on: [self-hosted, linux, x64, agent-relay-build-ci]
+    runs-on: ubuntu-latest
     timeout-minutes: 60
 
     steps:
@@ -137,9 +137,7 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
-          # The self-hosted temp path is too long for setup-java's GPG agent sockets.
-          # setup-java still verifies the vendor-published SHA-256 checksum.
-          verify-signature: false
+          verify-signature: true
 
       - name: Validate wrapper and set up Gradle
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
@@ -300,7 +298,7 @@ jobs:
 
   visual-regression:
     name: Visual regression
-    runs-on: [self-hosted, linux, x64, agent-relay-build-ci]
+    runs-on: ubuntu-latest
     timeout-minutes: 20
 
     steps:
@@ -314,9 +312,7 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
-          # The self-hosted temp path is too long for setup-java's GPG agent sockets.
-          # setup-java still verifies the vendor-published SHA-256 checksum.
-          verify-signature: false
+          verify-signature: true
 
       - name: Validate wrapper and set up Gradle
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
