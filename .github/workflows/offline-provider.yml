@@ -51,6 +51,12 @@ jobs:
           scripts/with-toolchain \
             ./gradlew --no-daemon :provider:test-fixtures:testClasses --stacktrace
 
+      - name: Install the host network-isolation tool
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends --yes bubblewrap
+          command -v bwrap
+
       - name: Run deterministic replay with zero egress
         shell: bash
         run: |
