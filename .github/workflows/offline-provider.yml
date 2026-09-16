@@ -64,7 +64,11 @@ jobs:
           report_dir="$RUNNER_TEMP/offline-provider-assurance"
           mkdir -p "$report_dir"
           parent_netns_inode="$(stat -Lc %i /proc/self/ns/net)"
-          sudo bwrap \
+          sudo_env_vars=GITHUB_WORKSPACE,RUNNER_TEMP,AGENT_RELAY_TOOLCHAIN_TARGET
+          sudo_env_vars="$sudo_env_vars,AGENT_RELAY_OUTBOUND_NETWORK,PYTHONHASHSEED"
+          sudo \
+            --preserve-env="$sudo_env_vars" \
+            bwrap \
             --die-with-parent \
             --new-session \
             --unshare-net \
