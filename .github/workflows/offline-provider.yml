@@ -64,7 +64,7 @@ jobs:
           report_dir="$RUNNER_TEMP/offline-provider-assurance"
           mkdir -p "$report_dir"
           parent_netns_inode="$(stat -Lc %i /proc/self/ns/net)"
-          bwrap \
+          sudo bwrap \
             --die-with-parent \
             --new-session \
             --unshare-user \
