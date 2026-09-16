@@ -36,9 +36,12 @@ jobs:
           persist-credentials: false
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+
       - name: Provision checksum-pinned repository toolchain
         run: >-
-          python3 scripts/bootstrap.py --target quality --install --yes
+          uv run --python 3.12 scripts/bootstrap.py --target quality --install --yes
           --accept-android-sdk-license
 
       - name: Install locked Python assurance dependencies
