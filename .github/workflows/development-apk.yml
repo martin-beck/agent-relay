@@ -1,0 +1,169 @@
+# Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved.
+# SPDX-License-Identifier: MIT
+
+name: Unsupported development APK publication
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_commit:
+        description: Full 40-character commit SHA already contained in origin/main
+        required: true
+        type: string
+      publish:
+        description: Enter the explicit confirmation required for the unsupported prerelease
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: unsupported-development-apk-publication
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Build and publish one unsupported debug APK
+    if: >-
+      ${{ github.repository == 'martin-beck/agent-relay' &&
+          github.event_name == 'workflow_dispatch' &&
+          inputs.publish == true }}
+    # Owner-dispatched exact-main publication uses the isolated public runner so
+    # public release logs do not disclose private runner identity or filesystem data.
+    runs-on: agent-relay-public-ci
+    timeout-minutes: 90
+    env:
+      SOURCE_COMMIT: ${{ inputs.source_commit }}
+
+    steps:
+      - name: Check out the requested immutable source commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.source_commit }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify trusted exact-commit publication boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "${GITHUB_REPOSITORY}" == "martin-beck/agent-relay" ]]
+          [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]
+          [[ "${SOURCE_COMMIT}" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$(git rev-parse HEAD)" == "${SOURCE_COMMIT}" ]]
+          git fetch --no-tags origin main
+          git merge-base --is-ancestor "${SOURCE_COMMIT}" origin/main
+          test -z "$(git status --porcelain --untracked-files=all)"
+          if git show-ref --verify --quiet "refs/remotes/origin/${GITHUB_REF_NAME}" &&
+             [[ "${GITHUB_REF_NAME}" != "main" ]]; then
+            echo "::error::trusted APK publication accepts main history only"
+            exit 1
+          fi
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
+        with:
+          distribution: temurin
+          java-version: "17"
+          verify-signature: false
+
+      - name: Validate wrapper and set up Gradle
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+        with:
+          cache-disabled: true
+
+      - name: Install locked repository-check dependencies
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          version: "0.12.8"
+          enable-cache: false
+
+      - name: Run focused metadata and workflow checks
+        run: |
+          uv sync --locked --only-group quality --only-group docs
+          uv run pytest scripts/ci/test_development_apk.py scripts/ci/test_development_apk_workflow.py
+          uv run python scripts/ci/verify_workflow_concurrency.py
+
+      - name: Run required Android application gates and build exactly one debug APK
+        run: >-
+          ./gradlew spotlessCheck detekt buildHealth test koverXmlReport koverVerify
+          checkKotlinAbi lintDebug assembleDebug --stacktrace
+
+      - name: Package and verify the exact APK bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          aapt2="${ANDROID_SDK_ROOT}/build-tools/36.0.0/aapt2"
+          test -x "${aapt2}"
+          rm -rf build/development-apk
+          uv run python scripts/ci/development_apk.py package \
+            --repository . \
+            --apk app/build/outputs/apk/debug/app-debug.apk \
+            --aapt2 "${aapt2}" \
+            --output-directory build/development-apk \
+            --workflow-run-id "${GITHUB_RUN_ID}" \
+            --workflow-run-attempt "${GITHUB_RUN_ATTEMPT}"
+          checksum_file="build/development-apk/SHA256SUMS"
+          (
+            cd build/development-apk
+            sha256sum --check --strict "${checksum_file#build/development-apk/}"
+          )
+          test "$(find build/development-apk -maxdepth 1 -type f -name '*.apk' | wc -l)" -eq 1
+          jq -e --arg commit "${SOURCE_COMMIT}" \
+            '.provenance.source_commit == $commit and
+             .provenance.workflow_run.id > 0 and
+             .provenance.workflow_run.attempt > 0 and
+             .release_status.supported == false and
+             .release_status.channel == "development-debug"' \
+            build/development-apk/agent-relay-development-manifest.json
+
+      - name: Upload bounded verified Actions evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: agent-relay-development-apk-${{ env.SOURCE_COMMIT }}
+          path: |
+            build/development-apk/*.apk
+            build/development-apk/agent-relay-development-manifest.json
+            build/development-apk/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Publish the same bytes as an explicitly unsupported prerelease
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="development-apk-${SOURCE_COMMIT}"
+          if git ls-remote --exit-code --refs origin "refs/tags/${tag}" >/dev/null 2>&1; then
+            echo "::error::development APK tag already exists; refusing overwrite"
+            exit 1
+          fi
+          if gh release view "${tag}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+            echo "::error::development APK release already exists; refusing overwrite"
+            exit 1
+          fi
+          apk_file="$(find build/development-apk -maxdepth 1 -type f -name '*.apk' -print -quit)"
+          cat > build/development-apk/release-notes.md <<EOF
+          UNSUPPORTED DEVELOPMENT PREVIEW — DEBUG BUILD
+
+          This prerelease is not supported software. It uses a debug certificate and
+          development application identity, has no compatibility, migration, backup,
+          or support guarantee, and is not approved for Play Store or production
+          distribution. There is no upgrade or signing-stability guarantee.
+
+          Source commit: ${SOURCE_COMMIT}
+          The APK, manifest, and SHA256SUMS below are the exact bytes verified by the
+          trusted workflow before publication.
+          EOF
+          gh release create "${tag}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --target "${SOURCE_COMMIT}" \
+            --title "Unsupported development APK ${SOURCE_COMMIT:0:12}" \
+            --notes-file build/development-apk/release-notes.md \
+            --prerelease \
+            "${apk_file}" \
+            build/development-apk/agent-relay-development-manifest.json \
+            build/development-apk/SHA256SUMS
