@@ -8,6 +8,7 @@ import copy
 import io
 import json
 import os
+import sys
 import tempfile
 import time
 import unittest
@@ -312,7 +313,6 @@ class LocalInferenceConformanceTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             driver = Path(temporary) / "driver"
             driver.write_text(
-                "#!/usr/bin/env python3\n"
                 "import json, os\n"
                 "evidence = json.loads(os.environ['AGENT_RELAY_LOCAL_INFERENCE_TUPLE_JSON'])\n"
                 "evidence.update({'checks': ['stream', 'teardown'], "
@@ -327,7 +327,9 @@ class LocalInferenceConformanceTest(unittest.TestCase):
                 "AGENT_RELAY_OUTBOUND_NETWORK": "deny",
                 "AGENT_RELAY_HARDWARE_CLASS": "self-hosted-cpu-x86_64",
                 "AGENT_RELAY_LOCAL_INFERENCE_TUPLE_JSON": json.dumps(staged_tuple(digest)),
-                "AGENT_RELAY_LOCAL_INFERENCE_COMMAND_JSON": json.dumps([str(driver)]),
+                "AGENT_RELAY_LOCAL_INFERENCE_COMMAND_JSON": json.dumps(
+                    [sys.executable, str(driver)]
+                ),
             }
             with (
                 patch.dict(os.environ, env, clear=True),

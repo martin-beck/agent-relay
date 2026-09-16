@@ -5,3 +5,4 @@ self-hosted-runner:
   labels:
     - agent-relay-build-ci
     - agent-relay-device-ci
+    - agent-relay-public-ci

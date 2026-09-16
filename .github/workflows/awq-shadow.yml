@@ -4,14 +4,17 @@
 name: Agent Workflow Quality shadow
 
 "on":
-  pull_request:
+  push:
+    branches:
+      - main
+      - "trusted-ci/**"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:

@@ -415,6 +415,78 @@ result. Explicit public or external publication paths remain strict.
 
 ## CI
 
+### Public contributor checks
+
+Pull requests run `Public contributor validation` only on the dedicated `agent-relay-public-ci`
+runner label. A host-side supervisor registers one randomly named ephemeral runner inside a fresh
+locked-down container, accepts at most one job, and removes the container afterward. The container
+has a read-only image, job-private memory-backed work and temporary directories, a private PID and
+network namespace, no host mounts or Docker socket, no Linux capabilities, and no shared caches.
+Its dedicated bridge has a fail-closed `DOCKER-USER` policy that rejects host-local, private,
+carrier-grade NAT, link-local, documentation, multicast, and reserved IPv4 destinations. IPv6 is
+disabled for the network and container. Public dependency endpoints remain reachable.
+The runner receives the unavoidable one-job registration credential only during setup, immediately
+removes its host-side environment file, and re-executes with a clean job environment. It receives no
+repository variables or secrets,
+environment or publication authority, artifact exchange, or write-capable repository token.
+
+The lane runs the locked Python suite; repository, workflow, secret, and source-header checks; and
+JVM tests, Kotlin formatting, Detekt, and ABI validation. It installs the required JDK and Android
+platform inside the disposable filesystem. It does not build native code, start an emulator,
+assemble an APK, or claim the complete gate.
+
+Build the pinned runner image from the repository root, then run the supervisor under a private
+service account whose GitHub CLI authentication can only administer runners for this repository:
+
+```bash
+docker build --pull \
+  --file scripts/ci/public_runner/Dockerfile \
+  --tag agent-relay-public-runner:2.337.0 .
+sudo install --owner=root --group=root --mode=0755 \
+  scripts/ci/public_runner/network_guard.sh \
+  /usr/local/libexec/agent-relay-public-network-guard
+sudo /usr/local/libexec/agent-relay-public-network-guard install
+runner_image_id="$(docker image inspect \
+  --format '{{.Id}}' agent-relay-public-runner:2.337.0)"
+PUBLIC_RUNNER_REPOSITORY=owner/repository \
+  PUBLIC_RUNNER_IMAGE_ID="$runner_image_id" \
+  scripts/ci/public_runner/supervise.sh
+```
+
+The supervisor requires GitHub CLI, jq, OpenSSL, `flock`, and Docker. Its Docker command may be supplied as
+`PUBLIC_RUNNER_DOCKER_COMMAND` when the service account uses a rootless or mediated Docker client.
+Keep the supervisor credential outside the repository and container. Do not grant the container a
+host directory, device, privileged mode, host network, Docker API, or reusable cache. The supervisor
+refuses to register a runner unless the root-owned network guard verifies the dedicated bridge and
+every firewall rule. Install the guard through system configuration management so Docker or host
+firewall reloads reapply it before the supervisor restarts. Do not run the service with a general
+GitHub CLI login: use a fine-grained credential selected only for this repository with the minimum
+repository Administration write permission that GitHub requires for runner registration, and no
+account, organization, workflow, contents, package, or other repository permissions. The supervisor
+service must remain enabled so a fresh idle registration replaces every completed job; disabling it
+intentionally makes the public lane unavailable.
+
+The supervisor
+requires the exact local `sha256:` image ID, resolves the configured tag before each service start,
+refuses a mismatch, and disables image pulls while the registration credential is present. Rebuild
+and explicitly update the expected ID to rotate the image. It also holds a host-local singleton lock
+and deletes stale registrations carrying only its exact dedicated label before registering a
+replacement. Operational logs must identify runners only by their random public-lane name.
+
+Self-hosted verification, UI, and AWQ workflows do not accept `pull_request` events. After reviewing
+an exact contributor commit and its workflow diff, a maintainer may push that immutable commit to a
+repository-owned `trusted-ci/<commit>` branch. That push runs the complete self-hosted gates at the
+new repository commit; never promote a mutable fork ref or an unreviewed workflow change. A merge to
+`main` runs the same trusted gates again.
+
+Before making the repository public, its owner must also require approval for every external
+contributor workflow and restrict each persistent self-hosted runner group to trusted workflow files
+pinned to the default branch, or remove those runners from the public repository. Source policy
+tests cannot verify account-level runner configuration. Public forks can otherwise request a
+persistent self-hosted job by changing workflow files, so repository visibility must not change
+until that external control is independently verified. The disposable public pool is not a
+substitute for isolating the persistent trusted pools.
+
 `.github/workflows/verify.yml` runs the required quality/build and deterministic
 visual-regression jobs. Actions are
 pinned to immutable commit SHAs, dependency updates are proposed by Dependabot,

@@ -8,21 +8,18 @@ on:
   push:
     branches:
       - main
-  pull_request:
+      - "trusted-ci/**"
 
 permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   verify:
     name: Quality, test, lint, and build
-    if: >-
-      github.event_name != 'pull_request' ||
-      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: [self-hosted, linux, x64, agent-relay-build-ci]
     timeout-minutes: 60
 
@@ -206,9 +203,7 @@ jobs:
         if: >-
           ${{ vars.SONAR_PROJECT_KEY != '' &&
               vars.SONAR_HOST_URL != '' &&
-              github.actor != 'dependabot[bot]' &&
-              (github.event_name != 'pull_request' ||
-              github.event.pull_request.head.repo.full_name == github.repository) }}
+              github.actor != 'dependabot[bot]' }}
         shell: bash
         env:
           SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
@@ -232,9 +227,7 @@ jobs:
         if: >-
           ${{ vars.SONAR_PROJECT_KEY != '' &&
               vars.SONAR_HOST_URL != '' &&
-              github.actor != 'dependabot[bot]' &&
-              (github.event_name != 'pull_request' ||
-              github.event.pull_request.head.repo.full_name == github.repository) }}
+              github.actor != 'dependabot[bot]' }}
         uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f # v8.2.1
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -307,9 +300,6 @@ jobs:
 
   visual-regression:
     name: Visual regression
-    if: >-
-      github.event_name != 'pull_request' ||
-      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: [self-hosted, linux, x64, agent-relay-build-ci]
     timeout-minutes: 20
 

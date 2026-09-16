@@ -10,22 +10,19 @@ on:
   push:
     branches:
       - main
-  pull_request:
+      - "trusted-ci/**"
 
 permissions:
   contents: read
 
 concurrency:
-  group: ui-${{ github.event.pull_request.number || github.ref }}
+  group: ui-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   current-phone:
     name: UI and accessibility (current phone)
-    if: >-
-      github.event_name == 'push' ||
-      (github.event_name == 'pull_request' &&
-      github.event.pull_request.head.repo.full_name == github.repository)
+    if: github.event_name == 'push'
     runs-on: [self-hosted, linux, x64, agent-relay-device-ci]
     timeout-minutes: 40
 
