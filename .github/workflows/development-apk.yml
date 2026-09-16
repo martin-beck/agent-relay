@@ -83,7 +83,7 @@ jobs:
       - name: Run focused metadata and workflow checks
         run: |
           uv sync --locked --only-group quality --only-group docs
-          uv run pytest scripts/ci/test_development_apk.py scripts/ci/test_development_apk_workflow.py
+          uv run pytest --no-cov scripts/ci/test_development_apk.py scripts/ci/test_development_apk_workflow.py
           uv run python scripts/ci/verify_workflow_concurrency.py
 
       - name: Run required Android application gates and build exactly one debug APK
