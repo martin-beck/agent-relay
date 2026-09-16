@@ -12,7 +12,6 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW = ROOT / ".github/workflows/offline-provider.yml"
-TOOLCHAIN_WRAPPER = ROOT / "scripts/with-toolchain"
 
 
 class OfflineProviderWorkflowTest(unittest.TestCase):
@@ -28,22 +27,15 @@ class OfflineProviderWorkflowTest(unittest.TestCase):
         self.assertEqual(set(trigger_map), {"workflow_dispatch", "push", "pull_request"})
         self.assertEqual(workflow["permissions"], {"contents": "read"})
         job = workflow["jobs"]["deterministic-replay"]
+        self.assertIn("github.repository_visibility == 'public'", job["if"])
         self.assertIn("head.repo.full_name == github.repository", job["if"])
-        self.assertIn("github.repository_visibility != 'public'", job["runs-on"])
-        self.assertIn("'agent-relay-public-ci'", job["runs-on"])
-        self.assertIn("'ubuntu-latest'", job["runs-on"])
+        self.assertEqual(job["runs-on"], "ubuntu-latest")
         self.assertEqual(job["timeout-minutes"], 45)
         self.assertEqual(job["env"]["AGENT_RELAY_TOOLCHAIN_TARGET"], "quality")
         checkout = job["steps"][0]
         self.assertEqual(
             checkout["with"]["ref"],
             "${{ github.event.pull_request.head.sha || github.sha }}",
-        )
-        setup_uv = job["steps"][1]
-        self.assertEqual(setup_uv["name"], "Set up uv")
-        self.assertEqual(
-            setup_uv["uses"],
-            "astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d",
         )
 
     def test_dependencies_stage_before_fresh_network_namespace(self) -> None:
@@ -55,10 +47,7 @@ class OfflineProviderWorkflowTest(unittest.TestCase):
         self.assertLess(bootstrap, stage)
         self.assertLess(stage, replay_step)
         bootstrap_command = steps[bootstrap]["run"]
-        self.assertIn(
-            "uv run --python 3.12 scripts/bootstrap.py --target quality --install --yes",
-            bootstrap_command,
-        )
+        self.assertIn("scripts/bootstrap.py --target quality --install --yes", bootstrap_command)
         self.assertIn("--accept-android-sdk-license", bootstrap_command)
         stage_command = steps[stage]["run"]
         self.assertIn("scripts/with-toolchain", stage_command)
@@ -73,17 +62,11 @@ class OfflineProviderWorkflowTest(unittest.TestCase):
         self.assertIn("offline-provider-junit.xml", command)
         self.assertIn("offline-provider-summary.json", command)
 
-    def test_toolchain_wrapper_uses_repository_uv_for_python_bootstrap(self) -> None:
-        wrapper = TOOLCHAIN_WRAPPER.read_text(encoding="utf-8")
-        self.assertIn('uv_bin="$(command -v -- uv)"', wrapper)
-        self.assertIn('"$uv_bin" run --python 3.12', wrapper)
-        self.assertNotIn('python3 "$repo_root/scripts/bootstrap.py"', wrapper)
-
     def test_actions_are_immutable_and_artifact_is_bounded(self) -> None:
         steps = self.workflow()["jobs"]["deterministic-replay"]["steps"]
         actions = [str(step["uses"]) for step in steps if "uses" in step]
         self.assertTrue(all(len(action.rsplit("@", 1)[1].split()[0]) == 40 for action in actions))
-        self.assertFalse(any("setup-java" in action for action in actions))
+        self.assertFalse(any("setup-java" in action or "setup-uv" in action for action in actions))
         upload = next(step for step in steps if step.get("id") == "upload_offline_provider")
         self.assertIs(upload["continue-on-error"], True)
         self.assertEqual(upload["with"]["retention-days"], 14)
