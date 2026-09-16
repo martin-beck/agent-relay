@@ -473,12 +473,15 @@ and explicitly update the expected ID to rotate the image. It also holds a host-
 and deletes stale registrations carrying only its exact dedicated label before registering a
 replacement. Operational logs must identify runners only by their random public-lane name.
 
-Verification, UI, offline-provider, documentation-maintenance, and AWQ workflows do not accept
-`pull_request` events. Their public evidence runs on GitHub-hosted runners so the Actions job header
-and generated logs cannot disclose private self-hosted runner names or filesystem paths. After
-reviewing an exact contributor commit and its workflow diff, a maintainer may push that immutable
-commit to a repository-owned `trusted-ci/<commit>` branch; that push still runs the complete trusted
-gates at the new repository commit. A merge to `main` runs the same trusted gates again. The
+Verification, UI, documentation-maintenance, and AWQ workflows do not accept `pull_request` events.
+Their public evidence runs on GitHub-hosted runners so the Actions job header and generated logs
+cannot disclose private self-hosted runner names or filesystem paths. The offline-provider workflow
+uses the unprivileged disposable public lane while the repository is private, because GitHub-hosted
+runners may be unavailable there; it switches to `ubuntu-latest` when the repository is public. Its
+same-repository pull-request guard remains in force, so fork-controlled code never enters that lane.
+After reviewing an exact contributor commit and its workflow diff, a maintainer may push that
+immutable commit to a repository-owned `trusted-ci/<commit>` branch; that push still runs the complete
+trusted gates at the new repository commit. A merge to `main` runs the same trusted gates again. The
 separate local-inference and evidence-cleanup workflows remain private-only because their operations
 require pre-staged models or write-capable Actions permissions.
 
