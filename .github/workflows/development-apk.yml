@@ -30,7 +30,9 @@ jobs:
       ${{ github.repository == 'martin-beck/agent-relay' &&
           github.event_name == 'workflow_dispatch' &&
           inputs.publish == true }}
-    runs-on: [self-hosted, linux, x64, agent-relay-build-ci]
+    # Owner-dispatched exact-main publication uses the isolated public runner so
+    # public release logs do not disclose private runner identity or filesystem data.
+    runs-on: agent-relay-public-ci
     timeout-minutes: 90
     env:
       SOURCE_COMMIT: ${{ inputs.source_commit }}
