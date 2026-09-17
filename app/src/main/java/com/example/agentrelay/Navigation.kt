@@ -31,6 +31,7 @@ import com.example.agentrelay.notifications.SessionNotificationPermissionState
 import com.example.agentrelay.ui.main.MainScreen
 import com.example.agentrelay.ui.main.MainScreenUiState
 import com.example.agentrelay.ui.main.MainScreenViewModel
+import com.example.agentrelay.ui.main.QuickNavigationDestinationId
 import com.example.agentrelay.ui.main.SessionDetailRoute
 import com.example.agentrelay.ui.main.SpeechInputUiActions
 import com.example.agentrelay.ui.main.rememberArtifactSaveRequest
@@ -115,6 +116,21 @@ internal fun MainNavigation(
                             backStack.add(SessionDetails(key))
                         },
                         onOpenSettings = { backStack.add(Settings) },
+                        onQuickNavigation = { destination ->
+                            when (destination) {
+                                QuickNavigationDestinationId.SETTINGS -> {
+                                    if (backStack.lastOrNull() != Settings) {
+                                        backStack.add(Settings)
+                                    }
+                                }
+                                else -> {
+                                    while (backStack.lastOrNull() != Main) {
+                                        backStack.removeLastOrNull()
+                                    }
+                                    mainViewModel.clearSelection()
+                                }
+                            }
+                        },
                         speechActions = speechActions,
                         notificationPermissionState = notificationPermissionState,
                         onRequestNotificationPermission = onRequestNotificationPermission,
