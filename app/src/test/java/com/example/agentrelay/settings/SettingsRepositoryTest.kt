@@ -6,6 +6,9 @@ package com.example.agentrelay.settings
 
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import com.example.agentrelay.notifications.SessionNotificationLevel
+import com.example.agentrelay.notifications.SessionNotificationPreferences
+import com.example.agentrelay.notifications.SessionNotificationTopic
 
 class SettingsRepositoryTest {
     @Test fun migrationMapsLegacyNotificationPreferenceAndRemovesLegacyKey() {
@@ -15,7 +18,15 @@ class SettingsRepositoryTest {
 
     @Test fun writeThenReadPreservesSettings() {
         val store = MemorySettingsStore()
-        val expected = AppSettings(backgroundConnections = true, language = "de", highContrast = true)
+        val expected = AppSettings(
+            backgroundConnections = true,
+            language = "de",
+            highContrast = true,
+            notificationPreferences = SessionNotificationPreferences(
+                topics = setOf(SessionNotificationTopic.COMPLETION),
+                level = SessionNotificationLevel.ALL_ACTIVITY,
+            ),
+        )
         store.write(expected)
         assertEquals(expected, store.read())
     }

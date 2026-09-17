@@ -29,6 +29,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.example.agentrelay.notifications.SessionNotificationLevel
+import com.example.agentrelay.notifications.SessionNotificationTopic
 
 internal enum class SettingKind { TOGGLE, CHOICE }
 
@@ -42,76 +44,21 @@ internal data class SettingDefinition(
 )
 
 internal val settingDefinitions = listOf(
-    SettingDefinition(
-        "Connection",
-        "Background connections",
-        "Keep explicitly enabled connections active when the app is backgrounded.",
-        SettingKind.TOGGLE,
-        { it.backgroundConnections.toString() },
-    ) { s, v -> s.copy(backgroundConnections = v.toBoolean()) },
-    SettingDefinition(
-        "Sessions",
-        "Restore session drafts",
-        "Drafts are retained in the encrypted session repository until delivery succeeds.",
-        SettingKind.TOGGLE,
-        { "true" },
-    ) { s, _ -> s },
-    SettingDefinition(
-        "Synchronization",
-        "Sync on Wi-Fi only",
-        "Limit future synchronization adapters to unmetered networks.",
-        SettingKind.TOGGLE,
-        { "false" },
-    ) { s, _ -> s },
-    SettingDefinition(
-        "Appearance and accessibility",
-        "Dynamic color",
-        "Use the device color palette when available.",
-        SettingKind.TOGGLE,
-        { it.dynamicColor.toString() },
-    ) { s, v -> s.copy(dynamicColor = v.toBoolean()) },
-    SettingDefinition(
-        "Appearance and accessibility",
-        "High contrast",
-        "Increase contrast for controls and status text.",
-        SettingKind.TOGGLE,
-        { it.highContrast.toString() },
-    ) { s, v -> s.copy(highContrast = v.toBoolean()) },
-    SettingDefinition(
-        "Appearance and accessibility",
-        "Reduce motion",
-        "Prefer minimal transition animation.",
-        SettingKind.TOGGLE,
-        { it.reduceMotion.toString() },
-    ) { s, v -> s.copy(reduceMotion = v.toBoolean()) },
-    SettingDefinition(
-        "Notifications",
-        "Session notifications",
-        "Allow privacy-safe background session notifications.",
-        SettingKind.TOGGLE,
-        { it.notifications.toString() },
-    ) { s, v -> s.copy(notifications = v.toBoolean()) },
-    SettingDefinition(
-        "Privacy",
-        "Protected data",
-        "Credentials, prompts, transcripts, and host details are never stored in this settings surface.",
-        SettingKind.CHOICE,
-        { "App-private storage" },
-    ) { s, _ -> s },
-    SettingDefinition(
-        "Language",
-        "Interface language",
-        "Follow the device language until a supported override is selected.",
-        SettingKind.CHOICE,
-        { it.language },
-    ) { s, v -> s.copy(language = v) },
-    SettingDefinition(
-        "Speech",
-        "Offline speech input",
-        "Allow the separately permission-gated on-device speech feature.",
-        SettingKind.TOGGLE,
-        { it.offlineSpeech.toString() },
-    ) { s, v -> s.copy(offlineSpeech = v.toBoolean()) },
+    SettingDefinition("Connection", "Background connections", "Keep explicitly enabled connections active when the app is backgrounded.", SettingKind.TOGGLE, { it.backgroundConnections.toString() }) { s, v -> s.copy(backgroundConnections = v.toBoolean()) },
+    SettingDefinition("Sessions", "Restore session drafts", "Drafts are retained in the encrypted session repository until delivery succeeds.", SettingKind.TOGGLE, { "true" }) { s, _ -> s },
+    SettingDefinition("Synchronization", "Sync on Wi-Fi only", "Limit future synchronization adapters to unmetered networks.", SettingKind.TOGGLE, { "false" }) { s, _ -> s },
+    SettingDefinition("Appearance and accessibility", "Dynamic color", "Use the device color palette when available.", SettingKind.TOGGLE, { it.dynamicColor.toString() }) { s, v -> s.copy(dynamicColor = v.toBoolean()) },
+    SettingDefinition("Appearance and accessibility", "High contrast", "Increase contrast for controls and status text.", SettingKind.TOGGLE, { it.highContrast.toString() }) { s, v -> s.copy(highContrast = v.toBoolean()) },
+    SettingDefinition("Appearance and accessibility", "Reduce motion", "Prefer minimal transition animation.", SettingKind.TOGGLE, { it.reduceMotion.toString() }) { s, v -> s.copy(reduceMotion = v.toBoolean()) },
+    SettingDefinition("Notifications", "Session notifications", "Allow privacy-safe background session notifications.", SettingKind.TOGGLE, { it.notifications.toString() }) { s, v -> s.copy(notifications = v.toBoolean()) },
+    SettingDefinition("Notifications", "Agent feedback", "Notify about failures and new agent output. Failures remain visible as safety notifications.", SettingKind.TOGGLE, { it.notificationPreferences.topics.contains(SessionNotificationTopic.AGENT_FEEDBACK).toString() }) { s, v -> s.withNotificationTopic(SessionNotificationTopic.AGENT_FEEDBACK, v.toBoolean()) },
+    SettingDefinition("Notifications", "Decisions", "Notify when an approval or question needs your response.", SettingKind.TOGGLE, { it.notificationPreferences.topics.contains(SessionNotificationTopic.USER_DECISIONS).toString() }) { s, v -> s.withNotificationTopic(SessionNotificationTopic.USER_DECISIONS, v.toBoolean()) },
+    SettingDefinition("Notifications", "Completions", "Notify when an agent turn completes.", SettingKind.TOGGLE, { it.notificationPreferences.topics.contains(SessionNotificationTopic.COMPLETION).toString() }) { s, v -> s.withNotificationTopic(SessionNotificationTopic.COMPLETION, v.toBoolean()) },
+    SettingDefinition("Notifications", "Blocked tasks", "Notify about work that cannot continue.", SettingKind.TOGGLE, { it.notificationPreferences.topics.contains(SessionNotificationTopic.BLOCKED_TASKS).toString() }) { s, v -> s.withNotificationTopic(SessionNotificationTopic.BLOCKED_TASKS, v.toBoolean()) },
+    SettingDefinition("Notifications", "Detailed activity", "Include routine agent output when selected; disconnect and reconnect remain silent.", SettingKind.TOGGLE, { (it.notificationPreferences.level == SessionNotificationLevel.ALL_ACTIVITY).toString() }) { s, v -> s.copy(notificationPreferences = s.notificationPreferences.copy(level = if (v.toBoolean()) SessionNotificationLevel.ALL_ACTIVITY else SessionNotificationLevel.HIGH_LEVEL)) },
+    SettingDefinition("Privacy", "Protected data", "Credentials, prompts, transcripts, and host details are never stored in this settings surface.", SettingKind.CHOICE, { "App-private storage" }) { s, _ -> s },
+    SettingDefinition("Language", "Interface language", "Follow the device language until a supported override is selected.", SettingKind.CHOICE, { it.language }) { s, v -> s.copy(language = v) },
+    SettingDefinition("Speech", "Offline speech input", "Allow the separately permission-gated on-device speech feature.", SettingKind.TOGGLE, { it.offlineSpeech.toString() }) { s, v -> s.copy(offlineSpeech = v.toBoolean()) },
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -163,4 +110,13 @@ internal fun SettingsScreen(store: SettingsStore, onBack: () -> Unit) {
             }
         }
     }
+}
+
+private fun AppSettings.withNotificationTopic(
+    topic: SessionNotificationTopic,
+    enabled: Boolean,
+): AppSettings {
+    val topics = notificationPreferences.topics.toMutableSet()
+    if (enabled) topics += topic else topics -= topic
+    return copy(notificationPreferences = notificationPreferences.copy(topics = topics))
 }

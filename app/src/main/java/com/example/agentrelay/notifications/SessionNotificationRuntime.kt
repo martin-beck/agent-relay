@@ -27,7 +27,14 @@ internal class SessionNotificationRuntime(
     private val scope: CoroutineScope,
     sink: SessionNotificationSink,
     private val onFailure: () -> Unit,
+    private val preferences: () -> SessionNotificationPreferences,
 ) {
+    constructor(
+        scope: CoroutineScope,
+        sink: SessionNotificationSink,
+        onFailure: () -> Unit,
+    ) : this(scope, sink, onFailure, { SessionNotificationPreferences() })
+
     private val reconciler = SessionNotificationReconciler(sink)
     private val mutex = Mutex()
     private val mutableDispatchState = MutableStateFlow(SessionNotificationDispatchState.IDLE)
@@ -86,16 +93,16 @@ internal class SessionNotificationRuntime(
     private suspend fun applyCurrentLocked() {
         safelyApply {
             if (isForeground) {
-                reconciler.suppress(latestSnapshot)
+                reconciler.suppress(latestSnapshot, preferences())
             } else {
-                reconciler.reconcile(latestSnapshot)
+                reconciler.reconcile(latestSnapshot, preferences())
             }
         }
     }
 
     private suspend fun applySuppressionLocked() {
         safelyApply {
-            reconciler.suppress(latestSnapshot)
+            reconciler.suppress(latestSnapshot, preferences())
         }
     }
 
