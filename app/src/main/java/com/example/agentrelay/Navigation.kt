@@ -35,6 +35,8 @@ import com.example.agentrelay.ui.main.SessionDetailRoute
 import com.example.agentrelay.ui.main.SpeechInputUiActions
 import com.example.agentrelay.ui.main.rememberArtifactSaveRequest
 import com.example.agentrelay.ui.main.rememberSpeechStartRequest
+import com.example.agentrelay.settings.AndroidSettingsStore
+import com.example.agentrelay.settings.SettingsScreen
 
 @Composable
 internal fun MainNavigation(
@@ -112,6 +114,7 @@ internal fun MainNavigation(
                         onOpenSession = { key ->
                             backStack.add(SessionDetails(key))
                         },
+                        onOpenSettings = { backStack.add(Settings) },
                         speechActions = speechActions,
                         notificationPermissionState = notificationPermissionState,
                         onRequestNotificationPermission = onRequestNotificationPermission,
@@ -140,6 +143,12 @@ internal fun MainNavigation(
                         onCancelArtifact = mainViewModel.artifactInteractions::cancelArtifactExport,
                         speechActions = speechActions,
                         modifier = Modifier.safeDrawingPadding(),
+                    )
+                }
+                entry<Settings> {
+                    SettingsScreen(
+                        store = AndroidSettingsStore(LocalContext.current.applicationContext),
+                        onBack = onBack,
                     )
                 }
             },

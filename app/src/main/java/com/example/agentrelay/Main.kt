@@ -10,6 +10,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable data object Main : NavKey
 
+@Serializable data object Settings : NavKey
+
 @Serializable
 data class SessionDetails(val sessionKey: String) : NavKey {
     init {

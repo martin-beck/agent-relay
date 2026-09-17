@@ -47,6 +47,7 @@ internal const val BACKGROUND_TRANSPORT_TEST_TAG = "background-transport"
 internal fun MainScreen(
     viewModel: MainScreenViewModel,
     onOpenSession: (String) -> Unit,
+    onOpenSettings: () -> Unit = {},
     onSaveArtifact: (String, String, String) -> Unit,
     speechActions: SpeechInputUiActions,
     modifier: Modifier = Modifier,
@@ -64,7 +65,7 @@ internal fun MainScreen(
     onRetryWearInstall: () -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val actions = remember(viewModel, onOpenSession, onSaveArtifact, speechActions) {
+    val actions = remember(viewModel, onOpenSession, onSaveArtifact, speechActions, onOpenSettings) {
         SessionHubActions(
             retry = viewModel::retryInitialization,
             refresh = viewModel::refreshProfiles,
@@ -100,6 +101,7 @@ internal fun MainScreen(
             saveArtifact = onSaveArtifact,
             cancelArtifactExport = viewModel.artifactInteractions::cancelArtifactExport,
             speechInput = speechActions,
+            openSettings = onOpenSettings,
         )
     }
     MainScreenContent(
@@ -448,6 +450,7 @@ internal data class SessionHubActions(
     val saveArtifact: (String, String, String) -> Unit = { _, _, _ -> },
     val cancelArtifactExport: (String) -> Unit = {},
     val speechInput: SpeechInputUiActions = SpeechInputUiActions(),
+    val openSettings: () -> Unit = {},
 )
 
 private val EXPANDED_LAYOUT_MIN_WIDTH = 840.dp
