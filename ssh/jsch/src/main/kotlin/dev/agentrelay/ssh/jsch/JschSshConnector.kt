@@ -316,7 +316,8 @@ class JschSshConnector(
 
         override fun getPassword(): String? = passwordText()
 
-        override fun promptPassword(message: String): Boolean = true
+        override fun promptPassword(message: String): Boolean =
+            message.contains("password", ignoreCase = true)
 
         override fun promptPassphrase(message: String): Boolean = false
 

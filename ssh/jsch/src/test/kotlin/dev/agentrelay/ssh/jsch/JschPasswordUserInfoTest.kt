@@ -8,7 +8,9 @@ package dev.agentrelay.ssh.jsch
 import java.util.Arrays
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class JschPasswordUserInfoTest {
     @Test
@@ -16,6 +18,8 @@ class JschPasswordUserInfoTest {
         val password = "test-password".encodeToByteArray()
         try {
             val userInfo = JschSshConnector.JschPasswordUserInfo(password)
+            assertTrue(userInfo.promptPassword("Password for user@example.test"))
+            assertFalse(userInfo.promptPassword("Verification code for user@example.test"))
             assertContentEquals(
                 arrayOf("test-password"),
                 userInfo.promptKeyboardInteractive(
@@ -57,5 +61,4 @@ class JschPasswordUserInfoTest {
             Arrays.fill(password, 0)
         }
     }
-
 }
