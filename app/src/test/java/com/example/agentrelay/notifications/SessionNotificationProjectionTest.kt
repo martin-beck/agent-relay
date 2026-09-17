@@ -106,6 +106,22 @@ class SessionNotificationProjectionTest {
     }
 
     @Test
+    fun reconnectIsSilentForEveryNotificationPriority() {
+        SessionNotificationPriority.entries.forEach { priority ->
+            val locator = locator("reconnect-${priority.name.lowercase().replace('_', '-')}")
+            val snapshot = snapshot(
+                session(locator, priority),
+                activity(locator, "reconnected", SessionActivityType.RECONNECTED, occurredAt = 1L),
+            )
+
+            assertTrue(
+                "Reconnect must not notify for $priority",
+                SessionNotificationProjection.project(snapshot).isEmpty(),
+            )
+        }
+    }
+
+    @Test
     fun mutedSessionProducesNoNotification() {
         val muted = locator("muted")
         val snapshot = SessionHubSnapshot(
