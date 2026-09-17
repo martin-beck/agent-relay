@@ -50,7 +50,10 @@ class SpeechPackagePolicyTest {
     }
 
     private fun descriptor() = SpeechModelDescriptor(
-        SpeechModelId("synthetic-policy"), "Synthetic", "1", setOf("en"),
+        SpeechModelId("synthetic-policy"),
+        "Synthetic",
+        "1",
+        setOf("en"),
         setOf(SpeechModelCapability.TRANSCRIPTION),
         SpeechModelLicense("Synthetic", "MIT", "https://example.com/license"),
         SpeechModelPackage("https://models.example.com/model", "1".repeat(64), 50, 70),

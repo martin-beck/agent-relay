@@ -30,7 +30,7 @@ class PolicySpeechPackageDownloader(
     }
 
     private fun enforce(descriptor: SpeechModelDescriptor, offsetBytes: Long) {
-        when (val decision = policy(descriptor, offsetBytes).check(descriptor)) {
+        when (policy(descriptor, offsetBytes).check(descriptor)) {
             is SpeechPackagePolicyDecision.Allowed -> Unit
             SpeechPackagePolicyDecision.MeteredNetwork -> throw SpeechPackageDeliveryException(
                 "MODEL_METERED_NETWORK",

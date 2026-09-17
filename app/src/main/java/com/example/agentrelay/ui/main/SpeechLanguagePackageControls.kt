@@ -29,13 +29,6 @@ import com.example.agentrelay.R
 import dev.agentrelay.speech.api.SpeechModelAvailability
 import dev.agentrelay.speech.api.SpeechModelState
 
-internal data class SpeechLanguagePackageActions(
-    val install: (String) -> Unit,
-    val cancel: (String) -> Unit,
-    val remove: (String) -> Unit,
-    val setAllowMetered: (Boolean) -> Unit,
-)
-
 @Composable
 internal fun SpeechLanguagePackageControls(
     models: List<SpeechModelState>,
@@ -70,7 +63,14 @@ private fun SpeechLanguagePackageRow(
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Text(model.descriptor.displayName, style = MaterialTheme.typography.titleSmall)
-        Text(stringResource(R.string.speech_language_packages_details, model.descriptor.languageTags.sorted().joinToString(), packageInfo.downloadSizeBytes, packageInfo.installedSizeBytes))
+        Text(
+            stringResource(
+                R.string.speech_language_packages_details,
+                model.descriptor.languageTags.sorted().joinToString(),
+                packageInfo.downloadSizeBytes,
+                packageInfo.installedSizeBytes,
+            ),
+        )
         Text(stringResource(R.string.speech_language_packages_license, model.descriptor.license.name))
         when (val availability = model.availability) {
             SpeechModelAvailability.NotInstalled -> Button({ actions.install(model.descriptor.id.value) }) {
