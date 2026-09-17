@@ -58,7 +58,11 @@ internal class CodexThreadClient(private val peer: JsonRpcClient) {
             options.workingDirectory?.let { put("cwd", it) }
             options.model?.let { put("model", it) }
             put("approvalPolicy", "on-request")
-            put("sandbox", "workspaceWrite")
+            // Codex app-server uses the wire enum workspace-write; the
+            // response may map it back to workspaceWrite, but requests must
+            // use the protocol spelling or admission fails before a thread is
+            // created.
+            put("sandbox", CODEX_WORKSPACE_WRITE_SANDBOX)
             put("serviceName", "agent_relay")
         },
     ).threadResult("thread/start")
@@ -165,6 +169,7 @@ internal class CodexThreadClient(private val peer: JsonRpcClient) {
 
     private companion object {
         const val PAGE_SIZE = 100
+        const val CODEX_WORKSPACE_WRITE_SANDBOX = "workspace-write"
         val SOURCE_KINDS = listOf(
             "cli",
             "vscode",
