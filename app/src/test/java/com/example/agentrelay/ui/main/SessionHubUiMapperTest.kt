@@ -63,6 +63,28 @@ import kotlin.time.Duration.Companion.seconds
 
 class SessionHubUiMapperTest {
     @Test
+    fun sessionListSortKeepsPinnedFirstAndSupportsAppOrLlmRecency() {
+        val appRecent = testSessionUiModel("a", 30L, 10L)
+        val llmRecent = testSessionUiModel("b", 20L, 40L)
+        val pinned = testSessionUiModel("c", 1L, 1L, isPinned = true)
+
+        assertEquals(
+            listOf("c", "a", "b"),
+            sortSessionList(
+                listOf(appRecent, llmRecent, pinned),
+                SessionListSortOption.LAST_APP_INTERACTION,
+            ).map(SessionUiModel::stableKey),
+        )
+        assertEquals(
+            listOf("c", "b", "a"),
+            sortSessionList(
+                listOf(appRecent, llmRecent, pinned),
+                SessionListSortOption.LAST_LLM_RESPONSE,
+            ).map(SessionUiModel::stableKey),
+        )
+    }
+
+    @Test
     fun providerScopedSessionIdentitiesDoNotCollide() {
         val localProvider = ConnectionProviderId("local.device")
         val sshProvider = ConnectionProviderId("ssh.secure-shell")
@@ -561,6 +583,27 @@ class SessionHubUiMapperTest {
         )
     }
 }
+
+private fun testSessionUiModel(
+    stableKey: String,
+    lastActivityAtEpochMillis: Long,
+    lastLlmResponseAtEpochMillis: Long?,
+    isPinned: Boolean = false,
+) = SessionUiModel(
+    stableKey = stableKey,
+    title = UiMessage.Verbatim(stableKey),
+    preview = "",
+    connectionLabel = "connection",
+    connectionProviderName = "provider",
+    agentProviderLabel = "agent",
+    projectPath = null,
+    agentState = AgentSessionState.IDLE,
+    unreadCount = 0,
+    requiresActionCount = 0,
+    lastActivityAtEpochMillis = lastActivityAtEpochMillis,
+    isPinned = isPinned,
+    lastLlmResponseAtEpochMillis = lastLlmResponseAtEpochMillis,
+)
 
 private fun disconnected(reason: ConnectionDisconnectReason) = ConnectionState.Disconnected(
     reason = reason,

@@ -113,6 +113,27 @@ internal data class SessionUiModel(
     val requiresActionCount: Int,
     val lastActivityAtEpochMillis: Long?,
     val isPinned: Boolean,
+    val lastLlmResponseAtEpochMillis: Long? = null,
+)
+
+internal enum class SessionListSortOption {
+    LAST_APP_INTERACTION,
+    LAST_LLM_RESPONSE,
+}
+
+internal fun sortSessionList(
+    sessions: List<SessionUiModel>,
+    option: SessionListSortOption,
+): List<SessionUiModel> = sessions.sortedWith(
+    compareByDescending<SessionUiModel> { it.isPinned }
+        .thenByDescending {
+            when (option) {
+                SessionListSortOption.LAST_APP_INTERACTION -> it.lastActivityAtEpochMillis
+                SessionListSortOption.LAST_LLM_RESPONSE -> it.lastLlmResponseAtEpochMillis
+                    ?: it.lastActivityAtEpochMillis
+            } ?: Long.MIN_VALUE
+        }
+        .thenBy(SessionUiModel::stableKey),
 )
 
 internal data class AttentionSurfaceBuckets(
@@ -452,13 +473,14 @@ internal object SessionHubUiMapper {
     private fun sessionModels(
         sessions: SessionHubSnapshot,
         providerNames: Map<dev.agentrelay.connection.api.ConnectionProviderId, String>,
-    ): List<SessionUiModel> = sessions.recentSessions().map { record ->
+    ): List<SessionUiModel> = sortSessionList(sessions.recentSessions().map { record ->
+        val activities = sessions.activities.filter { it.locator == record.locator }
         record.toUiModel(
             connectionProviderName = providerNames[record.locator.connectionProviderId]
                 ?: record.locator.connectionProviderId.value,
-            activities = sessions.activities.filter { it.locator == record.locator },
+            activities = activities,
         )
-    }
+    }, SessionListSortOption.LAST_APP_INTERACTION)
 
     private fun sessionLaunchers(
         coordinator: SessionCoordinatorSnapshot,
@@ -592,6 +614,14 @@ internal object SessionHubUiMapper {
         requiresActionCount = activities.count(SessionActivity::requiresAction),
         lastActivityAtEpochMillis = lastActivityAtEpochMillis,
         isPinned = preferences.pinned,
+        lastLlmResponseAtEpochMillis = activities
+            .asSequence()
+            .filter {
+                it.type == SessionActivityType.NEW_OUTPUT ||
+                    it.type == SessionActivityType.TURN_COMPLETED
+            }
+            .map(SessionActivity::occurredAtEpochMillis)
+            .maxOrNull(),
     )
 
     private fun SessionActionRequest.toUiModel(
