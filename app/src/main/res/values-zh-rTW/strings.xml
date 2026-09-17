@@ -92,6 +92,7 @@
     <string name="session_issue_provider_synchronization">無法在 %2$s 上同步 %1$s。</string>
     <string name="session_issue_session_persistence">無法儲存 %1$s 的工作階段狀態。</string>
     <string name="action_dismiss">關閉</string>
+    <string name="action_undo">復原</string>
     <string name="session_hub_add_profile">新增 %1$s 設定檔</string>
     <string name="session_hub_start_on_connection">在 %2$s 上啟動 %1$s</string>
     <string name="session_hub_review_in">在 %1$s 中檢查</string>

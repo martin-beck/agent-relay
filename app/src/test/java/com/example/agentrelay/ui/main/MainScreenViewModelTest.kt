@@ -169,6 +169,13 @@ class MainScreenViewModelTest {
         )
 
         runtime.failRefresh = false
+        viewModel.clearOperationError()
+        viewModel.restoreOperationError()
+        assertEquals(
+            UiMessage.Localized(R.string.main_error_profiles_refresh),
+            (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
+        )
+        viewModel.clearOperationError()
         viewModel.retryInitialization()
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
 

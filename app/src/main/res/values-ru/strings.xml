@@ -92,6 +92,7 @@
     <string name="session_issue_provider_synchronization">Не удалось синхронизировать %1$s в %2$s.</string>
     <string name="session_issue_session_persistence">Не удалось сохранить состояние сеанса для %1$s.</string>
     <string name="action_dismiss">Закрыть</string>
+    <string name="action_undo">Отменить</string>
     <string name="session_hub_add_profile">Добавить профиль %1$s</string>
     <string name="session_hub_start_on_connection">Запустить %1$s на %2$s</string>
     <string name="session_hub_review_in">Проверить в %1$s</string>

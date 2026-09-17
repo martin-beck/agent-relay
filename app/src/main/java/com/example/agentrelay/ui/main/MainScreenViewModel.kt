@@ -42,6 +42,7 @@ internal class MainScreenViewModel(
     private val mutableUiState = MutableStateFlow<MainScreenUiState>(MainScreenUiState.Loading)
     private val selectedSessionKey = MutableStateFlow<String?>(null)
     private val operationError = MutableStateFlow<UiMessage?>(null)
+    private var dismissedOperationError: UiMessage? = null
     private val busyConnectionKeys = MutableStateFlow<Set<String>>(emptySet())
     private val sessionInteractions = MutableStateFlow(SessionInteractionState())
     private val sessionCreator = MutableStateFlow<SessionCreatorUiState?>(null)
@@ -204,7 +205,15 @@ internal class MainScreenViewModel(
     }
 
     fun clearOperationError() {
+        dismissedOperationError = operationError.value
         operationError.value = null
+    }
+
+    fun restoreOperationError() {
+        if (operationError.value == null) {
+            operationError.value = dismissedOperationError
+        }
+        dismissedOperationError = null
     }
 
     fun updateSessionDraft(
