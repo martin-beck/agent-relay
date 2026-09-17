@@ -17,7 +17,7 @@ repositories {
 
 dependencies {
     implementation("org.apache.commons:commons-compress:1.28.0")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.14.4")
+    testImplementation("org.junit.jupiter:junit-jupiter:6.1.3")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.14.4")
 
     constraints {
