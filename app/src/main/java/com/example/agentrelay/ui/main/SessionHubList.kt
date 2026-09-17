@@ -59,7 +59,9 @@ internal fun SessionHubList(
     mode: SessionHubListMode = SessionHubListMode.SESSIONS,
 ) {
     var sortOption by rememberSaveable { mutableStateOf(SessionListSortOption.LAST_APP_INTERACTION) }
-    val surfaceBuckets = attentionSurfaceBuckets(sortSessionList(hub.sessions, sortOption))
+    val surfaceBuckets = remember(hub.sessions, sortOption) {
+        attentionSurfaceBuckets(sortSessionList(hub.sessions, sortOption))
+    }
     val attentionTitle = stringResource(R.string.session_hub_attention_title)
     val attentionSubtitle = stringResource(R.string.session_hub_attention_subtitle)
     val changedTitle = stringResource(R.string.session_detail_changed_files)
