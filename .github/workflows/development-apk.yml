@@ -153,6 +153,8 @@ jobs:
             exit 1
           fi
           api_root="${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}"
+          # REST equivalent of `gh release create`, since the disposable runner
+          # intentionally does not ship the GitHub CLI.
           if curl --fail --silent --show-error \
             --header "Authorization: Bearer ${GH_TOKEN}" \
             --header "Accept: application/vnd.github+json" \
