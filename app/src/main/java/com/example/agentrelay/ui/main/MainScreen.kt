@@ -45,6 +45,12 @@ internal const val BACKGROUND_TRANSPORT_TEST_TAG = "background-transport"
 internal const val QUICK_NAVIGATION_FOOTER_TEST_TAG = "quick-navigation-footer"
 internal const val QUICK_NAVIGATION_DESTINATION_PREFIX = "quick-navigation-"
 
+internal enum class MainScreenSurface {
+    EXISTING_SESSIONS,
+    PINNED_SESSIONS,
+    NEW_SESSION,
+}
+
 @Composable
 internal fun MainScreen(
     viewModel: MainScreenViewModel,
@@ -66,6 +72,8 @@ internal fun MainScreen(
     onCancelWearInstall: () -> Unit = {},
     onRetryWearInstall: () -> Unit = {},
     onQuickNavigation: (QuickNavigationDestinationId) -> Unit = {},
+    surface: MainScreenSurface = MainScreenSurface.EXISTING_SESSIONS,
+    quickNavigationDestinations: List<QuickNavigationDestination>? = null,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val actions = remember(viewModel, onOpenSession, onSaveArtifact, speechActions, onOpenSettings) {
@@ -124,6 +132,8 @@ internal fun MainScreen(
         onCancelWearInstall = onCancelWearInstall,
         onRetryWearInstall = onRetryWearInstall,
         onQuickNavigation = onQuickNavigation,
+        surface = surface,
+        quickNavigationDestinations = quickNavigationDestinations,
         modifier = modifier,
     )
 }
@@ -147,6 +157,7 @@ internal fun MainScreenContent(
     onRetryWearInstall: () -> Unit = {},
     onQuickNavigation: (QuickNavigationDestinationId) -> Unit = {},
     quickNavigationDestinations: List<QuickNavigationDestination>? = null,
+    surface: MainScreenSurface = MainScreenSurface.EXISTING_SESSIONS,
 ) {
     when (state) {
         MainScreenUiState.Loading -> Box(
@@ -199,7 +210,9 @@ internal fun MainScreenContent(
                     onRetry = onRetryWearInstall,
                     modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
                 )
-                if (notificationPermissionState != SessionNotificationPermissionState.HIDDEN) {
+                if (quickNavigationDestinations == null &&
+                    notificationPermissionState != SessionNotificationPermissionState.HIDDEN
+                ) {
                     SessionNotificationPermissionCard(
                         state = notificationPermissionState,
                         onRequestPermission = onRequestNotificationPermission,
@@ -207,26 +220,29 @@ internal fun MainScreenContent(
                         modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
                     )
                 }
-                BackgroundTransportCard(
-                    state = backgroundTransportState,
-                    notificationsAvailable =
-                    notificationPermissionState == SessionNotificationPermissionState.HIDDEN,
-                    onStart = onStartBackgroundTransport,
-                    onStop = onStopBackgroundTransport,
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
-                )
+                if (quickNavigationDestinations == null) {
+                    BackgroundTransportCard(
+                        state = backgroundTransportState,
+                        notificationsAvailable =
+                        notificationPermissionState == SessionNotificationPermissionState.HIDDEN,
+                        onStart = onStartBackgroundTransport,
+                        onStop = onStopBackgroundTransport,
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+                    )
+                }
                 AdaptiveSessionHub(
                     hub = state.hub,
                     speechInput = state.speechInput,
                     actions = actions,
+                    surface = surface,
                     modifier = Modifier.weight(1f),
                 )
-                QuickNavigationFooter(
-                    destinations = quickNavigationDestinations ?: defaultQuickNavigationDestinations(
-                        onQuickNavigation,
-                    ),
-                    modifier = Modifier.testTag(QUICK_NAVIGATION_FOOTER_TEST_TAG),
-                )
+                if (quickNavigationDestinations == null) {
+                    QuickNavigationFooter(
+                        destinations = defaultQuickNavigationDestinations(onQuickNavigation),
+                        modifier = Modifier.testTag(QUICK_NAVIGATION_FOOTER_TEST_TAG),
+                    )
+                }
             }
             state.profileEditor?.let { editor ->
                 ConnectionProfileEditorDialog(editor, actions)
@@ -255,14 +271,14 @@ private fun defaultQuickNavigationDestinations(
         onClick = { onQuickNavigation(QuickNavigationDestinationId.SESSIONS) },
     ),
     QuickNavigationDestination(
-        id = QuickNavigationDestinationId.ATTENTION,
-        label = stringResource(R.string.quick_navigation_attention),
-        onClick = { onQuickNavigation(QuickNavigationDestinationId.ATTENTION) },
+        id = QuickNavigationDestinationId.PINNED,
+        label = stringResource(R.string.session_card_pinned),
+        onClick = { onQuickNavigation(QuickNavigationDestinationId.PINNED) },
     ),
     QuickNavigationDestination(
-        id = QuickNavigationDestinationId.CONNECTIONS,
-        label = stringResource(R.string.quick_navigation_connections),
-        onClick = { onQuickNavigation(QuickNavigationDestinationId.CONNECTIONS) },
+        id = QuickNavigationDestinationId.NEW_SESSION,
+        label = stringResource(R.string.session_creator_title),
+        onClick = { onQuickNavigation(QuickNavigationDestinationId.NEW_SESSION) },
     ),
     QuickNavigationDestination(
         id = QuickNavigationDestinationId.SETTINGS,
@@ -270,9 +286,24 @@ private fun defaultQuickNavigationDestinations(
         onClick = { onQuickNavigation(QuickNavigationDestinationId.SETTINGS) },
     ),
     QuickNavigationDestination(
+        id = QuickNavigationDestinationId.NOTIFICATIONS,
+        label = stringResource(R.string.notification_center_open),
+        onClick = { onQuickNavigation(QuickNavigationDestinationId.NOTIFICATIONS) },
+    ),
+    QuickNavigationDestination(
+        id = QuickNavigationDestinationId.ATTENTION,
+        label = stringResource(R.string.quick_navigation_attention),
+        onClick = { onQuickNavigation(QuickNavigationDestinationId.NOTIFICATIONS) },
+    ),
+    QuickNavigationDestination(
+        id = QuickNavigationDestinationId.CONNECTIONS,
+        label = stringResource(R.string.quick_navigation_connections),
+        onClick = { onQuickNavigation(QuickNavigationDestinationId.NEW_SESSION) },
+    ),
+    QuickNavigationDestination(
         id = QuickNavigationDestinationId.HELP,
         label = stringResource(R.string.quick_navigation_help),
-        onClick = { onQuickNavigation(QuickNavigationDestinationId.HELP) },
+        onClick = { onQuickNavigation(QuickNavigationDestinationId.SETTINGS) },
     ),
 )
 
@@ -403,8 +434,10 @@ private fun AdaptiveSessionHub(
     hub: SessionHubUiModel,
     speechInput: SpeechInputUiState,
     actions: SessionHubActions,
+    surface: MainScreenSurface,
     modifier: Modifier,
 ) {
+    val visibleHub = visibleHubForSurface(hub, surface)
     BoxWithConstraints(modifier.fillMaxSize()) {
         val expanded = maxWidth >= EXPANDED_LAYOUT_MIN_WIDTH
         val selectSession: (String) -> Unit = { key ->
@@ -413,10 +446,10 @@ private fun AdaptiveSessionHub(
                 actions.openSession(key)
             }
         }
-        if (expanded) {
+        if (expanded && surface != MainScreenSurface.NEW_SESSION) {
             Row(Modifier.fillMaxSize()) {
                 SessionHubList(
-                    hub = hub,
+                    hub = visibleHub,
                     actions = actions,
                     onSelectSession = selectSession,
                     modifier = Modifier
@@ -425,7 +458,7 @@ private fun AdaptiveSessionHub(
                 )
                 VerticalDivider()
                 SessionDetailPane(
-                    detail = hub.selectedSession,
+                    detail = visibleHub.selectedSession,
                     speechInput = speechInput,
                     speechActions = actions.speechInput,
                     modifier = Modifier
@@ -443,7 +476,7 @@ private fun AdaptiveSessionHub(
             }
         } else {
             SessionHubList(
-                hub = hub,
+                hub = visibleHub,
                 actions = actions,
                 onSelectSession = selectSession,
                 modifier = Modifier
@@ -452,6 +485,21 @@ private fun AdaptiveSessionHub(
             )
         }
     }
+}
+
+internal fun visibleHubForSurface(
+    hub: SessionHubUiModel,
+    surface: MainScreenSurface,
+): SessionHubUiModel = when (surface) {
+    MainScreenSurface.EXISTING_SESSIONS -> hub
+    MainScreenSurface.PINNED_SESSIONS -> hub.copy(
+        sessions = hub.sessions.filter(SessionUiModel::isPinned),
+        selectedSession = hub.selectedSession?.takeIf { it.session.isPinned },
+        selectedSessionKey = hub.selectedSessionKey?.takeIf { key ->
+            hub.sessions.any { it.stableKey == key && it.isPinned }
+        },
+    )
+    MainScreenSurface.NEW_SESSION -> hub.copy(sessions = emptyList(), selectedSession = null)
 }
 
 @Immutable

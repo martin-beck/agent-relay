@@ -58,6 +58,7 @@ internal data class SessionHubUiModel(
     val manageableConnectionProviders: List<ConnectionProviderUiModel> = emptyList(),
     val sessionLaunchers: List<SessionLauncherUiModel> = emptyList(),
     val attentionActions: List<SessionActionUiModel> = emptyList(),
+    val notificationActivities: List<SessionActivity> = emptyList(),
 )
 
 internal data class ConnectionProviderUiModel(
@@ -392,6 +393,7 @@ internal object SessionHubUiMapper {
                 .sortedBy(ConnectionProviderUiModel::name),
             sessionLaunchers = sessionLaunchers(coordinator, sessions, providerNames),
             attentionActions = actions.filter { it.state != SessionActionState.RESOLVED },
+            notificationActivities = sessions.activities,
         )
     }
 

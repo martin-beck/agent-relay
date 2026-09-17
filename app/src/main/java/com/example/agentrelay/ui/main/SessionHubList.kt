@@ -50,11 +50,12 @@ import com.example.agentrelay.R
 import dev.agentrelay.session.api.SessionActionState
 
 @Composable
-@Suppress("LongMethod")
+@Suppress("LongMethod", "CognitiveComplexMethod")
 internal fun SessionHubList(
     hub: SessionHubUiModel,
     actions: SessionHubActions,
     onSelectSession: (String) -> Unit,
+    mode: SessionHubListMode = SessionHubListMode.SESSIONS,
     modifier: Modifier = Modifier,
 ) {
     var sortOption by rememberSaveable { mutableStateOf(SessionListSortOption.LAST_APP_INTERACTION) }
@@ -90,11 +91,13 @@ internal fun SessionHubList(
             item(key = "hub-header") {
                 HubHeader(hub, actions.refresh, actions.openSettings)
             }
-            item(key = "session-list-sort") {
-                SessionListSortControl(
-                    option = sortOption,
-                    onOptionSelected = { sortOption = it },
-                )
+            if (mode != SessionHubListMode.NEW_SESSION) {
+                item(key = "session-list-sort") {
+                    SessionListSortControl(
+                        option = sortOption,
+                        onOptionSelected = { sortOption = it },
+                    )
+                }
             }
             operationErrorMessage?.let { resolvedMessage ->
                 item(key = "operation-error") {
@@ -124,7 +127,7 @@ internal fun SessionHubList(
                     },
                 )
             }
-            if (hub.attentionActions.isNotEmpty()) {
+            if (mode == SessionHubListMode.SESSIONS && hub.attentionActions.isNotEmpty()) {
                 item(key = "attention-heading") {
                     SectionHeading(
                         title = stringResource(R.string.session_hub_attention_title),
@@ -141,28 +144,32 @@ internal fun SessionHubList(
                     )
                 }
             }
-            item(key = "connections-heading") {
-                SectionHeading(
-                    title = stringResource(R.string.session_hub_connections_title),
-                    subtitle = stringResource(R.string.session_hub_connections_subtitle),
-                )
-            }
-            items(
-                hub.manageableConnectionProviders,
-                key = { "add-profile:" + it.stableKey },
-            ) { provider ->
-                OutlinedButton(
-                    onClick = { actions.addProfile(provider.stableKey) },
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(stringResource(R.string.session_hub_add_profile, provider.name))
+            if (mode == SessionHubListMode.NEW_SESSION) {
+                item(key = "connections-heading") {
+                    SectionHeading(
+                        title = stringResource(R.string.session_hub_connections_title),
+                        subtitle = stringResource(R.string.session_hub_connections_subtitle),
+                    )
                 }
             }
-            if (hub.connections.isEmpty()) {
+            if (mode == SessionHubListMode.NEW_SESSION) {
+                items(
+                    hub.manageableConnectionProviders,
+                    key = { "add-profile:" + it.stableKey },
+                ) { provider ->
+                    OutlinedButton(
+                        onClick = { actions.addProfile(provider.stableKey) },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(stringResource(R.string.session_hub_add_profile, provider.name))
+                    }
+                }
+            }
+            if (mode == SessionHubListMode.NEW_SESSION && hub.connections.isEmpty()) {
                 item(key = "connections-empty") {
                     EmptyCard(stringResource(R.string.session_hub_connections_empty))
                 }
-            } else {
+            } else if (mode == SessionHubListMode.NEW_SESSION) {
                 items(hub.connections, key = ConnectionUiModel::stableKey) { connection ->
                     ConnectionCard(
                         connection = connection,
@@ -176,26 +183,35 @@ internal fun SessionHubList(
                     )
                 }
             }
-            sessionLaunchers(hub.sessionLaunchers, actions.openSessionCreator)
-            sessionSurfaces(
-                sessions = sortSessionList(hub.sessions, sortOption),
-                buckets = surfaceBuckets,
-                selectedSessionKey = hub.selectedSessionKey,
-                attentionTitle = attentionTitle,
-                attentionSubtitle = attentionSubtitle,
-                changedTitle = changedTitle,
-                surfaceSubtitle = surfaceSubtitle,
-                runningTitle = runningTitle,
-                recentTitle = recentTitle,
-                onTogglePinned = actions.toggleSessionPinned,
-                onSelectSession = onSelectSession,
-            )
+            if (mode == SessionHubListMode.NEW_SESSION) {
+                sessionLaunchers(hub.sessionLaunchers, actions.openSessionCreator)
+            }
+            if (mode != SessionHubListMode.NEW_SESSION) {
+                sessionSurfaces(
+                    sessions = sortSessionList(hub.sessions, sortOption),
+                    buckets = surfaceBuckets,
+                    selectedSessionKey = hub.selectedSessionKey,
+                    attentionTitle = attentionTitle,
+                    attentionSubtitle = attentionSubtitle,
+                    changedTitle = changedTitle,
+                    surfaceSubtitle = surfaceSubtitle,
+                    runningTitle = runningTitle,
+                    recentTitle = recentTitle,
+                    onTogglePinned = actions.toggleSessionPinned,
+                    onSelectSession = onSelectSession,
+                )
+            }
         }
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.BottomCenter).padding(12.dp),
         )
     }
+}
+
+internal enum class SessionHubListMode {
+    SESSIONS,
+    NEW_SESSION,
 }
 
 @Composable

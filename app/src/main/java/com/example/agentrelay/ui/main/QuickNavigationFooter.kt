@@ -29,9 +29,12 @@ import androidx.compose.ui.unit.dp
 
 internal enum class QuickNavigationDestinationId {
     SESSIONS,
+    PINNED,
+    NEW_SESSION,
+    SETTINGS,
+    NOTIFICATIONS,
     ATTENTION,
     CONNECTIONS,
-    SETTINGS,
     HELP,
 }
 

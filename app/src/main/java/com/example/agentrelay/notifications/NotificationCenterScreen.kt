@@ -49,8 +49,14 @@ internal fun NotificationCenterScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Column {
-                Text(stringResource(R.string.notification_center_title), style = MaterialTheme.typography.headlineSmall)
-                Text(stringResource(R.string.notification_center_unread_count, state.unreadCount), style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    stringResource(R.string.notification_center_title),
+                    style = MaterialTheme.typography.headlineSmall,
+                )
+                Text(
+                    stringResource(R.string.notification_center_unread_count, state.unreadCount),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
             }
             OutlinedButton(
                 onClick = { onAction(NotificationCenterAction.RefreshStarted) },
@@ -59,7 +65,15 @@ internal fun NotificationCenterScreen(
                     contentDescription = refreshDescription
                 },
             ) {
-                Text(stringResource(if (state.isRefreshing) R.string.notification_center_refreshing else R.string.notification_center_refresh))
+                Text(
+                    stringResource(
+                        if (state.isRefreshing) {
+                            R.string.notification_center_refreshing
+                        } else {
+                            R.string.notification_center_refresh
+                        },
+                    ),
+                )
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -102,7 +116,9 @@ internal fun NotificationCenterScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(stringResource(R.string.notification_center_archived))
-                Button(onClick = { onAction(NotificationCenterAction.UndoArchive) }) { Text(stringResource(R.string.notification_center_undo)) }
+                Button(onClick = { onAction(NotificationCenterAction.UndoArchive) }) {
+                    Text(stringResource(R.string.notification_center_undo))
+                }
             }
         }
         LazyColumn(

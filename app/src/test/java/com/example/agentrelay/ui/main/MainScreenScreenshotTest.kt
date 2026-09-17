@@ -27,7 +27,6 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.unit.Density
@@ -147,7 +146,7 @@ class MainScreenScreenshotTest {
             widthDp = 360,
             heightDp = 800,
             fontScale = 1.3f,
-                state = MainScreenUiState.Ready(previewHub(longContent = true)),
+            state = MainScreenUiState.Ready(previewHub(longContent = true)),
         )
     }
 
