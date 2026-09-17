@@ -87,10 +87,10 @@ internal fun SessionListSearchFilterControls(
     filters: SessionListSearchFilterState,
     resultCount: Int,
     onFiltersChanged: (SessionListSearchFilterState) -> Unit,
+    modifier: Modifier = Modifier,
     availableAgents: List<String> = emptyList(),
     availableHosts: List<String> = emptyList(),
     availableStates: List<AgentSessionState> = emptyList(),
-    modifier: Modifier = Modifier,
 ) {
     val hasFilters = filters != SessionListSearchFilterState()
     var query by remember { mutableStateOf(filters.query) }

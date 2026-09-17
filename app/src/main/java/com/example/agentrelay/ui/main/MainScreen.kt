@@ -55,10 +55,10 @@ internal enum class MainScreenSurface {
 internal fun MainScreen(
     viewModel: MainScreenViewModel,
     onOpenSession: (String) -> Unit,
+    modifier: Modifier = Modifier,
     onOpenSettings: () -> Unit = {},
     onSaveArtifact: (String, String, String) -> Unit,
     speechActions: SpeechInputUiActions,
-    modifier: Modifier = Modifier,
     notificationPermissionState: SessionNotificationPermissionState =
         SessionNotificationPermissionState.HIDDEN,
     onRequestNotificationPermission: () -> Unit = {},

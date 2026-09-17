@@ -55,8 +55,8 @@ internal fun SessionHubList(
     hub: SessionHubUiModel,
     actions: SessionHubActions,
     onSelectSession: (String) -> Unit,
-    mode: SessionHubListMode = SessionHubListMode.SESSIONS,
     modifier: Modifier = Modifier,
+    mode: SessionHubListMode = SessionHubListMode.SESSIONS,
 ) {
     var sortOption by rememberSaveable { mutableStateOf(SessionListSortOption.LAST_APP_INTERACTION) }
     val surfaceBuckets = attentionSurfaceBuckets(sortSessionList(hub.sessions, sortOption))

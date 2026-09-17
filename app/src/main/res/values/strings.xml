@@ -1,7 +1,7 @@
 <!-- Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved. -->
 <!-- SPDX-License-Identifier: MIT -->
 
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Agent Relay</string>
     <string name="notification_channel_action_name">Action required</string>
     <string name="notification_channel_action_description">
@@ -42,7 +42,7 @@
     </string>
     <string name="notification_permission_allow">Allow notifications</string>
     <string name="notification_center_title">Notification center</string>
-    <string name="notification_center_unread_count">%1$d unread</string>
+    <string name="notification_center_unread_count" tools:ignore="PluralsCandidate">%1$d unread</string>
     <string name="notification_center_refresh">Refresh</string>
     <string name="notification_center_refreshing">Refreshing…</string>
     <string name="notification_center_all">All</string>
