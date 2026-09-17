@@ -7,6 +7,7 @@ package dev.agentrelay.provider.codex
 
 import dev.agentrelay.provider.api.AgentSessionId
 import dev.agentrelay.provider.api.AgentTranscriptRole
+import dev.agentrelay.provider.api.StartSessionOptions
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlinx.coroutines.flow.MutableSharedFlow
