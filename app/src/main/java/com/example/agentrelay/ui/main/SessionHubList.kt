@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,101 +49,107 @@ internal fun SessionHubList(
     val surfaceSubtitle = stringResource(R.string.session_hub_recent_sessions_subtitle)
     val runningTitle = stringResource(R.string.session_state_running)
     val recentTitle = stringResource(R.string.session_hub_recent_sessions_title)
-    LazyColumn(
+    PullToRefreshBox(
+        isRefreshing = hub.isRefreshingProfiles,
+        onRefresh = actions.refresh,
         modifier = modifier,
-        contentPadding = PaddingValues(20.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        item(key = "hub-header") {
-            HubHeader(hub, actions.refresh)
-        }
-        hub.operationError?.let { message ->
-            item(key = "operation-error") {
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            item(key = "hub-header") {
+                HubHeader(hub, actions.refresh)
+            }
+            hub.operationError?.let { message ->
+                item(key = "operation-error") {
+                    MessageCard(
+                        message.resolve(),
+                        true,
+                        stringResource(R.string.action_dismiss),
+                        actions.dismissError,
+                    )
+                }
+            }
+            items(hub.issues, key = { "issue:" + it.id }) { issue ->
                 MessageCard(
-                    message.resolve(),
-                    true,
-                    stringResource(R.string.action_dismiss),
-                    actions.dismissError,
+                    message = issue.message.resolve(),
+                    isError = !issue.recoverable,
+                    actionLabel = if (issue.recoverable) {
+                        stringResource(R.string.action_refresh)
+                    } else {
+                        null
+                    },
+                    onAction = if (issue.recoverable) actions.refresh else null,
                 )
             }
-        }
-        items(hub.issues, key = { "issue:" + it.id }) { issue ->
-            MessageCard(
-                message = issue.message.resolve(),
-                isError = !issue.recoverable,
-                actionLabel = if (issue.recoverable) {
-                    stringResource(R.string.action_refresh)
-                } else {
-                    null
-                },
-                onAction = if (issue.recoverable) actions.refresh else null,
-            )
-        }
-        if (hub.attentionActions.isNotEmpty()) {
-            item(key = "attention-heading") {
+            if (hub.attentionActions.isNotEmpty()) {
+                item(key = "attention-heading") {
+                    SectionHeading(
+                        title = stringResource(R.string.session_hub_attention_title),
+                        subtitle = stringResource(R.string.session_hub_attention_subtitle),
+                    )
+                }
+                items(
+                    hub.attentionActions,
+                    key = { "attention:" + it.stableKey },
+                ) { action ->
+                    AttentionActionCard(
+                        action = action,
+                        onReview = { onSelectSession(action.sessionKey) },
+                    )
+                }
+            }
+            item(key = "connections-heading") {
                 SectionHeading(
-                    title = stringResource(R.string.session_hub_attention_title),
-                    subtitle = stringResource(R.string.session_hub_attention_subtitle),
+                    title = stringResource(R.string.session_hub_connections_title),
+                    subtitle = stringResource(R.string.session_hub_connections_subtitle),
                 )
             }
             items(
-                hub.attentionActions,
-                key = { "attention:" + it.stableKey },
-            ) { action ->
-                AttentionActionCard(
-                    action = action,
-                    onReview = { onSelectSession(action.sessionKey) },
-                )
+                hub.manageableConnectionProviders,
+                key = { "add-profile:" + it.stableKey },
+            ) { provider ->
+                OutlinedButton(
+                    onClick = { actions.addProfile(provider.stableKey) },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(R.string.session_hub_add_profile, provider.name))
+                }
             }
-        }
-        item(key = "connections-heading") {
-            SectionHeading(
-                title = stringResource(R.string.session_hub_connections_title),
-                subtitle = stringResource(R.string.session_hub_connections_subtitle),
+            if (hub.connections.isEmpty()) {
+                item(key = "connections-empty") {
+                    EmptyCard(stringResource(R.string.session_hub_connections_empty))
+                }
+            } else {
+                items(hub.connections, key = ConnectionUiModel::stableKey) { connection ->
+                    ConnectionCard(
+                        connection = connection,
+                        onConnect = { actions.connect(connection.stableKey) },
+                        onDisconnect = { actions.disconnect(connection.stableKey) },
+                        onTrustIdentity = { replace ->
+                            actions.trustIdentity(connection.stableKey, replace)
+                        },
+                        onRejectIdentity = { actions.rejectIdentity(connection.stableKey) },
+                        onEdit = { actions.editProfile(connection.stableKey) },
+                    )
+                }
+            }
+            sessionLaunchers(hub.sessionLaunchers, actions.openSessionCreator)
+            sessionSurfaces(
+                sessions = hub.sessions,
+                buckets = surfaceBuckets,
+                selectedSessionKey = hub.selectedSessionKey,
+                attentionTitle = attentionTitle,
+                attentionSubtitle = attentionSubtitle,
+                changedTitle = changedTitle,
+                surfaceSubtitle = surfaceSubtitle,
+                runningTitle = runningTitle,
+                recentTitle = recentTitle,
+                onSelectSession = onSelectSession,
             )
         }
-        items(
-            hub.manageableConnectionProviders,
-            key = { "add-profile:" + it.stableKey },
-        ) { provider ->
-            OutlinedButton(
-                onClick = { actions.addProfile(provider.stableKey) },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(stringResource(R.string.session_hub_add_profile, provider.name))
-            }
-        }
-        if (hub.connections.isEmpty()) {
-            item(key = "connections-empty") {
-                EmptyCard(stringResource(R.string.session_hub_connections_empty))
-            }
-        } else {
-            items(hub.connections, key = ConnectionUiModel::stableKey) { connection ->
-                ConnectionCard(
-                    connection = connection,
-                    onConnect = { actions.connect(connection.stableKey) },
-                    onDisconnect = { actions.disconnect(connection.stableKey) },
-                    onTrustIdentity = { replace ->
-                        actions.trustIdentity(connection.stableKey, replace)
-                    },
-                    onRejectIdentity = { actions.rejectIdentity(connection.stableKey) },
-                    onEdit = { actions.editProfile(connection.stableKey) },
-                )
-            }
-        }
-        sessionLaunchers(hub.sessionLaunchers, actions.openSessionCreator)
-        sessionSurfaces(
-            sessions = hub.sessions,
-            buckets = surfaceBuckets,
-            selectedSessionKey = hub.selectedSessionKey,
-            attentionTitle = attentionTitle,
-            attentionSubtitle = attentionSubtitle,
-            changedTitle = changedTitle,
-            surfaceSubtitle = surfaceSubtitle,
-            runningTitle = runningTitle,
-            recentTitle = recentTitle,
-            onSelectSession = onSelectSession,
-        )
     }
 }
 

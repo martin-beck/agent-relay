@@ -138,7 +138,12 @@ internal class ProfileRuntimeController(
 
     suspend fun refreshAgentSessions(agentProviderId: AgentProviderId): List<AgentSession> {
         val active = active(agentProviderId)
-        val sessions = active.connection.refreshSessions()
+        val sessions = retryBounded(
+            onRetry = { _, _, _ ->
+                publishStatus(active.descriptor, AgentEndpointPhase.RETRYING, active.readiness)
+                publishProviderIssue(active.descriptor)
+            },
+        ) { active.connection.refreshSessions() }
         val accepted = persistSessions(active.descriptor, sessions)
         cacheTranscripts(active, accepted)
         publishReady(active.descriptor, accepted.size, active.readiness)
@@ -205,6 +210,34 @@ internal class ProfileRuntimeController(
         runtime: RemoteAgentRuntime,
         descriptor: AgentProviderDescriptor,
     ) {
+        try {
+            retryBounded(
+                onRetry = { _, _, _ ->
+                    publishStatus(descriptor, AgentEndpointPhase.RETRYING)
+                    publishProviderIssue(descriptor)
+                },
+            ) {
+                synchronizeAgentAttempt(runtime, descriptor)
+            }
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Throwable) {
+            publishStatus(
+                descriptor = descriptor,
+                phase = AgentEndpointPhase.FAILED,
+                readiness = ProviderReadiness.Failed(
+                    reason = descriptor.displayName + " could not be synchronized",
+                    recoverable = true,
+                ),
+            )
+            publishProviderIssue(descriptor)
+        }
+    }
+
+    private suspend fun synchronizeAgentAttempt(
+        runtime: RemoteAgentRuntime,
+        descriptor: AgentProviderDescriptor,
+    ) {
         val endpoint = endpoint(descriptor.id)
         publishStatus(descriptor, AgentEndpointPhase.PROBING)
         val factory = agentRegistry.factory(descriptor.id)
@@ -212,18 +245,8 @@ internal class ProfileRuntimeController(
             factory.probe(runtime)
         } catch (failure: CancellationException) {
             throw failure
-        } catch (_: Throwable) {
-            val failed = ProviderReadiness.Failed(
-                reason = descriptor.displayName + " readiness check failed",
-                recoverable = true,
-            )
-            publishStatus(
-                descriptor = descriptor,
-                phase = AgentEndpointPhase.FAILED,
-                readiness = failed,
-            )
-            publishProviderIssue(descriptor)
-            return
+        } catch (failure: Throwable) {
+            throw failure
         }
 
         if (readiness !is ProviderReadiness.Ready) {
@@ -264,7 +287,11 @@ internal class ProfileRuntimeController(
                     }
                 }
 
-                val sessions = connection.refreshSessions()
+                val sessions = retryBounded(
+                    onRetry = { _, _, _ ->
+                        publishStatus(descriptor, AgentEndpointPhase.RETRYING, readiness)
+                    },
+                ) { connection.refreshSessions() }
                 val accepted = persistSessions(descriptor, sessions)
                 publishReady(descriptor, accepted.size, readiness)
                 cacheTranscripts(active, accepted)
@@ -279,16 +306,8 @@ internal class ProfileRuntimeController(
             }
         } catch (failure: CancellationException) {
             throw failure
-        } catch (_: Throwable) {
-            publishStatus(
-                descriptor = descriptor,
-                phase = AgentEndpointPhase.FAILED,
-                readiness = ProviderReadiness.Failed(
-                    reason = descriptor.displayName + " could not be synchronized",
-                    recoverable = true,
-                ),
-            )
-            publishProviderIssue(descriptor)
+        } catch (failure: Throwable) {
+            throw failure
         } finally {
             activeMutex.withLock {
                 if (activeAgents[descriptor.id]?.connection === connection) {
