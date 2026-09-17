@@ -40,9 +40,7 @@ internal fun SpeechInputControls(
     actions: SpeechInputUiActions,
     modifier: Modifier = Modifier,
 ) {
-    if (state.phase == SpeechInputPhase.UNAVAILABLE ||
-        state.targetSessionKey != null && state.targetSessionKey != sessionKey
-    ) {
+    if (state.targetSessionKey != null && state.targetSessionKey != sessionKey) {
         return
     }
 

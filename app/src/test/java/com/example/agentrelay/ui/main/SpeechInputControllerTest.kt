@@ -418,6 +418,38 @@ class SpeechInputControllerTest {
 @OptIn(ExperimentalCoroutinesApi::class)
 class SpeechInputActionsTest {
     @Test
+    fun fakeRecognizerKeepsTranscriptOutOfDraftUntilExplicitUse() = runTest {
+        val service = readyService()
+        val controller = SpeechInputController(this, service) {}
+        val draft = SessionDraft("existing", 8, 8, 1L)
+        var updatedDraft: SessionDraft? = null
+        val actions = SpeechInputActions(
+            controller = controller,
+            resolveDraft = { draft },
+            updateDraft = { _, text, start, end ->
+                updatedDraft = SessionDraft(text, start, end, 2L)
+            },
+            reportError = { error("Unexpected speech error: $it") },
+        )
+
+        controller.startListening("session-a")
+        runCurrent()
+        service.recognitionState.value = SpeechRecognitionState.Result(
+            SpeechOperationId(1L),
+            SpeechModelId("voice.test"),
+            " voice result",
+        )
+        runCurrent()
+
+        assertNull(updatedDraft)
+        actions.useTranscript("session-a")
+
+        assertEquals(SessionDraft("existing voice result", 21, 21, 2L), updatedDraft)
+        assertEquals(listOf(SpeechModelId("voice.test")), service.startCalls)
+        controller.close()
+    }
+
+    @Test
     fun permissionAndUnavailableTargetsExposeLocalizedMessages() = runTest {
         val service = readyService()
         val controller = SpeechInputController(this, service) {}
