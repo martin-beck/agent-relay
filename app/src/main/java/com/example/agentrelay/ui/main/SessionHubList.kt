@@ -465,8 +465,8 @@ internal fun MessageCard(
     isError: Boolean,
     actionLabel: String?,
     onAction: (() -> Unit)?,
-    onSwipeAction: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
+    onSwipeAction: (() -> Unit)? = null,
 ) {
     SwipeActionSurface(
         modifier = modifier.fillMaxWidth(),
