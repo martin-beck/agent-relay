@@ -318,6 +318,7 @@ internal class MainScreenViewModel(
     fun resumeSession(sessionKey: String) = performSession(
         sessionKey = sessionKey,
         failureMessage = UiMessage.Localized(R.string.main_error_session_resume),
+        onSuccess = { selectedSessionKey.value = sessionKey },
     ) { active, locator -> active.resumeSession(locator) }
 
     fun interruptSession(sessionKey: String) = performSession(
@@ -574,6 +575,7 @@ internal class MainScreenViewModel(
     private fun performSession(
         sessionKey: String,
         failureMessage: UiMessage,
+        onSuccess: () -> Unit = {},
         operation: suspend (SessionHubRuntime, SessionLocator) -> Unit,
     ) {
         val active = runtime ?: return
@@ -592,6 +594,7 @@ internal class MainScreenViewModel(
         viewModelScope.launch {
             try {
                 operation(active, locator)
+                onSuccess()
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Throwable) {
