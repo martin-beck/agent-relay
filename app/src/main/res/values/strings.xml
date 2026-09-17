@@ -126,6 +126,15 @@
     <string name="speech_dismiss_error">Dismiss voice error</string>
     <string name="speech_model_label">Offline model</string>
     <string name="speech_model_installed">%1$s - installed</string>
+    <string name="speech_language_packages_title">Offline voice language packages</string>
+    <string name="speech_language_packages_metered">Allow downloads on metered networks</string>
+    <string name="speech_language_packages_details">Languages: %1$s. Download: %2$d bytes. Installed: %3$d bytes.</string>
+    <string name="speech_language_packages_license">License: %1$s</string>
+    <string name="speech_language_packages_install">Install package</string>
+    <string name="speech_language_packages_cancel">Cancel download</string>
+    <string name="speech_language_packages_remove">Remove package</string>
+    <string name="speech_language_packages_retry">Retry package</string>
+    <string name="speech_language_packages_progress">Downloaded %1$d of %2$d bytes</string>
     <string name="action_retry">Retry</string>
     <string name="action_refresh">Refresh</string>
     <string name="session_issue_profile_discovery">%1$s profiles could not be loaded.</string>

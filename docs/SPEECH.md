@@ -88,6 +88,12 @@ admitted by default. Alternative implementations remain injected and require
 the same review; the extraction interface cannot create a link or special-file
 entry.
 
+The catalog boundary additionally accepts only metadata entries signed with a trusted Ed25519
+release key. The signed payload is deterministic and contains model metadata only; prompts,
+transcripts, credentials, and model bytes never enter catalog state. Package installation can be
+wrapped in an explicit policy that blocks metered networks unless the user opts in and accounts for
+remaining download bytes plus installed bytes before opening the network delegate.
+
 ## Remaining implementation boundaries
 
 The production speech path must still add:
@@ -210,6 +216,11 @@ because an upstream demo uses it.
 - Compose tests cover permission rationale/denial, no-model, download progress,
   ready, listening, transcribing, result-review, playback, interruption, and
   failure states.
+- Catalog tests use generated Ed25519 keys and synthetic descriptors to cover valid signatures,
+  metadata tampering, unknown keys, duplicate ids, metered-network opt-in, storage accounting,
+  and blocked downloads before delegate I/O. The package-management surface exposes language,
+  exact compressed/installed sizes, license, install/cancel/remove/retry actions, polite progress,
+  and assertive actionable errors with accessible controls.
 - Emulator CI uses fake audio and fake inference because the Android emulator
   cannot provide representative microphone evidence. Release audits use real
   hardware for capture quality, permission, privacy indicators, routing,
