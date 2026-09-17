@@ -47,10 +47,10 @@ internal const val BACKGROUND_TRANSPORT_TEST_TAG = "background-transport"
 internal fun MainScreen(
     viewModel: MainScreenViewModel,
     onOpenSession: (String) -> Unit,
-    onOpenSettings: () -> Unit = {},
     onSaveArtifact: (String, String, String) -> Unit,
     speechActions: SpeechInputUiActions,
     modifier: Modifier = Modifier,
+    onOpenSettings: () -> Unit = {},
     notificationPermissionState: SessionNotificationPermissionState =
         SessionNotificationPermissionState.HIDDEN,
     onRequestNotificationPermission: () -> Unit = {},
