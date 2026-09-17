@@ -118,6 +118,7 @@ internal fun SessionDetailRoute(
 }
 
 @Composable
+@Suppress("LongMethod")
 internal fun SessionDetailPane(
     detail: SessionDetailUiModel?,
     modifier: Modifier = Modifier,

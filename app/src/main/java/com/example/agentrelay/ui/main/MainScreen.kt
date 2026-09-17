@@ -54,6 +54,7 @@ internal enum class MainScreenSurface {
 }
 
 @Composable
+@Suppress("UnusedParameter")
 internal fun MainScreen(
     viewModel: MainScreenViewModel,
     onOpenSession: (String) -> Unit,
@@ -123,6 +124,10 @@ internal fun MainScreen(
     MainScreenContent(
         state = state,
         actions = actions,
+        backgroundTransportState = backgroundTransportState,
+        notificationPermissionState = notificationPermissionState,
+        onRequestNotificationPermission = onRequestNotificationPermission,
+        onOpenNotificationSettings = onOpenNotificationSettings,
         onOpenConnectionSettings = onOpenConnectionSettings,
         wearInstallOfferState = wearInstallOfferState,
         onInstallWearCompanion = onInstallWearCompanion,
@@ -137,10 +142,16 @@ internal fun MainScreen(
 }
 
 @Composable
+@Suppress("UnusedParameter")
 internal fun MainScreenContent(
     state: MainScreenUiState,
     actions: SessionHubActions,
     modifier: Modifier = Modifier,
+    notificationPermissionState: SessionNotificationPermissionState =
+        SessionNotificationPermissionState.HIDDEN,
+    onRequestNotificationPermission: () -> Unit = {},
+    onOpenNotificationSettings: () -> Unit = {},
+    backgroundTransportState: BackgroundTransportState = BackgroundTransportState.STOPPED,
     onOpenConnectionSettings: () -> Unit = {},
     wearInstallOfferState: WearInstallOfferUiState = WearInstallOfferUiState.Hidden,
     onInstallWearCompanion: () -> Unit = {},
@@ -296,7 +307,7 @@ private fun defaultQuickNavigationDestinations(
 )
 
 @Composable
-private fun SessionNotificationPermissionCard(
+internal fun SessionNotificationPermissionCard(
     state: SessionNotificationPermissionState,
     onRequestPermission: () -> Unit,
     onOpenSettings: () -> Unit,

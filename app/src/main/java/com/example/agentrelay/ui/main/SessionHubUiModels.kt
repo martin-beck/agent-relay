@@ -58,6 +58,7 @@ internal data class SessionHubUiModel(
     val manageableConnectionProviders: List<ConnectionProviderUiModel> = emptyList(),
     val sessionLaunchers: List<SessionLauncherUiModel> = emptyList(),
     val attentionActions: List<SessionActionUiModel> = emptyList(),
+    val notificationActivities: List<SessionActivity> = emptyList(),
 )
 
 internal data class ConnectionProviderUiModel(
@@ -113,6 +114,27 @@ internal data class SessionUiModel(
     val requiresActionCount: Int,
     val lastActivityAtEpochMillis: Long?,
     val isPinned: Boolean,
+    val lastLlmResponseAtEpochMillis: Long? = null,
+)
+
+internal enum class SessionListSortOption {
+    LAST_APP_INTERACTION,
+    LAST_LLM_RESPONSE,
+}
+
+internal fun sortSessionList(
+    sessions: List<SessionUiModel>,
+    option: SessionListSortOption,
+): List<SessionUiModel> = sessions.sortedWith(
+    compareByDescending<SessionUiModel> { it.isPinned }
+        .thenByDescending {
+            when (option) {
+                SessionListSortOption.LAST_APP_INTERACTION -> it.lastActivityAtEpochMillis
+                SessionListSortOption.LAST_LLM_RESPONSE ->
+                    it.lastLlmResponseAtEpochMillis ?: it.lastActivityAtEpochMillis
+            } ?: Long.MIN_VALUE
+        }
+        .thenBy(SessionUiModel::stableKey),
 )
 
 internal data class AttentionSurfaceBuckets(
@@ -272,6 +294,62 @@ internal data class SessionActivityUiModel(
     val isRead: Boolean,
 )
 
+internal enum class SessionActivityTopic {
+    TRANSPORT,
+    AGENT_FEEDBACK,
+    USER_DECISIONS,
+    COMPLETION,
+    BLOCKED_TASKS,
+}
+
+internal enum class SessionActivitySeverity {
+    INFO,
+    ACTION_REQUIRED,
+    WARNING,
+    ERROR,
+}
+
+internal data class SessionActivitySectionUiModel(
+    val topic: SessionActivityTopic,
+    val activities: List<SessionActivityUiModel>,
+    val isDiagnostic: Boolean,
+)
+
+internal val SessionActivityUiModel.topic: SessionActivityTopic
+    get() = when (type) {
+        SessionActivityType.RECONNECTED -> SessionActivityTopic.TRANSPORT
+        SessionActivityType.APPROVAL_REQUIRED,
+        SessionActivityType.QUESTION,
+        -> SessionActivityTopic.USER_DECISIONS
+        SessionActivityType.TURN_COMPLETED -> SessionActivityTopic.COMPLETION
+        SessionActivityType.NEW_OUTPUT,
+        SessionActivityType.FAILURE,
+        -> SessionActivityTopic.AGENT_FEEDBACK
+    }
+
+internal val SessionActivityUiModel.severity: SessionActivitySeverity
+    get() = when {
+        requiresAction -> SessionActivitySeverity.ACTION_REQUIRED
+        type == SessionActivityType.FAILURE -> SessionActivitySeverity.ERROR
+        else -> SessionActivitySeverity.INFO
+    }
+
+internal fun activitySections(
+    activities: List<SessionActivityUiModel>,
+): List<SessionActivitySectionUiModel> = SessionActivityTopic.entries.map { topic ->
+    SessionActivitySectionUiModel(
+        topic = topic,
+        activities = activities.filter { it.topic == topic },
+        isDiagnostic = topic == SessionActivityTopic.TRANSPORT,
+    )
+}
+
+internal fun highLevelActivities(
+    activities: List<SessionActivityUiModel>,
+): List<SessionActivityUiModel> = activities.filterNot {
+    it.topic == SessionActivityTopic.TRANSPORT
+}
+
 internal data class TranscriptEntryUiModel(
     val id: String,
     val roleLabel: UiMessage,
@@ -369,6 +447,7 @@ internal object SessionHubUiMapper {
                 .sortedBy(ConnectionProviderUiModel::name),
             sessionLaunchers = sessionLaunchers(coordinator, recentSessions, providerNames),
             attentionActions = actions.filter { it.state != SessionActionState.RESOLVED },
+            notificationActivities = sessions.activities,
         )
     }
 
@@ -595,6 +674,9 @@ internal object SessionHubUiMapper {
         requiresActionCount = activities.count(SessionActivity::requiresAction),
         lastActivityAtEpochMillis = lastActivityAtEpochMillis,
         isPinned = preferences.pinned,
+        lastLlmResponseAtEpochMillis = activities
+            .filter { it.type == SessionActivityType.NEW_OUTPUT }
+            .maxOfOrNull(SessionActivity::occurredAtEpochMillis),
     )
 
     private fun SessionActionRequest.toUiModel(

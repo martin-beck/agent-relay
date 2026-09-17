@@ -43,6 +43,7 @@ internal data class SettingDefinition(
     val update: (AppSettings, String) -> AppSettings,
 )
 
+@Suppress("MaxLineLength")
 internal val settingDefinitions = listOf(
     SettingDefinition("Connection", "Background connections", "Keep explicitly enabled connections active when the app is backgrounded.", SettingKind.TOGGLE, { it.backgroundConnections.toString() }) { s, v -> s.copy(backgroundConnections = v.toBoolean()) },
     SettingDefinition("Sessions", "Restore session drafts", "Drafts are retained in the encrypted session repository until delivery succeeds.", SettingKind.TOGGLE, { "true" }) { s, _ -> s },
