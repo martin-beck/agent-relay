@@ -69,6 +69,17 @@ jobs:
           java-version: "17"
           verify-signature: false
 
+      - name: Set up isolated Android SDK
+        uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4.0.1
+        with:
+          packages: ""
+
+      - name: Install required Android toolchain
+        run: |
+          sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+          ANDROID_SDKMANAGER_PATH="$(command -v sdkmanager)" \
+            scripts/ci/install_android_native_toolchain.sh
+
       - name: Validate wrapper and set up Gradle
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
