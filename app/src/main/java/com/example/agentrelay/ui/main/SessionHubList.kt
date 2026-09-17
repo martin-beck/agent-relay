@@ -323,14 +323,15 @@ private fun SectionHeading(
 }
 
 @Composable
-private fun MessageCard(
+internal fun MessageCard(
     message: String,
     isError: Boolean,
     actionLabel: String?,
     onAction: (() -> Unit)?,
+    modifier: Modifier = Modifier,
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite },
+        modifier = modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite },
         colors = CardDefaults.cardColors(
             containerColor = if (isError) {
                 MaterialTheme.colorScheme.errorContainer
