@@ -92,6 +92,7 @@
     <string name="session_issue_provider_synchronization">Не удалось синхронизировать %1$s в %2$s.</string>
     <string name="session_issue_session_persistence">Не удалось сохранить состояние сеанса для %1$s.</string>
     <string name="action_dismiss">Закрыть</string>
+    <string name="action_undo">Отменить</string>
     <string name="session_hub_add_profile">Добавить профиль %1$s</string>
     <string name="session_hub_start_on_connection">Запустить %1$s на %2$s</string>
     <string name="session_hub_review_in">Проверить в %1$s</string>
@@ -104,6 +105,9 @@
     <string name="session_hub_recent_sessions_title">Недавние сеансы</string>
     <string name="session_hub_recent_sessions_subtitle">Непрочитанный вывод и требуемые решения остаются видимыми для всех подключений.</string>
     <string name="session_hub_sessions_empty">Сеансы пока не найдены. Подключите профиль, чтобы проверить поставщиков агентов.</string>
+    <string name="session_list_sort_label">Сортировка: %1$s</string>
+    <string name="session_list_sort_app_interaction">последнее взаимодействие с приложением</string>
+    <string name="session_list_sort_llm_response">последний ответ LLM</string>
     <string name="session_hub_start_subtitle">Выберите готового поставщика агентов и при необходимости задайте рабочую область и модель.</string>
     <string name="session_hub_tagline">Продолжайте работу с агентами на этом устройстве и доверенных SSH-узлах.</string>
     <string name="session_hub_response_pending_confirmation">Ответ ожидает подтверждения поставщика</string>
@@ -158,6 +162,12 @@
     <string name="session_detail_select_session">Выберите сеанс, чтобы просмотреть его расшифровку и активность.</string>
     <string name="session_detail_approvals_and_questions">Подтверждения и вопросы</string>
     <string name="session_detail_changed_files">Изменённые файлы</string>
+    <string name="session_activity_topic_transport">Диагностика транспорта</string>
+    <string name="session_activity_topic_agent_feedback">Обратная связь агента</string>
+    <string name="session_activity_topic_user_decisions">Решения пользователя</string>
+    <string name="session_activity_topic_completion">Завершение</string>
+    <string name="session_activity_topic_blocked_tasks">Заблокированные задачи</string>
+    <string name="session_activity_topic_empty">В этом разделе ничего не записано.</string>
     <string name="session_detail_refresh_changed_files">Обновить изменённые файлы</string>
     <string name="session_detail_no_changed_files">Изменённые файлы не зарегистрированы. Обновите, чтобы запросить подключённого поставщика.</string>
     <string name="session_detail_changed_files_unsupported">Этот поставщик не предоставляет изменённые файлы для этого сеанса.</string>
@@ -236,6 +246,7 @@
     <string name="main_error_session_draft_clear">Сообщение доставлено, но не удалось безопасно удалить его сохранённый черновик.</string>
     <string name="main_error_session_resume">Не удалось возобновить сохранённый сеанс.</string>
     <string name="main_error_session_interrupt">Не удалось прервать активный ход.</string>
+    <string name="main_error_session_pin">Не удалось обновить закрепление сеанса.</string>
     <string name="main_error_agent_endpoint_unavailable">Эта конечная точка агента больше не готова.</string>
     <string name="main_error_session_start">Не удалось запустить новый сеанс агента.</string>
     <string name="main_error_action_unavailable">Этот запрос на подтверждение или вопрос больше недоступен.</string>
@@ -297,6 +308,8 @@
     <string name="main_loading">Загрузка Agent Relay…</string>
     <string name="session_card_no_preview">Предпросмотр недоступен.</string>
     <string name="session_card_pinned">Закреплена</string>
+    <string name="session_card_pin">Закрепить</string>
+    <string name="session_card_unpin">Открепить</string>
     <string name="session_state_not_loaded">Не загружен</string>
     <string name="session_state_idle">Неактивен</string>
     <string name="session_state_running">Выполняется</string>
@@ -417,4 +430,29 @@
     <string name="home_widget_action_acknowledge">Подтвердить</string>
     <string name="home_widget_action_defer">Отложить</string>
     <string name="home_widget_action_mute_confirm">Отключить уведомления…</string>
+    <string name="quick_navigation_sessions">Сеансы</string>
+    <string name="quick_navigation_attention">Внимание</string>
+    <string name="quick_navigation_connections">Подключения</string>
+    <string name="quick_navigation_settings">Настройки</string>
+    <string name="quick_navigation_help">Справка</string>
+    <string name="notification_center_title">Notification center</string>
+    <string name="notification_center_unread_count">%1$d unread</string>
+    <string name="notification_center_refresh">Refresh</string>
+    <string name="notification_center_refreshing">Refreshing…</string>
+    <string name="notification_center_all">All</string>
+    <string name="notification_center_unread">Unread</string>
+    <string name="notification_center_needs_action">Needs action</string>
+    <string name="notification_center_all_topics">All topics</string>
+    <string name="notification_center_offline">Offline. Showing saved notifications.</string>
+    <string name="notification_center_refresh_notifications">Refresh notifications</string>
+    <string name="notification_center_archived">Notification archived</string>
+    <string name="notification_center_undo">Undo</string>
+    <string name="notification_center_mark_read">Mark read</string>
+    <string name="notification_center_archive">Archive</string>
+    <string name="notification_center_open">Notifications</string>
+    <string name="notification_topic_ssh_lifecycle">SSH lifecycle</string>
+    <string name="notification_topic_agent_feedback">Agent feedback</string>
+    <string name="notification_topic_decisions">Decisions</string>
+    <string name="notification_topic_task_completion">Task completion</string>
+    <string name="notification_topic_task_blocked">Task blocked</string>
 </resources>

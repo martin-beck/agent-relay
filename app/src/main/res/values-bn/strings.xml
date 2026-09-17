@@ -92,6 +92,7 @@
     <string name="session_issue_provider_synchronization">%2$s-এ %1$s সিঙ্ক করা যায়নি।</string>
     <string name="session_issue_session_persistence">%1$s-এর জন্য সেশন অবস্থা সংরক্ষণ করা যায়নি।</string>
     <string name="action_dismiss">বন্ধ করুন</string>
+    <string name="action_undo">পূর্বাবস্থায় ফেরান</string>
     <string name="session_hub_add_profile">%1$s প্রোফাইল যোগ করুন</string>
     <string name="session_hub_start_on_connection">%2$s-এ %1$s শুরু করুন</string>
     <string name="session_hub_review_in">%1$s-এ পর্যালোচনা করুন</string>
@@ -104,6 +105,9 @@
     <string name="session_hub_recent_sessions_title">সাম্প্রতিক সেশন</string>
     <string name="session_hub_recent_sessions_subtitle">অপঠিত আউটপুট ও প্রয়োজনীয় সিদ্ধান্ত সব সংযোগে দৃশ্যমান থাকে।</string>
     <string name="session_hub_sessions_empty">এখনও কোনো সেশন পাওয়া যায়নি। এর এজেন্ট প্রদানকারীগুলি পরীক্ষা করতে একটি প্রোফাইল সংযুক্ত করুন।</string>
+    <string name="session_list_sort_label">Sort: %1$s</string>
+    <string name="session_list_sort_app_interaction">last app interaction</string>
+    <string name="session_list_sort_llm_response">last LLM response</string>
     <string name="session_hub_start_subtitle">একটি প্রস্তুত এজেন্ট প্রদানকারী বেছে নিন এবং চাইলে তার ওয়ার্কস্পেস ও মডেল সেট করুন।</string>
     <string name="session_hub_tagline">এই ডিভাইস এবং বিশ্বস্ত SSH হোস্টে এজেন্টের কাজ চালিয়ে যান।</string>
     <string name="session_hub_response_pending_confirmation">প্রদানকারীর নিশ্চিতকরণের অপেক্ষায় প্রতিক্রিয়া</string>
@@ -154,6 +158,12 @@
     <string name="session_detail_select_session">ট্রান্সক্রিপ্ট ও কার্যকলাপ দেখতে একটি সেশন নির্বাচন করুন।</string>
     <string name="session_detail_approvals_and_questions">অনুমোদন ও প্রশ্ন</string>
     <string name="session_detail_changed_files">পরিবর্তিত ফাইল</string>
+    <string name="session_activity_topic_transport">পরিবহন</string>
+    <string name="session_activity_topic_agent_feedback">এজেন্ট প্রতিক্রিয়া</string>
+    <string name="session_activity_topic_user_decisions">ব্যবহারকারীর সিদ্ধান্ত</string>
+    <string name="session_activity_topic_completion">সম্পন্ন</string>
+    <string name="session_activity_topic_blocked_tasks">আটকে থাকা কাজ</string>
+    <string name="session_activity_topic_empty">এই বিভাগে কিছু রেকর্ড করা নেই।</string>
     <string name="session_detail_refresh_changed_files">পরিবর্তিত ফাইল রিফ্রেশ করুন</string>
     <string name="session_detail_no_changed_files">কোনো পরিবর্তিত ফাইল রেকর্ড করা নেই। সংযুক্ত প্রদানকারীকে জিজ্ঞাসা করতে রিফ্রেশ করুন।</string>
     <string name="session_detail_changed_files_unsupported">এই প্রদানকারী এই সেশনের পরিবর্তিত ফাইল প্রকাশ করে না।</string>
@@ -232,6 +242,7 @@
     <string name="main_error_session_draft_clear">বার্তাটি পৌঁছেছে, কিন্তু এর সংরক্ষিত ড্রাফ্ট নিরাপদে মুছে ফেলা যায়নি।</string>
     <string name="main_error_session_resume">সংরক্ষিত সেশনটি পুনরায় চালু করা যায়নি।</string>
     <string name="main_error_session_interrupt">সক্রিয় টার্নটি থামানো যায়নি।</string>
+    <string name="main_error_session_pin">সেশনের পিন আপডেট করা যায়নি।</string>
     <string name="main_error_agent_endpoint_unavailable">সেই এজেন্ট এন্ডপয়েন্টটি আর প্রস্তুত নেই।</string>
     <string name="main_error_session_start">নতুন এজেন্ট সেশন শুরু করা যায়নি।</string>
     <string name="main_error_action_unavailable">সেই অনুমোদন বা প্রশ্নটি আর পাওয়া যাচ্ছে না।</string>
@@ -287,6 +298,8 @@
     <string name="main_loading">Agent Relay লোড হচ্ছে…</string>
     <string name="session_card_no_preview">কোনো পূর্বরূপ নেই।</string>
     <string name="session_card_pinned">পিন করা</string>
+    <string name="session_card_pin">পিন করুন</string>
+    <string name="session_card_unpin">আনপিন করুন</string>
     <string name="session_state_not_loaded">লোড করা হয়নি</string>
     <string name="session_state_idle">নিষ্ক্রিয়</string>
     <string name="session_state_running">চলছে</string>
@@ -401,4 +414,29 @@
     <string name="home_widget_action_acknowledge">নিশ্চিত করুন</string>
     <string name="home_widget_action_defer">পরে করুন</string>
     <string name="home_widget_action_mute_confirm">নিঃশব্দ করুন…</string>
+    <string name="quick_navigation_sessions">Sessions</string>
+    <string name="quick_navigation_attention">Attention</string>
+    <string name="quick_navigation_connections">Connections</string>
+    <string name="quick_navigation_settings">Settings</string>
+    <string name="quick_navigation_help">Help</string>
+    <string name="notification_center_title">Notification center</string>
+    <string name="notification_center_unread_count">%1$d unread</string>
+    <string name="notification_center_refresh">Refresh</string>
+    <string name="notification_center_refreshing">Refreshing…</string>
+    <string name="notification_center_all">All</string>
+    <string name="notification_center_unread">Unread</string>
+    <string name="notification_center_needs_action">Needs action</string>
+    <string name="notification_center_all_topics">All topics</string>
+    <string name="notification_center_offline">Offline. Showing saved notifications.</string>
+    <string name="notification_center_refresh_notifications">Refresh notifications</string>
+    <string name="notification_center_archived">Notification archived</string>
+    <string name="notification_center_undo">Undo</string>
+    <string name="notification_center_mark_read">Mark read</string>
+    <string name="notification_center_archive">Archive</string>
+    <string name="notification_center_open">Notifications</string>
+    <string name="notification_topic_ssh_lifecycle">SSH lifecycle</string>
+    <string name="notification_topic_agent_feedback">Agent feedback</string>
+    <string name="notification_topic_decisions">Decisions</string>
+    <string name="notification_topic_task_completion">Task completion</string>
+    <string name="notification_topic_task_blocked">Task blocked</string>
 </resources>

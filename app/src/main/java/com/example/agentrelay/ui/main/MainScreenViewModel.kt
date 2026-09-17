@@ -16,6 +16,7 @@ import dev.agentrelay.provider.api.AgentSessionState
 import dev.agentrelay.provider.api.StartSessionOptions
 import dev.agentrelay.session.api.SessionDraft
 import dev.agentrelay.session.api.SessionLocator
+import dev.agentrelay.session.api.SessionPreferences
 import dev.agentrelay.session.runtime.SessionActionAuditFailureException
 import dev.agentrelay.session.runtime.SessionActionDeliveryUncertainException
 import dev.agentrelay.session.runtime.SessionConnectionKey
@@ -34,6 +35,7 @@ internal fun interface SessionHubRuntimeFactory {
     suspend fun create(): SessionHubRuntime
 }
 
+@Suppress("TooManyFunctions")
 internal class MainScreenViewModel(
     private val clock: () -> Long = System::currentTimeMillis,
     speechService: OfflineSpeechService? = null,
@@ -42,6 +44,7 @@ internal class MainScreenViewModel(
     private val mutableUiState = MutableStateFlow<MainScreenUiState>(MainScreenUiState.Loading)
     private val selectedSessionKey = MutableStateFlow<String?>(null)
     private val operationError = MutableStateFlow<UiMessage?>(null)
+    private var dismissedOperationError: UiMessage? = null
     private val busyConnectionKeys = MutableStateFlow<Set<String>>(emptySet())
     private val sessionInteractions = MutableStateFlow(SessionInteractionState())
     private val sessionCreator = MutableStateFlow<SessionCreatorUiState?>(null)
@@ -204,7 +207,15 @@ internal class MainScreenViewModel(
     }
 
     fun clearOperationError() {
+        dismissedOperationError = operationError.value
         operationError.value = null
+    }
+
+    fun restoreOperationError() {
+        if (operationError.value == null) {
+            operationError.value = dismissedOperationError
+        }
+        dismissedOperationError = null
     }
 
     fun updateSessionDraft(
@@ -318,7 +329,16 @@ internal class MainScreenViewModel(
     fun resumeSession(sessionKey: String) = performSession(
         sessionKey = sessionKey,
         failureMessage = UiMessage.Localized(R.string.main_error_session_resume),
+        onSuccess = { selectedSessionKey.value = sessionKey },
     ) { active, locator -> active.resumeSession(locator) }
+
+    fun toggleSessionPinned(sessionKey: String) = performSession(
+        sessionKey = sessionKey,
+        failureMessage = UiMessage.Localized(R.string.main_error_session_pin),
+    ) { active, locator ->
+        val current = active.sessionSnapshot.value.session(locator)?.preferences ?: SessionPreferences()
+        active.setSessionPreferences(locator, current.copy(pinned = !current.pinned))
+    }
 
     fun interruptSession(sessionKey: String) = performSession(
         sessionKey = sessionKey,
@@ -574,6 +594,7 @@ internal class MainScreenViewModel(
     private fun performSession(
         sessionKey: String,
         failureMessage: UiMessage,
+        onSuccess: () -> Unit = {},
         operation: suspend (SessionHubRuntime, SessionLocator) -> Unit,
     ) {
         val active = runtime ?: return
@@ -592,6 +613,7 @@ internal class MainScreenViewModel(
         viewModelScope.launch {
             try {
                 operation(active, locator)
+                onSuccess()
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Throwable) {

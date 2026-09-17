@@ -19,6 +19,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -40,16 +41,27 @@ internal const val MAIN_LOADING_TEST_TAG = "main-loading"
 internal const val MAIN_FATAL_ERROR_TEST_TAG = "main-fatal-error"
 internal const val SESSION_HUB_LIST_TEST_TAG = "session-hub-list"
 internal const val SESSION_DETAIL_PANE_TEST_TAG = "session-detail-pane"
+internal const val SESSION_DETAIL_OPERATION_ERROR_TEST_TAG = "session-detail-operation-error"
 internal const val NOTIFICATION_PERMISSION_TEST_TAG = "notification-permission"
 internal const val BACKGROUND_TRANSPORT_TEST_TAG = "background-transport"
+internal const val QUICK_NAVIGATION_FOOTER_TEST_TAG = "quick-navigation-footer"
+internal const val QUICK_NAVIGATION_DESTINATION_PREFIX = "quick-navigation-"
+
+internal enum class MainScreenSurface {
+    EXISTING_SESSIONS,
+    PINNED_SESSIONS,
+    NEW_SESSION,
+}
 
 @Composable
+@Suppress("UnusedParameter")
 internal fun MainScreen(
     viewModel: MainScreenViewModel,
     onOpenSession: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    onOpenSettings: () -> Unit = {},
     onSaveArtifact: (String, String, String) -> Unit,
     speechActions: SpeechInputUiActions,
-    modifier: Modifier = Modifier,
     notificationPermissionState: SessionNotificationPermissionState =
         SessionNotificationPermissionState.HIDDEN,
     onRequestNotificationPermission: () -> Unit = {},
@@ -57,14 +69,18 @@ internal fun MainScreen(
     backgroundTransportState: BackgroundTransportState = BackgroundTransportState.STOPPED,
     onStartBackgroundTransport: () -> Unit = {},
     onStopBackgroundTransport: () -> Unit = {},
+    onOpenConnectionSettings: () -> Unit = {},
     wearInstallOfferState: WearInstallOfferUiState = WearInstallOfferUiState.Hidden,
     onInstallWearCompanion: () -> Unit = {},
     onDeclineWearCompanion: () -> Unit = {},
     onCancelWearInstall: () -> Unit = {},
     onRetryWearInstall: () -> Unit = {},
+    onQuickNavigation: (QuickNavigationDestinationId) -> Unit = {},
+    surface: MainScreenSurface = MainScreenSurface.EXISTING_SESSIONS,
+    quickNavigationDestinations: List<QuickNavigationDestination>? = null,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val actions = remember(viewModel, onOpenSession, onSaveArtifact, speechActions) {
+    val actions = remember(viewModel, onOpenSession, onSaveArtifact, speechActions, onOpenSettings) {
         SessionHubActions(
             retry = viewModel::retryInitialization,
             refresh = viewModel::refreshProfiles,
@@ -75,6 +91,7 @@ internal fun MainScreen(
             selectSession = viewModel::selectSession,
             openSession = onOpenSession,
             dismissError = viewModel::clearOperationError,
+            restoreError = viewModel::restoreOperationError,
             addProfile = viewModel::addProfile,
             editProfile = viewModel::editProfile,
             updateProfileField = viewModel::updateProfileField,
@@ -90,6 +107,7 @@ internal fun MainScreen(
             submitSessionDraft = viewModel::submitSessionDraft,
             resumeSession = viewModel::resumeSession,
             interruptSession = viewModel::interruptSession,
+            toggleSessionPinned = viewModel::toggleSessionPinned,
             openSessionCreator = viewModel::openSessionCreator,
             updateSessionCreatorWorkingDirectory = viewModel::updateSessionCreatorWorkingDirectory,
             updateSessionCreatorModel = viewModel::updateSessionCreatorModel,
@@ -100,27 +118,31 @@ internal fun MainScreen(
             saveArtifact = onSaveArtifact,
             cancelArtifactExport = viewModel.artifactInteractions::cancelArtifactExport,
             speechInput = speechActions,
+            openSettings = onOpenSettings,
         )
     }
     MainScreenContent(
         state = state,
         actions = actions,
+        backgroundTransportState = backgroundTransportState,
         notificationPermissionState = notificationPermissionState,
         onRequestNotificationPermission = onRequestNotificationPermission,
         onOpenNotificationSettings = onOpenNotificationSettings,
-        backgroundTransportState = backgroundTransportState,
-        onStartBackgroundTransport = onStartBackgroundTransport,
-        onStopBackgroundTransport = onStopBackgroundTransport,
+        onOpenConnectionSettings = onOpenConnectionSettings,
         wearInstallOfferState = wearInstallOfferState,
         onInstallWearCompanion = onInstallWearCompanion,
         onDeclineWearCompanion = onDeclineWearCompanion,
         onCancelWearInstall = onCancelWearInstall,
         onRetryWearInstall = onRetryWearInstall,
+        onQuickNavigation = onQuickNavigation,
+        surface = surface,
+        quickNavigationDestinations = quickNavigationDestinations,
         modifier = modifier,
     )
 }
 
 @Composable
+@Suppress("UnusedParameter")
 internal fun MainScreenContent(
     state: MainScreenUiState,
     actions: SessionHubActions,
@@ -130,13 +152,15 @@ internal fun MainScreenContent(
     onRequestNotificationPermission: () -> Unit = {},
     onOpenNotificationSettings: () -> Unit = {},
     backgroundTransportState: BackgroundTransportState = BackgroundTransportState.STOPPED,
-    onStartBackgroundTransport: () -> Unit = {},
-    onStopBackgroundTransport: () -> Unit = {},
+    onOpenConnectionSettings: () -> Unit = {},
     wearInstallOfferState: WearInstallOfferUiState = WearInstallOfferUiState.Hidden,
     onInstallWearCompanion: () -> Unit = {},
     onDeclineWearCompanion: () -> Unit = {},
     onCancelWearInstall: () -> Unit = {},
     onRetryWearInstall: () -> Unit = {},
+    onQuickNavigation: (QuickNavigationDestinationId) -> Unit = {},
+    quickNavigationDestinations: List<QuickNavigationDestination>? = null,
+    surface: MainScreenSurface = MainScreenSurface.EXISTING_SESSIONS,
 ) {
     when (state) {
         MainScreenUiState.Loading -> Box(
@@ -189,7 +213,9 @@ internal fun MainScreenContent(
                     onRetry = onRetryWearInstall,
                     modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
                 )
-                if (notificationPermissionState != SessionNotificationPermissionState.HIDDEN) {
+                if (quickNavigationDestinations == null &&
+                    notificationPermissionState != SessionNotificationPermissionState.HIDDEN
+                ) {
                     SessionNotificationPermissionCard(
                         state = notificationPermissionState,
                         onRequestPermission = onRequestNotificationPermission,
@@ -197,20 +223,25 @@ internal fun MainScreenContent(
                         modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
                     )
                 }
-                BackgroundTransportCard(
-                    state = backgroundTransportState,
-                    notificationsAvailable =
-                    notificationPermissionState == SessionNotificationPermissionState.HIDDEN,
-                    onStart = onStartBackgroundTransport,
-                    onStop = onStopBackgroundTransport,
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
-                )
+                TextButton(
+                    onClick = onOpenConnectionSettings,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
+                ) {
+                    Text(stringResource(R.string.background_transport_title))
+                }
                 AdaptiveSessionHub(
                     hub = state.hub,
                     speechInput = state.speechInput,
                     actions = actions,
+                    surface = surface,
                     modifier = Modifier.weight(1f),
                 )
+                if (quickNavigationDestinations == null) {
+                    QuickNavigationFooter(
+                        destinations = defaultQuickNavigationDestinations(onQuickNavigation),
+                        modifier = Modifier.testTag(QUICK_NAVIGATION_FOOTER_TEST_TAG),
+                    )
+                }
             }
             state.profileEditor?.let { editor ->
                 ConnectionProfileEditorDialog(editor, actions)
@@ -229,7 +260,54 @@ internal fun MainScreenContent(
 }
 
 @Composable
-private fun SessionNotificationPermissionCard(
+private fun defaultQuickNavigationDestinations(
+    onQuickNavigation: (QuickNavigationDestinationId) -> Unit,
+): List<QuickNavigationDestination> = listOf(
+    QuickNavigationDestination(
+        id = QuickNavigationDestinationId.SESSIONS,
+        label = stringResource(R.string.quick_navigation_sessions),
+        selected = true,
+        onClick = { onQuickNavigation(QuickNavigationDestinationId.SESSIONS) },
+    ),
+    QuickNavigationDestination(
+        id = QuickNavigationDestinationId.PINNED,
+        label = stringResource(R.string.session_card_pinned),
+        onClick = { onQuickNavigation(QuickNavigationDestinationId.PINNED) },
+    ),
+    QuickNavigationDestination(
+        id = QuickNavigationDestinationId.NEW_SESSION,
+        label = stringResource(R.string.session_creator_title),
+        onClick = { onQuickNavigation(QuickNavigationDestinationId.NEW_SESSION) },
+    ),
+    QuickNavigationDestination(
+        id = QuickNavigationDestinationId.SETTINGS,
+        label = stringResource(R.string.quick_navigation_settings),
+        onClick = { onQuickNavigation(QuickNavigationDestinationId.SETTINGS) },
+    ),
+    QuickNavigationDestination(
+        id = QuickNavigationDestinationId.NOTIFICATIONS,
+        label = stringResource(R.string.notification_center_open),
+        onClick = { onQuickNavigation(QuickNavigationDestinationId.NOTIFICATIONS) },
+    ),
+    QuickNavigationDestination(
+        id = QuickNavigationDestinationId.ATTENTION,
+        label = stringResource(R.string.quick_navigation_attention),
+        onClick = { onQuickNavigation(QuickNavigationDestinationId.NOTIFICATIONS) },
+    ),
+    QuickNavigationDestination(
+        id = QuickNavigationDestinationId.CONNECTIONS,
+        label = stringResource(R.string.quick_navigation_connections),
+        onClick = { onQuickNavigation(QuickNavigationDestinationId.NEW_SESSION) },
+    ),
+    QuickNavigationDestination(
+        id = QuickNavigationDestinationId.HELP,
+        label = stringResource(R.string.quick_navigation_help),
+        onClick = { onQuickNavigation(QuickNavigationDestinationId.SETTINGS) },
+    ),
+)
+
+@Composable
+internal fun SessionNotificationPermissionCard(
     state: SessionNotificationPermissionState,
     onRequestPermission: () -> Unit,
     onOpenSettings: () -> Unit,
@@ -279,7 +357,7 @@ private fun SessionNotificationPermissionCard(
 }
 
 @Composable
-private fun BackgroundTransportCard(
+internal fun BackgroundTransportCard(
     state: BackgroundTransportState,
     notificationsAvailable: Boolean,
     onStart: () -> Unit,
@@ -355,8 +433,10 @@ private fun AdaptiveSessionHub(
     hub: SessionHubUiModel,
     speechInput: SpeechInputUiState,
     actions: SessionHubActions,
+    surface: MainScreenSurface,
     modifier: Modifier,
 ) {
+    val visibleHub = visibleHubForSurface(hub, surface)
     BoxWithConstraints(modifier.fillMaxSize()) {
         val expanded = maxWidth >= EXPANDED_LAYOUT_MIN_WIDTH
         val selectSession: (String) -> Unit = { key ->
@@ -365,10 +445,10 @@ private fun AdaptiveSessionHub(
                 actions.openSession(key)
             }
         }
-        if (expanded) {
+        if (expanded && surface != MainScreenSurface.NEW_SESSION) {
             Row(Modifier.fillMaxSize()) {
                 SessionHubList(
-                    hub = hub,
+                    hub = visibleHub,
                     actions = actions,
                     onSelectSession = selectSession,
                     modifier = Modifier
@@ -377,7 +457,7 @@ private fun AdaptiveSessionHub(
                 )
                 VerticalDivider()
                 SessionDetailPane(
-                    detail = hub.selectedSession,
+                    detail = visibleHub.selectedSession,
                     speechInput = speechInput,
                     speechActions = actions.speechInput,
                     modifier = Modifier
@@ -395,7 +475,7 @@ private fun AdaptiveSessionHub(
             }
         } else {
             SessionHubList(
-                hub = hub,
+                hub = visibleHub,
                 actions = actions,
                 onSelectSession = selectSession,
                 modifier = Modifier
@@ -404,6 +484,21 @@ private fun AdaptiveSessionHub(
             )
         }
     }
+}
+
+internal fun visibleHubForSurface(
+    hub: SessionHubUiModel,
+    surface: MainScreenSurface,
+): SessionHubUiModel = when (surface) {
+    MainScreenSurface.EXISTING_SESSIONS -> hub
+    MainScreenSurface.PINNED_SESSIONS -> hub.copy(
+        sessions = hub.sessions.filter(SessionUiModel::isPinned),
+        selectedSession = hub.selectedSession?.takeIf { it.session.isPinned },
+        selectedSessionKey = hub.selectedSessionKey?.takeIf { key ->
+            hub.sessions.any { it.stableKey == key && it.isPinned }
+        },
+    )
+    MainScreenSurface.NEW_SESSION -> hub.copy(sessions = emptyList(), selectedSession = null)
 }
 
 @Immutable
@@ -417,6 +512,7 @@ internal data class SessionHubActions(
     val selectSession: (String) -> Unit,
     val openSession: (String) -> Unit,
     val dismissError: () -> Unit,
+    val restoreError: () -> Unit = {},
     val addProfile: (String) -> Unit = {},
     val editProfile: (String) -> Unit = {},
     val updateProfileField: (String, String) -> Unit = { _, _ -> },
@@ -432,6 +528,7 @@ internal data class SessionHubActions(
     val submitSessionDraft: (String) -> Unit = {},
     val resumeSession: (String) -> Unit = {},
     val interruptSession: (String) -> Unit = {},
+    val toggleSessionPinned: (String) -> Unit = {},
     val openSessionCreator: (String) -> Unit = {},
     val updateSessionCreatorWorkingDirectory: (String) -> Unit = {},
     val updateSessionCreatorModel: (String) -> Unit = {},
@@ -448,6 +545,7 @@ internal data class SessionHubActions(
     val saveArtifact: (String, String, String) -> Unit = { _, _, _ -> },
     val cancelArtifactExport: (String) -> Unit = {},
     val speechInput: SpeechInputUiActions = SpeechInputUiActions(),
+    val openSettings: () -> Unit = {},
 )
 
 private val EXPANDED_LAYOUT_MIN_WIDTH = 840.dp

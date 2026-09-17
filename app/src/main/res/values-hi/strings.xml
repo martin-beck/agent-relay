@@ -92,6 +92,7 @@
     <string name="session_issue_provider_synchronization">%2$s पर %1$s को सिंक्रनाइज़ नहीं किया जा सका।</string>
     <string name="session_issue_session_persistence">%1$s के लिए सेशन की स्थिति सहेजी नहीं जा सकी।</string>
     <string name="action_dismiss">बंद करें</string>
+    <string name="action_undo">पहले जैसा करें</string>
     <string name="session_hub_add_profile">%1$s प्रोफ़ाइल जोड़ें</string>
     <string name="session_hub_start_on_connection">%2$s पर %1$s शुरू करें</string>
     <string name="session_hub_review_in">%1$s में समीक्षा करें</string>
@@ -104,6 +105,9 @@
     <string name="session_hub_recent_sessions_title">हाल के सत्र</string>
     <string name="session_hub_recent_sessions_subtitle">अपठित आउटपुट और आवश्यक निर्णय सभी कनेक्शन में दिखाई देते हैं।</string>
     <string name="session_hub_sessions_empty">अभी कोई सत्र नहीं मिला। उसके एजेंट प्रदाताओं को जाँचने के लिए प्रोफ़ाइल कनेक्ट करें।</string>
+    <string name="session_list_sort_label">क्रमबद्ध करें: %1$s</string>
+    <string name="session_list_sort_app_interaction">ऐप के साथ अंतिम इंटरैक्शन</string>
+    <string name="session_list_sort_llm_response">अंतिम LLM प्रतिक्रिया</string>
     <string name="session_hub_start_subtitle">तैयार एजेंट प्रदाता चुनें और चाहें तो उसका कार्यक्षेत्र और मॉडल सेट करें।</string>
     <string name="session_hub_tagline">इस डिवाइस और विश्वसनीय SSH होस्ट पर एजेंट का काम जारी रखें।</string>
     <string name="session_hub_response_pending_confirmation">प्रतिक्रिया प्रदाता की पुष्टि की प्रतीक्षा में है</string>
@@ -154,6 +158,12 @@
     <string name="session_detail_select_session">ट्रांसक्रिप्ट और गतिविधि देखने के लिए सत्र चुनें।</string>
     <string name="session_detail_approvals_and_questions">स्वीकृतियाँ और प्रश्न</string>
     <string name="session_detail_changed_files">बदली हुई फ़ाइलें</string>
+    <string name="session_activity_topic_transport">परिवहन निदान</string>
+    <string name="session_activity_topic_agent_feedback">एजेंट प्रतिक्रिया</string>
+    <string name="session_activity_topic_user_decisions">उपयोगकर्ता निर्णय</string>
+    <string name="session_activity_topic_completion">पूर्णता</string>
+    <string name="session_activity_topic_blocked_tasks">अवरोधित कार्य</string>
+    <string name="session_activity_topic_empty">इस अनुभाग में कुछ भी दर्ज नहीं है।</string>
     <string name="session_detail_refresh_changed_files">बदली हुई फ़ाइलें रीफ़्रेश करें</string>
     <string name="session_detail_no_changed_files">कोई बदली हुई फ़ाइल रिकॉर्ड नहीं है। जुड़े हुए प्रदाता से पूछने के लिए रीफ़्रेश करें।</string>
     <string name="session_detail_changed_files_unsupported">यह प्रदाता इस सत्र के लिए बदली हुई फ़ाइलें उपलब्ध नहीं कराता।</string>
@@ -232,6 +242,7 @@
     <string name="main_error_session_draft_clear">संदेश पहुँच गया, लेकिन उसका सहेजा गया ड्राफ़्ट सुरक्षित रूप से हटाया नहीं जा सका।</string>
     <string name="main_error_session_resume">सहेजा गया सत्र फिर से शुरू नहीं किया जा सका।</string>
     <string name="main_error_session_interrupt">सक्रिय टर्न को रोका नहीं जा सका।</string>
+    <string name="main_error_session_pin">सत्र पिन अपडेट नहीं किया जा सका।</string>
     <string name="main_error_agent_endpoint_unavailable">वह एजेंट एंडपॉइंट अब तैयार नहीं है।</string>
     <string name="main_error_session_start">नया एजेंट सत्र शुरू नहीं किया जा सका।</string>
     <string name="main_error_action_unavailable">वह स्वीकृति या प्रश्न अब उपलब्ध नहीं है।</string>
@@ -287,6 +298,8 @@
     <string name="main_loading">Agent Relay लोड हो रहा है…</string>
     <string name="session_card_no_preview">कोई पूर्वावलोकन उपलब्ध नहीं है।</string>
     <string name="session_card_pinned">पिन किया गया</string>
+    <string name="session_card_pin">पिन करें</string>
+    <string name="session_card_unpin">पिन हटाएँ</string>
     <string name="session_state_not_loaded">लोड नहीं हुआ</string>
     <string name="session_state_idle">निष्क्रिय</string>
     <string name="session_state_running">चल रहा है</string>
@@ -401,4 +414,29 @@
     <string name="home_widget_action_acknowledge">पुष्टि करें</string>
     <string name="home_widget_action_defer">स्थगित करें</string>
     <string name="home_widget_action_mute_confirm">म्यूट करें…</string>
+    <string name="quick_navigation_sessions">Sessions</string>
+    <string name="quick_navigation_attention">Attention</string>
+    <string name="quick_navigation_connections">Connections</string>
+    <string name="quick_navigation_settings">Settings</string>
+    <string name="quick_navigation_help">Help</string>
+    <string name="notification_center_title">Notification center</string>
+    <string name="notification_center_unread_count">%1$d unread</string>
+    <string name="notification_center_refresh">Refresh</string>
+    <string name="notification_center_refreshing">Refreshing…</string>
+    <string name="notification_center_all">All</string>
+    <string name="notification_center_unread">Unread</string>
+    <string name="notification_center_needs_action">Needs action</string>
+    <string name="notification_center_all_topics">All topics</string>
+    <string name="notification_center_offline">Offline. Showing saved notifications.</string>
+    <string name="notification_center_refresh_notifications">Refresh notifications</string>
+    <string name="notification_center_archived">Notification archived</string>
+    <string name="notification_center_undo">Undo</string>
+    <string name="notification_center_mark_read">Mark read</string>
+    <string name="notification_center_archive">Archive</string>
+    <string name="notification_center_open">Notifications</string>
+    <string name="notification_topic_ssh_lifecycle">SSH lifecycle</string>
+    <string name="notification_topic_agent_feedback">Agent feedback</string>
+    <string name="notification_topic_decisions">Decisions</string>
+    <string name="notification_topic_task_completion">Task completion</string>
+    <string name="notification_topic_task_blocked">Task blocked</string>
 </resources>

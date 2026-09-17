@@ -8,6 +8,7 @@ package dev.agentrelay.provider.codex
 import dev.agentrelay.provider.api.AgentApprovalDecision
 import dev.agentrelay.provider.api.AgentEvent
 import dev.agentrelay.provider.api.AgentFileChangeKind
+import dev.agentrelay.provider.api.AgentSessionId
 import dev.agentrelay.provider.api.AgentSessionState
 import dev.agentrelay.provider.api.StartSessionOptions
 import kotlin.test.assertEquals
@@ -24,6 +25,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonObject
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -120,6 +122,29 @@ class CodexAgentConnectionTest {
         assertEquals(true, rpc.closed)
     }
 
+    @Test
+    fun attachingStoredThreadLoadsTranscriptAndActivatesTheSameSession() = runTest {
+        val rpc = FakeRpcClient()
+        val connection = CodexAgentConnection.create(
+            descriptor = CodexAgentProviderFactory().descriptor,
+            peer = rpc,
+            dispatcher = UnconfinedTestDispatcher(testScheduler),
+        )
+
+        val attached = connection.attach(AgentSessionId("saved-thread"))
+
+        assertEquals("saved-thread", attached.id.value)
+        assertEquals(AgentSessionState.IDLE, attached.state)
+        assertEquals("thread/resume", rpc.requests.last().first)
+        assertEquals(
+            "saved-thread",
+            rpc.requests.last().second.jsonObject.string("threadId"),
+        )
+        assertEquals("Restored context", connection.transcript(attached.id).single().text)
+        assertEquals("saved-thread", connection.sessions.value.single().id.value)
+        connection.close()
+    }
+
     private class FakeRpcClient : JsonRpcClient {
         override val calls = MutableSharedFlow<JsonRpcCall>(extraBufferCapacity = 16)
         val requests = mutableListOf<Pair<String, JsonElement>>()
@@ -140,6 +165,26 @@ class CodexAgentConnectionTest {
                         "cwd": "/workspace",
                         "status": {"type": "idle"},
                         "turns": []
+                      }
+                    }
+                    """,
+                )
+                "thread/resume" -> json(
+                    """
+                    {
+                      "thread": {
+                        "id": "saved-thread",
+                        "preview": "Restored context",
+                        "cwd": "/workspace",
+                        "status": {"type": "idle"},
+                        "turns": [{
+                          "id": "turn-saved",
+                          "items": [{
+                            "id": "message-saved",
+                            "type": "agentMessage",
+                            "text": "Restored context"
+                          }]
+                        }]
                       }
                     }
                     """,

@@ -76,6 +76,7 @@ internal fun SessionDetailRoute(
     onCancelArtifact: (String) -> Unit,
     modifier: Modifier = Modifier,
     speechActions: SpeechInputUiActions = SpeechInputUiActions(),
+    onDismissError: () -> Unit = {},
 ) {
     Column(modifier.fillMaxSize()) {
         TextButton(
@@ -87,25 +88,37 @@ internal fun SessionDetailRoute(
         when (state) {
             MainScreenUiState.Loading -> DetailPlaceholder(stringResource(R.string.session_detail_opening))
             is MainScreenUiState.FatalError -> DetailPlaceholder(state.message.resolve())
-            is MainScreenUiState.Ready -> SessionDetailPane(
-                detail = state.hub.selectedSession,
-                speechInput = state.speechInput,
-                speechActions = speechActions,
-                modifier = Modifier.weight(1f),
-                onDraftChanged = onDraftChanged,
-                onSubmitDraft = onSubmitDraft,
-                onResumeSession = onResumeSession,
-                onInterruptSession = onInterruptSession,
-                onRespondToAction = onRespondToAction,
-                onRefreshArtifacts = onRefreshArtifacts,
-                onSaveArtifact = onSaveArtifact,
-                onCancelArtifact = onCancelArtifact,
-            )
+            is MainScreenUiState.Ready -> {
+                state.hub.operationError?.let { message ->
+                    MessageCard(
+                        message = message.resolve(),
+                        isError = true,
+                        actionLabel = stringResource(R.string.action_dismiss),
+                        onAction = onDismissError,
+                        modifier = Modifier.testTag(SESSION_DETAIL_OPERATION_ERROR_TEST_TAG),
+                    )
+                }
+                SessionDetailPane(
+                    detail = state.hub.selectedSession,
+                    speechInput = state.speechInput,
+                    speechActions = speechActions,
+                    modifier = Modifier.weight(1f),
+                    onDraftChanged = onDraftChanged,
+                    onSubmitDraft = onSubmitDraft,
+                    onResumeSession = onResumeSession,
+                    onInterruptSession = onInterruptSession,
+                    onRespondToAction = onRespondToAction,
+                    onRefreshArtifacts = onRefreshArtifacts,
+                    onSaveArtifact = onSaveArtifact,
+                    onCancelArtifact = onCancelArtifact,
+                )
+            }
         }
     }
 }
 
 @Composable
+@Suppress("LongMethod")
 internal fun SessionDetailPane(
     detail: SessionDetailUiModel?,
     modifier: Modifier = Modifier,
@@ -222,16 +235,42 @@ internal fun SessionDetailPane(
         item(key = "activity-heading") {
             DetailHeading(stringResource(R.string.session_detail_activity))
         }
+        val sections = activitySections(detail.activities)
         if (detail.activities.isEmpty()) {
             item(key = "activity-empty") {
                 DetailPlaceholder(stringResource(R.string.session_detail_activity_empty))
             }
         } else {
-            items(detail.activities, key = { "activity:" + it.id }) { activity ->
-                ActivityCard(activity)
+            sections.forEach { section ->
+                item(key = "activity-topic:${section.topic}") {
+                    ActivitySectionHeading(section)
+                }
+                if (section.activities.isEmpty()) {
+                    item(key = "activity-empty:${section.topic}") {
+                        DetailPlaceholder(stringResource(R.string.session_activity_topic_empty))
+                    }
+                } else {
+                    items(section.activities, key = { "activity:${section.topic}:" + it.id }) { activity ->
+                        ActivityCard(activity)
+                    }
+                }
             }
         }
     }
+}
+
+@Composable
+private fun ActivitySectionHeading(section: SessionActivitySectionUiModel) {
+    DetailHeading(
+        text = when (section.topic) {
+            SessionActivityTopic.TRANSPORT -> stringResource(R.string.session_activity_topic_transport)
+            SessionActivityTopic.AGENT_FEEDBACK -> stringResource(R.string.session_activity_topic_agent_feedback)
+            SessionActivityTopic.USER_DECISIONS -> stringResource(R.string.session_activity_topic_user_decisions)
+            SessionActivityTopic.COMPLETION -> stringResource(R.string.session_activity_topic_completion)
+            SessionActivityTopic.BLOCKED_TASKS -> stringResource(R.string.session_activity_topic_blocked_tasks)
+        },
+        modifier = Modifier.semantics { if (section.isDiagnostic) liveRegion = LiveRegionMode.Polite },
+    )
 }
 
 @get:StringRes
@@ -530,10 +569,10 @@ private fun SessionDetailHeader(session: SessionUiModel) {
 }
 
 @Composable
-private fun DetailHeading(text: String) {
+private fun DetailHeading(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text,
-        modifier = Modifier.padding(top = 8.dp).semantics { heading() },
+        modifier = modifier.padding(top = 8.dp).semantics { heading() },
         style = MaterialTheme.typography.titleLarge,
         fontWeight = FontWeight.SemiBold,
     )

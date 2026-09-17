@@ -8,6 +8,7 @@ package com.example.agentrelay.ui.main
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -17,13 +18,26 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
@@ -31,121 +45,227 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
+import kotlinx.coroutines.launch
 import com.example.agentrelay.R
 import dev.agentrelay.session.api.SessionActionState
 
 @Composable
+@Suppress("LongMethod", "CognitiveComplexMethod")
 internal fun SessionHubList(
     hub: SessionHubUiModel,
     actions: SessionHubActions,
     onSelectSession: (String) -> Unit,
     modifier: Modifier = Modifier,
+    mode: SessionHubListMode = SessionHubListMode.SESSIONS,
 ) {
-    val surfaceBuckets = attentionSurfaceBuckets(hub.sessions)
+    var sortOption by rememberSaveable { mutableStateOf(SessionListSortOption.LAST_APP_INTERACTION) }
+    val surfaceBuckets = remember(hub.sessions, sortOption) {
+        attentionSurfaceBuckets(sortSessionList(hub.sessions, sortOption))
+    }
     val attentionTitle = stringResource(R.string.session_hub_attention_title)
     val attentionSubtitle = stringResource(R.string.session_hub_attention_subtitle)
     val changedTitle = stringResource(R.string.session_detail_changed_files)
     val surfaceSubtitle = stringResource(R.string.session_hub_recent_sessions_subtitle)
     val runningTitle = stringResource(R.string.session_state_running)
     val recentTitle = stringResource(R.string.session_hub_recent_sessions_title)
-    LazyColumn(
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    val undoLabel = stringResource(R.string.action_undo)
+    val operationErrorMessage = hub.operationError?.resolve()
+    fun dismissWithUndo(message: String) {
+        actions.dismissError()
+        scope.launch {
+            if (snackbarHostState.showSnackbar(message, undoLabel) == SnackbarResult.ActionPerformed) {
+                actions.restoreError()
+            }
+        }
+    }
+    PullToRefreshBox(
+        isRefreshing = hub.isRefreshingProfiles,
+        onRefresh = actions.refresh,
         modifier = modifier,
-        contentPadding = PaddingValues(20.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        item(key = "hub-header") {
-            HubHeader(hub, actions.refresh)
-        }
-        hub.operationError?.let { message ->
-            item(key = "operation-error") {
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            item(key = "hub-header") {
+                HubHeader(hub, actions.refresh, actions.openSettings)
+            }
+            if (mode != SessionHubListMode.NEW_SESSION) {
+                item(key = "session-list-sort") {
+                    SessionListSortControl(
+                        option = sortOption,
+                        onOptionSelected = { sortOption = it },
+                    )
+                }
+            }
+            operationErrorMessage?.let { resolvedMessage ->
+                item(key = "operation-error") {
+                    MessageCard(
+                        resolvedMessage,
+                        true,
+                        stringResource(R.string.action_dismiss),
+                        { dismissWithUndo(resolvedMessage) },
+                        onSwipeAction = { dismissWithUndo(resolvedMessage) },
+                    )
+                }
+            }
+            items(hub.issues, key = { "issue:" + it.id }) { issue ->
                 MessageCard(
-                    message.resolve(),
-                    true,
-                    stringResource(R.string.action_dismiss),
-                    actions.dismissError,
-                )
-            }
-        }
-        items(hub.issues, key = { "issue:" + it.id }) { issue ->
-            MessageCard(
-                message = issue.message.resolve(),
-                isError = !issue.recoverable,
-                actionLabel = if (issue.recoverable) {
-                    stringResource(R.string.action_refresh)
-                } else {
-                    null
-                },
-                onAction = if (issue.recoverable) actions.refresh else null,
-            )
-        }
-        if (hub.attentionActions.isNotEmpty()) {
-            item(key = "attention-heading") {
-                SectionHeading(
-                    title = stringResource(R.string.session_hub_attention_title),
-                    subtitle = stringResource(R.string.session_hub_attention_subtitle),
-                )
-            }
-            items(
-                hub.attentionActions,
-                key = { "attention:" + it.stableKey },
-            ) { action ->
-                AttentionActionCard(
-                    action = action,
-                    onReview = { onSelectSession(action.sessionKey) },
-                )
-            }
-        }
-        item(key = "connections-heading") {
-            SectionHeading(
-                title = stringResource(R.string.session_hub_connections_title),
-                subtitle = stringResource(R.string.session_hub_connections_subtitle),
-            )
-        }
-        items(
-            hub.manageableConnectionProviders,
-            key = { "add-profile:" + it.stableKey },
-        ) { provider ->
-            OutlinedButton(
-                onClick = { actions.addProfile(provider.stableKey) },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(stringResource(R.string.session_hub_add_profile, provider.name))
-            }
-        }
-        if (hub.connections.isEmpty()) {
-            item(key = "connections-empty") {
-                EmptyCard(stringResource(R.string.session_hub_connections_empty))
-            }
-        } else {
-            items(hub.connections, key = ConnectionUiModel::stableKey) { connection ->
-                ConnectionCard(
-                    connection = connection,
-                    onConnect = { actions.connect(connection.stableKey) },
-                    onDisconnect = { actions.disconnect(connection.stableKey) },
-                    onTrustIdentity = { replace ->
-                        actions.trustIdentity(connection.stableKey, replace)
+                    message = issue.message.resolve(),
+                    isError = !issue.recoverable,
+                    actionLabel = if (issue.recoverable) {
+                        stringResource(R.string.action_refresh)
+                    } else {
+                        null
                     },
-                    onRejectIdentity = { actions.rejectIdentity(connection.stableKey) },
-                    onEdit = { actions.editProfile(connection.stableKey) },
+                    onAction = if (issue.recoverable) actions.refresh else null,
+                    onSwipeAction = if (issue.recoverable) {
+                        { actions.refresh() }
+                    } else {
+                        null
+                    },
+                )
+            }
+            if (mode == SessionHubListMode.SESSIONS && hub.attentionActions.isNotEmpty()) {
+                item(key = "attention-heading") {
+                    SectionHeading(
+                        title = stringResource(R.string.session_hub_attention_title),
+                        subtitle = stringResource(R.string.session_hub_attention_subtitle),
+                    )
+                }
+                items(
+                    hub.attentionActions,
+                    key = { "attention:" + it.stableKey },
+                ) { action ->
+                    AttentionActionCard(
+                        action = action,
+                        onReview = { onSelectSession(action.sessionKey) },
+                    )
+                }
+            }
+            if (mode == SessionHubListMode.NEW_SESSION) {
+                item(key = "connections-heading") {
+                    SectionHeading(
+                        title = stringResource(R.string.session_hub_connections_title),
+                        subtitle = stringResource(R.string.session_hub_connections_subtitle),
+                    )
+                }
+            }
+            if (mode == SessionHubListMode.NEW_SESSION) {
+                items(
+                    hub.manageableConnectionProviders,
+                    key = { "add-profile:" + it.stableKey },
+                ) { provider ->
+                    OutlinedButton(
+                        onClick = { actions.addProfile(provider.stableKey) },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(stringResource(R.string.session_hub_add_profile, provider.name))
+                    }
+                }
+            }
+            if (mode == SessionHubListMode.NEW_SESSION && hub.connections.isEmpty()) {
+                item(key = "connections-empty") {
+                    EmptyCard(stringResource(R.string.session_hub_connections_empty))
+                }
+            } else if (mode == SessionHubListMode.NEW_SESSION) {
+                items(hub.connections, key = ConnectionUiModel::stableKey) { connection ->
+                    ConnectionCard(
+                        connection = connection,
+                        onConnect = { actions.connect(connection.stableKey) },
+                        onDisconnect = { actions.disconnect(connection.stableKey) },
+                        onTrustIdentity = { replace ->
+                            actions.trustIdentity(connection.stableKey, replace)
+                        },
+                        onRejectIdentity = { actions.rejectIdentity(connection.stableKey) },
+                        onEdit = { actions.editProfile(connection.stableKey) },
+                    )
+                }
+            }
+            if (mode == SessionHubListMode.NEW_SESSION) {
+                sessionLaunchers(hub.sessionLaunchers, actions.openSessionCreator)
+            }
+            if (mode != SessionHubListMode.NEW_SESSION) {
+                sessionSurfaces(
+                    sessions = sortSessionList(hub.sessions, sortOption),
+                    buckets = surfaceBuckets,
+                    selectedSessionKey = hub.selectedSessionKey,
+                    attentionTitle = attentionTitle,
+                    attentionSubtitle = attentionSubtitle,
+                    changedTitle = changedTitle,
+                    surfaceSubtitle = surfaceSubtitle,
+                    runningTitle = runningTitle,
+                    recentTitle = recentTitle,
+                    onTogglePinned = actions.toggleSessionPinned,
+                    onSelectSession = onSelectSession,
                 )
             }
         }
-        sessionLaunchers(hub.sessionLaunchers, actions.openSessionCreator)
-        sessionSurfaces(
-            sessions = hub.sessions,
-            buckets = surfaceBuckets,
-            selectedSessionKey = hub.selectedSessionKey,
-            attentionTitle = attentionTitle,
-            attentionSubtitle = attentionSubtitle,
-            changedTitle = changedTitle,
-            surfaceSubtitle = surfaceSubtitle,
-            runningTitle = runningTitle,
-            recentTitle = recentTitle,
-            onSelectSession = onSelectSession,
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter).padding(12.dp),
         )
     }
 }
 
+internal enum class SessionHubListMode {
+    SESSIONS,
+    NEW_SESSION,
+}
+
+@Composable
+private fun SessionListSortControl(
+    option: SessionListSortOption,
+    onOptionSelected: (SessionListSortOption) -> Unit,
+) {
+    var expanded by rememberSaveable { mutableStateOf(false) }
+    Column {
+        TextButton(
+            onClick = { expanded = true },
+            modifier = Modifier.testTag("session-list-sort-control"),
+        ) {
+            Text(
+                stringResource(
+                    R.string.session_list_sort_label,
+                    when (option) {
+                        SessionListSortOption.LAST_APP_INTERACTION ->
+                            stringResource(R.string.session_list_sort_app_interaction)
+                        SessionListSortOption.LAST_LLM_RESPONSE ->
+                            stringResource(R.string.session_list_sort_llm_response)
+                    },
+                ),
+            )
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            SessionListSortOption.entries.forEach { candidate ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            when (candidate) {
+                                SessionListSortOption.LAST_APP_INTERACTION ->
+                                    stringResource(R.string.session_list_sort_app_interaction)
+                                SessionListSortOption.LAST_LLM_RESPONSE ->
+                                    stringResource(R.string.session_list_sort_llm_response)
+                            },
+                        )
+                    },
+                    onClick = {
+                        onOptionSelected(candidate)
+                        expanded = false
+                    },
+                )
+            }
+        }
+    }
+}
+
+@Suppress("LongParameterList")
 private fun LazyListScope.sessionSurfaces(
     sessions: List<SessionUiModel>,
     buckets: AttentionSurfaceBuckets,
@@ -156,6 +276,7 @@ private fun LazyListScope.sessionSurfaces(
     surfaceSubtitle: String,
     runningTitle: String,
     recentTitle: String,
+    onTogglePinned: (String) -> Unit,
     onSelectSession: (String) -> Unit,
 ) {
     if (sessions.isEmpty()) {
@@ -174,6 +295,7 @@ private fun LazyListScope.sessionSurfaces(
         sessions = buckets.needsAttention,
         selectedSessionKey = selectedSessionKey,
         onSelectSession = onSelectSession,
+        onTogglePinned = onTogglePinned,
     )
     sessionSurfaceSection(
         key = "sessions-changed",
@@ -182,6 +304,7 @@ private fun LazyListScope.sessionSurfaces(
         sessions = buckets.changed,
         selectedSessionKey = selectedSessionKey,
         onSelectSession = onSelectSession,
+        onTogglePinned = onTogglePinned,
     )
     sessionSurfaceSection(
         key = "sessions-running",
@@ -190,6 +313,7 @@ private fun LazyListScope.sessionSurfaces(
         sessions = buckets.running,
         selectedSessionKey = selectedSessionKey,
         onSelectSession = onSelectSession,
+        onTogglePinned = onTogglePinned,
     )
     sessionSurfaceSection(
         key = "sessions-recent",
@@ -198,6 +322,7 @@ private fun LazyListScope.sessionSurfaces(
         sessions = buckets.recentlyCompleted,
         selectedSessionKey = selectedSessionKey,
         onSelectSession = onSelectSession,
+        onTogglePinned = onTogglePinned,
     )
 }
 
@@ -207,18 +332,25 @@ private fun LazyListScope.sessionSurfaceSection(
     subtitle: String,
     sessions: List<SessionUiModel>,
     selectedSessionKey: String?,
+    onTogglePinned: (String) -> Unit,
     onSelectSession: (String) -> Unit,
 ) {
     if (sessions.isEmpty()) return
     item(key = "$key-heading") {
         SectionHeading(title = title, subtitle = subtitle)
     }
-    items(sessions, key = SessionUiModel::stableKey) { session ->
-        SessionCard(
-            session = session,
-            selected = session.stableKey == selectedSessionKey,
-            onClick = { onSelectSession(session.stableKey) },
-        )
+    sessions.groupBy(SessionUiModel::agentProviderLabel).forEach { (agent, agentSessions) ->
+        item(key = "$key-agent-$agent") {
+            SectionHeading(title = agent, subtitle = subtitle)
+        }
+        items(agentSessions, key = SessionUiModel::stableKey) { session ->
+            SessionCard(
+                session = session,
+                selected = session.stableKey == selectedSessionKey,
+                onClick = { onSelectSession(session.stableKey) },
+                onTogglePinned = { onTogglePinned(session.stableKey) },
+            )
+        }
     }
 }
 
@@ -261,6 +393,7 @@ private fun LazyListScope.sessionLaunchers(
 private fun HubHeader(
     hub: SessionHubUiModel,
     onRefresh: () -> Unit,
+    onOpenSettings: () -> Unit,
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -277,18 +410,22 @@ private fun HubHeader(
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.primary,
         )
-        OutlinedButton(
-            onClick = onRefresh,
-            enabled = !hub.isRefreshingProfiles,
-            modifier = Modifier.align(Alignment.End),
-        ) {
-            if (hub.isRefreshingProfiles) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(18.dp),
-                    strokeWidth = 2.dp,
-                )
-            } else {
-                Text(stringResource(R.string.action_refresh))
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+            OutlinedButton(onClick = onOpenSettings) {
+                Text(stringResource(R.string.quick_navigation_settings))
+            }
+            OutlinedButton(
+                onClick = onRefresh,
+                enabled = !hub.isRefreshingProfiles,
+            ) {
+                if (hub.isRefreshingProfiles) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        strokeWidth = 2.dp,
+                    )
+                } else {
+                    Text(stringResource(R.string.action_refresh))
+                }
             }
         }
         Text(
@@ -323,33 +460,45 @@ private fun SectionHeading(
 }
 
 @Composable
-private fun MessageCard(
+internal fun MessageCard(
     message: String,
     isError: Boolean,
     actionLabel: String?,
     onAction: (() -> Unit)?,
+    modifier: Modifier = Modifier,
+    onSwipeAction: (() -> Unit)? = null,
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite },
-        colors = CardDefaults.cardColors(
-            containerColor = if (isError) {
-                MaterialTheme.colorScheme.errorContainer
-            } else {
-                MaterialTheme.colorScheme.tertiaryContainer
-            },
-        ),
+    SwipeActionSurface(
+        modifier = modifier.fillMaxWidth(),
+        accessibilityActionLabel = actionLabel,
+        onAction = if (onSwipeAction == null) {
+            null
+        } else {
+            { onSwipeAction() }
+        },
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
+        Card(
+            modifier = Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite },
+            colors = CardDefaults.cardColors(
+                containerColor = if (isError) {
+                    MaterialTheme.colorScheme.errorContainer
+                } else {
+                    MaterialTheme.colorScheme.tertiaryContainer
+                },
+            ),
         ) {
-            Text(message, style = MaterialTheme.typography.bodyMedium)
-            if (actionLabel != null && onAction != null) {
-                TextButton(
-                    onClick = onAction,
-                    modifier = Modifier.align(Alignment.End),
-                ) {
-                    Text(actionLabel)
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text(message, style = MaterialTheme.typography.bodyMedium)
+                if (actionLabel != null && onAction != null) {
+                    TextButton(
+                        onClick = onAction,
+                        modifier = Modifier.align(Alignment.End),
+                    ) {
+                        Text(actionLabel)
+                    }
                 }
             }
         }

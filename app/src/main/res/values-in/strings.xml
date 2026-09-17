@@ -92,6 +92,7 @@
     <string name="session_issue_provider_synchronization">%1$s tidak dapat disinkronkan di %2$s.</string>
     <string name="session_issue_session_persistence">Status sesi untuk %1$s tidak dapat disimpan.</string>
     <string name="action_dismiss">Tutup</string>
+    <string name="action_undo">Urungkan</string>
     <string name="session_hub_add_profile">Tambahkan profil %1$s</string>
     <string name="session_hub_start_on_connection">Mulai %1$s di %2$s</string>
     <string name="session_hub_review_in">Tinjau di %1$s</string>
@@ -104,6 +105,9 @@
     <string name="session_hub_recent_sessions_title">Sesi terbaru</string>
     <string name="session_hub_recent_sessions_subtitle">Output yang belum dibaca dan keputusan yang diperlukan tetap terlihat di seluruh koneksi.</string>
     <string name="session_hub_sessions_empty">Belum ada sesi yang ditemukan. Hubungkan profil untuk memeriksa penyedia agennya.</string>
+    <string name="session_list_sort_label">Urutkan: %1$s</string>
+    <string name="session_list_sort_app_interaction">interaksi aplikasi terakhir</string>
+    <string name="session_list_sort_llm_response">respons LLM terakhir</string>
     <string name="session_hub_start_subtitle">Pilih penyedia agen yang siap dan, bila perlu, atur ruang kerja serta modelnya.</string>
     <string name="session_hub_tagline">Lanjutkan pekerjaan agen di perangkat ini dan host SSH tepercaya.</string>
     <string name="session_hub_response_pending_confirmation">Respons menunggu konfirmasi penyedia</string>
@@ -152,6 +156,12 @@
     <string name="session_detail_select_session">Pilih sesi untuk memeriksa transkrip dan aktivitasnya.</string>
     <string name="session_detail_approvals_and_questions">Persetujuan dan pertanyaan</string>
     <string name="session_detail_changed_files">File yang diubah</string>
+    <string name="session_activity_topic_transport">Diagnostik transportasi</string>
+    <string name="session_activity_topic_agent_feedback">Umpan balik agen</string>
+    <string name="session_activity_topic_user_decisions">Keputusan pengguna</string>
+    <string name="session_activity_topic_completion">Selesai</string>
+    <string name="session_activity_topic_blocked_tasks">Tugas terblokir</string>
+    <string name="session_activity_topic_empty">Tidak ada yang tercatat di bagian ini.</string>
     <string name="session_detail_refresh_changed_files">Segarkan file yang diubah</string>
     <string name="session_detail_no_changed_files">Tidak ada file yang diubah yang tercatat. Segarkan untuk meminta penyedia yang tersambung.</string>
     <string name="session_detail_changed_files_unsupported">Penyedia ini tidak menampilkan file yang diubah untuk sesi ini.</string>
@@ -230,6 +240,7 @@
     <string name="main_error_session_draft_clear">Pesan telah terkirim, tetapi draf tersimpannya tidak dapat dihapus dengan aman.</string>
     <string name="main_error_session_resume">Sesi tersimpan tidak dapat dilanjutkan.</string>
     <string name="main_error_session_interrupt">Giliran aktif tidak dapat dihentikan.</string>
+    <string name="main_error_session_pin">Pin sesi tidak dapat diperbarui.</string>
     <string name="main_error_agent_endpoint_unavailable">Endpoint agen tersebut sudah tidak siap.</string>
     <string name="main_error_session_start">Sesi agen baru tidak dapat dimulai.</string>
     <string name="main_error_action_unavailable">Persetujuan atau pertanyaan tersebut sudah tidak tersedia.</string>
@@ -282,6 +293,8 @@
     <string name="main_loading">Memuat Agent Relay…</string>
     <string name="session_card_no_preview">Pratinjau tidak tersedia.</string>
     <string name="session_card_pinned">Disematkan</string>
+    <string name="session_card_pin">Sematkan</string>
+    <string name="session_card_unpin">Lepas sematan</string>
     <string name="session_state_not_loaded">Belum dimuat</string>
     <string name="session_state_idle">Diam</string>
     <string name="session_state_running">Berjalan</string>
@@ -393,4 +406,29 @@
     <string name="home_widget_action_acknowledge">Konfirmasi</string>
     <string name="home_widget_action_defer">Tunda</string>
     <string name="home_widget_action_mute_confirm">Bisukan…</string>
+    <string name="quick_navigation_sessions">Sesi</string>
+    <string name="quick_navigation_attention">Perhatian</string>
+    <string name="quick_navigation_connections">Koneksi</string>
+    <string name="quick_navigation_settings">Setelan</string>
+    <string name="quick_navigation_help">Bantuan</string>
+    <string name="notification_center_title">Notification center</string>
+    <string name="notification_center_unread_count">%1$d unread</string>
+    <string name="notification_center_refresh">Refresh</string>
+    <string name="notification_center_refreshing">Refreshing…</string>
+    <string name="notification_center_all">All</string>
+    <string name="notification_center_unread">Unread</string>
+    <string name="notification_center_needs_action">Needs action</string>
+    <string name="notification_center_all_topics">All topics</string>
+    <string name="notification_center_offline">Offline. Showing saved notifications.</string>
+    <string name="notification_center_refresh_notifications">Refresh notifications</string>
+    <string name="notification_center_archived">Notification archived</string>
+    <string name="notification_center_undo">Undo</string>
+    <string name="notification_center_mark_read">Mark read</string>
+    <string name="notification_center_archive">Archive</string>
+    <string name="notification_center_open">Notifications</string>
+    <string name="notification_topic_ssh_lifecycle">SSH lifecycle</string>
+    <string name="notification_topic_agent_feedback">Agent feedback</string>
+    <string name="notification_topic_decisions">Decisions</string>
+    <string name="notification_topic_task_completion">Task completion</string>
+    <string name="notification_topic_task_blocked">Task blocked</string>
 </resources>

@@ -28,18 +28,19 @@ class MainScreenNotificationTest {
     @SdkSuppress(minSdkVersion = 34)
     @Test
     fun notificationPermissionPromptExplainsPrivacyAndSupportsRecovery() {
-        val recorder = ActionRecorder()
         val permissionState = mutableStateOf(SessionNotificationPermissionState.REQUESTABLE)
         var requests = 0
         var settingsOpens = 0
         composeTestRule.setContent {
             AgentRelayTheme {
-                MainScreenContent(
-                    state = MainScreenUiState.Ready(testHub()),
-                    actions = recorder.actions(),
+                ConnectionSettingsScreen(
                     notificationPermissionState = permissionState.value,
                     onRequestNotificationPermission = { requests += 1 },
                     onOpenNotificationSettings = { settingsOpens += 1 },
+                    backgroundTransportState = com.example.agentrelay.background.BackgroundTransportState.STOPPED,
+                    onStartBackgroundTransport = {},
+                    onStopBackgroundTransport = {},
+                    onBack = {},
                 )
             }
         }

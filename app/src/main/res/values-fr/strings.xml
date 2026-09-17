@@ -92,6 +92,7 @@
     <string name="session_issue_provider_synchronization">Impossible de synchroniser %1$s sur %2$s.</string>
     <string name="session_issue_session_persistence">Impossible d’enregistrer l’état de la session pour %1$s.</string>
     <string name="action_dismiss">Fermer</string>
+    <string name="action_undo">Annuler</string>
     <string name="session_hub_add_profile">Ajouter un profil %1$s</string>
     <string name="session_hub_start_on_connection">Démarrer %1$s sur %2$s</string>
     <string name="session_hub_review_in">Examiner dans %1$s</string>
@@ -104,6 +105,9 @@
     <string name="session_hub_recent_sessions_title">Sessions récentes</string>
     <string name="session_hub_recent_sessions_subtitle">Les sorties non lues et les décisions requises restent visibles entre les connexions.</string>
     <string name="session_hub_sessions_empty">Aucune session n’a encore été découverte. Connectez un profil pour vérifier ses fournisseurs d’agents.</string>
+    <string name="session_list_sort_label">Trier : %1$s</string>
+    <string name="session_list_sort_app_interaction">dernière interaction avec l’application</string>
+    <string name="session_list_sort_llm_response">dernière réponse du LLM</string>
     <string name="session_hub_start_subtitle">Choisissez un fournisseur d’agents prêt et définissez éventuellement son espace de travail et son modèle.</string>
     <string name="session_hub_tagline">Poursuivez le travail des agents sur cet appareil et des hôtes SSH approuvés.</string>
     <string name="session_hub_response_pending_confirmation">Réponse en attente de confirmation du fournisseur</string>
@@ -156,6 +160,12 @@
     <string name="session_detail_select_session">Sélectionnez une session pour consulter sa transcription et son activité.</string>
     <string name="session_detail_approvals_and_questions">Approbations et questions</string>
     <string name="session_detail_changed_files">Fichiers modifiés</string>
+    <string name="session_activity_topic_transport">Diagnostic du transport</string>
+    <string name="session_activity_topic_agent_feedback">Commentaires de l’agent</string>
+    <string name="session_activity_topic_user_decisions">Décisions de l’utilisateur</string>
+    <string name="session_activity_topic_completion">Achèvement</string>
+    <string name="session_activity_topic_blocked_tasks">Tâches bloquées</string>
+    <string name="session_activity_topic_empty">Rien n’est enregistré dans cette section.</string>
     <string name="session_detail_refresh_changed_files">Actualiser les fichiers modifiés</string>
     <string name="session_detail_no_changed_files">Aucun fichier modifié n’est enregistré. Actualisez pour interroger le fournisseur connecté.</string>
     <string name="session_detail_changed_files_unsupported">Ce fournisseur n’expose pas les fichiers modifiés de cette session.</string>
@@ -234,6 +244,7 @@
     <string name="main_error_session_draft_clear">Le message a été transmis, mais son brouillon enregistré n’a pas pu être effacé de manière sécurisée.</string>
     <string name="main_error_session_resume">La session enregistrée n’a pas pu être reprise.</string>
     <string name="main_error_session_interrupt">Le tour actif n’a pas pu être interrompu.</string>
+    <string name="main_error_session_pin">L’épinglage de la session n’a pas pu être mis à jour.</string>
     <string name="main_error_agent_endpoint_unavailable">Ce point de terminaison d’agent n’est plus prêt.</string>
     <string name="main_error_session_start">La nouvelle session d’agent n’a pas pu être démarrée.</string>
     <string name="main_error_action_unavailable">Cette approbation ou question n’est plus disponible.</string>
@@ -292,6 +303,8 @@
     <string name="main_loading">Chargement d’Agent Relay…</string>
     <string name="session_card_no_preview">Aucun aperçu disponible.</string>
     <string name="session_card_pinned">Épinglée</string>
+    <string name="session_card_pin">Épingler</string>
+    <string name="session_card_unpin">Désépingler</string>
     <string name="session_state_not_loaded">Non chargée</string>
     <string name="session_state_idle">Inactive</string>
     <string name="session_state_running">En cours</string>
@@ -409,4 +422,29 @@
     <string name="home_widget_action_acknowledge">Confirmer</string>
     <string name="home_widget_action_defer">Reporter</string>
     <string name="home_widget_action_mute_confirm">Mettre en sourdine…</string>
+    <string name="quick_navigation_sessions">Sessions</string>
+    <string name="quick_navigation_attention">Attention</string>
+    <string name="quick_navigation_connections">Connexions</string>
+    <string name="quick_navigation_settings">Paramètres</string>
+    <string name="quick_navigation_help">Aide</string>
+    <string name="notification_center_title">Notification center</string>
+    <string name="notification_center_unread_count">%1$d unread</string>
+    <string name="notification_center_refresh">Refresh</string>
+    <string name="notification_center_refreshing">Refreshing…</string>
+    <string name="notification_center_all">All</string>
+    <string name="notification_center_unread">Unread</string>
+    <string name="notification_center_needs_action">Needs action</string>
+    <string name="notification_center_all_topics">All topics</string>
+    <string name="notification_center_offline">Offline. Showing saved notifications.</string>
+    <string name="notification_center_refresh_notifications">Refresh notifications</string>
+    <string name="notification_center_archived">Notification archived</string>
+    <string name="notification_center_undo">Undo</string>
+    <string name="notification_center_mark_read">Mark read</string>
+    <string name="notification_center_archive">Archive</string>
+    <string name="notification_center_open">Notifications</string>
+    <string name="notification_topic_ssh_lifecycle">SSH lifecycle</string>
+    <string name="notification_topic_agent_feedback">Agent feedback</string>
+    <string name="notification_topic_decisions">Decisions</string>
+    <string name="notification_topic_task_completion">Task completion</string>
+    <string name="notification_topic_task_blocked">Task blocked</string>
 </resources>

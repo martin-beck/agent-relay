@@ -58,6 +58,7 @@ internal data class SessionHubUiModel(
     val manageableConnectionProviders: List<ConnectionProviderUiModel> = emptyList(),
     val sessionLaunchers: List<SessionLauncherUiModel> = emptyList(),
     val attentionActions: List<SessionActionUiModel> = emptyList(),
+    val notificationActivities: List<SessionActivity> = emptyList(),
 )
 
 internal data class ConnectionProviderUiModel(
@@ -113,6 +114,27 @@ internal data class SessionUiModel(
     val requiresActionCount: Int,
     val lastActivityAtEpochMillis: Long?,
     val isPinned: Boolean,
+    val lastLlmResponseAtEpochMillis: Long? = null,
+)
+
+internal enum class SessionListSortOption {
+    LAST_APP_INTERACTION,
+    LAST_LLM_RESPONSE,
+}
+
+internal fun sortSessionList(
+    sessions: List<SessionUiModel>,
+    option: SessionListSortOption,
+): List<SessionUiModel> = sessions.sortedWith(
+    compareByDescending<SessionUiModel> { it.isPinned }
+        .thenByDescending {
+            when (option) {
+                SessionListSortOption.LAST_APP_INTERACTION -> it.lastActivityAtEpochMillis
+                SessionListSortOption.LAST_LLM_RESPONSE ->
+                    it.lastLlmResponseAtEpochMillis ?: it.lastActivityAtEpochMillis
+            } ?: Long.MIN_VALUE
+        }
+        .thenBy(SessionUiModel::stableKey),
 )
 
 internal data class AttentionSurfaceBuckets(
@@ -123,29 +145,27 @@ internal data class AttentionSurfaceBuckets(
 )
 
 internal fun attentionSurfaceBuckets(sessions: List<SessionUiModel>): AttentionSurfaceBuckets {
-    val buckets = sessions.groupBy { session ->
-        when {
+    val needsAttention = ArrayList<SessionUiModel>()
+    val changed = ArrayList<SessionUiModel>()
+    val running = ArrayList<SessionUiModel>()
+    val recentlyCompleted = ArrayList<SessionUiModel>()
+    sessions.forEach { session ->
+        val bucket = when {
             session.requiresActionCount > 0 ||
                 session.agentState == AgentSessionState.WAITING_FOR_APPROVAL ->
-                AttentionSurfaceBucket.NEEDS_ATTENTION
-            session.agentState == AgentSessionState.RUNNING -> AttentionSurfaceBucket.RUNNING
-            session.unreadCount > 0 -> AttentionSurfaceBucket.CHANGED
-            else -> AttentionSurfaceBucket.RECENTLY_COMPLETED
+                needsAttention
+            session.agentState == AgentSessionState.RUNNING -> running
+            session.unreadCount > 0 -> changed
+            else -> recentlyCompleted
         }
+        bucket += session
     }
     return AttentionSurfaceBuckets(
-        needsAttention = buckets[AttentionSurfaceBucket.NEEDS_ATTENTION].orEmpty(),
-        changed = buckets[AttentionSurfaceBucket.CHANGED].orEmpty(),
-        running = buckets[AttentionSurfaceBucket.RUNNING].orEmpty(),
-        recentlyCompleted = buckets[AttentionSurfaceBucket.RECENTLY_COMPLETED].orEmpty(),
+        needsAttention = needsAttention,
+        changed = changed,
+        running = running,
+        recentlyCompleted = recentlyCompleted,
     )
-}
-
-private enum class AttentionSurfaceBucket {
-    NEEDS_ATTENTION,
-    CHANGED,
-    RUNNING,
-    RECENTLY_COMPLETED,
 }
 
 internal data class SessionLauncherUiModel(
@@ -274,6 +294,62 @@ internal data class SessionActivityUiModel(
     val isRead: Boolean,
 )
 
+internal enum class SessionActivityTopic {
+    TRANSPORT,
+    AGENT_FEEDBACK,
+    USER_DECISIONS,
+    COMPLETION,
+    BLOCKED_TASKS,
+}
+
+internal enum class SessionActivitySeverity {
+    INFO,
+    ACTION_REQUIRED,
+    WARNING,
+    ERROR,
+}
+
+internal data class SessionActivitySectionUiModel(
+    val topic: SessionActivityTopic,
+    val activities: List<SessionActivityUiModel>,
+    val isDiagnostic: Boolean,
+)
+
+internal val SessionActivityUiModel.topic: SessionActivityTopic
+    get() = when (type) {
+        SessionActivityType.RECONNECTED -> SessionActivityTopic.TRANSPORT
+        SessionActivityType.APPROVAL_REQUIRED,
+        SessionActivityType.QUESTION,
+        -> SessionActivityTopic.USER_DECISIONS
+        SessionActivityType.TURN_COMPLETED -> SessionActivityTopic.COMPLETION
+        SessionActivityType.NEW_OUTPUT,
+        SessionActivityType.FAILURE,
+        -> SessionActivityTopic.AGENT_FEEDBACK
+    }
+
+internal val SessionActivityUiModel.severity: SessionActivitySeverity
+    get() = when {
+        requiresAction -> SessionActivitySeverity.ACTION_REQUIRED
+        type == SessionActivityType.FAILURE -> SessionActivitySeverity.ERROR
+        else -> SessionActivitySeverity.INFO
+    }
+
+internal fun activitySections(
+    activities: List<SessionActivityUiModel>,
+): List<SessionActivitySectionUiModel> = SessionActivityTopic.entries.map { topic ->
+    SessionActivitySectionUiModel(
+        topic = topic,
+        activities = activities.filter { it.topic == topic },
+        isDiagnostic = topic == SessionActivityTopic.TRANSPORT,
+    )
+}
+
+internal fun highLevelActivities(
+    activities: List<SessionActivityUiModel>,
+): List<SessionActivityUiModel> = activities.filterNot {
+    it.topic == SessionActivityTopic.TRANSPORT
+}
+
 internal data class TranscriptEntryUiModel(
     val id: String,
     val roleLabel: UiMessage,
@@ -338,6 +414,7 @@ internal object SessionHubUiMapper {
         val manageableProviders = connectionProviders
             .filter { ConnectionCapability.PROFILE_MANAGEMENT in it.capabilities }
             .associateBy(ConnectionProviderDescriptor::id)
+        val recentSessions = sessions.recentSessions()
         val actions = actionModels(sessions, providerNames, busyActionKeys)
         return SessionHubUiModel(
             availableConnectionProviders = connectionProviders.map { it.displayName },
@@ -347,7 +424,7 @@ internal object SessionHubUiMapper {
                 manageableProviders.keys,
                 busyConnectionKeys,
             ),
-            sessions = sessionModels(sessions, providerNames),
+            sessions = sessionModels(sessions, recentSessions, providerNames),
             issues = coordinator.issues.values
                 .sortedByDescending { it.occurredAtEpochMillis }
                 .map { it.toUiModel() },
@@ -368,8 +445,9 @@ internal object SessionHubUiMapper {
             manageableConnectionProviders = manageableProviders.values
                 .map { ConnectionProviderUiModel(it.id.value, it.displayName) }
                 .sortedBy(ConnectionProviderUiModel::name),
-            sessionLaunchers = sessionLaunchers(coordinator, sessions, providerNames),
+            sessionLaunchers = sessionLaunchers(coordinator, recentSessions, providerNames),
             attentionActions = actions.filter { it.state != SessionActionState.RESOLVED },
+            notificationActivities = sessions.activities,
         )
     }
 
@@ -451,18 +529,22 @@ internal object SessionHubUiMapper {
 
     private fun sessionModels(
         sessions: SessionHubSnapshot,
+        recentSessions: List<SessionRecord>,
         providerNames: Map<dev.agentrelay.connection.api.ConnectionProviderId, String>,
-    ): List<SessionUiModel> = sessions.recentSessions().map { record ->
-        record.toUiModel(
-            connectionProviderName = providerNames[record.locator.connectionProviderId]
-                ?: record.locator.connectionProviderId.value,
-            activities = sessions.activities.filter { it.locator == record.locator },
-        )
+    ): List<SessionUiModel> {
+        val activitiesByLocator = sessions.activities.groupBy(SessionActivity::locator)
+        return recentSessions.map { record ->
+            record.toUiModel(
+                connectionProviderName = providerNames[record.locator.connectionProviderId]
+                    ?: record.locator.connectionProviderId.value,
+                activities = activitiesByLocator[record.locator].orEmpty(),
+            )
+        }
     }
 
     private fun sessionLaunchers(
         coordinator: SessionCoordinatorSnapshot,
-        sessions: SessionHubSnapshot,
+        recentSessions: List<SessionRecord>,
         providerNames: Map<dev.agentrelay.connection.api.ConnectionProviderId, String>,
     ): List<SessionLauncherUiModel> = coordinator.agentEndpoints.values
         .asSequence()
@@ -472,7 +554,7 @@ internal object SessionHubUiMapper {
         }
         .mapNotNull { endpoint ->
             val profile = coordinator.profile(endpoint.key.connection) ?: return@mapNotNull null
-            val suggestedWorkingDirectory = sessions.recentSessions()
+            val suggestedWorkingDirectory = recentSessions
                 .firstOrNull { record ->
                     record.locator.connectionProviderId == endpoint.key.connection.providerId &&
                         record.locator.connectionProfileId == endpoint.key.connection.profileId &&
@@ -592,6 +674,9 @@ internal object SessionHubUiMapper {
         requiresActionCount = activities.count(SessionActivity::requiresAction),
         lastActivityAtEpochMillis = lastActivityAtEpochMillis,
         isPinned = preferences.pinned,
+        lastLlmResponseAtEpochMillis = activities
+            .filter { it.type == SessionActivityType.NEW_OUTPUT }
+            .maxOfOrNull(SessionActivity::occurredAtEpochMillis),
     )
 
     private fun SessionActionRequest.toUiModel(

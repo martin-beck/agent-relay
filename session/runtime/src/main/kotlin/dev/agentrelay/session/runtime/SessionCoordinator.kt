@@ -70,7 +70,7 @@ class SessionCoordinator(
                     val issueId = profileIssueId(descriptor.id.value)
                     val provider = connectionRegistry.provider(descriptor.id)
                     try {
-                        val profiles = provider.profiles()
+                        val profiles = retryBounded { provider.profiles() }
                         require(profiles.all { it.providerId == descriptor.id }) {
                             "Connection provider returned a foreign profile"
                         }

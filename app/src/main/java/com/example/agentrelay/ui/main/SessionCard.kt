@@ -15,6 +15,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -34,87 +35,106 @@ internal fun SessionCard(
     session: SessionUiModel,
     selected: Boolean,
     onClick: () -> Unit,
+    onSwipeAction: ((HorizontalSwipeAction) -> Unit)? = null,
+    onTogglePinned: () -> Unit = {},
 ) {
     val accessibilityLabel = sessionAccessibilityLabel(session)
-    Card(
-        onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth()
-            .semantics {
-                contentDescription = accessibilityLabel
-                this.selected = selected
-            },
-        colors = CardDefaults.cardColors(
-            containerColor = if (selected) {
-                MaterialTheme.colorScheme.primaryContainer
-            } else {
-                MaterialTheme.colorScheme.surfaceContainer
-            },
-        ),
+    SwipeActionSurface(
+        modifier = Modifier.fillMaxWidth(),
+        accessibilityActionLabel = stringResource(R.string.session_card_pinned),
+        onAction = onSwipeAction,
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
+        Card(
+            onClick = onClick,
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics {
+                    contentDescription = accessibilityLabel
+                    this.selected = selected
+                },
+            colors = CardDefaults.cardColors(
+                containerColor = if (selected) {
+                    MaterialTheme.colorScheme.primaryContainer
+                } else {
+                    MaterialTheme.colorScheme.surfaceContainer
+                },
+            ),
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = session.title.resolve(),
+                        modifier = Modifier.weight(1f),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    if (session.unreadCount > 0) {
+                        Text(
+                            text = session.unreadCount.toString(),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                }
                 Text(
-                    text = session.title.resolve(),
-                    modifier = Modifier.weight(1f),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
+                    text = session.preview.ifBlank { stringResource(R.string.session_card_no_preview) },
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = stringResource(
+                        R.string.session_hub_action_context,
+                        session.connectionProviderName,
+                        session.connectionLabel,
+                        session.agentProviderLabel,
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
-                if (session.unreadCount > 0) {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
                     Text(
-                        text = session.unreadCount.toString(),
-                        style = MaterialTheme.typography.labelLarge,
+                        text = sessionStateLabel(session.agentState),
+                        style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary,
                     )
+                    if (session.requiresActionCount > 0) {
+                        Text(
+                            text = pluralStringResource(
+                                R.plurals.session_card_awaiting_action,
+                                session.requiresActionCount,
+                                session.requiresActionCount,
+                            ),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
+                    if (session.isPinned) {
+                        Text(
+                            text = stringResource(R.string.session_card_pinned),
+                            style = MaterialTheme.typography.labelMedium,
+                        )
+                    }
                 }
-            }
-            Text(
-                text = session.preview.ifBlank { stringResource(R.string.session_card_no_preview) },
-                style = MaterialTheme.typography.bodyMedium,
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Text(
-                text = stringResource(
-                    R.string.session_hub_action_context,
-                    session.connectionProviderName,
-                    session.connectionLabel,
-                    session.agentProviderLabel,
-                ),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                Text(
-                    text = sessionStateLabel(session.agentState),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-                if (session.requiresActionCount > 0) {
+                TextButton(onClick = onTogglePinned) {
                     Text(
-                        text = pluralStringResource(
-                            R.plurals.session_card_awaiting_action,
-                            session.requiresActionCount,
-                            session.requiresActionCount,
+                        stringResource(
+                            if (session.isPinned) {
+                                R.string.session_card_unpin
+                            } else {
+                                R.string.session_card_pin
+                            },
                         ),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
-                if (session.isPinned) {
-                    Text(
-                        text = stringResource(R.string.session_card_pinned),
-                        style = MaterialTheme.typography.labelMedium,
                     )
                 }
             }

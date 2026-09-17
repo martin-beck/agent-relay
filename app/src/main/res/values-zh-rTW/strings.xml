@@ -92,6 +92,7 @@
     <string name="session_issue_provider_synchronization">無法在 %2$s 上同步 %1$s。</string>
     <string name="session_issue_session_persistence">無法儲存 %1$s 的工作階段狀態。</string>
     <string name="action_dismiss">關閉</string>
+    <string name="action_undo">復原</string>
     <string name="session_hub_add_profile">新增 %1$s 設定檔</string>
     <string name="session_hub_start_on_connection">在 %2$s 上啟動 %1$s</string>
     <string name="session_hub_review_in">在 %1$s 中檢查</string>
@@ -104,6 +105,9 @@
     <string name="session_hub_recent_sessions_title">最近的工作階段</string>
     <string name="session_hub_recent_sessions_subtitle">未讀輸出與待處理決定會在各連線間保持可見。</string>
     <string name="session_hub_sessions_empty">尚未發現工作階段。請連線設定檔以檢查其代理提供者。</string>
+    <string name="session_list_sort_label">排序：%1$s</string>
+    <string name="session_list_sort_app_interaction">最近的應用程式互動</string>
+    <string name="session_list_sort_llm_response">最近的 LLM 回覆</string>
     <string name="session_hub_start_subtitle">選擇已就緒的代理提供者，並可選擇設定其工作區與模型。</string>
     <string name="session_hub_tagline">在此裝置和受信任的 SSH 主機上繼續代理工作。</string>
     <string name="session_hub_response_pending_confirmation">回應正在等待提供者確認</string>
@@ -152,6 +156,12 @@
     <string name="session_detail_select_session">選取工作階段以查看其轉錄與活動。</string>
     <string name="session_detail_approvals_and_questions">核准與問題</string>
     <string name="session_detail_changed_files">已變更的檔案</string>
+    <string name="session_activity_topic_transport">傳輸診斷</string>
+    <string name="session_activity_topic_agent_feedback">代理程式回饋</string>
+    <string name="session_activity_topic_user_decisions">使用者決定</string>
+    <string name="session_activity_topic_completion">完成</string>
+    <string name="session_activity_topic_blocked_tasks">遭封鎖的工作</string>
+    <string name="session_activity_topic_empty">此區段沒有記錄。</string>
     <string name="session_detail_refresh_changed_files">重新整理已變更的檔案</string>
     <string name="session_detail_no_changed_files">沒有記錄已變更的檔案。請重新整理以查詢已連線的提供者。</string>
     <string name="session_detail_changed_files_unsupported">此提供者不公開這個工作階段的已變更檔案。</string>
@@ -230,6 +240,7 @@
     <string name="main_error_session_draft_clear">訊息已送達，但無法安全清除其已儲存的草稿。</string>
     <string name="main_error_session_resume">無法繼續已儲存的工作階段。</string>
     <string name="main_error_session_interrupt">無法中斷目前輪次。</string>
+    <string name="main_error_session_pin">無法更新工作階段固定狀態。</string>
     <string name="main_error_agent_endpoint_unavailable">該代理端點已無法使用。</string>
     <string name="main_error_session_start">無法啟動新的代理工作階段。</string>
     <string name="main_error_action_unavailable">該核准要求或問題已無法使用。</string>
@@ -282,6 +293,8 @@
     <string name="main_loading">正在載入 Agent Relay…</string>
     <string name="session_card_no_preview">沒有可用的預覽。</string>
     <string name="session_card_pinned">已固定</string>
+    <string name="session_card_pin">固定</string>
+    <string name="session_card_unpin">取消固定</string>
     <string name="session_state_not_loaded">未載入</string>
     <string name="session_state_idle">閒置</string>
     <string name="session_state_running">執行中</string>
@@ -393,4 +406,29 @@
     <string name="home_widget_action_acknowledge">確認</string>
     <string name="home_widget_action_defer">稍後處理</string>
     <string name="home_widget_action_mute_confirm">靜音…</string>
+    <string name="quick_navigation_sessions">工作階段</string>
+    <string name="quick_navigation_attention">待處理</string>
+    <string name="quick_navigation_connections">連線</string>
+    <string name="quick_navigation_settings">設定</string>
+    <string name="quick_navigation_help">說明</string>
+    <string name="notification_center_title">Notification center</string>
+    <string name="notification_center_unread_count">%1$d unread</string>
+    <string name="notification_center_refresh">Refresh</string>
+    <string name="notification_center_refreshing">Refreshing…</string>
+    <string name="notification_center_all">All</string>
+    <string name="notification_center_unread">Unread</string>
+    <string name="notification_center_needs_action">Needs action</string>
+    <string name="notification_center_all_topics">All topics</string>
+    <string name="notification_center_offline">Offline. Showing saved notifications.</string>
+    <string name="notification_center_refresh_notifications">Refresh notifications</string>
+    <string name="notification_center_archived">Notification archived</string>
+    <string name="notification_center_undo">Undo</string>
+    <string name="notification_center_mark_read">Mark read</string>
+    <string name="notification_center_archive">Archive</string>
+    <string name="notification_center_open">Notifications</string>
+    <string name="notification_topic_ssh_lifecycle">SSH lifecycle</string>
+    <string name="notification_topic_agent_feedback">Agent feedback</string>
+    <string name="notification_topic_decisions">Decisions</string>
+    <string name="notification_topic_task_completion">Task completion</string>
+    <string name="notification_topic_task_blocked">Task blocked</string>
 </resources>

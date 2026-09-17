@@ -40,18 +40,19 @@ jobs:
 
       - name: Validate workflow syntax and security policy
         run: |
-          uv run pre-commit run ruff-check --all-files
-          uv run pre-commit run ruff-format --all-files
-          uv run pre-commit run mypy --all-files
-          uv run pre-commit run yamllint --all-files
-          uv run pre-commit run markdownlint-cli2 --all-files
-          uv run pre-commit run check-yaml --all-files
-          uv run pre-commit run check-github-workflows --all-files
-          uv run pre-commit run check-github-workflows-require-timeout --all-files
-          uv run pre-commit run actionlint --all-files
-          uv run pre-commit run typos --all-files
-          uv run pre-commit run gitleaks --all-files
-          uv run pre-commit run zizmor --all-files
+          run_bounded() { timeout --foreground 3m uv run pre-commit "$@"; }
+          run_bounded run ruff-check --all-files
+          run_bounded run ruff-format --all-files
+          run_bounded run mypy --all-files
+          run_bounded run yamllint --all-files
+          run_bounded run markdownlint-cli2 --all-files
+          run_bounded run check-yaml --all-files
+          run_bounded run check-github-workflows --all-files
+          run_bounded run check-github-workflows-require-timeout --all-files
+          run_bounded run actionlint --all-files
+          run_bounded run typos --all-files
+          run_bounded run gitleaks --all-files
+          run_bounded run zizmor --all-files
 
       - name: Verify Huawei and MIT source headers
         run: uv run python scripts/ci/verify_source_headers.py
@@ -79,4 +80,6 @@ jobs:
           cache-disabled: true
 
       - name: Run JVM tests and static Kotlin contracts
-        run: ./gradlew spotlessCheck detekt test checkKotlinAbi --stacktrace
+        run: >-
+          timeout --foreground 15m ./gradlew spotlessCheck detekt test checkKotlinAbi
+          --stacktrace --no-daemon --no-parallel

@@ -92,6 +92,7 @@
     <string name="session_issue_provider_synchronization">No se pudo sincronizar %1$s en %2$s.</string>
     <string name="session_issue_session_persistence">No se pudo guardar el estado de la sesión para %1$s.</string>
     <string name="action_dismiss">Cerrar</string>
+    <string name="action_undo">Deshacer</string>
     <string name="session_hub_add_profile">Añadir perfil de %1$s</string>
     <string name="session_hub_start_on_connection">Iniciar %1$s en %2$s</string>
     <string name="session_hub_review_in">Revisar en %1$s</string>
@@ -104,6 +105,9 @@
     <string name="session_hub_recent_sessions_title">Sesiones recientes</string>
     <string name="session_hub_recent_sessions_subtitle">Las salidas no leídas y las decisiones pendientes permanecen visibles entre conexiones.</string>
     <string name="session_hub_sessions_empty">Aún no se han encontrado sesiones. Conecte un perfil para comprobar sus proveedores de agentes.</string>
+    <string name="session_list_sort_label">Ordenar: %1$s</string>
+    <string name="session_list_sort_app_interaction">última interacción con la app</string>
+    <string name="session_list_sort_llm_response">última respuesta del LLM</string>
     <string name="session_hub_start_subtitle">Elija un proveedor de agentes listo y, si quiere, defina el espacio de trabajo y el modelo.</string>
     <string name="session_hub_tagline">Continúe el trabajo de los agentes en este dispositivo y en hosts SSH de confianza.</string>
     <string name="session_hub_response_pending_confirmation">Respuesta pendiente de confirmación del proveedor</string>
@@ -156,6 +160,12 @@
     <string name="session_detail_select_session">Selecciona una sesión para consultar su transcripción y actividad.</string>
     <string name="session_detail_approvals_and_questions">Aprobaciones y preguntas</string>
     <string name="session_detail_changed_files">Archivos modificados</string>
+    <string name="session_activity_topic_transport">Diagnóstico de transporte</string>
+    <string name="session_activity_topic_agent_feedback">Comentarios del agente</string>
+    <string name="session_activity_topic_user_decisions">Decisiones del usuario</string>
+    <string name="session_activity_topic_completion">Finalización</string>
+    <string name="session_activity_topic_blocked_tasks">Tareas bloqueadas</string>
+    <string name="session_activity_topic_empty">No hay nada registrado en esta sección.</string>
     <string name="session_detail_refresh_changed_files">Actualizar archivos modificados</string>
     <string name="session_detail_no_changed_files">No hay archivos modificados registrados. Actualiza para consultar al proveedor conectado.</string>
     <string name="session_detail_changed_files_unsupported">Este proveedor no expone los archivos modificados de esta sesión.</string>
@@ -234,6 +244,7 @@
     <string name="main_error_session_draft_clear">El mensaje se entregó, pero no se pudo borrar de forma segura su borrador guardado.</string>
     <string name="main_error_session_resume">No se pudo reanudar la sesión guardada.</string>
     <string name="main_error_session_interrupt">No se pudo interrumpir el turno activo.</string>
+    <string name="main_error_session_pin">No se pudo actualizar la fijación de la sesión.</string>
     <string name="main_error_agent_endpoint_unavailable">Ese punto de conexión del agente ya no está listo.</string>
     <string name="main_error_session_start">No se pudo iniciar la nueva sesión del agente.</string>
     <string name="main_error_action_unavailable">Esa aprobación o pregunta ya no está disponible.</string>
@@ -292,6 +303,8 @@
     <string name="main_loading">Cargando Agent Relay…</string>
     <string name="session_card_no_preview">No hay vista previa disponible.</string>
     <string name="session_card_pinned">Fijada</string>
+    <string name="session_card_pin">Fijar</string>
+    <string name="session_card_unpin">Desfijar</string>
     <string name="session_state_not_loaded">Sin cargar</string>
     <string name="session_state_idle">Inactiva</string>
     <string name="session_state_running">En ejecución</string>
@@ -409,4 +422,29 @@
     <string name="home_widget_action_acknowledge">Confirmar</string>
     <string name="home_widget_action_defer">Posponer</string>
     <string name="home_widget_action_mute_confirm">Silenciar…</string>
+    <string name="quick_navigation_sessions">Sesiones</string>
+    <string name="quick_navigation_attention">Atención</string>
+    <string name="quick_navigation_connections">Conexiones</string>
+    <string name="quick_navigation_settings">Ajustes</string>
+    <string name="quick_navigation_help">Ayuda</string>
+    <string name="notification_center_title">Notification center</string>
+    <string name="notification_center_unread_count">%1$d unread</string>
+    <string name="notification_center_refresh">Refresh</string>
+    <string name="notification_center_refreshing">Refreshing…</string>
+    <string name="notification_center_all">All</string>
+    <string name="notification_center_unread">Unread</string>
+    <string name="notification_center_needs_action">Needs action</string>
+    <string name="notification_center_all_topics">All topics</string>
+    <string name="notification_center_offline">Offline. Showing saved notifications.</string>
+    <string name="notification_center_refresh_notifications">Refresh notifications</string>
+    <string name="notification_center_archived">Notification archived</string>
+    <string name="notification_center_undo">Undo</string>
+    <string name="notification_center_mark_read">Mark read</string>
+    <string name="notification_center_archive">Archive</string>
+    <string name="notification_center_open">Notifications</string>
+    <string name="notification_topic_ssh_lifecycle">SSH lifecycle</string>
+    <string name="notification_topic_agent_feedback">Agent feedback</string>
+    <string name="notification_topic_decisions">Decisions</string>
+    <string name="notification_topic_task_completion">Task completion</string>
+    <string name="notification_topic_task_blocked">Task blocked</string>
 </resources>

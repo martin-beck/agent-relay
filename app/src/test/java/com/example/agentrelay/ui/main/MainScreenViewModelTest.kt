@@ -69,6 +69,7 @@ import org.junit.Rule
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
+@Suppress("LargeClass")
 class MainScreenViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
@@ -169,6 +170,13 @@ class MainScreenViewModelTest {
         )
 
         runtime.failRefresh = false
+        viewModel.clearOperationError()
+        viewModel.restoreOperationError()
+        assertEquals(
+            UiMessage.Localized(R.string.main_error_profiles_refresh),
+            (viewModel.uiState.value as MainScreenUiState.Ready).hub.operationError,
+        )
+        viewModel.clearOperationError()
         viewModel.retryInitialization()
         mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
 
@@ -347,6 +355,10 @@ class MainScreenViewModelTest {
         viewModel.resumeSession(sessionKey)
         scheduler.advanceUntilIdle()
         assertEquals(listOf(locator), runtime.resumed)
+        assertEquals(
+            sessionKey,
+            (viewModel.uiState.value as MainScreenUiState.Ready).hub.selectedSessionKey,
+        )
 
         viewModel.viewModelScope.cancel()
     }

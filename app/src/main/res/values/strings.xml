@@ -1,7 +1,7 @@
 <!-- Copyright (C) Huawei Technologies Co., Ltd. 2026. All rights reserved. -->
 <!-- SPDX-License-Identifier: MIT -->
 
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Agent Relay</string>
     <string name="notification_channel_action_name">Action required</string>
     <string name="notification_channel_action_description">
@@ -41,6 +41,26 @@
         Open notification settings
     </string>
     <string name="notification_permission_allow">Allow notifications</string>
+    <string name="notification_center_title">Notification center</string>
+    <string name="notification_center_unread_count" tools:ignore="PluralsCandidate">%1$d unread</string>
+    <string name="notification_center_refresh">Refresh</string>
+    <string name="notification_center_refreshing">Refreshing…</string>
+    <string name="notification_center_all">All</string>
+    <string name="notification_center_unread">Unread</string>
+    <string name="notification_center_needs_action">Needs action</string>
+    <string name="notification_center_all_topics">All topics</string>
+    <string name="notification_center_offline">Offline. Showing saved notifications.</string>
+    <string name="notification_center_refresh_notifications">Refresh notifications</string>
+    <string name="notification_center_archived">Notification archived</string>
+    <string name="notification_center_undo">Undo</string>
+    <string name="notification_center_mark_read">Mark read</string>
+    <string name="notification_center_archive">Archive</string>
+    <string name="notification_center_open">Notifications</string>
+    <string name="notification_topic_ssh_lifecycle">SSH lifecycle</string>
+    <string name="notification_topic_agent_feedback">Agent feedback</string>
+    <string name="notification_topic_decisions">Decisions</string>
+    <string name="notification_topic_task_completion">Task completion</string>
+    <string name="notification_topic_task_blocked">Task blocked</string>
     <string name="wear_install_offer_title">Set up %1$s</string>
     <string name="wear_install_offer_explanation">
         Install the Agent Relay companion on this watch to receive attention-first updates and use
@@ -133,6 +153,7 @@
     <string name="session_issue_provider_synchronization">%1$s could not be synchronized on %2$s.</string>
     <string name="session_issue_session_persistence">Session state could not be saved for %1$s.</string>
     <string name="action_dismiss">Dismiss</string>
+    <string name="action_undo">Undo</string>
     <string name="session_hub_add_profile">Add %1$s profile</string>
     <string name="session_hub_start_on_connection">Start %1$s on %2$s</string>
     <string name="session_hub_review_in">Review in %1$s</string>
@@ -145,6 +166,14 @@
     <string name="session_hub_recent_sessions_title">Recent sessions</string>
     <string name="session_hub_recent_sessions_subtitle">Unread output and required decisions stay visible across connections.</string>
     <string name="session_hub_sessions_empty">No sessions have been discovered yet. Connect a profile to check its agent providers.</string>
+    <string name="quick_navigation_sessions">Sessions</string>
+    <string name="quick_navigation_attention">Attention</string>
+    <string name="quick_navigation_connections">Connections</string>
+    <string name="quick_navigation_settings">Settings</string>
+    <string name="quick_navigation_help">Help</string>
+    <string name="session_list_sort_label">Sort: %1$s</string>
+    <string name="session_list_sort_app_interaction">last app interaction</string>
+    <string name="session_list_sort_llm_response">last LLM response</string>
     <string name="session_hub_start_subtitle">Choose a ready agent provider and optionally set its workspace and model.</string>
     <string name="session_hub_tagline">Continue agent work across this device and trusted SSH hosts.</string>
     <string name="session_hub_response_pending_confirmation">Response awaiting provider confirmation</string>
@@ -202,6 +231,12 @@
     <string name="session_detail_timeline_empty">No timeline entries have been cached. Reconnect to refresh this session.</string>
     <string name="session_detail_activity">Activity</string>
     <string name="session_detail_activity_empty">No recent activity is recorded for this session.</string>
+    <string name="session_activity_topic_transport">Transport diagnostics</string>
+    <string name="session_activity_topic_agent_feedback">Agent feedback</string>
+    <string name="session_activity_topic_user_decisions">User decisions</string>
+    <string name="session_activity_topic_completion">Completion</string>
+    <string name="session_activity_topic_blocked_tasks">Blocked tasks</string>
+    <string name="session_activity_topic_empty">Nothing recorded in this section.</string>
     <string name="session_detail_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
     <string name="session_composer_message">Message</string>
     <string name="session_composer_message_to">Message to %1$s</string>
@@ -273,6 +308,7 @@
     <string name="main_error_session_draft_clear">The message was delivered, but its saved draft could not be cleared securely.</string>
     <string name="main_error_session_resume">The saved session could not be resumed.</string>
     <string name="main_error_session_interrupt">The active turn could not be interrupted.</string>
+    <string name="main_error_session_pin">The session pin could not be updated.</string>
     <string name="main_error_agent_endpoint_unavailable">That agent endpoint is no longer ready.</string>
     <string name="main_error_session_start">The new agent session could not be started.</string>
     <string name="main_error_action_unavailable">That approval or question is no longer available.</string>
@@ -328,6 +364,8 @@
     <string name="main_loading">Loading Agent Relay…</string>
     <string name="session_card_no_preview">No preview is available.</string>
     <string name="session_card_pinned">Pinned</string>
+    <string name="session_card_pin">Pin</string>
+    <string name="session_card_unpin">Unpin</string>
     <string name="session_state_not_loaded">Not loaded</string>
     <string name="session_state_idle">Idle</string>
     <string name="session_state_running">Running</string>
