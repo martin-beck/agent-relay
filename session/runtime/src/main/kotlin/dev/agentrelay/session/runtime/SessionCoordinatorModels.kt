@@ -41,12 +41,25 @@ enum class AgentEndpointPhase {
     FAILED,
 }
 
+enum class ProviderSynchronizationClassification {
+    UNSUPPORTED,
+    UNAVAILABLE,
+    TRANSIENT_FAILURE,
+    REAL_FAILURE,
+}
+
+enum class ProviderSynchronizationRecovery {
+    REFRESH,
+    NONE,
+}
+
 data class AgentEndpointStatus(
     val key: AgentEndpointKey,
     val descriptor: AgentProviderDescriptor,
     val phase: AgentEndpointPhase,
     val fileAccessAvailable: Boolean = false,
     val readiness: ProviderReadiness? = null,
+    val synchronizationClassification: ProviderSynchronizationClassification? = null,
     val sessionCount: Int = 0,
     val updatedAtEpochMillis: Long,
 ) {
@@ -77,6 +90,9 @@ data class SessionCoordinatorIssue(
     val agentProviderLabel: String? = null,
     val recoverable: Boolean,
     val occurredAtEpochMillis: Long,
+    val classification: ProviderSynchronizationClassification =
+        ProviderSynchronizationClassification.REAL_FAILURE,
+    val recovery: ProviderSynchronizationRecovery = ProviderSynchronizationRecovery.REFRESH,
 ) {
     init {
         require(id.isNotBlank() && id.length <= 512)
@@ -107,6 +123,20 @@ private const val MAX_ISSUE_LABEL_LENGTH = 256
 
 private fun String?.isValidIssueLabel(): Boolean =
     this != null && isNotBlank() && length <= MAX_ISSUE_LABEL_LENGTH
+
+internal fun ProviderReadiness.synchronizationClassification(): ProviderSynchronizationClassification =
+    when (this) {
+        is ProviderReadiness.Incompatible -> ProviderSynchronizationClassification.UNSUPPORTED
+        is ProviderReadiness.Missing,
+        is ProviderReadiness.NeedsAuthentication,
+        -> ProviderSynchronizationClassification.UNAVAILABLE
+        is ProviderReadiness.Failed -> if (recoverable) {
+            ProviderSynchronizationClassification.TRANSIENT_FAILURE
+        } else {
+            ProviderSynchronizationClassification.REAL_FAILURE
+        }
+        is ProviderReadiness.Ready -> error("Ready providers have no failure classification")
+    }
 
 data class SessionCoordinatorSnapshot(
     val profiles: List<ConnectionProfileSummary> = emptyList(),

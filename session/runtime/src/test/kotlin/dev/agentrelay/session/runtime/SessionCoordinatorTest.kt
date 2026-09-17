@@ -18,6 +18,7 @@ import dev.agentrelay.provider.api.AgentMessageChannel
 import dev.agentrelay.provider.api.AgentProviderRegistry
 import dev.agentrelay.provider.api.AgentQuestion
 import dev.agentrelay.provider.api.AgentSessionId
+import dev.agentrelay.provider.api.ProviderReadiness
 import dev.agentrelay.provider.api.StartSessionOptions
 import dev.agentrelay.session.api.InMemorySessionHubStore
 import dev.agentrelay.session.api.PersistentSessionHubRepository
@@ -106,6 +107,57 @@ class SessionCoordinatorTest {
                         issue.connection == broken.key()
                 },
             )
+        } finally {
+            coordinator.shutdown()
+        }
+    }
+
+    @Test
+    fun providerReadinessAndSynchronizationFailuresRemainClassified() = runTest {
+        val provider = FakeConnectionProvider(
+            providerId = "local",
+            profileId = "device",
+            label = "This device",
+            initialRuntime = FakeRuntime("device"),
+        )
+        val agent = FakeAgentFactory()
+        val coordinator = coordinator(listOf(provider), agent)
+
+        try {
+            coordinator.refreshProfiles()
+            agent.readiness = ProviderReadiness.Incompatible("1.0.0", "bridge unavailable")
+            coordinator.connect(provider.key())
+            runCurrent()
+            val endpoint = coordinator.snapshot.value.agentEndpoints.values.single()
+            assertEquals(AgentEndpointPhase.UNAVAILABLE, endpoint.phase)
+            assertEquals(
+                ProviderSynchronizationClassification.UNSUPPORTED,
+                endpoint.synchronizationClassification,
+            )
+            assertTrue(coordinator.snapshot.value.issues.isEmpty())
+
+            agent.readiness = ProviderReadiness.Failed("timeout", recoverable = true)
+            provider.managed.disconnect()
+            runCurrent()
+            coordinator.connect(provider.key())
+            runCurrent()
+            val transient = coordinator.snapshot.value.agentEndpoints.values.single()
+            assertEquals(AgentEndpointPhase.FAILED, transient.phase)
+            assertEquals(
+                ProviderSynchronizationClassification.TRANSIENT_FAILURE,
+                transient.synchronizationClassification,
+            )
+            assertTrue(coordinator.snapshot.value.issues.values.single().recoverable)
+
+            agent.readiness = ProviderReadiness.Failed("malformed response", recoverable = false)
+            provider.managed.disconnect()
+            runCurrent()
+            coordinator.connect(provider.key())
+            runCurrent()
+            val real = coordinator.snapshot.value.issues.values.single()
+            assertEquals(ProviderSynchronizationClassification.REAL_FAILURE, real.classification)
+            assertFalse(real.recoverable)
+            assertEquals(ProviderSynchronizationRecovery.NONE, real.recovery)
         } finally {
             coordinator.shutdown()
         }
