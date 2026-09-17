@@ -234,6 +234,7 @@
     <string name="main_error_session_draft_clear">Pesan telah terkirim, tetapi draf tersimpannya tidak dapat dihapus dengan aman.</string>
     <string name="main_error_session_resume">Sesi tersimpan tidak dapat dilanjutkan.</string>
     <string name="main_error_session_interrupt">Giliran aktif tidak dapat dihentikan.</string>
+    <string name="main_error_session_pin">Pin sesi tidak dapat diperbarui.</string>
     <string name="main_error_agent_endpoint_unavailable">Endpoint agen tersebut sudah tidak siap.</string>
     <string name="main_error_session_start">Sesi agen baru tidak dapat dimulai.</string>
     <string name="main_error_action_unavailable">Persetujuan atau pertanyaan tersebut sudah tidak tersedia.</string>
@@ -286,6 +287,8 @@
     <string name="main_loading">Memuat Agent Relay…</string>
     <string name="session_card_no_preview">Pratinjau tidak tersedia.</string>
     <string name="session_card_pinned">Disematkan</string>
+    <string name="session_card_pin">Sematkan</string>
+    <string name="session_card_unpin">Lepas sematan</string>
     <string name="session_state_not_loaded">Belum dimuat</string>
     <string name="session_state_idle">Diam</string>
     <string name="session_state_running">Berjalan</string>

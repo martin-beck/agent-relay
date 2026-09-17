@@ -244,6 +244,7 @@
     <string name="main_error_session_draft_clear">تم تسليم الرسالة، ولكن تعذّر مسح مسودتها المحفوظة بأمان.</string>
     <string name="main_error_session_resume">تعذّر استئناف الجلسة المحفوظة.</string>
     <string name="main_error_session_interrupt">تعذّر مقاطعة الدور النشط.</string>
+    <string name="main_error_session_pin">تعذّر تحديث تثبيت الجلسة.</string>
     <string name="main_error_agent_endpoint_unavailable">لم تعد نقطة نهاية الوكيل هذه جاهزة.</string>
     <string name="main_error_session_start">تعذّر بدء جلسة الوكيل الجديدة.</string>
     <string name="main_error_action_unavailable">لم تعد الموافقة أو السؤال متاحًا.</string>
@@ -311,6 +312,8 @@
     <string name="main_loading">جارٍ تحميل Agent Relay…</string>
     <string name="session_card_no_preview">لا تتوفر معاينة.</string>
     <string name="session_card_pinned">مثبتة</string>
+    <string name="session_card_pin">تثبيت</string>
+    <string name="session_card_unpin">إلغاء التثبيت</string>
     <string name="session_state_not_loaded">غير محملة</string>
     <string name="session_state_idle">خاملة</string>
     <string name="session_state_running">قيد التشغيل</string>

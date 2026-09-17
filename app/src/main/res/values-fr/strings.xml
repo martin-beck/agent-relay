@@ -238,6 +238,7 @@
     <string name="main_error_session_draft_clear">Le message a été transmis, mais son brouillon enregistré n’a pas pu être effacé de manière sécurisée.</string>
     <string name="main_error_session_resume">La session enregistrée n’a pas pu être reprise.</string>
     <string name="main_error_session_interrupt">Le tour actif n’a pas pu être interrompu.</string>
+    <string name="main_error_session_pin">L’épinglage de la session n’a pas pu être mis à jour.</string>
     <string name="main_error_agent_endpoint_unavailable">Ce point de terminaison d’agent n’est plus prêt.</string>
     <string name="main_error_session_start">La nouvelle session d’agent n’a pas pu être démarrée.</string>
     <string name="main_error_action_unavailable">Cette approbation ou question n’est plus disponible.</string>
@@ -296,6 +297,8 @@
     <string name="main_loading">Chargement d’Agent Relay…</string>
     <string name="session_card_no_preview">Aucun aperçu disponible.</string>
     <string name="session_card_pinned">Épinglée</string>
+    <string name="session_card_pin">Épingler</string>
+    <string name="session_card_unpin">Désépingler</string>
     <string name="session_state_not_loaded">Non chargée</string>
     <string name="session_state_idle">Inactive</string>
     <string name="session_state_running">En cours</string>

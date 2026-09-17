@@ -186,6 +186,7 @@ internal fun SessionHubList(
                 surfaceSubtitle = surfaceSubtitle,
                 runningTitle = runningTitle,
                 recentTitle = recentTitle,
+                onTogglePinned = actions.toggleSessionPinned,
                 onSelectSession = onSelectSession,
             )
         }
@@ -255,6 +256,7 @@ private fun LazyListScope.sessionSurfaces(
     surfaceSubtitle: String,
     runningTitle: String,
     recentTitle: String,
+    onTogglePinned: (String) -> Unit,
     onSelectSession: (String) -> Unit,
 ) {
     if (sessions.isEmpty()) {
@@ -273,6 +275,7 @@ private fun LazyListScope.sessionSurfaces(
         sessions = buckets.needsAttention,
         selectedSessionKey = selectedSessionKey,
         onSelectSession = onSelectSession,
+        onTogglePinned = onTogglePinned,
     )
     sessionSurfaceSection(
         key = "sessions-changed",
@@ -281,6 +284,7 @@ private fun LazyListScope.sessionSurfaces(
         sessions = buckets.changed,
         selectedSessionKey = selectedSessionKey,
         onSelectSession = onSelectSession,
+        onTogglePinned = onTogglePinned,
     )
     sessionSurfaceSection(
         key = "sessions-running",
@@ -289,6 +293,7 @@ private fun LazyListScope.sessionSurfaces(
         sessions = buckets.running,
         selectedSessionKey = selectedSessionKey,
         onSelectSession = onSelectSession,
+        onTogglePinned = onTogglePinned,
     )
     sessionSurfaceSection(
         key = "sessions-recent",
@@ -297,6 +302,7 @@ private fun LazyListScope.sessionSurfaces(
         sessions = buckets.recentlyCompleted,
         selectedSessionKey = selectedSessionKey,
         onSelectSession = onSelectSession,
+        onTogglePinned = onTogglePinned,
     )
 }
 
@@ -306,6 +312,7 @@ private fun LazyListScope.sessionSurfaceSection(
     subtitle: String,
     sessions: List<SessionUiModel>,
     selectedSessionKey: String?,
+    onTogglePinned: (String) -> Unit,
     onSelectSession: (String) -> Unit,
 ) {
     if (sessions.isEmpty()) return
@@ -319,8 +326,9 @@ private fun LazyListScope.sessionSurfaceSection(
         items(agentSessions, key = SessionUiModel::stableKey) { session ->
             SessionCard(
                 session = session,
-                selected = session.stableKey == selectedSessionKey,
-                onClick = { onSelectSession(session.stableKey) },
+            selected = session.stableKey == selectedSessionKey,
+            onClick = { onSelectSession(session.stableKey) },
+            onTogglePinned = { onTogglePinned(session.stableKey) },
             )
         }
     }

@@ -236,6 +236,7 @@
     <string name="main_error_session_draft_clear">Die Nachricht wurde zugestellt, aber ihr gespeicherter Entwurf konnte nicht sicher gelöscht werden.</string>
     <string name="main_error_session_resume">Die gespeicherte Sitzung konnte nicht fortgesetzt werden.</string>
     <string name="main_error_session_interrupt">Der aktive Vorgang konnte nicht unterbrochen werden.</string>
+    <string name="main_error_session_pin">Die Sitzungsfixierung konnte nicht aktualisiert werden.</string>
     <string name="main_error_agent_endpoint_unavailable">Dieser Agent-Endpunkt ist nicht mehr bereit.</string>
     <string name="main_error_session_start">Die neue Agent-Sitzung konnte nicht gestartet werden.</string>
     <string name="main_error_action_unavailable">Diese Genehmigung oder Frage ist nicht mehr verfügbar.</string>
@@ -291,6 +292,8 @@
     <string name="main_loading">Agent Relay wird geladen…</string>
     <string name="session_card_no_preview">Keine Vorschau verfügbar.</string>
     <string name="session_card_pinned">Angeheftet</string>
+    <string name="session_card_pin">Anheften</string>
+    <string name="session_card_unpin">Lösen</string>
     <string name="session_state_not_loaded">Nicht geladen</string>
     <string name="session_state_idle">Inaktiv</string>
     <string name="session_state_running">Wird ausgeführt</string>

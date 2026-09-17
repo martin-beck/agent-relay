@@ -15,6 +15,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -35,6 +36,7 @@ internal fun SessionCard(
     selected: Boolean,
     onClick: () -> Unit,
     onSwipeAction: ((HorizontalSwipeAction) -> Unit)? = null,
+    onTogglePinned: () -> Unit = {},
 ) {
     val accessibilityLabel = sessionAccessibilityLabel(session)
     SwipeActionSurface(
@@ -123,6 +125,17 @@ internal fun SessionCard(
                             style = MaterialTheme.typography.labelMedium,
                         )
                     }
+                }
+                TextButton(onClick = onTogglePinned) {
+                    Text(
+                        stringResource(
+                            if (session.isPinned) {
+                                R.string.session_card_unpin
+                            } else {
+                                R.string.session_card_pin
+                            },
+                        ),
+                    )
                 }
             }
         }

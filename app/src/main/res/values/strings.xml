@@ -282,6 +282,7 @@
     <string name="main_error_session_draft_clear">The message was delivered, but its saved draft could not be cleared securely.</string>
     <string name="main_error_session_resume">The saved session could not be resumed.</string>
     <string name="main_error_session_interrupt">The active turn could not be interrupted.</string>
+    <string name="main_error_session_pin">The session pin could not be updated.</string>
     <string name="main_error_agent_endpoint_unavailable">That agent endpoint is no longer ready.</string>
     <string name="main_error_session_start">The new agent session could not be started.</string>
     <string name="main_error_action_unavailable">That approval or question is no longer available.</string>
@@ -337,6 +338,8 @@
     <string name="main_loading">Loading Agent Relay…</string>
     <string name="session_card_no_preview">No preview is available.</string>
     <string name="session_card_pinned">Pinned</string>
+    <string name="session_card_pin">Pin</string>
+    <string name="session_card_unpin">Unpin</string>
     <string name="session_state_not_loaded">Not loaded</string>
     <string name="session_state_idle">Idle</string>
     <string name="session_state_running">Running</string>

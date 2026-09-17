@@ -16,6 +16,7 @@ import dev.agentrelay.provider.api.AgentSessionState
 import dev.agentrelay.provider.api.StartSessionOptions
 import dev.agentrelay.session.api.SessionDraft
 import dev.agentrelay.session.api.SessionLocator
+import dev.agentrelay.session.api.SessionPreferences
 import dev.agentrelay.session.runtime.SessionActionAuditFailureException
 import dev.agentrelay.session.runtime.SessionActionDeliveryUncertainException
 import dev.agentrelay.session.runtime.SessionConnectionKey
@@ -328,6 +329,14 @@ internal class MainScreenViewModel(
         sessionKey = sessionKey,
         failureMessage = UiMessage.Localized(R.string.main_error_session_resume),
     ) { active, locator -> active.resumeSession(locator) }
+
+    fun toggleSessionPinned(sessionKey: String) = performSession(
+        sessionKey = sessionKey,
+        failureMessage = UiMessage.Localized(R.string.main_error_session_pin),
+    ) { active, locator ->
+        val current = active.sessionSnapshot.value.session(locator)?.preferences ?: SessionPreferences()
+        active.setSessionPreferences(locator, current.copy(pinned = !current.pinned))
+    }
 
     fun interruptSession(sessionKey: String) = performSession(
         sessionKey = sessionKey,

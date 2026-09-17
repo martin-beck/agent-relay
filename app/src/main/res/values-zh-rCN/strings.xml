@@ -234,6 +234,7 @@
     <string name="main_error_session_draft_clear">消息已送达，但无法安全清除其已保存的草稿。</string>
     <string name="main_error_session_resume">无法恢复已保存的会话。</string>
     <string name="main_error_session_interrupt">无法中断当前轮次。</string>
+    <string name="main_error_session_pin">无法更新会话固定状态。</string>
     <string name="main_error_agent_endpoint_unavailable">该代理端点已无法使用。</string>
     <string name="main_error_session_start">无法启动新的代理会话。</string>
     <string name="main_error_action_unavailable">该批准请求或问题已不可用。</string>
@@ -286,6 +287,8 @@
     <string name="main_loading">正在加载 Agent Relay…</string>
     <string name="session_card_no_preview">没有可用的预览。</string>
     <string name="session_card_pinned">已固定</string>
+    <string name="session_card_pin">固定</string>
+    <string name="session_card_unpin">取消固定</string>
     <string name="session_state_not_loaded">未加载</string>
     <string name="session_state_idle">空闲</string>
     <string name="session_state_running">运行中</string>
