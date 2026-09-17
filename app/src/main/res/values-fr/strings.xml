@@ -156,6 +156,12 @@
     <string name="session_detail_select_session">Sélectionnez une session pour consulter sa transcription et son activité.</string>
     <string name="session_detail_approvals_and_questions">Approbations et questions</string>
     <string name="session_detail_changed_files">Fichiers modifiés</string>
+    <string name="session_activity_topic_transport">Diagnostic du transport</string>
+    <string name="session_activity_topic_agent_feedback">Commentaires de l’agent</string>
+    <string name="session_activity_topic_user_decisions">Décisions de l’utilisateur</string>
+    <string name="session_activity_topic_completion">Achèvement</string>
+    <string name="session_activity_topic_blocked_tasks">Tâches bloquées</string>
+    <string name="session_activity_topic_empty">Rien n’est enregistré dans cette section.</string>
     <string name="session_detail_refresh_changed_files">Actualiser les fichiers modifiés</string>
     <string name="session_detail_no_changed_files">Aucun fichier modifié n’est enregistré. Actualisez pour interroger le fournisseur connecté.</string>
     <string name="session_detail_changed_files_unsupported">Ce fournisseur n’expose pas les fichiers modifiés de cette session.</string>

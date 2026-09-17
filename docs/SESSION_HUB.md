@@ -42,6 +42,14 @@ Transport lifecycle remains in ConnectionProvider. Agent discovery, transcripts,
 turns, and approvals remain in AgentProvider. Compose state must derive from the
 session repository instead of storing a second authoritative copy.
 
+The session detail activity view presents five stable topics: transport
+diagnostics, agent feedback, user decisions, completion, and blocked tasks.
+Transport reconnect records remain retained with their event timestamps for
+diagnostic drill-down, but are omitted from the high-level activity feed so
+routine SSH reconnect/disconnect churn does not compete with actionable work.
+Topic ordering and severity are deterministic; unresolved decisions are
+action-required and provider failures are errors.
+
 ## Durable update rules
 
 PersistentSessionHubRepository loads and normalizes a complete snapshot before

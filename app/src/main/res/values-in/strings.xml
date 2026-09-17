@@ -152,6 +152,12 @@
     <string name="session_detail_select_session">Pilih sesi untuk memeriksa transkrip dan aktivitasnya.</string>
     <string name="session_detail_approvals_and_questions">Persetujuan dan pertanyaan</string>
     <string name="session_detail_changed_files">File yang diubah</string>
+    <string name="session_activity_topic_transport">Diagnostik transportasi</string>
+    <string name="session_activity_topic_agent_feedback">Umpan balik agen</string>
+    <string name="session_activity_topic_user_decisions">Keputusan pengguna</string>
+    <string name="session_activity_topic_completion">Selesai</string>
+    <string name="session_activity_topic_blocked_tasks">Tugas terblokir</string>
+    <string name="session_activity_topic_empty">Tidak ada yang tercatat di bagian ini.</string>
     <string name="session_detail_refresh_changed_files">Segarkan file yang diubah</string>
     <string name="session_detail_no_changed_files">Tidak ada file yang diubah yang tercatat. Segarkan untuk meminta penyedia yang tersambung.</string>
     <string name="session_detail_changed_files_unsupported">Penyedia ini tidak menampilkan file yang diubah untuk sesi ini.</string>
