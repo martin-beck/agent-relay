@@ -66,7 +66,7 @@ internal object SessionNotificationProjection {
         if (isRead && !requiresAction) {
             return false
         }
-        if (type == SessionActivityType.RECONNECTED) {
+        if (type.isSilentTransportLifecycle) {
             return false
         }
         return when (session.preferences.notificationPriority) {
@@ -90,6 +90,10 @@ internal object SessionNotificationProjection {
     private val SessionActivityType.isActionable: Boolean
         get() = this == SessionActivityType.APPROVAL_REQUIRED ||
             this == SessionActivityType.QUESTION
+
+    /** Transport recovery is retained in the activity history but never interrupts the user. */
+    private val SessionActivityType.isSilentTransportLifecycle: Boolean
+        get() = this == SessionActivityType.RECONNECTED
 
     private fun stableDigest(vararg values: String): String =
         MessageDigest.getInstance("SHA-256")
