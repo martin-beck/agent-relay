@@ -20,13 +20,13 @@ import org.junit.Test
 
 class CodexThreadClientTest {
     @Test
-    fun startUsesTheV2ThreadStartContractAndPreservesOptionalInputs() = runTest {
+    fun startUsesTheV2ThreadStartContractAndProtocolSandboxEnum() = runTest {
         val rpc = FakeRpcClient { method, params ->
             assertEquals("thread/start", method)
             assertEquals("/workspace", params.jsonObject.string("cwd"))
             assertEquals("gpt-5-codex", params.jsonObject.string("model"))
             assertEquals("on-request", params.jsonObject.string("approvalPolicy"))
-            assertEquals("workspaceWrite", params.jsonObject.string("sandbox"))
+            assertEquals("workspace-write", params.jsonObject.string("sandbox"))
             assertEquals("agent_relay", params.jsonObject.string("serviceName"))
             json("""{"thread":{"id":"thread-new","status":{"type":"idle"}}}""")
         }
