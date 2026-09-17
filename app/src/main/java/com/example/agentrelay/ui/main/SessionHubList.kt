@@ -458,15 +458,16 @@ private fun SectionHeading(
 }
 
 @Composable
-private fun MessageCard(
+internal fun MessageCard(
     message: String,
     isError: Boolean,
     actionLabel: String?,
     onAction: (() -> Unit)?,
     onSwipeAction: (() -> Unit)? = null,
+    modifier: Modifier = Modifier,
 ) {
     SwipeActionSurface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         accessibilityActionLabel = actionLabel,
         onAction = if (onSwipeAction == null) {
             null
@@ -474,16 +475,16 @@ private fun MessageCard(
             { onSwipeAction() }
         },
     ) {
-        Card(
-            modifier = Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite },
-            colors = CardDefaults.cardColors(
-                containerColor = if (isError) {
-                    MaterialTheme.colorScheme.errorContainer
-                } else {
-                    MaterialTheme.colorScheme.tertiaryContainer
-                },
-            ),
-        ) {
+    Card(
+        modifier = Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite },
+        colors = CardDefaults.cardColors(
+            containerColor = if (isError) {
+                MaterialTheme.colorScheme.errorContainer
+            } else {
+                MaterialTheme.colorScheme.tertiaryContainer
+            },
+        ),
+    ) {
             Column(
                 modifier = Modifier.fillMaxWidth().padding(12.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),

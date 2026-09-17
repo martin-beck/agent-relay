@@ -76,6 +76,7 @@ internal fun SessionDetailRoute(
     onCancelArtifact: (String) -> Unit,
     modifier: Modifier = Modifier,
     speechActions: SpeechInputUiActions = SpeechInputUiActions(),
+    onDismissError: () -> Unit = {},
 ) {
     Column(modifier.fillMaxSize()) {
         TextButton(
@@ -87,20 +88,31 @@ internal fun SessionDetailRoute(
         when (state) {
             MainScreenUiState.Loading -> DetailPlaceholder(stringResource(R.string.session_detail_opening))
             is MainScreenUiState.FatalError -> DetailPlaceholder(state.message.resolve())
-            is MainScreenUiState.Ready -> SessionDetailPane(
-                detail = state.hub.selectedSession,
-                speechInput = state.speechInput,
-                speechActions = speechActions,
-                modifier = Modifier.weight(1f),
-                onDraftChanged = onDraftChanged,
-                onSubmitDraft = onSubmitDraft,
-                onResumeSession = onResumeSession,
-                onInterruptSession = onInterruptSession,
-                onRespondToAction = onRespondToAction,
-                onRefreshArtifacts = onRefreshArtifacts,
-                onSaveArtifact = onSaveArtifact,
-                onCancelArtifact = onCancelArtifact,
-            )
+            is MainScreenUiState.Ready -> {
+                state.hub.operationError?.let { message ->
+                    MessageCard(
+                        message = message.resolve(),
+                        isError = true,
+                        actionLabel = stringResource(R.string.action_dismiss),
+                        onAction = onDismissError,
+                        modifier = Modifier.testTag(SESSION_DETAIL_OPERATION_ERROR_TEST_TAG),
+                    )
+                }
+                SessionDetailPane(
+                    detail = state.hub.selectedSession,
+                    speechInput = state.speechInput,
+                    speechActions = speechActions,
+                    modifier = Modifier.weight(1f),
+                    onDraftChanged = onDraftChanged,
+                    onSubmitDraft = onSubmitDraft,
+                    onResumeSession = onResumeSession,
+                    onInterruptSession = onInterruptSession,
+                    onRespondToAction = onRespondToAction,
+                    onRefreshArtifacts = onRefreshArtifacts,
+                    onSaveArtifact = onSaveArtifact,
+                    onCancelArtifact = onCancelArtifact,
+                )
+            }
         }
     }
 }

@@ -354,6 +354,10 @@ class MainScreenViewModelTest {
         viewModel.resumeSession(sessionKey)
         scheduler.advanceUntilIdle()
         assertEquals(listOf(locator), runtime.resumed)
+        assertEquals(
+            sessionKey,
+            (viewModel.uiState.value as MainScreenUiState.Ready).hub.selectedSessionKey,
+        )
 
         viewModel.viewModelScope.cancel()
     }
