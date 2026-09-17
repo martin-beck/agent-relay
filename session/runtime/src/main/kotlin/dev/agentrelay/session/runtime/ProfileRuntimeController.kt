@@ -44,6 +44,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.time.Duration.Companion.seconds
@@ -210,6 +211,12 @@ internal class ProfileRuntimeController(
         val factory = agentRegistry.factory(descriptor.id)
         val readiness = try {
             factory.probe(runtime)
+        } catch (failure: TimeoutCancellationException) {
+            publishSynchronizationFailure(
+                descriptor,
+                ProviderSynchronizationClassification.TRANSIENT_FAILURE,
+            )
+            return
         } catch (failure: CancellationException) {
             throw failure
         } catch (_: Throwable) {
@@ -221,8 +228,13 @@ internal class ProfileRuntimeController(
                 descriptor = descriptor,
                 phase = AgentEndpointPhase.FAILED,
                 readiness = failed,
+                synchronizationClassification =
+                ProviderSynchronizationClassification.TRANSIENT_FAILURE,
             )
-            publishProviderIssue(descriptor)
+            publishProviderIssue(
+                descriptor,
+                ProviderSynchronizationClassification.TRANSIENT_FAILURE,
+            )
             return
         }
 
@@ -235,8 +247,13 @@ internal class ProfileRuntimeController(
                     AgentEndpointPhase.UNAVAILABLE
                 },
                 readiness = readiness,
+                synchronizationClassification = readiness.synchronizationClassification(),
             )
-            clearProviderIssue(descriptor)
+            if (readiness is ProviderReadiness.Failed) {
+                publishProviderIssue(descriptor, readiness.synchronizationClassification())
+            } else {
+                clearProviderIssue(descriptor)
+            }
             return
         }
 
@@ -277,18 +294,18 @@ internal class ProfileRuntimeController(
                 }
                 awaitCancellation()
             }
+        } catch (failure: TimeoutCancellationException) {
+            publishSynchronizationFailure(
+                descriptor,
+                ProviderSynchronizationClassification.TRANSIENT_FAILURE,
+            )
         } catch (failure: CancellationException) {
             throw failure
         } catch (_: Throwable) {
-            publishStatus(
-                descriptor = descriptor,
-                phase = AgentEndpointPhase.FAILED,
-                readiness = ProviderReadiness.Failed(
-                    reason = descriptor.displayName + " could not be synchronized",
-                    recoverable = true,
-                ),
+            publishSynchronizationFailure(
+                descriptor,
+                ProviderSynchronizationClassification.REAL_FAILURE,
             )
-            publishProviderIssue(descriptor)
         } finally {
             activeMutex.withLock {
                 if (activeAgents[descriptor.id]?.connection === connection) {
@@ -303,6 +320,22 @@ internal class ProfileRuntimeController(
                 }
             }
         }
+    }
+
+    private suspend fun publishSynchronizationFailure(
+        descriptor: AgentProviderDescriptor,
+        classification: ProviderSynchronizationClassification,
+    ) {
+        publishStatus(
+            descriptor = descriptor,
+            phase = AgentEndpointPhase.FAILED,
+            readiness = ProviderReadiness.Failed(
+                reason = descriptor.displayName + " could not be synchronized",
+                recoverable = classification == ProviderSynchronizationClassification.TRANSIENT_FAILURE,
+            ),
+            synchronizationClassification = classification,
+        )
+        publishProviderIssue(descriptor, classification)
     }
 
     private suspend fun persistSessions(
@@ -463,6 +496,7 @@ internal class ProfileRuntimeController(
         descriptor: AgentProviderDescriptor,
         phase: AgentEndpointPhase,
         readiness: ProviderReadiness? = null,
+        synchronizationClassification: ProviderSynchronizationClassification? = null,
         sessionCount: Int = 0,
     ) {
         listener.onEndpointStatus(
@@ -472,13 +506,18 @@ internal class ProfileRuntimeController(
                 phase = phase,
                 fileAccessAvailable = phase == AgentEndpointPhase.READY && runtimeSignal.value?.fileAccess != null,
                 readiness = readiness,
+                synchronizationClassification = synchronizationClassification,
                 sessionCount = sessionCount,
                 updatedAtEpochMillis = now(),
             ),
         )
     }
 
-    private suspend fun publishProviderIssue(descriptor: AgentProviderDescriptor) {
+    private suspend fun publishProviderIssue(
+        descriptor: AgentProviderDescriptor,
+        classification: ProviderSynchronizationClassification =
+            ProviderSynchronizationClassification.REAL_FAILURE,
+    ) {
         val id = providerIssueId(descriptor.id)
         listener.onIssue(
             id,
@@ -491,8 +530,14 @@ internal class ProfileRuntimeController(
                 agentProviderLabel = descriptor.displayName
                     .takeIf(String::isNotBlank)?.take(256)
                     ?: descriptor.id.value.take(256),
-                recoverable = true,
+                recoverable = classification == ProviderSynchronizationClassification.TRANSIENT_FAILURE,
                 occurredAtEpochMillis = now(),
+                classification = classification,
+                recovery = if (classification == ProviderSynchronizationClassification.TRANSIENT_FAILURE) {
+                    ProviderSynchronizationRecovery.REFRESH
+                } else {
+                    ProviderSynchronizationRecovery.NONE
+                },
             ),
         )
     }
