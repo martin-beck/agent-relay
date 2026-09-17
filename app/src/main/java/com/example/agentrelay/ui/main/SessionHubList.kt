@@ -8,6 +8,7 @@ package com.example.agentrelay.ui.main
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -54,7 +55,7 @@ internal fun SessionHubList(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item(key = "hub-header") {
-            HubHeader(hub, actions.refresh)
+            HubHeader(hub, actions.refresh, actions.openSettings)
         }
         hub.operationError?.let { message ->
             item(key = "operation-error") {
@@ -261,6 +262,7 @@ private fun LazyListScope.sessionLaunchers(
 private fun HubHeader(
     hub: SessionHubUiModel,
     onRefresh: () -> Unit,
+    onOpenSettings: () -> Unit,
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -277,18 +279,20 @@ private fun HubHeader(
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.primary,
         )
-        OutlinedButton(
-            onClick = onRefresh,
-            enabled = !hub.isRefreshingProfiles,
-            modifier = Modifier.align(Alignment.End),
-        ) {
-            if (hub.isRefreshingProfiles) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(18.dp),
-                    strokeWidth = 2.dp,
-                )
-            } else {
-                Text(stringResource(R.string.action_refresh))
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+            OutlinedButton(onClick = onOpenSettings) { Text("Settings") }
+            OutlinedButton(
+                onClick = onRefresh,
+                enabled = !hub.isRefreshingProfiles,
+            ) {
+                if (hub.isRefreshingProfiles) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        strokeWidth = 2.dp,
+                    )
+                } else {
+                    Text(stringResource(R.string.action_refresh))
+                }
             }
         }
         Text(
