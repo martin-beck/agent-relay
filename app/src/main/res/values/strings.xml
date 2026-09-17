@@ -145,6 +145,11 @@
     <string name="session_hub_recent_sessions_title">Recent sessions</string>
     <string name="session_hub_recent_sessions_subtitle">Unread output and required decisions stay visible across connections.</string>
     <string name="session_hub_sessions_empty">No sessions have been discovered yet. Connect a profile to check its agent providers.</string>
+    <string name="quick_navigation_sessions">Sessions</string>
+    <string name="quick_navigation_attention">Attention</string>
+    <string name="quick_navigation_connections">Connections</string>
+    <string name="quick_navigation_settings">Settings</string>
+    <string name="quick_navigation_help">Help</string>
     <string name="session_hub_start_subtitle">Choose a ready agent provider and optionally set its workspace and model.</string>
     <string name="session_hub_tagline">Continue agent work across this device and trusted SSH hosts.</string>
     <string name="session_hub_response_pending_confirmation">Response awaiting provider confirmation</string>

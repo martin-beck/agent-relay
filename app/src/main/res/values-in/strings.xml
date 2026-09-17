@@ -393,4 +393,9 @@
     <string name="home_widget_action_acknowledge">Konfirmasi</string>
     <string name="home_widget_action_defer">Tunda</string>
     <string name="home_widget_action_mute_confirm">Bisukan…</string>
+    <string name="quick_navigation_sessions">Sesi</string>
+    <string name="quick_navigation_attention">Perhatian</string>
+    <string name="quick_navigation_connections">Koneksi</string>
+    <string name="quick_navigation_settings">Setelan</string>
+    <string name="quick_navigation_help">Bantuan</string>
 </resources>

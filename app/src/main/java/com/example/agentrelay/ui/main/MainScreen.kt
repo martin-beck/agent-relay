@@ -42,6 +42,8 @@ internal const val SESSION_HUB_LIST_TEST_TAG = "session-hub-list"
 internal const val SESSION_DETAIL_PANE_TEST_TAG = "session-detail-pane"
 internal const val NOTIFICATION_PERMISSION_TEST_TAG = "notification-permission"
 internal const val BACKGROUND_TRANSPORT_TEST_TAG = "background-transport"
+internal const val QUICK_NAVIGATION_FOOTER_TEST_TAG = "quick-navigation-footer"
+internal const val QUICK_NAVIGATION_DESTINATION_PREFIX = "quick-navigation-"
 
 @Composable
 internal fun MainScreen(
@@ -62,6 +64,7 @@ internal fun MainScreen(
     onDeclineWearCompanion: () -> Unit = {},
     onCancelWearInstall: () -> Unit = {},
     onRetryWearInstall: () -> Unit = {},
+    onQuickNavigation: (QuickNavigationDestinationId) -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val actions = remember(viewModel, onOpenSession, onSaveArtifact, speechActions) {
@@ -116,6 +119,7 @@ internal fun MainScreen(
         onDeclineWearCompanion = onDeclineWearCompanion,
         onCancelWearInstall = onCancelWearInstall,
         onRetryWearInstall = onRetryWearInstall,
+        onQuickNavigation = onQuickNavigation,
         modifier = modifier,
     )
 }
@@ -137,6 +141,8 @@ internal fun MainScreenContent(
     onDeclineWearCompanion: () -> Unit = {},
     onCancelWearInstall: () -> Unit = {},
     onRetryWearInstall: () -> Unit = {},
+    onQuickNavigation: (QuickNavigationDestinationId) -> Unit = {},
+    quickNavigationDestinations: List<QuickNavigationDestination>? = null,
 ) {
     when (state) {
         MainScreenUiState.Loading -> Box(
@@ -211,6 +217,12 @@ internal fun MainScreenContent(
                     actions = actions,
                     modifier = Modifier.weight(1f),
                 )
+                QuickNavigationFooter(
+                    destinations = quickNavigationDestinations ?: defaultQuickNavigationDestinations(
+                        onQuickNavigation,
+                    ),
+                    modifier = Modifier.testTag(QUICK_NAVIGATION_FOOTER_TEST_TAG),
+                )
             }
             state.profileEditor?.let { editor ->
                 ConnectionProfileEditorDialog(editor, actions)
@@ -227,6 +239,38 @@ internal fun MainScreenContent(
         }
     }
 }
+
+@Composable
+private fun defaultQuickNavigationDestinations(
+    onQuickNavigation: (QuickNavigationDestinationId) -> Unit,
+): List<QuickNavigationDestination> = listOf(
+    QuickNavigationDestination(
+        id = QuickNavigationDestinationId.SESSIONS,
+        label = stringResource(R.string.quick_navigation_sessions),
+        selected = true,
+        onClick = { onQuickNavigation(QuickNavigationDestinationId.SESSIONS) },
+    ),
+    QuickNavigationDestination(
+        id = QuickNavigationDestinationId.ATTENTION,
+        label = stringResource(R.string.quick_navigation_attention),
+        onClick = { onQuickNavigation(QuickNavigationDestinationId.ATTENTION) },
+    ),
+    QuickNavigationDestination(
+        id = QuickNavigationDestinationId.CONNECTIONS,
+        label = stringResource(R.string.quick_navigation_connections),
+        onClick = { onQuickNavigation(QuickNavigationDestinationId.CONNECTIONS) },
+    ),
+    QuickNavigationDestination(
+        id = QuickNavigationDestinationId.SETTINGS,
+        label = stringResource(R.string.quick_navigation_settings),
+        onClick = { onQuickNavigation(QuickNavigationDestinationId.SETTINGS) },
+    ),
+    QuickNavigationDestination(
+        id = QuickNavigationDestinationId.HELP,
+        label = stringResource(R.string.quick_navigation_help),
+        onClick = { onQuickNavigation(QuickNavigationDestinationId.HELP) },
+    ),
+)
 
 @Composable
 private fun SessionNotificationPermissionCard(
