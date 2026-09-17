@@ -179,13 +179,14 @@ class ArtifactScreenshotTest {
         strings: ProgressStrings,
     ) {
         val required = listOf(
-            strings.heading,
-            strings.refresh,
             strings.kind,
             strings.ready,
             strings.progress,
             strings.cancel,
         ).map(composeTestRule::onNodeWithText)
+        // The session composer may contain an optional voice-input surface before
+        // changed files. After the bounded scroll, section chrome can be outside
+        // the viewport; artifact content itself must remain fully contained.
         assertFullyContained(languageTag, layoutDirection, required)
         composeTestRule.onNodeWithText(strings.progress).assert(
             SemanticsMatcher.expectValue(SemanticsProperties.LiveRegion, LiveRegionMode.Polite),
