@@ -22,12 +22,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import com.example.agentrelay.R
 import dev.agentrelay.provider.api.AgentSessionState
 import kotlinx.coroutines.delay
 
@@ -93,9 +96,10 @@ internal fun SessionListSearchFilterControls(
     modifier: Modifier = Modifier,
 ) {
     val hasFilters = filters != SessionListSearchFilterState()
+    val resultDescription = pluralStringResource(R.plurals.session_list_result_count, resultCount)
     var query by remember { mutableStateOf(filters.query) }
     LaunchedEffect(filters.query) { query = filters.query }
-    LaunchedEffect(query) {
+    LaunchedEffect(query, filters) {
         if (query != filters.query) {
             delay(250)
             onFiltersChanged(filters.copy(query = query))
@@ -107,7 +111,7 @@ internal fun SessionListSearchFilterControls(
             .padding(16.dp)
             .semantics {
                 liveRegion = LiveRegionMode.Polite
-                stateDescription = "$resultCount sessions match"
+                stateDescription = resultDescription
             },
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
@@ -115,14 +119,14 @@ internal fun SessionListSearchFilterControls(
             value = query,
             onValueChange = { query = it },
             modifier = Modifier.fillMaxWidth().testTag("session-search-field"),
-            label = { Text("Search sessions") },
+            label = { Text(stringResource(R.string.session_list_search_label)) },
             singleLine = true,
         )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             FilterChip(
                 selected = filters.pinnedOnly,
                 onClick = { onFiltersChanged(filters.copy(pinnedOnly = !filters.pinnedOnly)) },
-                label = { Text("Pinned") },
+                label = { Text(stringResource(R.string.session_list_filter_pinned)) },
             )
             FilterChip(
                 selected = filters.recency == SessionRecencyFilter.LAST_DAY,
@@ -137,7 +141,7 @@ internal fun SessionListSearchFilterControls(
                         ),
                     )
                 },
-                label = { Text("Recent") },
+                label = { Text(stringResource(R.string.session_list_filter_recent)) },
             )
         }
         availableAgents.forEach { agent ->
@@ -146,7 +150,7 @@ internal fun SessionListSearchFilterControls(
                 onClick = {
                     onFiltersChanged(filters.copy(agent = if (filters.agent == agent) null else agent))
                 },
-                label = { Text("Agent: $agent") },
+                label = { Text(stringResource(R.string.session_list_filter_agent, agent)) },
             )
         }
         availableHosts.forEach { host ->
@@ -155,7 +159,7 @@ internal fun SessionListSearchFilterControls(
                 onClick = {
                     onFiltersChanged(filters.copy(host = if (filters.host == host) null else host))
                 },
-                label = { Text("Host: $host") },
+                label = { Text(stringResource(R.string.session_list_filter_host, host)) },
             )
         }
         availableStates.forEach { state ->
@@ -164,17 +168,21 @@ internal fun SessionListSearchFilterControls(
                 onClick = {
                     onFiltersChanged(filters.copy(state = if (filters.state == state) null else state))
                 },
-                label = { Text("State: ${state.name.lowercase()}") },
+                label = { Text(stringResource(R.string.session_list_filter_state, state.name.lowercase())) },
             )
         }
         if (hasFilters) {
             Button(
                 onClick = { onFiltersChanged(SessionListSearchFilterState()) },
                 modifier = Modifier.testTag("session-search-reset"),
-            ) { Text("Reset filters") }
+            ) { Text(stringResource(R.string.session_list_filter_reset)) }
         }
         Text(
-            text = if (resultCount == 0) "No sessions match these filters" else "$resultCount sessions",
+            text = if (resultCount == 0) {
+                stringResource(R.string.session_list_filter_empty)
+            } else {
+                resultDescription
+            },
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.testTag("session-search-result-count"),
         )

@@ -26,6 +26,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -48,8 +49,10 @@ internal fun SessionHubList(
     onSelectSession: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var filters by remember { mutableStateOf(SessionListSearchFilterState()) }
     var sortOption by rememberSaveable { mutableStateOf(SessionListSortOption.LAST_APP_INTERACTION) }
-    val surfaceBuckets = attentionSurfaceBuckets(sortSessionList(hub.sessions, sortOption))
+    val filteredSessions = filterSessionList(hub.sessions, filters, System.currentTimeMillis())
+    val surfaceBuckets = attentionSurfaceBuckets(sortSessionList(filteredSessions, sortOption))
     val attentionTitle = stringResource(R.string.session_hub_attention_title)
     val attentionSubtitle = stringResource(R.string.session_hub_attention_subtitle)
     val changedTitle = stringResource(R.string.session_detail_changed_files)
@@ -63,6 +66,9 @@ internal fun SessionHubList(
     ) {
         item(key = "hub-header") {
             HubHeader(hub, actions.refresh)
+        }
+        item(key = "session-list-search-filter") {
+            SessionListSearchFilterItem(hub, filters, filteredSessions.size) { filters = it }
         }
         item(key = "session-list-sort") {
             SessionListSortControl(
@@ -146,19 +152,39 @@ internal fun SessionHubList(
         }
         sessionLaunchers(hub.sessionLaunchers, actions.openSessionCreator)
         sessionSurfaces(
-            sessions = hub.sessions,
+            sessions = filteredSessions,
             buckets = surfaceBuckets,
             selectedSessionKey = hub.selectedSessionKey,
-            attentionTitle = attentionTitle,
-            attentionSubtitle = attentionSubtitle,
-            changedTitle = changedTitle,
-            surfaceSubtitle = surfaceSubtitle,
-            runningTitle = runningTitle,
-            recentTitle = recentTitle,
+            labels = SessionSurfaceLabels(
+                attentionTitle,
+                attentionSubtitle,
+                changedTitle,
+                surfaceSubtitle,
+                runningTitle,
+                recentTitle,
+            ),
             onTogglePinned = actions.toggleSessionPinned,
             onSelectSession = onSelectSession,
+            hasFilters = filters != SessionListSearchFilterState(),
         )
     }
+}
+
+@Composable
+private fun SessionListSearchFilterItem(
+    hub: SessionHubUiModel,
+    filters: SessionListSearchFilterState,
+    resultCount: Int,
+    onFiltersChanged: (SessionListSearchFilterState) -> Unit,
+) {
+    SessionListSearchFilterControls(
+        filters = filters,
+        resultCount = resultCount,
+        availableAgents = hub.sessions.map(SessionUiModel::agentProviderLabel).distinct().sorted(),
+        availableHosts = hub.sessions.map(SessionUiModel::connectionLabel).distinct().sorted(),
+        availableStates = hub.sessions.map(SessionUiModel::agentState).distinct().sortedBy { it.name },
+        onFiltersChanged = onFiltersChanged,
+    )
 }
 
 @Composable
@@ -214,28 +240,32 @@ private fun LazyListScope.sessionSurfaces(
     sessions: List<SessionUiModel>,
     buckets: AttentionSurfaceBuckets,
     selectedSessionKey: String?,
-    attentionTitle: String,
-    attentionSubtitle: String,
-    changedTitle: String,
-    surfaceSubtitle: String,
-    runningTitle: String,
-    recentTitle: String,
+    labels: SessionSurfaceLabels,
     onTogglePinned: (String) -> Unit,
     onSelectSession: (String) -> Unit,
+    hasFilters: Boolean,
 ) {
     if (sessions.isEmpty()) {
         item(key = "sessions-heading") {
-            SectionHeading(title = recentTitle, subtitle = surfaceSubtitle)
+            SectionHeading(title = labels.recentTitle, subtitle = labels.surfaceSubtitle)
         }
         item(key = "sessions-empty") {
-            EmptyCard(stringResource(R.string.session_hub_sessions_empty))
+            EmptyCard(
+                stringResource(
+                    if (hasFilters) {
+                        R.string.session_list_filter_empty
+                    } else {
+                        R.string.session_hub_sessions_empty
+                    },
+                ),
+            )
         }
         return
     }
     sessionSurfaceSection(
         key = "sessions-attention",
-        title = attentionTitle,
-        subtitle = attentionSubtitle,
+        title = labels.attentionTitle,
+        subtitle = labels.attentionSubtitle,
         sessions = buckets.needsAttention,
         selectedSessionKey = selectedSessionKey,
         onSelectSession = onSelectSession,
@@ -243,8 +273,8 @@ private fun LazyListScope.sessionSurfaces(
     )
     sessionSurfaceSection(
         key = "sessions-changed",
-        title = changedTitle,
-        subtitle = surfaceSubtitle,
+        title = labels.changedTitle,
+        subtitle = labels.surfaceSubtitle,
         sessions = buckets.changed,
         selectedSessionKey = selectedSessionKey,
         onSelectSession = onSelectSession,
@@ -252,8 +282,8 @@ private fun LazyListScope.sessionSurfaces(
     )
     sessionSurfaceSection(
         key = "sessions-running",
-        title = runningTitle,
-        subtitle = surfaceSubtitle,
+        title = labels.runningTitle,
+        subtitle = labels.surfaceSubtitle,
         sessions = buckets.running,
         selectedSessionKey = selectedSessionKey,
         onSelectSession = onSelectSession,
@@ -261,14 +291,23 @@ private fun LazyListScope.sessionSurfaces(
     )
     sessionSurfaceSection(
         key = "sessions-recent",
-        title = recentTitle,
-        subtitle = surfaceSubtitle,
+        title = labels.recentTitle,
+        subtitle = labels.surfaceSubtitle,
         sessions = buckets.recentlyCompleted,
         selectedSessionKey = selectedSessionKey,
         onSelectSession = onSelectSession,
         onTogglePinned = onTogglePinned,
     )
 }
+
+private data class SessionSurfaceLabels(
+    val attentionTitle: String,
+    val attentionSubtitle: String,
+    val changedTitle: String,
+    val surfaceSubtitle: String,
+    val runningTitle: String,
+    val recentTitle: String,
+)
 
 private fun LazyListScope.sessionSurfaceSection(
     key: String,
@@ -290,9 +329,9 @@ private fun LazyListScope.sessionSurfaceSection(
         items(agentSessions, key = SessionUiModel::stableKey) { session ->
             SessionCard(
                 session = session,
-            selected = session.stableKey == selectedSessionKey,
-            onClick = { onSelectSession(session.stableKey) },
-            onTogglePinned = { onTogglePinned(session.stableKey) },
+                selected = session.stableKey == selectedSessionKey,
+                onClick = { onSelectSession(session.stableKey) },
+                onTogglePinned = { onTogglePinned(session.stableKey) },
             )
         }
     }

@@ -415,4 +415,17 @@
     <string name="home_widget_action_acknowledge">Confirmar</string>
     <string name="home_widget_action_defer">Posponer</string>
     <string name="home_widget_action_mute_confirm">Silenciar…</string>
+    <string name="session_list_search_label">Search sessions</string>
+    <string name="session_list_filter_pinned">Pinned</string>
+    <string name="session_list_filter_recent">Recent</string>
+    <string name="session_list_filter_agent">Agent: %1$s</string>
+    <string name="session_list_filter_host">Host: %1$s</string>
+    <string name="session_list_filter_state">State: %1$s</string>
+    <string name="session_list_filter_reset">Reset filters</string>
+    <string name="session_list_filter_empty">No sessions match these filters</string>
+    <plurals name="session_list_result_count">
+        <item quantity="many">%1$d sessions</item>
+        <item quantity="one">1 session</item>
+        <item quantity="other">%1$d sessions</item>
+    </plurals>
 </resources>
