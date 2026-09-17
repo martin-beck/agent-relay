@@ -421,4 +421,24 @@
     <string name="quick_navigation_connections">Connessioni</string>
     <string name="quick_navigation_settings">Impostazioni</string>
     <string name="quick_navigation_help">Aiuto</string>
+    <string name="notification_center_title">Notification center</string>
+    <string name="notification_center_unread_count">%1$d unread</string>
+    <string name="notification_center_refresh">Refresh</string>
+    <string name="notification_center_refreshing">Refreshing…</string>
+    <string name="notification_center_all">All</string>
+    <string name="notification_center_unread">Unread</string>
+    <string name="notification_center_needs_action">Needs action</string>
+    <string name="notification_center_all_topics">All topics</string>
+    <string name="notification_center_offline">Offline. Showing saved notifications.</string>
+    <string name="notification_center_refresh_notifications">Refresh notifications</string>
+    <string name="notification_center_archived">Notification archived</string>
+    <string name="notification_center_undo">Undo</string>
+    <string name="notification_center_mark_read">Mark read</string>
+    <string name="notification_center_archive">Archive</string>
+    <string name="notification_center_open">Notifications</string>
+    <string name="notification_topic_ssh_lifecycle">SSH lifecycle</string>
+    <string name="notification_topic_agent_feedback">Agent feedback</string>
+    <string name="notification_topic_decisions">Decisions</string>
+    <string name="notification_topic_task_completion">Task completion</string>
+    <string name="notification_topic_task_blocked">Task blocked</string>
 </resources>
