@@ -42,16 +42,76 @@ internal data class SettingDefinition(
 )
 
 internal val settingDefinitions = listOf(
-    SettingDefinition("Connection", "Background connections", "Keep explicitly enabled connections active when the app is backgrounded.", SettingKind.TOGGLE, { it.backgroundConnections.toString() }) { s, v -> s.copy(backgroundConnections = v.toBoolean()) },
-    SettingDefinition("Sessions", "Restore session drafts", "Drafts are retained in the encrypted session repository until delivery succeeds.", SettingKind.TOGGLE, { "true" }) { s, _ -> s },
-    SettingDefinition("Synchronization", "Sync on Wi-Fi only", "Limit future synchronization adapters to unmetered networks.", SettingKind.TOGGLE, { "false" }) { s, _ -> s },
-    SettingDefinition("Appearance and accessibility", "Dynamic color", "Use the device color palette when available.", SettingKind.TOGGLE, { it.dynamicColor.toString() }) { s, v -> s.copy(dynamicColor = v.toBoolean()) },
-    SettingDefinition("Appearance and accessibility", "High contrast", "Increase contrast for controls and status text.", SettingKind.TOGGLE, { it.highContrast.toString() }) { s, v -> s.copy(highContrast = v.toBoolean()) },
-    SettingDefinition("Appearance and accessibility", "Reduce motion", "Prefer minimal transition animation.", SettingKind.TOGGLE, { it.reduceMotion.toString() }) { s, v -> s.copy(reduceMotion = v.toBoolean()) },
-    SettingDefinition("Notifications", "Session notifications", "Allow privacy-safe background session notifications.", SettingKind.TOGGLE, { it.notifications.toString() }) { s, v -> s.copy(notifications = v.toBoolean()) },
-    SettingDefinition("Privacy", "Protected data", "Credentials, prompts, transcripts, and host details are never stored in this settings surface.", SettingKind.CHOICE, { "App-private storage" }) { s, _ -> s },
-    SettingDefinition("Language", "Interface language", "Follow the device language until a supported override is selected.", SettingKind.CHOICE, { it.language }) { s, v -> s.copy(language = v) },
-    SettingDefinition("Speech", "Offline speech input", "Allow the separately permission-gated on-device speech feature.", SettingKind.TOGGLE, { it.offlineSpeech.toString() }) { s, v -> s.copy(offlineSpeech = v.toBoolean()) },
+    SettingDefinition(
+        "Connection",
+        "Background connections",
+        "Keep explicitly enabled connections active when the app is backgrounded.",
+        SettingKind.TOGGLE,
+        { it.backgroundConnections.toString() },
+    ) { s, v -> s.copy(backgroundConnections = v.toBoolean()) },
+    SettingDefinition(
+        "Sessions",
+        "Restore session drafts",
+        "Drafts are retained in the encrypted session repository until delivery succeeds.",
+        SettingKind.TOGGLE,
+        { "true" },
+    ) { s, _ -> s },
+    SettingDefinition(
+        "Synchronization",
+        "Sync on Wi-Fi only",
+        "Limit future synchronization adapters to unmetered networks.",
+        SettingKind.TOGGLE,
+        { "false" },
+    ) { s, _ -> s },
+    SettingDefinition(
+        "Appearance and accessibility",
+        "Dynamic color",
+        "Use the device color palette when available.",
+        SettingKind.TOGGLE,
+        { it.dynamicColor.toString() },
+    ) { s, v -> s.copy(dynamicColor = v.toBoolean()) },
+    SettingDefinition(
+        "Appearance and accessibility",
+        "High contrast",
+        "Increase contrast for controls and status text.",
+        SettingKind.TOGGLE,
+        { it.highContrast.toString() },
+    ) { s, v -> s.copy(highContrast = v.toBoolean()) },
+    SettingDefinition(
+        "Appearance and accessibility",
+        "Reduce motion",
+        "Prefer minimal transition animation.",
+        SettingKind.TOGGLE,
+        { it.reduceMotion.toString() },
+    ) { s, v -> s.copy(reduceMotion = v.toBoolean()) },
+    SettingDefinition(
+        "Notifications",
+        "Session notifications",
+        "Allow privacy-safe background session notifications.",
+        SettingKind.TOGGLE,
+        { it.notifications.toString() },
+    ) { s, v -> s.copy(notifications = v.toBoolean()) },
+    SettingDefinition(
+        "Privacy",
+        "Protected data",
+        "Credentials, prompts, transcripts, and host details are never stored in this settings surface.",
+        SettingKind.CHOICE,
+        { "App-private storage" },
+    ) { s, _ -> s },
+    SettingDefinition(
+        "Language",
+        "Interface language",
+        "Follow the device language until a supported override is selected.",
+        SettingKind.CHOICE,
+        { it.language },
+    ) { s, v -> s.copy(language = v) },
+    SettingDefinition(
+        "Speech",
+        "Offline speech input",
+        "Allow the separately permission-gated on-device speech feature.",
+        SettingKind.TOGGLE,
+        { it.offlineSpeech.toString() },
+    ) { s, v -> s.copy(offlineSpeech = v.toBoolean()) },
 )
 
 @OptIn(ExperimentalMaterial3Api::class)

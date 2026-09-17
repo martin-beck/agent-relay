@@ -40,6 +40,7 @@ import com.example.agentrelay.settings.AndroidSettingsStore
 import com.example.agentrelay.settings.SettingsScreen
 
 @Composable
+@Suppress("LongMethod")
 internal fun MainNavigation(
     notificationNavigationKey: String? = null,
     onNotificationNavigationConsumed: (String) -> Unit = {},

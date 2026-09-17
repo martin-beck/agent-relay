@@ -19,7 +19,6 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.LayoutDirection
 
 @androidx.compose.runtime.Composable
 internal fun SwipeActionSurface(
@@ -47,10 +46,12 @@ internal fun SwipeActionSurface(
         }
         .semantics {
             if (accessibilityActionLabel != null && onAction != null) {
-                customActions = listOf(CustomAccessibilityAction(accessibilityActionLabel) {
-                    onAction(HorizontalSwipeAction.REVEAL_END)
-                    true
-                })
+                customActions = listOf(
+                    CustomAccessibilityAction(accessibilityActionLabel) {
+                        onAction(HorizontalSwipeAction.REVEAL_END)
+                        true
+                    },
+                )
             }
         }
     Box(modifier = gestureModifier, content = content)

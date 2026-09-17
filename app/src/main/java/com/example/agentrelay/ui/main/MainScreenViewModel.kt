@@ -35,6 +35,7 @@ internal fun interface SessionHubRuntimeFactory {
     suspend fun create(): SessionHubRuntime
 }
 
+@Suppress("TooManyFunctions")
 internal class MainScreenViewModel(
     private val clock: () -> Long = System::currentTimeMillis,
     speechService: OfflineSpeechService? = null,

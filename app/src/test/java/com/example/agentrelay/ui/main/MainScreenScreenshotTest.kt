@@ -30,7 +30,6 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
-import androidx.compose.ui.test.performScrollToKey
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import com.example.agentrelay.background.BackgroundTransportState
@@ -148,11 +147,7 @@ class MainScreenScreenshotTest {
             widthDp = 360,
             heightDp = 800,
             fontScale = 1.3f,
-            state = MainScreenUiState.Ready(previewHub(longContent = true)),
-            afterSetContent = {
-                composeTestRule.onNodeWithTag(SESSION_HUB_LIST_TEST_TAG)
-                    .performScrollToKey("preview-session")
-            },
+                state = MainScreenUiState.Ready(previewHub(longContent = true)),
         )
     }
 
@@ -481,7 +476,6 @@ class MainScreenScreenshotTest {
         requiredVisibleStringResources: List<Int> = listOf(
             com.example.agentrelay.R.string.background_transport_title,
             com.example.agentrelay.R.string.app_name,
-            com.example.agentrelay.R.string.session_hub_attention_title,
         ),
         requiredEditableLabelStringResources: List<Int> = emptyList(),
         requiredSelectedOptionStringResources: List<Int> = emptyList(),

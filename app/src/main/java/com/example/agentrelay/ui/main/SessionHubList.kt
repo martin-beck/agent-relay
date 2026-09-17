@@ -6,7 +6,6 @@
 package com.example.agentrelay.ui.main
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -51,6 +50,7 @@ import com.example.agentrelay.R
 import dev.agentrelay.session.api.SessionActionState
 
 @Composable
+@Suppress("LongMethod")
 internal fun SessionHubList(
     hub: SessionHubUiModel,
     actions: SessionHubActions,
@@ -247,6 +247,7 @@ private fun SessionListSortControl(
     }
 }
 
+@Suppress("LongParameterList")
 private fun LazyListScope.sessionSurfaces(
     sessions: List<SessionUiModel>,
     buckets: AttentionSurfaceBuckets,
@@ -327,9 +328,9 @@ private fun LazyListScope.sessionSurfaceSection(
         items(agentSessions, key = SessionUiModel::stableKey) { session ->
             SessionCard(
                 session = session,
-            selected = session.stableKey == selectedSessionKey,
-            onClick = { onSelectSession(session.stableKey) },
-            onTogglePinned = { onTogglePinned(session.stableKey) },
+                selected = session.stableKey == selectedSessionKey,
+                onClick = { onSelectSession(session.stableKey) },
+                onTogglePinned = { onTogglePinned(session.stableKey) },
             )
         }
     }
@@ -451,7 +452,11 @@ private fun MessageCard(
     SwipeActionSurface(
         modifier = Modifier.fillMaxWidth(),
         accessibilityActionLabel = actionLabel,
-        onAction = if (onSwipeAction == null) null else { { onSwipeAction() } },
+        onAction = if (onSwipeAction == null) {
+            null
+        } else {
+            { onSwipeAction() }
+        },
     ) {
         Card(
             modifier = Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite },
