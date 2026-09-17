@@ -19,6 +19,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -50,13 +51,7 @@ internal fun MainScreen(
     onSaveArtifact: (String, String, String) -> Unit,
     speechActions: SpeechInputUiActions,
     modifier: Modifier = Modifier,
-    notificationPermissionState: SessionNotificationPermissionState =
-        SessionNotificationPermissionState.HIDDEN,
-    onRequestNotificationPermission: () -> Unit = {},
-    onOpenNotificationSettings: () -> Unit = {},
-    backgroundTransportState: BackgroundTransportState = BackgroundTransportState.STOPPED,
-    onStartBackgroundTransport: () -> Unit = {},
-    onStopBackgroundTransport: () -> Unit = {},
+    onOpenConnectionSettings: () -> Unit = {},
     wearInstallOfferState: WearInstallOfferUiState = WearInstallOfferUiState.Hidden,
     onInstallWearCompanion: () -> Unit = {},
     onDeclineWearCompanion: () -> Unit = {},
@@ -105,12 +100,7 @@ internal fun MainScreen(
     MainScreenContent(
         state = state,
         actions = actions,
-        notificationPermissionState = notificationPermissionState,
-        onRequestNotificationPermission = onRequestNotificationPermission,
-        onOpenNotificationSettings = onOpenNotificationSettings,
-        backgroundTransportState = backgroundTransportState,
-        onStartBackgroundTransport = onStartBackgroundTransport,
-        onStopBackgroundTransport = onStopBackgroundTransport,
+        onOpenConnectionSettings = onOpenConnectionSettings,
         wearInstallOfferState = wearInstallOfferState,
         onInstallWearCompanion = onInstallWearCompanion,
         onDeclineWearCompanion = onDeclineWearCompanion,
@@ -125,13 +115,7 @@ internal fun MainScreenContent(
     state: MainScreenUiState,
     actions: SessionHubActions,
     modifier: Modifier = Modifier,
-    notificationPermissionState: SessionNotificationPermissionState =
-        SessionNotificationPermissionState.HIDDEN,
-    onRequestNotificationPermission: () -> Unit = {},
-    onOpenNotificationSettings: () -> Unit = {},
-    backgroundTransportState: BackgroundTransportState = BackgroundTransportState.STOPPED,
-    onStartBackgroundTransport: () -> Unit = {},
-    onStopBackgroundTransport: () -> Unit = {},
+    onOpenConnectionSettings: () -> Unit = {},
     wearInstallOfferState: WearInstallOfferUiState = WearInstallOfferUiState.Hidden,
     onInstallWearCompanion: () -> Unit = {},
     onDeclineWearCompanion: () -> Unit = {},
@@ -189,22 +173,12 @@ internal fun MainScreenContent(
                     onRetry = onRetryWearInstall,
                     modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
                 )
-                if (notificationPermissionState != SessionNotificationPermissionState.HIDDEN) {
-                    SessionNotificationPermissionCard(
-                        state = notificationPermissionState,
-                        onRequestPermission = onRequestNotificationPermission,
-                        onOpenSettings = onOpenNotificationSettings,
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
-                    )
+                TextButton(
+                    onClick = onOpenConnectionSettings,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
+                ) {
+                    Text(stringResource(R.string.background_transport_title))
                 }
-                BackgroundTransportCard(
-                    state = backgroundTransportState,
-                    notificationsAvailable =
-                    notificationPermissionState == SessionNotificationPermissionState.HIDDEN,
-                    onStart = onStartBackgroundTransport,
-                    onStop = onStopBackgroundTransport,
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
-                )
                 AdaptiveSessionHub(
                     hub = state.hub,
                     speechInput = state.speechInput,
@@ -229,7 +203,7 @@ internal fun MainScreenContent(
 }
 
 @Composable
-private fun SessionNotificationPermissionCard(
+internal fun SessionNotificationPermissionCard(
     state: SessionNotificationPermissionState,
     onRequestPermission: () -> Unit,
     onOpenSettings: () -> Unit,
@@ -279,7 +253,7 @@ private fun SessionNotificationPermissionCard(
 }
 
 @Composable
-private fun BackgroundTransportCard(
+internal fun BackgroundTransportCard(
     state: BackgroundTransportState,
     notificationsAvailable: Boolean,
     onStart: () -> Unit,

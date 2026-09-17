@@ -31,6 +31,7 @@ import com.example.agentrelay.notifications.SessionNotificationPermissionState
 import com.example.agentrelay.ui.main.MainScreen
 import com.example.agentrelay.ui.main.MainScreenUiState
 import com.example.agentrelay.ui.main.MainScreenViewModel
+import com.example.agentrelay.ui.main.ConnectionSettingsScreen
 import com.example.agentrelay.ui.main.SessionDetailRoute
 import com.example.agentrelay.ui.main.SpeechInputUiActions
 import com.example.agentrelay.ui.main.rememberArtifactSaveRequest
@@ -113,14 +114,21 @@ internal fun MainNavigation(
                             backStack.add(SessionDetails(key))
                         },
                         speechActions = speechActions,
+                        onOpenConnectionSettings = { backStack.add(ConnectionSettings) },
+                        onSaveArtifact = saveArtifact,
+                        modifier = Modifier.safeDrawingPadding().padding(16.dp),
+                    )
+                }
+                entry<ConnectionSettings> {
+                    ConnectionSettingsScreen(
                         notificationPermissionState = notificationPermissionState,
                         onRequestNotificationPermission = onRequestNotificationPermission,
                         onOpenNotificationSettings = onOpenNotificationSettings,
                         backgroundTransportState = backgroundTransportState,
                         onStartBackgroundTransport = application.backgroundTransport::start,
                         onStopBackgroundTransport = application.backgroundTransport::stop,
-                        onSaveArtifact = saveArtifact,
-                        modifier = Modifier.safeDrawingPadding().padding(16.dp),
+                        onBack = onBack,
+                        modifier = Modifier.safeDrawingPadding(),
                     )
                 }
                 entry<SessionDetails> { route ->

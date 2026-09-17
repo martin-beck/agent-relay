@@ -349,15 +349,16 @@ class NotificationPermissionScreenshotTest {
                         modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.background,
                     ) {
-                        MainScreenContent(
-                            state = MainScreenUiState.Ready(previewEmptyHub()),
-                            actions = previewActions(),
+                        ConnectionSettingsScreen(
                             notificationPermissionState = permissionState.value,
                             onRequestNotificationPermission = {
                                 onRequestPermission(permissionState)
                             },
                             onOpenNotificationSettings = onOpenSettings,
                             backgroundTransportState = BackgroundTransportState.STOPPED,
+                            onStartBackgroundTransport = {},
+                            onStopBackgroundTransport = {},
+                            onBack = {},
                         )
                     }
                 }
