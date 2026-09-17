@@ -12,7 +12,7 @@ import dev.agentrelay.speech.api.SpeechModelLicense
 import dev.agentrelay.speech.api.SpeechModelPackage
 import java.io.ByteArrayOutputStream
 import kotlinx.coroutines.test.runTest
-import kotlin.test.Test
+import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
