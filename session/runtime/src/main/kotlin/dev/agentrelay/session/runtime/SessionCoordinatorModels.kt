@@ -36,6 +36,7 @@ enum class AgentEndpointPhase {
     OFFLINE,
     PROBING,
     CONNECTING,
+    RETRYING,
     READY,
     UNAVAILABLE,
     FAILED,
