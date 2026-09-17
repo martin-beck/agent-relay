@@ -138,6 +138,7 @@ internal fun MainNavigation(
                         onRefreshArtifacts = mainViewModel.artifactInteractions::refreshArtifacts,
                         onSaveArtifact = saveArtifact,
                         onCancelArtifact = mainViewModel.artifactInteractions::cancelArtifactExport,
+                        onDismissError = mainViewModel::clearOperationError,
                         speechActions = speechActions,
                         modifier = Modifier.safeDrawingPadding(),
                     )
