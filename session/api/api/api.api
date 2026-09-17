@@ -1689,6 +1689,7 @@ public final class dev/agentrelay/session/api/PersistentSessionHubRepository : d
 	public fun markSessionRead (Ldev/agentrelay/session/api/SessionLocator;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun recordActivity (Ldev/agentrelay/session/api/SessionActivity;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun removeSession (Ldev/agentrelay/session/api/SessionLocator;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun replaceArtifacts (Ldev/agentrelay/session/api/SessionLocator;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun resolveActivity (Ldev/agentrelay/session/api/SessionLocator;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun setActiveSession (Ldev/agentrelay/session/api/SessionLocator;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun setPreferences (Ldev/agentrelay/session/api/SessionLocator;Ldev/agentrelay/session/api/SessionPreferences;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -2424,6 +2425,7 @@ public abstract interface class dev/agentrelay/session/api/SessionHubRepository 
 	public static synthetic fun markSessionRead$default (Ldev/agentrelay/session/api/SessionHubRepository;Ldev/agentrelay/session/api/SessionLocator;JLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public abstract fun recordActivity (Ldev/agentrelay/session/api/SessionActivity;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun removeSession (Ldev/agentrelay/session/api/SessionLocator;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun replaceArtifacts (Ldev/agentrelay/session/api/SessionLocator;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun resolveActivity (Ldev/agentrelay/session/api/SessionLocator;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun setActiveSession (Ldev/agentrelay/session/api/SessionLocator;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun setPreferences (Ldev/agentrelay/session/api/SessionLocator;Ldev/agentrelay/session/api/SessionPreferences;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;

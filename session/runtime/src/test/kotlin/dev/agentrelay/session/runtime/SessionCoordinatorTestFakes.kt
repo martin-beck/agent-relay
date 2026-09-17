@@ -238,6 +238,13 @@ internal class FakeAgentConnection(
     val interrupted = mutableListOf<AgentSessionId>()
     val approvalResponses = mutableListOf<Triple<AgentApprovalId, AgentApprovalDecision, Map<String, List<String>>>>()
     var failApprovalResponses = false
+    var changedFilesResult = listOf(
+        AgentChangedFile(
+            remotePath = "/workspace/" + hostId + "/result.txt",
+            kind = AgentFileChangeKind.MODIFIED,
+        ),
+    )
+    var changedFilesCalls = 0
 
     override suspend fun refreshSessions(): List<AgentSession> = sessions.value
 
@@ -305,12 +312,10 @@ internal class FakeAgentConnection(
         approvalResponses += Triple(approvalId, decision, answers)
     }
 
-    override suspend fun changedFiles(sessionId: AgentSessionId): List<AgentChangedFile> = listOf(
-        AgentChangedFile(
-            remotePath = "/workspace/" + hostId + "/result.txt",
-            kind = AgentFileChangeKind.MODIFIED,
-        ),
-    )
+    override suspend fun changedFiles(sessionId: AgentSessionId): List<AgentChangedFile> {
+        changedFilesCalls += 1
+        return changedFilesResult
+    }
 
     suspend fun emit(event: AgentEvent) {
         mutableEvents.emit(event)
