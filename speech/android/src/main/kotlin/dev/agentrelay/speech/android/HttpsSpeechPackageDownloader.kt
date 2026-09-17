@@ -363,7 +363,7 @@ private class JavaNetSpeechHttpConnection(
     }
 }
 
-internal class SpeechPackageDeliveryException(
+class SpeechPackageDeliveryException(
     val code: String,
     val guidance: String,
     cause: Throwable? = null,

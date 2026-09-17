@@ -7,6 +7,11 @@ package dev.agentrelay.speech.api
 
 import java.io.Closeable
 import java.net.URI
+import java.nio.charset.StandardCharsets
+import java.security.KeyFactory
+import java.security.Signature
+import java.security.spec.X509EncodedKeySpec
+import java.util.Base64
 import kotlinx.coroutines.flow.StateFlow
 
 const val MAX_SPEECH_TRANSCRIPT_CHARS = 32_000
@@ -126,6 +131,79 @@ data class SpeechModelState(
     val descriptor: SpeechModelDescriptor,
     val availability: SpeechModelAvailability,
 )
+
+/** A catalog entry authenticated by the release key, not by the transport alone. */
+data class SignedSpeechModelCatalogEntry(
+    val descriptor: SpeechModelDescriptor,
+    val signingKeyId: String,
+    val signatureBase64: String,
+) {
+    init {
+        require(signingKeyId.matches(Regex("[a-z0-9._-]{1,64}"))) {
+            "Speech catalog signing key id is invalid"
+        }
+        require(signatureBase64.matches(Regex("[A-Za-z0-9+/]{1,4096}={0,2}"))) {
+            "Speech catalog signature is invalid"
+        }
+    }
+}
+
+/**
+ * Admission gate for a small, reviewed model catalog. The signed payload is deterministic and
+ * contains metadata only; no prompt, transcript, endpoint credential, or model bytes are signed.
+ */
+class SignedSpeechModelCatalog(
+    entries: List<SignedSpeechModelCatalogEntry>,
+    trustedPublicKeys: Map<String, ByteArray>,
+) {
+    val models: List<SpeechModelDescriptor>
+
+    init {
+        require(entries.isNotEmpty()) { "Speech catalog must not be empty" }
+        require(entries.map { it.descriptor.id }.toSet().size == entries.size) {
+            "Speech catalog model ids must be unique"
+        }
+        require(trustedPublicKeys.isNotEmpty()) { "Speech catalog needs a trusted signing key" }
+        entries.forEach { entry ->
+            val encodedKey = requireNotNull(trustedPublicKeys[entry.signingKeyId]) {
+                "Speech catalog entry uses an unknown signing key"
+            }
+            require(verify(entry, encodedKey)) {
+                "Speech catalog entry signature is invalid"
+            }
+        }
+        models = entries.map(SignedSpeechModelCatalogEntry::descriptor)
+    }
+
+    private fun verify(entry: SignedSpeechModelCatalogEntry, encodedKey: ByteArray): Boolean {
+        return runCatching {
+            val key = KeyFactory.getInstance("Ed25519")
+                .generatePublic(X509EncodedKeySpec(encodedKey))
+            Signature.getInstance("Ed25519").run {
+                initVerify(key)
+                update(canonicalPayload(entry.descriptor))
+                verify(Base64.getDecoder().decode(entry.signatureBase64))
+            }
+        }.getOrDefault(false)
+    }
+
+    companion object {
+        fun canonicalPayload(descriptor: SpeechModelDescriptor): ByteArray = listOf(
+            descriptor.id.value,
+            descriptor.displayName,
+            descriptor.version,
+            descriptor.languageTags.sorted().joinToString(","),
+            descriptor.capabilities.sortedBy { it.name }.joinToString(",") { it.name },
+            descriptor.license.name,
+            descriptor.license.spdxIdentifier.orEmpty(),
+            descriptor.license.url,
+            descriptor.modelPackage.downloadUrl,
+            descriptor.modelPackage.sha256,
+            descriptor.modelPackage.downloadSizeBytes.toString(),
+            descriptor.modelPackage.installedSizeBytes.toString(),
+        ).joinToString("\n").toByteArray(StandardCharsets.UTF_8)
+    }
+}
 
 sealed interface SpeechRecognitionState {
     data object Idle : SpeechRecognitionState
