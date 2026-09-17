@@ -64,6 +64,58 @@ class JschSshConnectorLiveTest {
     }
 
     @Test
+    fun loopbackSshdAcceptsPasswordAfterFirstUseTrust() = runTest {
+        assumeTrue(System.getenv("AGENT_RELAY_LIVE_SSH_PASSWORD") != null)
+        val password = requiredEnvironment("AGENT_RELAY_LIVE_SSH_PASSWORD").encodeToByteArray()
+        val profile = PROFILE.copy(
+            username = requiredEnvironment("AGENT_RELAY_LIVE_SSH_USER"),
+            endpoint = SshEndpoint(
+                host = requiredEnvironment("AGENT_RELAY_LIVE_SSH_HOST"),
+                port = requiredEnvironment("AGENT_RELAY_LIVE_SSH_PORT").toInt(),
+            ),
+        )
+        val connector = JschSshConnector(
+            connectTimeout = 5.seconds,
+            channelConnectTimeout = 5.seconds,
+            serverAliveInterval = 5.seconds,
+        )
+        try {
+            val initialRoute = SshConnectionRoute(
+                ResolvedSshHost(
+                    profile,
+                    ResolvedSshAuthentication.Password(SensitiveBytes.copyOf(password)),
+                    emptyList(),
+                ),
+            )
+            val challenge = assertFailsWith<SshHostKeyApprovalRequiredException> {
+                connector.connect(initialRoute)
+            }.challenge
+            initialRoute.close()
+
+            val trustedRoute = SshConnectionRoute(
+                ResolvedSshHost(
+                    profile,
+                    ResolvedSshAuthentication.Password(SensitiveBytes.copyOf(password)),
+                    listOf(challenge.candidate),
+                ),
+            )
+            try {
+                val connection = connector.connect(trustedRoute)
+                try {
+                    assertTrue(connection.isConnected)
+                    assertTrue(connection.heartbeat().isPositive())
+                } finally {
+                    connection.close()
+                }
+            } finally {
+                trustedRoute.close()
+            }
+        } finally {
+            Arrays.fill(password, 0)
+        }
+    }
+
+    @Test
     fun loopbackTwoHopRouteAuthenticatesAndExecutesThroughDirectTcpip() = runTest {
         assumeTrue(System.getenv("AGENT_RELAY_LIVE_SSH_JUMP") == "1")
         val privateKey = Files.readAllBytes(Path.of(requiredEnvironment("AGENT_RELAY_LIVE_SSH_KEY")))

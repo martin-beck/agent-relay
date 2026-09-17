@@ -298,4 +298,38 @@ class JschSshConnector(
             echo: BooleanArray,
         ): Array<String>? = null
     }
+    /**
+     * Some SSH servers expose ordinary password authentication through PAM's
+     * keyboard-interactive method. Respond only to one explicitly labelled,
+     * hidden password prompt; never forward the credential to an arbitrary
+     * interactive challenge such as an OTP or consent question.
+     */
+    internal class JschPasswordUserInfo(private val password: ByteArray) : UserInfo, UIKeyboardInteractive {
+        private fun passwordText(): String = password.toString(Charsets.UTF_8)
+
+        override fun getPassphrase(): String? = null
+
+        override fun getPassword(): String? = passwordText()
+
+        override fun promptPassword(message: String): Boolean =
+            message.contains("password", ignoreCase = true)
+
+        override fun promptPassphrase(message: String): Boolean = false
+
+        override fun promptYesNo(message: String): Boolean = false
+
+        override fun showMessage(message: String) = Unit
+
+        override fun promptKeyboardInteractive(
+            destination: String,
+            name: String,
+            instruction: String,
+            prompt: Array<out String>,
+            echo: BooleanArray,
+        ): Array<String>? {
+            if (prompt.size != 1 || echo.size != 1) return null
+            if (echo[0] || !prompt[0].contains("password", ignoreCase = true)) return null
+            return arrayOf(passwordText())
+        }
+    }
 }
