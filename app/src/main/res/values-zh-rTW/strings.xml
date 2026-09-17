@@ -152,6 +152,12 @@
     <string name="session_detail_select_session">選取工作階段以查看其轉錄與活動。</string>
     <string name="session_detail_approvals_and_questions">核准與問題</string>
     <string name="session_detail_changed_files">已變更的檔案</string>
+    <string name="session_activity_topic_transport">傳輸診斷</string>
+    <string name="session_activity_topic_agent_feedback">代理程式回饋</string>
+    <string name="session_activity_topic_user_decisions">使用者決定</string>
+    <string name="session_activity_topic_completion">完成</string>
+    <string name="session_activity_topic_blocked_tasks">遭封鎖的工作</string>
+    <string name="session_activity_topic_empty">此區段沒有記錄。</string>
     <string name="session_detail_refresh_changed_files">重新整理已變更的檔案</string>
     <string name="session_detail_no_changed_files">沒有記錄已變更的檔案。請重新整理以查詢已連線的提供者。</string>
     <string name="session_detail_changed_files_unsupported">此提供者不公開這個工作階段的已變更檔案。</string>

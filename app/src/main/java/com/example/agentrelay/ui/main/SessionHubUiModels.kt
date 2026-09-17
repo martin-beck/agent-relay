@@ -274,6 +274,63 @@ internal data class SessionActivityUiModel(
     val isRead: Boolean,
 )
 
+internal enum class SessionActivityTopic {
+    TRANSPORT,
+    AGENT_FEEDBACK,
+    USER_DECISIONS,
+    COMPLETION,
+    BLOCKED_TASKS,
+}
+
+internal enum class SessionActivitySeverity {
+    INFO,
+    ACTION_REQUIRED,
+    WARNING,
+    ERROR,
+}
+
+internal data class SessionActivitySectionUiModel(
+    val topic: SessionActivityTopic,
+    val activities: List<SessionActivityUiModel>,
+    val isDiagnostic: Boolean,
+)
+
+internal val SessionActivityUiModel.topic: SessionActivityTopic
+    get() = when (type) {
+        SessionActivityType.RECONNECTED -> SessionActivityTopic.TRANSPORT
+        SessionActivityType.APPROVAL_REQUIRED,
+        SessionActivityType.QUESTION,
+        -> SessionActivityTopic.USER_DECISIONS
+        SessionActivityType.TURN_COMPLETED -> SessionActivityTopic.COMPLETION
+        SessionActivityType.NEW_OUTPUT,
+        SessionActivityType.FAILURE,
+        -> SessionActivityTopic.AGENT_FEEDBACK
+    }
+
+internal val SessionActivityUiModel.severity: SessionActivitySeverity
+    get() = when {
+        requiresAction -> SessionActivitySeverity.ACTION_REQUIRED
+        type == SessionActivityType.FAILURE -> SessionActivitySeverity.ERROR
+        type == SessionActivityType.RECONNECTED -> SessionActivitySeverity.INFO
+        else -> SessionActivitySeverity.INFO
+    }
+
+internal fun activitySections(
+    activities: List<SessionActivityUiModel>,
+): List<SessionActivitySectionUiModel> = SessionActivityTopic.entries.map { topic ->
+    SessionActivitySectionUiModel(
+        topic = topic,
+        activities = activities.filter { it.topic == topic },
+        isDiagnostic = topic == SessionActivityTopic.TRANSPORT,
+    )
+}
+
+internal fun highLevelActivities(
+    activities: List<SessionActivityUiModel>,
+): List<SessionActivityUiModel> = activities.filterNot {
+    it.topic == SessionActivityTopic.TRANSPORT
+}
+
 internal data class TranscriptEntryUiModel(
     val id: String,
     val roleLabel: UiMessage,

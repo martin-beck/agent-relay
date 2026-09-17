@@ -162,6 +162,12 @@
     <string name="session_detail_select_session">اختر جلسة لفحص النص والنشاط.</string>
     <string name="session_detail_approvals_and_questions">الموافقات والأسئلة</string>
     <string name="session_detail_changed_files">الملفات المتغيرة</string>
+    <string name="session_activity_topic_transport">النقل</string>
+    <string name="session_activity_topic_agent_feedback">ملاحظات الوكيل</string>
+    <string name="session_activity_topic_user_decisions">قرارات المستخدم</string>
+    <string name="session_activity_topic_completion">الإكمال</string>
+    <string name="session_activity_topic_blocked_tasks">المهام المحظورة</string>
+    <string name="session_activity_topic_empty">لا شيء مسجل في هذا القسم.</string>
     <string name="session_detail_refresh_changed_files">تحديث الملفات المتغيرة</string>
     <string name="session_detail_no_changed_files">لم يتم تسجيل ملفات متغيرة. حدّث للاستعلام من الموفر المتصل.</string>
     <string name="session_detail_changed_files_unsupported">لا يعرض هذا الموفر الملفات المتغيرة لهذه الجلسة.</string>

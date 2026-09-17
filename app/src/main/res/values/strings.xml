@@ -202,6 +202,12 @@
     <string name="session_detail_timeline_empty">No timeline entries have been cached. Reconnect to refresh this session.</string>
     <string name="session_detail_activity">Activity</string>
     <string name="session_detail_activity_empty">No recent activity is recorded for this session.</string>
+    <string name="session_activity_topic_transport">Transport diagnostics</string>
+    <string name="session_activity_topic_agent_feedback">Agent feedback</string>
+    <string name="session_activity_topic_user_decisions">User decisions</string>
+    <string name="session_activity_topic_completion">Completion</string>
+    <string name="session_activity_topic_blocked_tasks">Blocked tasks</string>
+    <string name="session_activity_topic_empty">Nothing recorded in this section.</string>
     <string name="session_detail_context">%1$s\u00A0·\u00A0%2$s\u00A0·\u00A0%3$s</string>
     <string name="session_composer_message">Message</string>
     <string name="session_composer_message_to">Message to %1$s</string>

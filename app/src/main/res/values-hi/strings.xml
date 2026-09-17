@@ -154,6 +154,12 @@
     <string name="session_detail_select_session">ट्रांसक्रिप्ट और गतिविधि देखने के लिए सत्र चुनें।</string>
     <string name="session_detail_approvals_and_questions">स्वीकृतियाँ और प्रश्न</string>
     <string name="session_detail_changed_files">बदली हुई फ़ाइलें</string>
+    <string name="session_activity_topic_transport">परिवहन निदान</string>
+    <string name="session_activity_topic_agent_feedback">एजेंट प्रतिक्रिया</string>
+    <string name="session_activity_topic_user_decisions">उपयोगकर्ता निर्णय</string>
+    <string name="session_activity_topic_completion">पूर्णता</string>
+    <string name="session_activity_topic_blocked_tasks">अवरोधित कार्य</string>
+    <string name="session_activity_topic_empty">इस अनुभाग में कुछ भी दर्ज नहीं है।</string>
     <string name="session_detail_refresh_changed_files">बदली हुई फ़ाइलें रीफ़्रेश करें</string>
     <string name="session_detail_no_changed_files">कोई बदली हुई फ़ाइल रिकॉर्ड नहीं है। जुड़े हुए प्रदाता से पूछने के लिए रीफ़्रेश करें।</string>
     <string name="session_detail_changed_files_unsupported">यह प्रदाता इस सत्र के लिए बदली हुई फ़ाइलें उपलब्ध नहीं कराता।</string>
