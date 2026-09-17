@@ -6,8 +6,13 @@
 package dev.agentrelay.session.runtime
 
 import dev.agentrelay.provider.api.ProviderReadiness
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class ProviderSynchronizationClassificationTest {
     @Test
@@ -35,6 +40,42 @@ class ProviderSynchronizationClassificationTest {
             ProviderSynchronizationClassification.REAL_FAILURE,
             ProviderReadiness.Failed("malformed response", recoverable = false)
                 .synchronizationClassification(),
+        )
+    }
+
+    @Test
+    fun fatalSynchronizationFailuresAreNotConvertedToProviderStatus() {
+        val fatal = AssertionError("fatal test failure")
+
+        assertFailsWith<AssertionError> {
+            fatal.rethrowFatalSynchronizationFailure()
+        }
+
+        IllegalStateException("recoverable test failure")
+            .rethrowFatalSynchronizationFailure()
+    }
+
+    @Test
+    fun timeoutCauseAlwaysRetainsTransientClassification() = runTest {
+        val timeout = assertFailsWith<TimeoutCancellationException> {
+            withTimeout(1) {
+                delay(10)
+            }
+        }
+
+        assertEquals(
+            ProviderSynchronizationClassification.TRANSIENT_FAILURE,
+            synchronizationFailureClassification(
+                cause = timeout,
+                fallback = ProviderSynchronizationClassification.REAL_FAILURE,
+            ),
+        )
+        assertEquals(
+            ProviderSynchronizationClassification.REAL_FAILURE,
+            synchronizationFailureClassification(
+                cause = IllegalStateException("unexpected"),
+                fallback = ProviderSynchronizationClassification.REAL_FAILURE,
+            ),
         )
     }
 }

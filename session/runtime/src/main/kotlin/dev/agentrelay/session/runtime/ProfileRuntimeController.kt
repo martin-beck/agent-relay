@@ -215,11 +215,13 @@ internal class ProfileRuntimeController(
             publishSynchronizationFailure(
                 descriptor,
                 ProviderSynchronizationClassification.TRANSIENT_FAILURE,
+                failure,
             )
             return
         } catch (failure: CancellationException) {
             throw failure
-        } catch (_: Throwable) {
+        } catch (failure: Throwable) {
+            failure.rethrowFatalSynchronizationFailure()
             val failed = ProviderReadiness.Failed(
                 reason = descriptor.displayName + " readiness check failed",
                 recoverable = true,
@@ -298,10 +300,12 @@ internal class ProfileRuntimeController(
             publishSynchronizationFailure(
                 descriptor,
                 ProviderSynchronizationClassification.TRANSIENT_FAILURE,
+                failure,
             )
         } catch (failure: CancellationException) {
             throw failure
-        } catch (_: Throwable) {
+        } catch (failure: Throwable) {
+            failure.rethrowFatalSynchronizationFailure()
             publishSynchronizationFailure(
                 descriptor,
                 ProviderSynchronizationClassification.REAL_FAILURE,
@@ -325,17 +329,20 @@ internal class ProfileRuntimeController(
     private suspend fun publishSynchronizationFailure(
         descriptor: AgentProviderDescriptor,
         classification: ProviderSynchronizationClassification,
+        cause: Throwable? = null,
     ) {
+        val effectiveClassification = synchronizationFailureClassification(cause, classification)
         publishStatus(
             descriptor = descriptor,
             phase = AgentEndpointPhase.FAILED,
             readiness = ProviderReadiness.Failed(
                 reason = descriptor.displayName + " could not be synchronized",
-                recoverable = classification == ProviderSynchronizationClassification.TRANSIENT_FAILURE,
+                recoverable = effectiveClassification ==
+                    ProviderSynchronizationClassification.TRANSIENT_FAILURE,
             ),
-            synchronizationClassification = classification,
+            synchronizationClassification = effectiveClassification,
         )
-        publishProviderIssue(descriptor, classification)
+        publishProviderIssue(descriptor, effectiveClassification)
     }
 
     private suspend fun persistSessions(
@@ -583,3 +590,20 @@ internal class ProfileRuntimeController(
         const val MAX_CACHED_TRANSCRIPT_ENTRIES = 500
     }
 }
+
+/** Do not turn process-fatal failures into recoverable provider status. */
+internal fun Throwable.rethrowFatalSynchronizationFailure() {
+    if (this is Error) {
+        throw this
+    }
+}
+
+internal fun synchronizationFailureClassification(
+    cause: Throwable?,
+    fallback: ProviderSynchronizationClassification,
+): ProviderSynchronizationClassification =
+    if (cause is TimeoutCancellationException) {
+        ProviderSynchronizationClassification.TRANSIENT_FAILURE
+    } else {
+        fallback
+    }
