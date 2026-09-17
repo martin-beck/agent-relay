@@ -22,7 +22,7 @@ dependencies {
 
     constraints {
         add("spotbugs", "org.apache.logging.log4j:log4j-api:2.25.5")
-        add("spotbugs", "org.apache.logging.log4j:log4j-core:2.25.4")
+        add("spotbugs", "org.apache.logging.log4j:log4j-core:2.26.1")
     }
 }
 
