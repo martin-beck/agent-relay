@@ -53,12 +53,7 @@ internal fun SessionHubList(
     var sortOption by rememberSaveable { mutableStateOf(SessionListSortOption.LAST_APP_INTERACTION) }
     val filteredSessions = filterSessionList(hub.sessions, filters, System.currentTimeMillis())
     val surfaceBuckets = attentionSurfaceBuckets(sortSessionList(filteredSessions, sortOption))
-    val attentionTitle = stringResource(R.string.session_hub_attention_title)
-    val attentionSubtitle = stringResource(R.string.session_hub_attention_subtitle)
-    val changedTitle = stringResource(R.string.session_detail_changed_files)
-    val surfaceSubtitle = stringResource(R.string.session_hub_recent_sessions_subtitle)
-    val runningTitle = stringResource(R.string.session_state_running)
-    val recentTitle = stringResource(R.string.session_hub_recent_sessions_title)
+    val labels = sessionSurfaceLabels()
     LazyColumn(
         modifier = modifier,
         contentPadding = PaddingValues(20.dp),
@@ -155,20 +150,23 @@ internal fun SessionHubList(
             sessions = filteredSessions,
             buckets = surfaceBuckets,
             selectedSessionKey = hub.selectedSessionKey,
-            labels = SessionSurfaceLabels(
-                attentionTitle,
-                attentionSubtitle,
-                changedTitle,
-                surfaceSubtitle,
-                runningTitle,
-                recentTitle,
-            ),
+            labels = labels,
             onTogglePinned = actions.toggleSessionPinned,
             onSelectSession = onSelectSession,
             hasFilters = filters != SessionListSearchFilterState(),
         )
     }
 }
+
+@Composable
+private fun sessionSurfaceLabels() = SessionSurfaceLabels(
+    attentionTitle = stringResource(R.string.session_hub_attention_title),
+    attentionSubtitle = stringResource(R.string.session_hub_attention_subtitle),
+    changedTitle = stringResource(R.string.session_detail_changed_files),
+    surfaceSubtitle = stringResource(R.string.session_hub_recent_sessions_subtitle),
+    runningTitle = stringResource(R.string.session_state_running),
+    recentTitle = stringResource(R.string.session_hub_recent_sessions_title),
+)
 
 @Composable
 private fun SessionListSearchFilterItem(
