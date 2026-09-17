@@ -8,18 +8,27 @@ package com.example.agentrelay.ui.main
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
 
 @androidx.compose.runtime.Composable
 internal fun SwipeActionSurface(
@@ -30,28 +39,55 @@ internal fun SwipeActionSurface(
 ) {
     val layoutDirection = LocalLayoutDirection.current
     var offset by remember { mutableFloatStateOf(0f) }
-    val gestureModifier = modifier
-        .graphicsLayer { translationX = offset }
-        .pointerInput(layoutDirection, onAction) {
-            detectHorizontalDragGestures(
-                onHorizontalDrag = { change, amount ->
-                    offset = (offset + amount).coerceIn(-size.width.toFloat(), size.width.toFloat())
-                },
-                onDragEnd = {
-                    val decision = resolveHorizontalSwipe(offset, size.width.toFloat(), layoutDirection)
-                    offset = 0f
-                    if (decision.action != HorizontalSwipeAction.NONE) onAction?.invoke(decision.action)
-                },
-                onDragCancel = { offset = 0f },
-            )
-        }
-        .semantics {
-            if (accessibilityActionLabel != null && onAction != null) {
-                customActions = listOf(CustomAccessibilityAction(accessibilityActionLabel) {
-                    onAction(HorizontalSwipeAction.REVEAL_END)
-                    true
-                })
+    Box(modifier = modifier) {
+        if (onAction != null && accessibilityActionLabel != null && offset != 0f) {
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = MaterialTheme.colorScheme.secondaryContainer,
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                    horizontalArrangement = if (offset < 0f) {
+                        Arrangement.End
+                    } else {
+                        Arrangement.Start
+                    },
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = accessibilityActionLabel,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    )
+                }
             }
         }
-    Box(modifier = gestureModifier, content = content)
+        val gestureModifier = Modifier
+            .fillMaxWidth()
+            .graphicsLayer { translationX = offset }
+            .pointerInput(layoutDirection, onAction) {
+                detectHorizontalDragGestures(
+                    onHorizontalDrag = { change, amount ->
+                        offset = (offset + amount).coerceIn(-size.width.toFloat(), size.width.toFloat())
+                    },
+                    onDragEnd = {
+                        val decision = resolveHorizontalSwipe(offset, size.width.toFloat(), layoutDirection)
+                        offset = 0f
+                        if (decision.action != HorizontalSwipeAction.NONE) onAction?.invoke(decision.action)
+                    },
+                    onDragCancel = { offset = 0f },
+                )
+            }
+            .semantics {
+                if (accessibilityActionLabel != null && onAction != null) {
+                    customActions = listOf(
+                        CustomAccessibilityAction(accessibilityActionLabel) {
+                            onAction(HorizontalSwipeAction.REVEAL_END)
+                            true
+                        },
+                    )
+                }
+            }
+        Box(modifier = gestureModifier, content = content)
+    }
 }

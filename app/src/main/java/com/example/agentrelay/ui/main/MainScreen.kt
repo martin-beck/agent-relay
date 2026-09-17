@@ -79,7 +79,7 @@ internal fun MainScreen(
             selectSession = viewModel::selectSession,
             openSession = onOpenSession,
             dismissError = viewModel::clearOperationError,
-            restoreError = viewModel::restoreOperationError,
+            restoreError = viewModel.restoreOperationError,
             addProfile = viewModel::addProfile,
             editProfile = viewModel::editProfile,
             updateProfileField = viewModel::updateProfileField,
@@ -419,9 +419,7 @@ private fun AdaptiveSessionHub(
                     hub = hub,
                     actions = actions,
                     onSelectSession = selectSession,
-                    modifier = Modifier
-                        .weight(0.44f)
-                        .testTag(SESSION_HUB_LIST_TEST_TAG),
+                    modifier = Modifier.weight(0.44f),
                 )
                 VerticalDivider()
                 SessionDetailPane(
@@ -446,9 +444,7 @@ private fun AdaptiveSessionHub(
                 hub = hub,
                 actions = actions,
                 onSelectSession = selectSession,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .testTag(SESSION_HUB_LIST_TEST_TAG),
+                modifier = Modifier.fillMaxSize(),
             )
         }
     }

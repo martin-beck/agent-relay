@@ -68,40 +68,22 @@ internal fun MainNavigation(
         selectedSessionKey = (uiState as? MainScreenUiState.Ready)?.hub?.selectedSessionKey,
         onPermissionDenied = mainViewModel.speechActions::permissionDenied,
     )
-    val speechActions = remember(mainViewModel, requestSpeechStart) {
-        SpeechInputUiActions(
-            selectModel = mainViewModel.speechActions::selectModel,
-            installModel = mainViewModel.speechActions::installModel,
-            cancelModelInstall = mainViewModel.speechActions::cancelModelInstall,
-            requestStart = requestSpeechStart,
-            stop = mainViewModel.speechActions::stop,
-            cancel = mainViewModel.speechActions::cancel,
-            useTranscript = mainViewModel.speechActions::useTranscript,
-            dismiss = mainViewModel.speechActions::dismiss,
-        )
-    }
+    val speechActions = rememberSpeechActions(mainViewModel, requestSpeechStart)
     val backStack = rememberNavBackStack(Main)
     val onBack: () -> Unit = {
-        backStack.removeLastOrNull()
-        mainViewModel.clearSelection()
+        if (canPopAppShell(backStack.size)) {
+            backStack.removeLastOrNull()
+            mainViewModel.clearSelection()
+        }
     }
 
-    LaunchedEffect(notificationNavigationKey, uiState) {
-        val sessionKey = notificationNavigationKey ?: return@LaunchedEffect
-        val ready = uiState as? MainScreenUiState.Ready ?: return@LaunchedEffect
-        val route = SessionDetails(sessionKey)
-        if (ready.hub.sessions.any { session -> session.stableKey == sessionKey }) {
-            if (backStack.lastOrNull() != route) {
-                if (backStack.lastOrNull() is SessionDetails) {
-                    backStack.removeLastOrNull()
-                }
-                backStack.add(route)
-            }
-        } else {
-            mainViewModel.selectSession(sessionKey)
-        }
-        onNotificationNavigationConsumed(sessionKey)
-    }
+    ConsumeNotificationNavigation(
+        notificationNavigationKey = notificationNavigationKey,
+        uiState = uiState,
+        backStack = backStack,
+        onConsumed = onNotificationNavigationConsumed,
+        selectSession = mainViewModel::selectSession,
+    )
 
     Box(modifier = Modifier.fillMaxSize()) {
         NavDisplay(
@@ -178,6 +160,47 @@ internal fun MainNavigation(
             PairingHandoffUiState.Rejected -> PairingAppLinkRejected(onDismiss = onPairingDismissed)
             null -> Unit
         }
+    }
+}
+
+@Composable
+private fun rememberSpeechActions(
+    viewModel: MainScreenViewModel,
+    requestStart: (String) -> Unit,
+): SpeechInputUiActions = remember(viewModel, requestStart) {
+    SpeechInputUiActions(
+        selectModel = viewModel.speechActions::selectModel,
+        installModel = viewModel.speechActions::installModel,
+        cancelModelInstall = viewModel.speechActions::cancelModelInstall,
+        requestStart = requestStart,
+        stop = viewModel.speechActions::stop,
+        cancel = viewModel.speechActions::cancel,
+        useTranscript = viewModel.speechActions::useTranscript,
+        dismiss = viewModel.speechActions::dismiss,
+    )
+}
+
+@Composable
+private fun ConsumeNotificationNavigation(
+    notificationNavigationKey: String?,
+    uiState: MainScreenUiState,
+    backStack: MutableList<androidx.navigation3.runtime.NavKey>,
+    onConsumed: (String) -> Unit,
+    selectSession: (String) -> Unit,
+) {
+    LaunchedEffect(notificationNavigationKey, uiState) {
+        val sessionKey = notificationNavigationKey ?: return@LaunchedEffect
+        val ready = uiState as? MainScreenUiState.Ready ?: return@LaunchedEffect
+        val route = SessionDetails(sessionKey)
+        if (ready.hub.sessions.any { session -> session.stableKey == sessionKey }) {
+            if (backStack.lastOrNull() != route) {
+                if (backStack.lastOrNull() is SessionDetails) backStack.removeLastOrNull()
+                backStack.add(route)
+            }
+        } else {
+            selectSession(sessionKey)
+        }
+        onConsumed(sessionKey)
     }
 }
 

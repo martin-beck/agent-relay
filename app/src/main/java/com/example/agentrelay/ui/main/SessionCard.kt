@@ -39,10 +39,13 @@ internal fun SessionCard(
     onTogglePinned: () -> Unit = {},
 ) {
     val accessibilityLabel = sessionAccessibilityLabel(session)
+    val swipeActionLabel = stringResource(
+        if (session.isPinned) R.string.session_card_unpin else R.string.session_card_pin,
+    )
     SwipeActionSurface(
         modifier = Modifier.fillMaxWidth(),
-        accessibilityActionLabel = stringResource(R.string.session_card_pinned),
-        onAction = onSwipeAction,
+        accessibilityActionLabel = swipeActionLabel,
+        onAction = onSwipeAction ?: { onTogglePinned() },
     ) {
         Card(
             onClick = onClick,

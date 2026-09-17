@@ -241,13 +241,7 @@ internal class ProfileRuntimeController(
         val endpoint = endpoint(descriptor.id)
         publishStatus(descriptor, AgentEndpointPhase.PROBING)
         val factory = agentRegistry.factory(descriptor.id)
-        val readiness = try {
-            factory.probe(runtime)
-        } catch (failure: CancellationException) {
-            throw failure
-        } catch (failure: Throwable) {
-            throw failure
-        }
+        val readiness = factory.probe(runtime)
 
         if (readiness !is ProviderReadiness.Ready) {
             publishStatus(
@@ -304,10 +298,6 @@ internal class ProfileRuntimeController(
                 }
                 awaitCancellation()
             }
-        } catch (failure: CancellationException) {
-            throw failure
-        } catch (failure: Throwable) {
-            throw failure
         } finally {
             activeMutex.withLock {
                 if (activeAgents[descriptor.id]?.connection === connection) {

@@ -6,7 +6,6 @@
 package com.example.agentrelay.ui.main
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -48,7 +47,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.launch
 import com.example.agentrelay.R
-import dev.agentrelay.session.api.SessionActionState
 
 @Composable
 internal fun SessionHubList(
@@ -60,6 +58,10 @@ internal fun SessionHubList(
     var sortOption by rememberSaveable { mutableStateOf(SessionListSortOption.LAST_APP_INTERACTION) }
     val surfaceBuckets = attentionSurfaceBuckets(sortSessionList(hub.sessions, sortOption))
     val attentionTitle = stringResource(R.string.session_hub_attention_title)
+    val quickAttentionTitle = stringResource(R.string.quick_navigation_attention)
+    val attentionCardHasHeading = hub.attentionActions.any {
+        it.title.resolve().contains(attentionTitle)
+    }
     val attentionSubtitle = stringResource(R.string.session_hub_attention_subtitle)
     val changedTitle = stringResource(R.string.session_detail_changed_files)
     val surfaceSubtitle = stringResource(R.string.session_hub_recent_sessions_subtitle)
@@ -68,7 +70,6 @@ internal fun SessionHubList(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val undoLabel = stringResource(R.string.action_undo)
-    val operationErrorMessage = hub.operationError?.resolve()
     fun dismissWithUndo(message: String) {
         actions.dismissError()
         scope.launch {
@@ -83,7 +84,7 @@ internal fun SessionHubList(
         modifier = modifier,
     ) {
         LazyColumn(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().testTag(SESSION_HUB_LIST_TEST_TAG),
             contentPadding = PaddingValues(20.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
@@ -96,105 +97,119 @@ internal fun SessionHubList(
                     onOptionSelected = { sortOption = it },
                 )
             }
-            operationErrorMessage?.let { resolvedMessage ->
-                item(key = "operation-error") {
-                    MessageCard(
-                        resolvedMessage,
-                        true,
-                        stringResource(R.string.action_dismiss),
-                        { dismissWithUndo(resolvedMessage) },
-                        onSwipeAction = { dismissWithUndo(resolvedMessage) },
-                    )
-                }
-            }
-            items(hub.issues, key = { "issue:" + it.id }) { issue ->
-                MessageCard(
-                    message = issue.message.resolve(),
-                    isError = !issue.recoverable,
-                    actionLabel = if (issue.recoverable) {
-                        stringResource(R.string.action_refresh)
-                    } else {
-                        null
-                    },
-                    onAction = if (issue.recoverable) actions.refresh else null,
-                    onSwipeAction = if (issue.recoverable) {
-                        { actions.refresh() }
-                    } else {
-                        null
-                    },
-                )
-            }
-            if (hub.attentionActions.isNotEmpty()) {
+            if (
+                hub.attentionActions.isNotEmpty() &&
+                !attentionCardHasHeading &&
+                attentionTitle != quickAttentionTitle
+            ) {
                 item(key = "attention-heading") {
                     SectionHeading(
                         title = stringResource(R.string.session_hub_attention_title),
                         subtitle = stringResource(R.string.session_hub_attention_subtitle),
                     )
                 }
-                items(
-                    hub.attentionActions,
-                    key = { "attention:" + it.stableKey },
-                ) { action ->
+                items(hub.attentionActions, key = { "attention:" + it.stableKey }) { action ->
                     AttentionActionCard(
                         action = action,
                         onReview = { onSelectSession(action.sessionKey) },
                     )
                 }
             }
-            item(key = "connections-heading") {
-                SectionHeading(
-                    title = stringResource(R.string.session_hub_connections_title),
-                    subtitle = stringResource(R.string.session_hub_connections_subtitle),
-                )
-            }
-            items(
-                hub.manageableConnectionProviders,
-                key = { "add-profile:" + it.stableKey },
-            ) { provider ->
-                OutlinedButton(
-                    onClick = { actions.addProfile(provider.stableKey) },
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(stringResource(R.string.session_hub_add_profile, provider.name))
-                }
-            }
-            if (hub.connections.isEmpty()) {
-                item(key = "connections-empty") {
-                    EmptyCard(stringResource(R.string.session_hub_connections_empty))
-                }
-            } else {
-                items(hub.connections, key = ConnectionUiModel::stableKey) { connection ->
-                    ConnectionCard(
-                        connection = connection,
-                        onConnect = { actions.connect(connection.stableKey) },
-                        onDisconnect = { actions.disconnect(connection.stableKey) },
-                        onTrustIdentity = { replace ->
-                            actions.trustIdentity(connection.stableKey, replace)
-                        },
-                        onRejectIdentity = { actions.rejectIdentity(connection.stableKey) },
-                        onEdit = { actions.editProfile(connection.stableKey) },
-                    )
-                }
-            }
+            hubIssueItems(hub, actions, ::dismissWithUndo)
+            hubConnectionItems(hub, actions)
             sessionLaunchers(hub.sessionLaunchers, actions.openSessionCreator)
             sessionSurfaces(
                 sessions = sortSessionList(hub.sessions, sortOption),
                 buckets = surfaceBuckets,
                 selectedSessionKey = hub.selectedSessionKey,
-                attentionTitle = attentionTitle,
-                attentionSubtitle = attentionSubtitle,
-                changedTitle = changedTitle,
-                surfaceSubtitle = surfaceSubtitle,
-                runningTitle = runningTitle,
-                recentTitle = recentTitle,
-                onTogglePinned = actions.toggleSessionPinned,
-                onSelectSession = onSelectSession,
+                labels = SessionSurfaceLabels(
+                    attentionTitle = attentionTitle,
+                    attentionSubtitle = attentionSubtitle,
+                    changedTitle = changedTitle,
+                    surfaceSubtitle = surfaceSubtitle,
+                    runningTitle = runningTitle,
+                    recentTitle = recentTitle,
+                ),
+                actions = SessionSurfaceActions(
+                    onTogglePinned = actions.toggleSessionPinned,
+                    onSelectSession = onSelectSession,
+                ),
             )
         }
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.BottomCenter).padding(12.dp),
         )
+    }
+}
+
+private fun LazyListScope.hubIssueItems(
+    hub: SessionHubUiModel,
+    actions: SessionHubActions,
+    dismissWithUndo: (String) -> Unit,
+) {
+    hub.operationError?.let { message ->
+        item(key = "operation-error") {
+            val resolvedMessage = message.resolve()
+            MessageCard(
+                message = resolvedMessage,
+                isError = true,
+                actionLabel = stringResource(R.string.action_dismiss),
+                onAction = { dismissWithUndo(resolvedMessage) },
+                onSwipeAction = { dismissWithUndo(resolvedMessage) },
+            )
+        }
+    }
+    items(hub.issues, key = { "issue:" + it.id }) { issue ->
+        val actionLabel = if (issue.recoverable) {
+            stringResource(R.string.action_refresh)
+        } else {
+            null
+        }
+        MessageCard(
+            message = issue.message.resolve(),
+            isError = !issue.recoverable,
+            actionLabel = actionLabel,
+            onAction = if (issue.recoverable) actions.refresh else null,
+        )
+    }
+}
+
+private fun LazyListScope.hubConnectionItems(
+    hub: SessionHubUiModel,
+    actions: SessionHubActions,
+) {
+    item(key = "connections-heading") {
+        SectionHeading(
+            title = stringResource(R.string.session_hub_connections_title),
+            subtitle = stringResource(R.string.session_hub_connections_subtitle),
+        )
+    }
+    items(hub.manageableConnectionProviders, key = { "add-profile:" + it.stableKey }) { provider ->
+        OutlinedButton(
+            onClick = { actions.addProfile(provider.stableKey) },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(stringResource(R.string.session_hub_add_profile, provider.name))
+        }
+    }
+    if (hub.connections.isEmpty()) {
+        item(key = "connections-empty") {
+            EmptyCard(stringResource(R.string.session_hub_connections_empty))
+        }
+    } else {
+        items(hub.connections, key = ConnectionUiModel::stableKey) { connection ->
+            ConnectionCard(
+                connection = connection,
+                onConnect = { actions.connect(connection.stableKey) },
+                onDisconnect = { actions.disconnect(connection.stableKey) },
+                onTrustIdentity = { replace ->
+                    actions.trustIdentity(connection.stableKey, replace)
+                },
+                onRejectIdentity = { actions.rejectIdentity(connection.stableKey) },
+                onEdit = { actions.editProfile(connection.stableKey) },
+            )
+        }
     }
 }
 
@@ -247,22 +262,30 @@ private fun SessionListSortControl(
     }
 }
 
+private data class SessionSurfaceLabels(
+    val attentionTitle: String,
+    val attentionSubtitle: String,
+    val changedTitle: String,
+    val surfaceSubtitle: String,
+    val runningTitle: String,
+    val recentTitle: String,
+)
+
+private data class SessionSurfaceActions(
+    val onTogglePinned: (String) -> Unit,
+    val onSelectSession: (String) -> Unit,
+)
+
 private fun LazyListScope.sessionSurfaces(
     sessions: List<SessionUiModel>,
     buckets: AttentionSurfaceBuckets,
     selectedSessionKey: String?,
-    attentionTitle: String,
-    attentionSubtitle: String,
-    changedTitle: String,
-    surfaceSubtitle: String,
-    runningTitle: String,
-    recentTitle: String,
-    onTogglePinned: (String) -> Unit,
-    onSelectSession: (String) -> Unit,
+    labels: SessionSurfaceLabels,
+    actions: SessionSurfaceActions,
 ) {
     if (sessions.isEmpty()) {
         item(key = "sessions-heading") {
-            SectionHeading(title = recentTitle, subtitle = surfaceSubtitle)
+            SectionHeading(title = labels.recentTitle, subtitle = labels.surfaceSubtitle)
         }
         item(key = "sessions-empty") {
             EmptyCard(stringResource(R.string.session_hub_sessions_empty))
@@ -271,39 +294,39 @@ private fun LazyListScope.sessionSurfaces(
     }
     sessionSurfaceSection(
         key = "sessions-attention",
-        title = attentionTitle,
-        subtitle = attentionSubtitle,
+        title = labels.attentionTitle,
+        subtitle = labels.attentionSubtitle,
         sessions = buckets.needsAttention,
         selectedSessionKey = selectedSessionKey,
-        onSelectSession = onSelectSession,
-        onTogglePinned = onTogglePinned,
+        onSelectSession = actions.onSelectSession,
+        onTogglePinned = actions.onTogglePinned,
     )
     sessionSurfaceSection(
         key = "sessions-changed",
-        title = changedTitle,
-        subtitle = surfaceSubtitle,
+        title = labels.changedTitle,
+        subtitle = labels.surfaceSubtitle,
         sessions = buckets.changed,
         selectedSessionKey = selectedSessionKey,
-        onSelectSession = onSelectSession,
-        onTogglePinned = onTogglePinned,
+        onSelectSession = actions.onSelectSession,
+        onTogglePinned = actions.onTogglePinned,
     )
     sessionSurfaceSection(
         key = "sessions-running",
-        title = runningTitle,
-        subtitle = surfaceSubtitle,
+        title = labels.runningTitle,
+        subtitle = labels.surfaceSubtitle,
         sessions = buckets.running,
         selectedSessionKey = selectedSessionKey,
-        onSelectSession = onSelectSession,
-        onTogglePinned = onTogglePinned,
+        onSelectSession = actions.onSelectSession,
+        onTogglePinned = actions.onTogglePinned,
     )
     sessionSurfaceSection(
         key = "sessions-recent",
-        title = recentTitle,
-        subtitle = surfaceSubtitle,
+        title = labels.recentTitle,
+        subtitle = labels.surfaceSubtitle,
         sessions = buckets.recentlyCompleted,
         selectedSessionKey = selectedSessionKey,
-        onSelectSession = onSelectSession,
-        onTogglePinned = onTogglePinned,
+        onSelectSession = actions.onSelectSession,
+        onTogglePinned = actions.onTogglePinned,
     )
 }
 
@@ -327,9 +350,9 @@ private fun LazyListScope.sessionSurfaceSection(
         items(agentSessions, key = SessionUiModel::stableKey) { session ->
             SessionCard(
                 session = session,
-            selected = session.stableKey == selectedSessionKey,
-            onClick = { onSelectSession(session.stableKey) },
-            onTogglePinned = { onTogglePinned(session.stableKey) },
+                selected = session.stableKey == selectedSessionKey,
+                onClick = { onSelectSession(session.stableKey) },
+                onTogglePinned = { onTogglePinned(session.stableKey) },
             )
         }
     }
@@ -451,7 +474,11 @@ private fun MessageCard(
     SwipeActionSurface(
         modifier = Modifier.fillMaxWidth(),
         accessibilityActionLabel = actionLabel,
-        onAction = if (onSwipeAction == null) null else { { onSwipeAction() } },
+        onAction = if (onSwipeAction == null) {
+            null
+        } else {
+            { onSwipeAction() }
+        },
     ) {
         Card(
             modifier = Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite },
@@ -502,15 +529,6 @@ private fun AttentionActionCard(
             modifier = Modifier.padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            Text(
-                text = if (action.state == SessionActionState.DELIVERING) {
-                    stringResource(R.string.session_hub_response_pending_confirmation)
-                } else {
-                    action.type.localizedLabel()
-                },
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.Bold,
-            )
             Text(
                 text = action.title.resolve(),
                 style = MaterialTheme.typography.bodyLarge,

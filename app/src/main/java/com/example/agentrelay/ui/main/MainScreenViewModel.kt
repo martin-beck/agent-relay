@@ -200,7 +200,7 @@ internal class MainScreenViewModel(
         }
     }
 
-    fun clearSelection() {
+    internal val clearSelection: () -> Unit = {
         speechInput.cancelForSessionChange(null)
         selectedSessionKey.value = null
     }
@@ -210,7 +210,7 @@ internal class MainScreenViewModel(
         operationError.value = null
     }
 
-    fun restoreOperationError() {
+    internal val restoreOperationError: () -> Unit = {
         if (operationError.value == null) {
             operationError.value = dismissedOperationError
         }
