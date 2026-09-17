@@ -129,8 +129,9 @@ internal fun sortSessionList(
         .thenByDescending {
             when (option) {
                 SessionListSortOption.LAST_APP_INTERACTION -> it.lastActivityAtEpochMillis
-                SessionListSortOption.LAST_LLM_RESPONSE -> it.lastLlmResponseAtEpochMillis
-                    ?: it.lastActivityAtEpochMillis
+                SessionListSortOption.LAST_LLM_RESPONSE ->
+                    it.lastLlmResponseAtEpochMillis
+                        ?: it.lastActivityAtEpochMillis
             } ?: Long.MIN_VALUE
         }
         .thenBy(SessionUiModel::stableKey),
@@ -473,14 +474,17 @@ internal object SessionHubUiMapper {
     private fun sessionModels(
         sessions: SessionHubSnapshot,
         providerNames: Map<dev.agentrelay.connection.api.ConnectionProviderId, String>,
-    ): List<SessionUiModel> = sortSessionList(sessions.recentSessions().map { record ->
-        val activities = sessions.activities.filter { it.locator == record.locator }
-        record.toUiModel(
-            connectionProviderName = providerNames[record.locator.connectionProviderId]
-                ?: record.locator.connectionProviderId.value,
-            activities = activities,
-        )
-    }, SessionListSortOption.LAST_APP_INTERACTION)
+    ): List<SessionUiModel> = sortSessionList(
+        sessions.recentSessions().map { record ->
+            val activities = sessions.activities.filter { it.locator == record.locator }
+            record.toUiModel(
+                connectionProviderName = providerNames[record.locator.connectionProviderId]
+                    ?: record.locator.connectionProviderId.value,
+                activities = activities,
+            )
+        },
+        SessionListSortOption.LAST_APP_INTERACTION,
+    )
 
     private fun sessionLaunchers(
         coordinator: SessionCoordinatorSnapshot,
