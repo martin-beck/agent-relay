@@ -156,6 +156,12 @@
     <string name="session_detail_select_session">文字起こしとアクティビティを確認するセッションを選択してください。</string>
     <string name="session_detail_approvals_and_questions">承認と質問</string>
     <string name="session_detail_changed_files">変更されたファイル</string>
+    <string name="session_activity_topic_transport">トランスポート診断</string>
+    <string name="session_activity_topic_agent_feedback">エージェントのフィードバック</string>
+    <string name="session_activity_topic_user_decisions">ユーザーの決定</string>
+    <string name="session_activity_topic_completion">完了</string>
+    <string name="session_activity_topic_blocked_tasks">ブロックされたタスク</string>
+    <string name="session_activity_topic_empty">このセクションには記録がありません。</string>
     <string name="session_detail_refresh_changed_files">変更されたファイルを更新</string>
     <string name="session_detail_no_changed_files">変更されたファイルは記録されていません。更新して接続済みプロバイダーに問い合わせてください。</string>
     <string name="session_detail_changed_files_unsupported">このプロバイダーは、このセッションの変更されたファイルを公開していません。</string>

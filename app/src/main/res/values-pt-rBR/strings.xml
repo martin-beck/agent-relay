@@ -160,6 +160,12 @@
     <string name="session_detail_select_session">Selecione uma sessão para inspecionar a transcrição e a atividade.</string>
     <string name="session_detail_approvals_and_questions">Aprovações e perguntas</string>
     <string name="session_detail_changed_files">Arquivos alterados</string>
+    <string name="session_activity_topic_transport">Diagnóstico de transporte</string>
+    <string name="session_activity_topic_agent_feedback">Feedback do agente</string>
+    <string name="session_activity_topic_user_decisions">Decisões do usuário</string>
+    <string name="session_activity_topic_completion">Conclusão</string>
+    <string name="session_activity_topic_blocked_tasks">Tarefas bloqueadas</string>
+    <string name="session_activity_topic_empty">Nada registrado nesta seção.</string>
     <string name="session_detail_refresh_changed_files">Atualizar arquivos alterados</string>
     <string name="session_detail_no_changed_files">Nenhum arquivo alterado foi registrado. Atualize para consultar o provedor conectado.</string>
     <string name="session_detail_changed_files_unsupported">Este provedor não expõe arquivos alterados para esta sessão.</string>

@@ -158,6 +158,12 @@
     <string name="session_detail_select_session">ট্রান্সক্রিপ্ট ও কার্যকলাপ দেখতে একটি সেশন নির্বাচন করুন।</string>
     <string name="session_detail_approvals_and_questions">অনুমোদন ও প্রশ্ন</string>
     <string name="session_detail_changed_files">পরিবর্তিত ফাইল</string>
+    <string name="session_activity_topic_transport">পরিবহন</string>
+    <string name="session_activity_topic_agent_feedback">এজেন্ট প্রতিক্রিয়া</string>
+    <string name="session_activity_topic_user_decisions">ব্যবহারকারীর সিদ্ধান্ত</string>
+    <string name="session_activity_topic_completion">সম্পন্ন</string>
+    <string name="session_activity_topic_blocked_tasks">আটকে থাকা কাজ</string>
+    <string name="session_activity_topic_empty">এই বিভাগে কিছু রেকর্ড করা নেই।</string>
     <string name="session_detail_refresh_changed_files">পরিবর্তিত ফাইল রিফ্রেশ করুন</string>
     <string name="session_detail_no_changed_files">কোনো পরিবর্তিত ফাইল রেকর্ড করা নেই। সংযুক্ত প্রদানকারীকে জিজ্ঞাসা করতে রিফ্রেশ করুন।</string>
     <string name="session_detail_changed_files_unsupported">এই প্রদানকারী এই সেশনের পরিবর্তিত ফাইল প্রকাশ করে না।</string>
