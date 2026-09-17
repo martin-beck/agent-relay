@@ -63,6 +63,7 @@ internal fun SessionHubList(
                     true,
                     stringResource(R.string.action_dismiss),
                     actions.dismissError,
+                    onSwipeAction = { actions.dismissError() },
                 )
             }
         }
@@ -76,6 +77,11 @@ internal fun SessionHubList(
                     null
                 },
                 onAction = if (issue.recoverable) actions.refresh else null,
+                onSwipeAction = if (issue.recoverable) {
+                    { actions.refresh() }
+                } else {
+                    null
+                },
             )
         }
         if (hub.attentionActions.isNotEmpty()) {
@@ -328,28 +334,35 @@ private fun MessageCard(
     isError: Boolean,
     actionLabel: String?,
     onAction: (() -> Unit)?,
+    onSwipeAction: (() -> Unit)? = null,
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite },
-        colors = CardDefaults.cardColors(
-            containerColor = if (isError) {
-                MaterialTheme.colorScheme.errorContainer
-            } else {
-                MaterialTheme.colorScheme.tertiaryContainer
-            },
-        ),
+    SwipeActionSurface(
+        modifier = Modifier.fillMaxWidth(),
+        accessibilityActionLabel = actionLabel,
+        onAction = if (onSwipeAction == null) null else { { onSwipeAction() } },
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
+        Card(
+            modifier = Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite },
+            colors = CardDefaults.cardColors(
+                containerColor = if (isError) {
+                    MaterialTheme.colorScheme.errorContainer
+                } else {
+                    MaterialTheme.colorScheme.tertiaryContainer
+                },
+            ),
         ) {
-            Text(message, style = MaterialTheme.typography.bodyMedium)
-            if (actionLabel != null && onAction != null) {
-                TextButton(
-                    onClick = onAction,
-                    modifier = Modifier.align(Alignment.End),
-                ) {
-                    Text(actionLabel)
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text(message, style = MaterialTheme.typography.bodyMedium)
+                if (actionLabel != null && onAction != null) {
+                    TextButton(
+                        onClick = onAction,
+                        modifier = Modifier.align(Alignment.End),
+                    ) {
+                        Text(actionLabel)
+                    }
                 }
             }
         }
