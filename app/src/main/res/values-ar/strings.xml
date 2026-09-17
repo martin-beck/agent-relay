@@ -306,6 +306,7 @@
     <string name="session_action_other_answer">إجابة أخرى</string>
     <string name="main_loading">جارٍ تحميل Agent Relay…</string>
     <string name="session_card_no_preview">لا تتوفر معاينة.</string>
+    <string name="session_card_stale_preview">%1$s (معاينة قديمة)</string>
     <string name="session_card_pinned">مثبتة</string>
     <string name="session_state_not_loaded">غير محملة</string>
     <string name="session_state_idle">خاملة</string>

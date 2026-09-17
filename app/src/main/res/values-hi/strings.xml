@@ -286,6 +286,7 @@
     <string name="session_action_other_answer">अन्य जवाब</string>
     <string name="main_loading">Agent Relay लोड हो रहा है…</string>
     <string name="session_card_no_preview">कोई पूर्वावलोकन उपलब्ध नहीं है।</string>
+    <string name="session_card_stale_preview">%1$s (पुराना पूर्वावलोकन)</string>
     <string name="session_card_pinned">पिन किया गया</string>
     <string name="session_state_not_loaded">लोड नहीं हुआ</string>
     <string name="session_state_idle">निष्क्रिय</string>

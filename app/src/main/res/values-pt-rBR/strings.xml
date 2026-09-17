@@ -291,6 +291,7 @@
     <string name="session_action_other_answer">Outra resposta</string>
     <string name="main_loading">Carregando o Agent Relay…</string>
     <string name="session_card_no_preview">Nenhuma prévia disponível.</string>
+    <string name="session_card_stale_preview">%1$s (prévia antiga)</string>
     <string name="session_card_pinned">Fixada</string>
     <string name="session_state_not_loaded">Não carregada</string>
     <string name="session_state_idle">Inativa</string>

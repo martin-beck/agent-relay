@@ -131,6 +131,29 @@ class MainScreenScreenshotTest {
     }
 
     @Test
+    fun sessionRowsCompactLightLargeText() {
+        capture(
+            name = "main_session_rows_compact_light_large_text",
+            widthDp = 360,
+            heightDp = 1_100,
+            fontScale = 1.3f,
+            state = MainScreenUiState.Ready(previewSessionRowsHub()),
+        )
+    }
+
+    @Test
+    fun sessionRowsCompactDarkLargeText() {
+        capture(
+            name = "main_session_rows_compact_dark_large_text",
+            widthDp = 360,
+            heightDp = 1_100,
+            fontScale = 1.3f,
+            darkTheme = true,
+            state = MainScreenUiState.Ready(previewSessionRowsHub()),
+        )
+    }
+
+    @Test
     fun backgroundActiveCompactLight() {
         capture(
             name = "main_background_active_compact_light",

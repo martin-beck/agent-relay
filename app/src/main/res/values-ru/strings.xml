@@ -296,6 +296,7 @@
     <string name="session_action_other_answer">Другой ответ</string>
     <string name="main_loading">Загрузка Agent Relay…</string>
     <string name="session_card_no_preview">Предпросмотр недоступен.</string>
+    <string name="session_card_stale_preview">%1$s (устаревший предпросмотр)</string>
     <string name="session_card_pinned">Закреплена</string>
     <string name="session_state_not_loaded">Не загружен</string>
     <string name="session_state_idle">Неактивен</string>

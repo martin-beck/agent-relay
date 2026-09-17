@@ -286,6 +286,7 @@
     <string name="session_action_other_answer">Andere Antwort</string>
     <string name="main_loading">Agent Relay wird geladen…</string>
     <string name="session_card_no_preview">Keine Vorschau verfügbar.</string>
+    <string name="session_card_stale_preview">%1$s (veraltete Vorschau)</string>
     <string name="session_card_pinned">Angeheftet</string>
     <string name="session_state_not_loaded">Nicht geladen</string>
     <string name="session_state_idle">Inaktiv</string>

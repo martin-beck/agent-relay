@@ -327,6 +327,7 @@
     <string name="session_action_other_answer">Other answer</string>
     <string name="main_loading">Loading Agent Relay…</string>
     <string name="session_card_no_preview">No preview is available.</string>
+    <string name="session_card_stale_preview">%1$s (stale preview)</string>
     <string name="session_card_pinned">Pinned</string>
     <string name="session_state_not_loaded">Not loaded</string>
     <string name="session_state_idle">Idle</string>

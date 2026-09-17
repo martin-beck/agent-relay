@@ -27,6 +27,16 @@ class SessionVisualIdentityTest {
     }
 
     @Test
+    fun paletteForegroundIsUsedForIdentitySwatch() {
+        val swatch = sessionIdentitySwatch(
+            "Codex",
+            "host",
+            SessionIdentityPalette(listOf(androidx.compose.ui.graphics.Color.Black), listOf(androidx.compose.ui.graphics.Color.Yellow)),
+        )
+        assertEquals(androidx.compose.ui.graphics.Color.Yellow, swatch.foreground)
+    }
+
+    @Test
     fun previewIsCollapsedBoundedAndControlSafe() {
         val preview = boundedSessionPreview(" first\nsecond\t\u0000" + "x".repeat(200), 10_000L, 10_001L)
         assertEquals(SessionPreviewState.AVAILABLE, preview.state)

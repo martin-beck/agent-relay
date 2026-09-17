@@ -291,6 +291,7 @@
     <string name="session_action_other_answer">Altra risposta</string>
     <string name="main_loading">Caricamento di Agent Relay…</string>
     <string name="session_card_no_preview">Nessuna anteprima disponibile.</string>
+    <string name="session_card_stale_preview">%1$s (anteprima obsoleta)</string>
     <string name="session_card_pinned">In evidenza</string>
     <string name="session_state_not_loaded">Non caricata</string>
     <string name="session_state_idle">Inattiva</string>

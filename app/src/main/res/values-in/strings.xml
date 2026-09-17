@@ -281,6 +281,7 @@
     <string name="session_action_other_answer">Jawaban lain</string>
     <string name="main_loading">Memuat Agent Relay…</string>
     <string name="session_card_no_preview">Pratinjau tidak tersedia.</string>
+    <string name="session_card_stale_preview">%1$s (pratinjau lama)</string>
     <string name="session_card_pinned">Disematkan</string>
     <string name="session_state_not_loaded">Belum dimuat</string>
     <string name="session_state_idle">Diam</string>

@@ -37,6 +37,11 @@ internal data class SessionIdentitySwatch(
     val contrastRatio: Double,
 )
 
+internal data class SessionIdentityPalette(
+    val backgrounds: List<Color>,
+    val foregrounds: List<Color>,
+)
+
 private val LIGHT_IDENTITY_COLORS = listOf(
     Color(0xFF006874),
     Color(0xFF6750A4),
@@ -55,16 +60,29 @@ private val DARK_IDENTITY_COLORS = listOf(
 )
 
 internal fun sessionIdentitySwatch(agent: String, host: String, darkTheme: Boolean): SessionIdentitySwatch {
+    return sessionIdentitySwatch(agent, host, if (darkTheme) defaultDarkPalette() else defaultLightPalette())
+}
+
+internal fun sessionIdentitySwatch(
+    agent: String,
+    host: String,
+    palette: SessionIdentityPalette,
+): SessionIdentitySwatch {
     val digest = MessageDigest.getInstance("SHA-256")
         .digest("$agent\u0000$host".toByteArray(Charsets.UTF_8))
     val index = (digest[0].toInt() and 0xFF) % LIGHT_IDENTITY_COLORS.size
-    val background = (if (darkTheme) DARK_IDENTITY_COLORS else LIGHT_IDENTITY_COLORS)[index]
-    val foreground = if (contrastRatio(background, Color.White) >= contrastRatio(background, Color.Black)) {
-        Color.White
-    } else {
-        Color.Black
-    }
+    val paletteIndex = index % palette.backgrounds.size
+    val background = palette.backgrounds[paletteIndex]
+    val foreground = palette.foregrounds[paletteIndex]
     return SessionIdentitySwatch(background, foreground, contrastRatio(background, foreground))
+}
+
+internal fun defaultLightPalette() = SessionIdentityPalette(LIGHT_IDENTITY_COLORS, readableForegrounds(LIGHT_IDENTITY_COLORS))
+
+internal fun defaultDarkPalette() = SessionIdentityPalette(DARK_IDENTITY_COLORS, readableForegrounds(DARK_IDENTITY_COLORS))
+
+private fun readableForegrounds(backgrounds: List<Color>) = backgrounds.map { background ->
+    if (contrastRatio(background, Color.White) >= contrastRatio(background, Color.Black)) Color.White else Color.Black
 }
 
 internal fun contrastRatio(first: Color, second: Color): Double {

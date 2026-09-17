@@ -286,6 +286,7 @@
     <string name="session_action_other_answer">অন্য উত্তর</string>
     <string name="main_loading">Agent Relay লোড হচ্ছে…</string>
     <string name="session_card_no_preview">কোনো পূর্বরূপ নেই।</string>
+    <string name="session_card_stale_preview">%1$s (পুরনো পূর্বরূপ)</string>
     <string name="session_card_pinned">পিন করা</string>
     <string name="session_state_not_loaded">লোড করা হয়নি</string>
     <string name="session_state_idle">নিষ্ক্রিয়</string>

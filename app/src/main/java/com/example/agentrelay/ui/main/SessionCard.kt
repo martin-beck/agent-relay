@@ -7,7 +7,6 @@ package com.example.agentrelay.ui.main
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -42,7 +41,29 @@ internal fun SessionCard(
 ) {
     val accessibilityLabel = sessionAccessibilityLabel(session)
     val preview = boundedSessionPreview(session.preview, session.lastActivityAtEpochMillis, System.currentTimeMillis())
-    val swatch = sessionIdentitySwatch(session.agentProviderLabel, session.connectionLabel, isSystemInDarkTheme())
+    val colors = MaterialTheme.colorScheme
+    val swatch = sessionIdentitySwatch(
+        session.agentProviderLabel,
+        session.connectionLabel,
+        SessionIdentityPalette(
+            backgrounds = listOf(
+                colors.primary,
+                colors.secondary,
+                colors.tertiary,
+                colors.error,
+                colors.inversePrimary,
+                colors.primaryContainer,
+            ),
+            foregrounds = listOf(
+                colors.onPrimary,
+                colors.onSecondary,
+                colors.onTertiary,
+                colors.onError,
+                colors.inverseSurface,
+                colors.onPrimaryContainer,
+            ),
+        ),
+    )
     Card(
         onClick = onClick,
         modifier = Modifier
@@ -71,7 +92,13 @@ internal fun SessionCard(
                         .semantics {
                             contentDescription = "${session.agentProviderLabel} on ${session.connectionLabel}"
                         },
-                )
+                ) {
+                    Text(
+                        text = session.agentProviderLabel.take(1).uppercase(),
+                        color = swatch.foreground,
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                }
                 Spacer(modifier = Modifier.size(8.dp))
                 Text(
                     text = session.title.resolve(),
@@ -93,7 +120,10 @@ internal fun SessionCard(
                 text = when (preview.state) {
                     SessionPreviewState.AVAILABLE -> preview.text.orEmpty()
                     SessionPreviewState.UNAVAILABLE -> stringResource(R.string.session_card_no_preview)
-                    SessionPreviewState.STALE -> "${preview.text.orEmpty()} (stale)"
+                    SessionPreviewState.STALE -> stringResource(
+                        R.string.session_card_stale_preview,
+                        preview.text.orEmpty(),
+                    )
                 },
                 style = MaterialTheme.typography.bodyMedium,
                 maxLines = 3,
@@ -157,6 +187,7 @@ internal fun sessionStateLabel(state: AgentSessionState): String = stringResourc
 @Composable
 private fun sessionAccessibilityLabel(session: SessionUiModel): String {
     val state = sessionStateLabel(session.agentState)
+    val preview = boundedSessionPreview(session.preview, session.lastActivityAtEpochMillis, System.currentTimeMillis())
     val context = stringResource(
         R.string.session_card_accessibility_context,
         session.connectionProviderName,
@@ -182,6 +213,11 @@ private fun sessionAccessibilityLabel(session: SessionUiModel): String {
         null
     }
     val pinned = stringResource(R.string.session_card_pinned).takeIf { session.isPinned }
-    return listOfNotNull(session.title.resolve(), state, context, unread, awaitingAction, pinned)
+    val previewLabel = when (preview.state) {
+        SessionPreviewState.AVAILABLE -> preview.text
+        SessionPreviewState.UNAVAILABLE -> stringResource(R.string.session_card_no_preview)
+        SessionPreviewState.STALE -> stringResource(R.string.session_card_stale_preview, preview.text.orEmpty())
+    }
+    return listOfNotNull(session.title.resolve(), state, context, previewLabel, unread, awaitingAction, pinned)
         .joinToString(stringResource(R.string.accessibility_separator))
 }

@@ -213,6 +213,28 @@ internal fun previewHub(
     )
 }
 
+internal fun previewSessionRowsHub(): SessionHubUiModel {
+    val hub = previewHub()
+    val available = checkNotNull(hub.sessions.single())
+    val unavailable = available.copy(
+        stableKey = "preview-session-unavailable",
+        title = UiMessage.Verbatim("Unavailable preview"),
+        preview = "",
+        lastActivityAtEpochMillis = null,
+    )
+    val stale = available.copy(
+        stableKey = "preview-session-stale",
+        title = UiMessage.Verbatim("Stale preview"),
+        preview = "Older result retained for context.",
+        lastActivityAtEpochMillis = 0L,
+    )
+    return hub.copy(
+        sessions = listOf(available, unavailable, stale),
+        selectedSession = null,
+        selectedSessionKey = null,
+    )
+}
+
 private fun previewSession(
     approvalRequired: Boolean,
     longContent: Boolean,

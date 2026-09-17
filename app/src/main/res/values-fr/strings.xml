@@ -291,6 +291,7 @@
     <string name="session_action_other_answer">Autre réponse</string>
     <string name="main_loading">Chargement d’Agent Relay…</string>
     <string name="session_card_no_preview">Aucun aperçu disponible.</string>
+    <string name="session_card_stale_preview">%1$s (aperçu obsolète)</string>
     <string name="session_card_pinned">Épinglée</string>
     <string name="session_state_not_loaded">Non chargée</string>
     <string name="session_state_idle">Inactive</string>

@@ -281,6 +281,7 @@
     <string name="session_action_other_answer">其他答案</string>
     <string name="main_loading">正在載入 Agent Relay…</string>
     <string name="session_card_no_preview">沒有可用的預覽。</string>
+    <string name="session_card_stale_preview">%1$s（預覽已過時）</string>
     <string name="session_card_pinned">已固定</string>
     <string name="session_state_not_loaded">未載入</string>
     <string name="session_state_idle">閒置</string>
