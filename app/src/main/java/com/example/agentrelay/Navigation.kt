@@ -45,6 +45,7 @@ import com.example.agentrelay.ui.main.QuickNavigationDestination
 import com.example.agentrelay.ui.main.QuickNavigationDestinationId
 import com.example.agentrelay.ui.main.QuickNavigationFooter
 import com.example.agentrelay.ui.main.QUICK_NAVIGATION_FOOTER_TEST_TAG
+import com.example.agentrelay.ui.main.ConnectionSettingsScreen
 import com.example.agentrelay.ui.main.SessionDetailRoute
 import com.example.agentrelay.ui.main.SpeechInputUiActions
 import com.example.agentrelay.ui.main.rememberArtifactSaveRequest
@@ -230,6 +231,17 @@ internal fun MainNavigation(
                         entry<Settings> {
                             SettingsScreen(
                                 store = AndroidSettingsStore(LocalContext.current.applicationContext),
+                                onBack = onBack,
+                            )
+                        }
+                        entry<ConnectionSettings> {
+                            ConnectionSettingsScreen(
+                                notificationPermissionState = notificationPermissionState,
+                                onRequestNotificationPermission = onRequestNotificationPermission,
+                                onOpenNotificationSettings = onOpenNotificationSettings,
+                                backgroundTransportState = backgroundTransportState,
+                                onStartBackgroundTransport = application.backgroundTransport::start,
+                                onStopBackgroundTransport = application.backgroundTransport::stop,
                                 onBack = onBack,
                             )
                         }

@@ -30,17 +30,16 @@ class MainScreenBackgroundTransportTest {
 
     @Test
     fun backgroundTransportRequiresNotificationsAndSupportsExplicitStartStop() {
-        val recorder = ActionRecorder()
         var state by mutableStateOf(BackgroundTransportState.STOPPED)
         var permissionState by mutableStateOf(SessionNotificationPermissionState.HIDDEN)
         var starts = 0
         var stops = 0
         composeTestRule.setContent {
             AgentRelayTheme {
-                MainScreenContent(
-                    state = MainScreenUiState.Ready(testHub()),
-                    actions = recorder.actions(),
+                ConnectionSettingsScreen(
                     notificationPermissionState = permissionState,
+                    onRequestNotificationPermission = {},
+                    onOpenNotificationSettings = {},
                     backgroundTransportState = state,
                     onStartBackgroundTransport = {
                         starts += 1
@@ -51,6 +50,7 @@ class MainScreenBackgroundTransportTest {
                         state = BackgroundTransportState.STOPPED
                     },
                     modifier = Modifier.requiredSize(width = 1_000.dp, height = 900.dp),
+                    onBack = {},
                 )
             }
         }

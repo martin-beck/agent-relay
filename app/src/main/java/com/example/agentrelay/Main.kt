@@ -17,6 +17,7 @@ import kotlinx.serialization.Serializable
 @Serializable data object PinnedSessions : NavKey
 
 @Serializable data object NewSession : NavKey
+@Serializable data object ConnectionSettings : NavKey
 
 @Serializable
 data class SessionDetails(val sessionKey: String) : NavKey {
