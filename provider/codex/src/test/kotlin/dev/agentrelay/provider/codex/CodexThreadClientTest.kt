@@ -7,6 +7,7 @@ package dev.agentrelay.provider.codex
 
 import dev.agentrelay.provider.api.AgentSessionId
 import dev.agentrelay.provider.api.AgentTranscriptRole
+import dev.agentrelay.provider.api.StartSessionOptions
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -18,6 +19,28 @@ import kotlinx.serialization.json.jsonObject
 import org.junit.Test
 
 class CodexThreadClientTest {
+    @Test
+    fun startUsesTheV2ThreadStartContractAndPreservesOptionalInputs() = runTest {
+        val rpc = FakeRpcClient { method, params ->
+            assertEquals("thread/start", method)
+            assertEquals("/workspace", params.jsonObject.string("cwd"))
+            assertEquals("gpt-5-codex", params.jsonObject.string("model"))
+            assertEquals("on-request", params.jsonObject.string("approvalPolicy"))
+            assertEquals("workspaceWrite", params.jsonObject.string("sandbox"))
+            assertEquals("agent_relay", params.jsonObject.string("serviceName"))
+            json("""{"thread":{"id":"thread-new","status":{"type":"idle"}}}""")
+        }
+
+        val session = CodexThreadClient(rpc).start(
+            StartSessionOptions(
+                workingDirectory = "/workspace",
+                model = "gpt-5-codex",
+            ),
+        )
+
+        assertEquals("thread-new", session.jsonObject.string("id"))
+    }
+
     @Test
     fun listSessionsFollowsOpaquePaginationCursor() = runTest {
         val rpc = FakeRpcClient { method, params ->
