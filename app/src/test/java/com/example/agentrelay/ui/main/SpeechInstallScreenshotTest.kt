@@ -37,6 +37,8 @@ import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
@@ -140,6 +142,24 @@ class SpeechInstallScreenshotTest {
 
     @Test
     fun localeBidirectionalArabicCompactLargeText() = captureBundledLocale("ar-XB", "ar_xb")
+
+    @Test
+    fun unavailableSpeechInputExplainsWhyVoiceInputCannotStart() {
+        val content = setLocalizedContent("en") {
+            SpeechInputControls(
+                state = unavailableSpeechInputState(),
+                sessionKey = SESSION_KEY,
+                actions = SpeechInputUiActions(),
+            )
+        }
+
+        composeTestRule.onNodeWithText(
+            content.renderContext.getString(R.string.speech_input_title),
+        ).assertIsDisplayed()
+        composeTestRule.onNodeWithText(
+            content.renderContext.getString(R.string.speech_status_unavailable_build),
+        ).assertIsDisplayed()
+    }
 
     private fun captureBundledLocale(languageTag: String, fileName: String) {
         var selectedModel: String? = null
