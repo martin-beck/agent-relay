@@ -256,6 +256,11 @@ class SessionCoordinatorTest {
                 listOf("cached:ssh-host:shared-session"),
                 coordinator.transcript(existing).map { it.id },
             )
+            assertEquals(1, connection.changedFilesCalls)
+            assertEquals(
+                "/workspace/ssh-host/result.txt",
+                coordinator.repository.snapshot.value.sessionArtifacts(existing).single().providerPath,
+            )
             coordinator.sendInput(existing, "continue")
             coordinator.steerActiveTurn(existing, "focus on tests")
             coordinator.interrupt(existing)

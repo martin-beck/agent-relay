@@ -24,7 +24,6 @@ import dev.agentrelay.provider.api.StartSessionOptions
 import dev.agentrelay.session.api.CachedTranscriptEntry
 import dev.agentrelay.session.api.SessionArtifact
 import dev.agentrelay.session.api.SessionArtifactAvailability
-import dev.agentrelay.session.api.SessionEventUpdate
 import dev.agentrelay.session.api.SessionHubRepository
 import dev.agentrelay.session.api.SessionLocator
 import kotlinx.coroutines.CancellationException
@@ -152,6 +151,7 @@ class SessionCoordinator(
         val session = active.connection.attach(locator.agentSessionId)
         val persisted = controller.persistSession(active.descriptor, session)
         controller.persistTranscript(active, session.id)
+        changedFiles(persisted)
         return persisted
     }
 
@@ -222,14 +222,7 @@ class SessionCoordinator(
                 )
             }
             .distinctBy(SessionArtifact::id)
-        artifacts.forEach { artifact ->
-            repository.applyEvent(
-                SessionEventUpdate(
-                    locator = locator,
-                    artifact = artifact,
-                ),
-            )
-        }
+        repository.replaceArtifacts(locator, artifacts)
         return artifacts
     }
 

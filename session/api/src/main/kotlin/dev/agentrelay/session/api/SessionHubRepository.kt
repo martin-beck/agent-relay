@@ -118,6 +118,11 @@ interface SessionHubRepository {
         entries: List<CachedTranscriptEntry>,
     )
 
+    suspend fun replaceArtifacts(
+        locator: SessionLocator,
+        artifacts: List<SessionArtifact>,
+    )
+
     suspend fun removeSession(locator: SessionLocator)
 }
 
@@ -440,6 +445,23 @@ class PersistentSessionHubRepository private constructor(
         mutate { current ->
             current.requireSession(locator)
             current.copy(transcripts = current.transcripts + (locator to entries))
+        }
+    }
+
+    override suspend fun replaceArtifacts(
+        locator: SessionLocator,
+        artifacts: List<SessionArtifact>,
+    ) {
+        require(artifacts.distinctBy(SessionArtifact::id).size == artifacts.size) {
+            "Session artifacts must have unique ids"
+        }
+        require(artifacts.all { it.locator == locator }) {
+            "Session artifact locator does not match"
+        }
+        mutate { current ->
+            current.requireSession(locator)
+            val retained = current.artifacts.filterNot { it.locator == locator }
+            current.copy(artifacts = retained + artifacts)
         }
     }
 

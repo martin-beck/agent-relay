@@ -398,6 +398,33 @@ class PersistentSessionHubRepositoryTest {
     }
 
     @Test
+    fun replacingArtifactsPersistsTheCompleteScanIncludingAnEmptyResult() = runTest {
+        val store = InMemorySessionHubStore()
+        val repository = PersistentSessionHubRepository.open(store)
+        val session = locator("ssh.secure-shell", "artifact-sync", "resume-session")
+        repository.upsertSession(observation(session, updatedAt = 1L))
+        val modified = artifact(session, "modified.txt", AgentFileChangeKind.MODIFIED)
+        val deleted = artifact(
+            session,
+            "deleted.txt",
+            AgentFileChangeKind.DELETED,
+            availability = SessionArtifactAvailability.DELETED,
+            relativePath = null,
+        )
+
+        repository.replaceArtifacts(session, listOf(modified, deleted))
+        assertEquals(
+            listOf(modified, deleted),
+            repository.snapshot.value.sessionArtifacts(session),
+        )
+
+        repository.replaceArtifacts(session, emptyList())
+        assertTrue(repository.snapshot.value.sessionArtifacts(session).isEmpty())
+        val reopened = PersistentSessionHubRepository.open(store)
+        assertTrue(reopened.snapshot.value.sessionArtifacts(session).isEmpty())
+    }
+
+    @Test
     fun artifactModelRejectsUnsafeTransferPaths() {
         val session = locator("local.device", "local", "artifact-validation")
 
@@ -516,6 +543,25 @@ class PersistentSessionHubRepositoryTest {
         summary = SessionActivitySummary.Verbatim(id),
         eventAnchorId = "event-$id",
         occurredAtEpochMillis = at,
+    )
+
+    private fun artifact(
+        locator: SessionLocator,
+        path: String,
+        kind: AgentFileChangeKind,
+        availability: SessionArtifactAvailability = SessionArtifactAvailability.DOWNLOADABLE,
+        relativePath: String? = path,
+    ) = SessionArtifact(
+        id = "artifact:$path",
+        locator = locator,
+        providerPath = "/workspace/project/$path",
+        relativePath = relativePath,
+        oldProviderPath = null,
+        oldRelativePath = null,
+        kind = kind,
+        turnId = null,
+        availability = availability,
+        observedAtEpochMillis = 2L,
     )
 
     private fun actionRequest(
