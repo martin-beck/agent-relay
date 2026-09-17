@@ -233,6 +233,7 @@
     <string name="main_error_session_draft_clear">メッセージは配信されましたが、保存済みの下書きを安全に消去できませんでした。</string>
     <string name="main_error_session_resume">保存済みのセッションを再開できませんでした。</string>
     <string name="main_error_session_interrupt">進行中のターンを中断できませんでした。</string>
+    <string name="main_error_session_pin">セッションの固定を更新できませんでした。</string>
     <string name="main_error_agent_endpoint_unavailable">そのエージェントエンドポイントは利用できなくなりました。</string>
     <string name="main_error_session_start">新しいエージェントセッションを開始できませんでした。</string>
     <string name="main_error_action_unavailable">その承認要求または質問は利用できなくなりました。</string>
@@ -285,6 +286,8 @@
     <string name="main_loading">Agent Relay を読み込んでいます…</string>
     <string name="session_card_no_preview">プレビューはありません。</string>
     <string name="session_card_pinned">固定済み</string>
+    <string name="session_card_pin">固定</string>
+    <string name="session_card_unpin">固定を解除</string>
     <string name="session_state_not_loaded">未読み込み</string>
     <string name="session_state_idle">待機中</string>
     <string name="session_state_running">実行中</string>

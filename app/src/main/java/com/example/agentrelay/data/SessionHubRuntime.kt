@@ -23,6 +23,7 @@ import dev.agentrelay.session.api.SessionArtifact
 import dev.agentrelay.session.api.SessionDraft
 import dev.agentrelay.session.api.SessionHubSnapshot
 import dev.agentrelay.session.api.SessionLocator
+import dev.agentrelay.session.api.SessionPreferences
 import dev.agentrelay.session.runtime.AgentEndpointKey
 import dev.agentrelay.session.runtime.PreparedArtifactDownload
 import dev.agentrelay.session.runtime.SessionConnectionKey
@@ -68,6 +69,10 @@ internal interface SessionHubRuntime {
     ): Boolean
 
     suspend fun markSessionRead(locator: SessionLocator)
+
+    suspend fun setSessionPreferences(locator: SessionLocator, preferences: SessionPreferences) {
+        error("Session preferences are unavailable")
+    }
 
     suspend fun updateDraft(locator: SessionLocator, draft: SessionDraft)
 
@@ -173,6 +178,13 @@ internal class CoordinatorSessionHubRuntime(
 
     override suspend fun markSessionRead(locator: SessionLocator) {
         coordinator.repository.markSessionRead(locator)
+    }
+
+    override suspend fun setSessionPreferences(
+        locator: SessionLocator,
+        preferences: SessionPreferences,
+    ) {
+        coordinator.repository.setPreferences(locator, preferences)
     }
 
     override suspend fun updateDraft(locator: SessionLocator, draft: SessionDraft) {

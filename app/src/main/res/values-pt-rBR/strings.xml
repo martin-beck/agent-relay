@@ -237,6 +237,7 @@
     <string name="main_error_session_draft_clear">A mensagem foi entregue, mas não foi possível apagar com segurança o rascunho salvo.</string>
     <string name="main_error_session_resume">Não foi possível retomar a sessão salva.</string>
     <string name="main_error_session_interrupt">Não foi possível interromper o turno ativo.</string>
+    <string name="main_error_session_pin">Não foi possível atualizar a fixação da sessão.</string>
     <string name="main_error_agent_endpoint_unavailable">Esse endpoint do agente não está mais pronto.</string>
     <string name="main_error_session_start">Não foi possível iniciar a nova sessão do agente.</string>
     <string name="main_error_action_unavailable">Essa aprovação ou pergunta não está mais disponível.</string>
@@ -295,6 +296,8 @@
     <string name="main_loading">Carregando o Agent Relay…</string>
     <string name="session_card_no_preview">Nenhuma prévia disponível.</string>
     <string name="session_card_pinned">Fixada</string>
+    <string name="session_card_pin">Fixar</string>
+    <string name="session_card_unpin">Desafixar</string>
     <string name="session_state_not_loaded">Não carregada</string>
     <string name="session_state_idle">Inativa</string>
     <string name="session_state_running">Em execução</string>

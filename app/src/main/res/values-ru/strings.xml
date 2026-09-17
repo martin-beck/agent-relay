@@ -239,6 +239,7 @@
     <string name="main_error_session_draft_clear">Сообщение доставлено, но не удалось безопасно удалить его сохранённый черновик.</string>
     <string name="main_error_session_resume">Не удалось возобновить сохранённый сеанс.</string>
     <string name="main_error_session_interrupt">Не удалось прервать активный ход.</string>
+    <string name="main_error_session_pin">Не удалось обновить закрепление сеанса.</string>
     <string name="main_error_agent_endpoint_unavailable">Эта конечная точка агента больше не готова.</string>
     <string name="main_error_session_start">Не удалось запустить новый сеанс агента.</string>
     <string name="main_error_action_unavailable">Этот запрос на подтверждение или вопрос больше недоступен.</string>
@@ -300,6 +301,8 @@
     <string name="main_loading">Загрузка Agent Relay…</string>
     <string name="session_card_no_preview">Предпросмотр недоступен.</string>
     <string name="session_card_pinned">Закреплена</string>
+    <string name="session_card_pin">Закрепить</string>
+    <string name="session_card_unpin">Открепить</string>
     <string name="session_state_not_loaded">Не загружен</string>
     <string name="session_state_idle">Неактивен</string>
     <string name="session_state_running">Выполняется</string>

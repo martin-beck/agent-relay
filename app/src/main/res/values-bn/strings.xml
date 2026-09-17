@@ -235,6 +235,7 @@
     <string name="main_error_session_draft_clear">বার্তাটি পৌঁছেছে, কিন্তু এর সংরক্ষিত ড্রাফ্ট নিরাপদে মুছে ফেলা যায়নি।</string>
     <string name="main_error_session_resume">সংরক্ষিত সেশনটি পুনরায় চালু করা যায়নি।</string>
     <string name="main_error_session_interrupt">সক্রিয় টার্নটি থামানো যায়নি।</string>
+    <string name="main_error_session_pin">সেশনের পিন আপডেট করা যায়নি।</string>
     <string name="main_error_agent_endpoint_unavailable">সেই এজেন্ট এন্ডপয়েন্টটি আর প্রস্তুত নেই।</string>
     <string name="main_error_session_start">নতুন এজেন্ট সেশন শুরু করা যায়নি।</string>
     <string name="main_error_action_unavailable">সেই অনুমোদন বা প্রশ্নটি আর পাওয়া যাচ্ছে না।</string>
@@ -290,6 +291,8 @@
     <string name="main_loading">Agent Relay লোড হচ্ছে…</string>
     <string name="session_card_no_preview">কোনো পূর্বরূপ নেই।</string>
     <string name="session_card_pinned">পিন করা</string>
+    <string name="session_card_pin">পিন করুন</string>
+    <string name="session_card_unpin">আনপিন করুন</string>
     <string name="session_state_not_loaded">লোড করা হয়নি</string>
     <string name="session_state_idle">নিষ্ক্রিয়</string>
     <string name="session_state_running">চলছে</string>

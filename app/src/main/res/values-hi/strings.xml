@@ -235,6 +235,7 @@
     <string name="main_error_session_draft_clear">संदेश पहुँच गया, लेकिन उसका सहेजा गया ड्राफ़्ट सुरक्षित रूप से हटाया नहीं जा सका।</string>
     <string name="main_error_session_resume">सहेजा गया सत्र फिर से शुरू नहीं किया जा सका।</string>
     <string name="main_error_session_interrupt">सक्रिय टर्न को रोका नहीं जा सका।</string>
+    <string name="main_error_session_pin">सत्र पिन अपडेट नहीं किया जा सका।</string>
     <string name="main_error_agent_endpoint_unavailable">वह एजेंट एंडपॉइंट अब तैयार नहीं है।</string>
     <string name="main_error_session_start">नया एजेंट सत्र शुरू नहीं किया जा सका।</string>
     <string name="main_error_action_unavailable">वह स्वीकृति या प्रश्न अब उपलब्ध नहीं है।</string>
@@ -290,6 +291,8 @@
     <string name="main_loading">Agent Relay लोड हो रहा है…</string>
     <string name="session_card_no_preview">कोई पूर्वावलोकन उपलब्ध नहीं है।</string>
     <string name="session_card_pinned">पिन किया गया</string>
+    <string name="session_card_pin">पिन करें</string>
+    <string name="session_card_unpin">पिन हटाएँ</string>
     <string name="session_state_not_loaded">लोड नहीं हुआ</string>
     <string name="session_state_idle">निष्क्रिय</string>
     <string name="session_state_running">चल रहा है</string>

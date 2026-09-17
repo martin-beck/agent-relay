@@ -237,6 +237,7 @@
     <string name="main_error_session_draft_clear">El mensaje se entregó, pero no se pudo borrar de forma segura su borrador guardado.</string>
     <string name="main_error_session_resume">No se pudo reanudar la sesión guardada.</string>
     <string name="main_error_session_interrupt">No se pudo interrumpir el turno activo.</string>
+    <string name="main_error_session_pin">No se pudo actualizar la fijación de la sesión.</string>
     <string name="main_error_agent_endpoint_unavailable">Ese punto de conexión del agente ya no está listo.</string>
     <string name="main_error_session_start">No se pudo iniciar la nueva sesión del agente.</string>
     <string name="main_error_action_unavailable">Esa aprobación o pregunta ya no está disponible.</string>
@@ -295,6 +296,8 @@
     <string name="main_loading">Cargando Agent Relay…</string>
     <string name="session_card_no_preview">No hay vista previa disponible.</string>
     <string name="session_card_pinned">Fijada</string>
+    <string name="session_card_pin">Fijar</string>
+    <string name="session_card_unpin">Desfijar</string>
     <string name="session_state_not_loaded">Sin cargar</string>
     <string name="session_state_idle">Inactiva</string>
     <string name="session_state_running">En ejecución</string>
