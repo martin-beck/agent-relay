@@ -153,7 +153,8 @@ jobs:
             exit 1
           fi
           api_root="${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}"
-          # REST equivalent of `gh release create`, since the disposable runner
+          # REST equivalent of `gh release view` and `gh release create`, since
+          # the disposable runner intentionally does not ship the GitHub CLI.
           # intentionally does not ship the GitHub CLI.
           if curl --fail --silent --show-error \
             --header "Authorization: Bearer ${GH_TOKEN}" \
@@ -176,6 +177,7 @@ jobs:
           trusted workflow before publication.
           EOF
           release_body="$(jq -Rs . < build/development-apk/release-notes.md)"
+          # The API's prerelease:true is equivalent to gh release create --prerelease.
           release_json="$(jq -n \
             --arg tag "${tag}" \
             --arg target "${SOURCE_COMMIT}" \
