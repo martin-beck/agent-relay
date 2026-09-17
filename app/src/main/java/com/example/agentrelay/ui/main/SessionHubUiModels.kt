@@ -123,29 +123,27 @@ internal data class AttentionSurfaceBuckets(
 )
 
 internal fun attentionSurfaceBuckets(sessions: List<SessionUiModel>): AttentionSurfaceBuckets {
-    val buckets = sessions.groupBy { session ->
-        when {
+    val needsAttention = ArrayList<SessionUiModel>()
+    val changed = ArrayList<SessionUiModel>()
+    val running = ArrayList<SessionUiModel>()
+    val recentlyCompleted = ArrayList<SessionUiModel>()
+    sessions.forEach { session ->
+        val bucket = when {
             session.requiresActionCount > 0 ||
                 session.agentState == AgentSessionState.WAITING_FOR_APPROVAL ->
-                AttentionSurfaceBucket.NEEDS_ATTENTION
-            session.agentState == AgentSessionState.RUNNING -> AttentionSurfaceBucket.RUNNING
-            session.unreadCount > 0 -> AttentionSurfaceBucket.CHANGED
-            else -> AttentionSurfaceBucket.RECENTLY_COMPLETED
+                needsAttention
+            session.agentState == AgentSessionState.RUNNING -> running
+            session.unreadCount > 0 -> changed
+            else -> recentlyCompleted
         }
+        bucket += session
     }
     return AttentionSurfaceBuckets(
-        needsAttention = buckets[AttentionSurfaceBucket.NEEDS_ATTENTION].orEmpty(),
-        changed = buckets[AttentionSurfaceBucket.CHANGED].orEmpty(),
-        running = buckets[AttentionSurfaceBucket.RUNNING].orEmpty(),
-        recentlyCompleted = buckets[AttentionSurfaceBucket.RECENTLY_COMPLETED].orEmpty(),
+        needsAttention = needsAttention,
+        changed = changed,
+        running = running,
+        recentlyCompleted = recentlyCompleted,
     )
-}
-
-private enum class AttentionSurfaceBucket {
-    NEEDS_ATTENTION,
-    CHANGED,
-    RUNNING,
-    RECENTLY_COMPLETED,
 }
 
 internal data class SessionLauncherUiModel(

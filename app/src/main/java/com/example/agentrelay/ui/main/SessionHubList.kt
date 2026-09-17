@@ -67,7 +67,11 @@ internal fun SessionHubList(
                 )
             }
         }
-        items(hub.issues, key = { "issue:" + it.id }) { issue ->
+        items(
+            hub.issues,
+            key = { "issue:" + it.id },
+            contentType = { "issue" },
+        ) { issue ->
             MessageCard(
                 message = issue.message.resolve(),
                 isError = !issue.recoverable,
@@ -89,6 +93,7 @@ internal fun SessionHubList(
             items(
                 hub.attentionActions,
                 key = { "attention:" + it.stableKey },
+                contentType = { "attention" },
             ) { action ->
                 AttentionActionCard(
                     action = action,
@@ -105,6 +110,7 @@ internal fun SessionHubList(
         items(
             hub.manageableConnectionProviders,
             key = { "add-profile:" + it.stableKey },
+            contentType = { "profile-action" },
         ) { provider ->
             OutlinedButton(
                 onClick = { actions.addProfile(provider.stableKey) },
@@ -118,7 +124,11 @@ internal fun SessionHubList(
                 EmptyCard(stringResource(R.string.session_hub_connections_empty))
             }
         } else {
-            items(hub.connections, key = ConnectionUiModel::stableKey) { connection ->
+            items(
+                hub.connections,
+                key = ConnectionUiModel::stableKey,
+                contentType = { "connection" },
+            ) { connection ->
                 ConnectionCard(
                     connection = connection,
                     onConnect = { actions.connect(connection.stableKey) },
@@ -214,7 +224,11 @@ private fun LazyListScope.sessionSurfaceSection(
     item(key = "$key-heading") {
         SectionHeading(title = title, subtitle = subtitle)
     }
-    items(sessions, key = SessionUiModel::stableKey) { session ->
+    items(
+        sessions,
+        key = SessionUiModel::stableKey,
+        contentType = { "session" },
+    ) { session ->
         SessionCard(
             session = session,
             selected = session.stableKey == selectedSessionKey,
@@ -239,6 +253,7 @@ private fun LazyListScope.sessionLaunchers(
     items(
         launchers,
         key = { "session-launcher:" + it.stableKey },
+        contentType = { "session-launcher" },
     ) { launcher ->
         OutlinedButton(
             onClick = { onOpen(launcher.stableKey) },
