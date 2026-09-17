@@ -20,6 +20,7 @@ import com.example.agentrelay.diagnostics.DiagnosticRuntimeConfig
 import com.example.agentrelay.diagnostics.DiagnosticTrace
 import com.example.agentrelay.notifications.AndroidSessionNotificationSink
 import com.example.agentrelay.notifications.SessionNotificationRuntime
+import com.example.agentrelay.settings.AndroidSettingsStore
 import com.example.agentrelay.widgets.AndroidAttentionWidgetRuntime
 import com.example.agentrelay.widgets.AttentionWidgetActionRuntime
 import com.example.agentrelay.widgets.AttentionWidgetActionRuntimeHolder
@@ -113,6 +114,7 @@ internal class AgentRelayGraph(
         scope = notificationScope,
         sink = AndroidSessionNotificationSink(context),
         onFailure = { Log.e(LOG_TAG, "Notification state transition failed") },
+        preferences = { AndroidSettingsStore(context).read().notificationPreferences },
     )
     private val backgroundConnectionLease = BackgroundConnectionLease(context)
 

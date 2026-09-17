@@ -49,7 +49,10 @@ class SessionNotificationProjectionTest {
             activity(locator, "reconnected", SessionActivityType.RECONNECTED, occurredAt = 5L),
         )
 
-        val projected = SessionNotificationProjection.project(snapshot)
+        val projected = SessionNotificationProjection.project(
+            snapshot,
+            SessionNotificationPreferences(level = SessionNotificationLevel.ALL_ACTIVITY),
+        )
 
         assertEquals(
             listOf(SessionNotificationKind.ACTION_REQUIRED, SessionNotificationKind.FAILURE),
@@ -69,7 +72,10 @@ class SessionNotificationProjectionTest {
             activity(locator, "question", SessionActivityType.QUESTION, occurredAt = 4L),
         )
 
-        val projected = SessionNotificationProjection.project(snapshot)
+        val projected = SessionNotificationProjection.project(
+            snapshot,
+            SessionNotificationPreferences(level = SessionNotificationLevel.ALL_ACTIVITY),
+        )
 
         assertEquals(
             listOf(SessionNotificationKind.ACTION_REQUIRED, SessionNotificationKind.COMPLETION),
@@ -100,7 +106,10 @@ class SessionNotificationProjectionTest {
             activity(locator, "reconnected", SessionActivityType.RECONNECTED, occurredAt = 4L),
         )
 
-        val projected = SessionNotificationProjection.project(snapshot)
+        val projected = SessionNotificationProjection.project(
+            snapshot,
+            SessionNotificationPreferences(level = SessionNotificationLevel.ALL_ACTIVITY),
+        )
 
         assertEquals(listOf(SessionNotificationKind.ACTIVITY), projected.map { it.kind })
     }
@@ -132,6 +141,44 @@ class SessionNotificationProjectionTest {
         )
 
         assertTrue(SessionNotificationProjection.project(snapshot).isEmpty())
+    }
+
+    @Test
+    fun defaultPreferencesAreHighLevelAndNeverSilenceSafetyEvents() {
+        val locator = locator("preferences")
+        val snapshot = snapshot(
+            session(locator, SessionNotificationPriority.ALL_ACTIVITY),
+            activity(locator, "output", SessionActivityType.NEW_OUTPUT, occurredAt = 1L),
+            activity(locator, "failure", SessionActivityType.FAILURE, occurredAt = 2L),
+            activity(locator, "approval", SessionActivityType.APPROVAL_REQUIRED, occurredAt = 3L),
+            activity(locator, "reconnect", SessionActivityType.RECONNECTED, occurredAt = 4L),
+        )
+
+        val projected = SessionNotificationProjection.project(
+            snapshot,
+            SessionNotificationPreferences(topics = emptySet()),
+        )
+
+        assertEquals(
+            listOf(SessionNotificationKind.ACTION_REQUIRED, SessionNotificationKind.FAILURE),
+            projected.map(ProjectedSessionNotification::kind),
+        )
+    }
+
+    @Test
+    fun disabledNotificationsProduceNoProjection() {
+        val locator = locator("disabled")
+        val snapshot = snapshot(
+            session(locator, SessionNotificationPriority.ALL_ACTIVITY),
+            activity(locator, "approval", SessionActivityType.APPROVAL_REQUIRED, occurredAt = 1L),
+        )
+
+        assertTrue(
+            SessionNotificationProjection.project(
+                snapshot,
+                SessionNotificationPreferences(enabled = false),
+            ).isEmpty(),
+        )
     }
 
     @Test
@@ -195,7 +242,10 @@ class SessionNotificationProjectionTest {
                 .toTypedArray(),
         )
 
-        val projected = SessionNotificationProjection.project(snapshot)
+        val projected = SessionNotificationProjection.project(
+            snapshot,
+            SessionNotificationPreferences(level = SessionNotificationLevel.ALL_ACTIVITY),
+        )
 
         assertEquals(64, projected.size)
         assertEquals(SessionNotificationKind.ACTION_REQUIRED, projected.first().kind)

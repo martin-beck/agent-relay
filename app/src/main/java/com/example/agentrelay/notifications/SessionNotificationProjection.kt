@@ -33,11 +33,15 @@ internal data class ProjectedSessionNotification(
 }
 
 internal object SessionNotificationProjection {
-    fun project(snapshot: SessionHubSnapshot): List<ProjectedSessionNotification> {
+    fun project(
+        snapshot: SessionHubSnapshot,
+        preferences: SessionNotificationPreferences = SessionNotificationPreferences(),
+    ): List<ProjectedSessionNotification> {
+        if (!preferences.enabled) return emptyList()
         val sessions = snapshot.sessions.associateBy(SessionRecord::locator)
         return snapshot.activities
             .asSequence()
-            .filter { activity -> activity.shouldProject(sessions[activity.locator]) }
+            .filter { activity -> activity.shouldProject(sessions[activity.locator], preferences) }
             .sortedWith(
                 compareByDescending<SessionActivity> { it.requiresAction }
                     .thenByDescending(SessionActivity::occurredAtEpochMillis),
@@ -58,7 +62,10 @@ internal object SessionNotificationProjection {
             .toList()
     }
 
-    private fun SessionActivity.shouldProject(session: SessionRecord?): Boolean {
+    private fun SessionActivity.shouldProject(
+        session: SessionRecord?,
+        preferences: SessionNotificationPreferences,
+    ): Boolean {
         session ?: return false
         if (type.isActionable && isResolved) {
             return false
@@ -69,7 +76,7 @@ internal object SessionNotificationProjection {
         if (type.isSilentTransportLifecycle) {
             return false
         }
-        return when (session.preferences.notificationPriority) {
+        val priorityAllows = when (session.preferences.notificationPriority) {
             SessionNotificationPriority.ALL_ACTIVITY -> true
             SessionNotificationPriority.IMPORTANT_ONLY ->
                 requiresAction || type == SessionActivityType.FAILURE
@@ -77,6 +84,12 @@ internal object SessionNotificationProjection {
                 requiresAction || type == SessionActivityType.TURN_COMPLETED
             SessionNotificationPriority.MUTED -> false
         }
+        if (!priorityAllows) return false
+        // Safety notifications cannot be hidden by optional topic or verbosity choices.
+        if (requiresAction || type == SessionActivityType.FAILURE) return true
+        if (type.notificationTopic !in preferences.topics) return false
+        return preferences.level == SessionNotificationLevel.ALL_ACTIVITY ||
+            type != SessionActivityType.NEW_OUTPUT
     }
 
     private val SessionActivity.notificationKind: SessionNotificationKind
@@ -94,6 +107,18 @@ internal object SessionNotificationProjection {
     /** Transport recovery is retained in the activity history but never interrupts the user. */
     private val SessionActivityType.isSilentTransportLifecycle: Boolean
         get() = this == SessionActivityType.RECONNECTED
+
+    private val SessionActivityType.notificationTopic: SessionNotificationTopic
+        get() = when (this) {
+            SessionActivityType.NEW_OUTPUT,
+            SessionActivityType.FAILURE,
+            -> SessionNotificationTopic.AGENT_FEEDBACK
+            SessionActivityType.APPROVAL_REQUIRED,
+            SessionActivityType.QUESTION,
+            -> SessionNotificationTopic.USER_DECISIONS
+            SessionActivityType.TURN_COMPLETED -> SessionNotificationTopic.COMPLETION
+            SessionActivityType.RECONNECTED -> SessionNotificationTopic.TRANSPORT
+        }
 
     private fun stableDigest(vararg values: String): String =
         MessageDigest.getInstance("SHA-256")

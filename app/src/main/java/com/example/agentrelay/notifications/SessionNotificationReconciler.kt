@@ -34,9 +34,12 @@ internal class SessionNotificationReconciler(
     private val mutex = Mutex()
     private val applied = mutableMapOf<String, ProjectedSessionNotification>()
 
-    suspend fun reconcile(snapshot: SessionHubSnapshot): SessionNotificationReconciliation =
+    suspend fun reconcile(
+        snapshot: SessionHubSnapshot,
+        preferences: SessionNotificationPreferences = SessionNotificationPreferences(),
+    ): SessionNotificationReconciliation =
         mutex.withLock {
-            val desired = SessionNotificationProjection.project(snapshot)
+            val desired = SessionNotificationProjection.project(snapshot, preferences)
                 .associateBy(ProjectedSessionNotification::notificationKey)
             val failures = linkedSetOf<String>()
             var shown = 0
@@ -70,9 +73,12 @@ internal class SessionNotificationReconciler(
             )
         }
 
-    suspend fun suppress(snapshot: SessionHubSnapshot): SessionNotificationReconciliation =
+    suspend fun suppress(
+        snapshot: SessionHubSnapshot,
+        preferences: SessionNotificationPreferences = SessionNotificationPreferences(),
+    ): SessionNotificationReconciliation =
         mutex.withLock {
-            val desired = SessionNotificationProjection.project(snapshot)
+            val desired = SessionNotificationProjection.project(snapshot, preferences)
                 .associateBy(ProjectedSessionNotification::notificationKey)
             val failures = linkedSetOf<String>()
             val nextApplied = desired.toMutableMap()
