@@ -6,11 +6,16 @@
 package com.example.agentrelay.ui.main
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -36,6 +41,8 @@ internal fun SessionCard(
     onClick: () -> Unit,
 ) {
     val accessibilityLabel = sessionAccessibilityLabel(session)
+    val preview = boundedSessionPreview(session.preview, session.lastActivityAtEpochMillis, System.currentTimeMillis())
+    val swatch = sessionIdentitySwatch(session.agentProviderLabel, session.connectionLabel, isSystemInDarkTheme())
     Card(
         onClick = onClick,
         modifier = Modifier
@@ -57,6 +64,15 @@ internal fun SessionCard(
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(10.dp)
+                        .background(swatch.background)
+                        .semantics {
+                            contentDescription = "${session.agentProviderLabel} on ${session.connectionLabel}"
+                        },
+                )
+                Spacer(modifier = Modifier.size(8.dp))
                 Text(
                     text = session.title.resolve(),
                     modifier = Modifier.weight(1f),
@@ -74,7 +90,11 @@ internal fun SessionCard(
                 }
             }
             Text(
-                text = session.preview.ifBlank { stringResource(R.string.session_card_no_preview) },
+                text = when (preview.state) {
+                    SessionPreviewState.AVAILABLE -> preview.text.orEmpty()
+                    SessionPreviewState.UNAVAILABLE -> stringResource(R.string.session_card_no_preview)
+                    SessionPreviewState.STALE -> "${preview.text.orEmpty()} (stale)"
+                },
                 style = MaterialTheme.typography.bodyMedium,
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis,
