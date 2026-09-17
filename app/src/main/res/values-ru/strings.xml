@@ -105,6 +105,9 @@
     <string name="session_hub_recent_sessions_title">Недавние сеансы</string>
     <string name="session_hub_recent_sessions_subtitle">Непрочитанный вывод и требуемые решения остаются видимыми для всех подключений.</string>
     <string name="session_hub_sessions_empty">Сеансы пока не найдены. Подключите профиль, чтобы проверить поставщиков агентов.</string>
+    <string name="session_list_sort_label">Сортировка: %1$s</string>
+    <string name="session_list_sort_app_interaction">последнее взаимодействие с приложением</string>
+    <string name="session_list_sort_llm_response">последний ответ LLM</string>
     <string name="session_hub_start_subtitle">Выберите готового поставщика агентов и при необходимости задайте рабочую область и модель.</string>
     <string name="session_hub_tagline">Продолжайте работу с агентами на этом устройстве и доверенных SSH-узлах.</string>
     <string name="session_hub_response_pending_confirmation">Ответ ожидает подтверждения поставщика</string>

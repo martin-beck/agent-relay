@@ -18,6 +18,8 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -29,8 +31,13 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
@@ -49,7 +56,8 @@ internal fun SessionHubList(
     onSelectSession: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val surfaceBuckets = attentionSurfaceBuckets(hub.sessions)
+    var sortOption by rememberSaveable { mutableStateOf(SessionListSortOption.LAST_APP_INTERACTION) }
+    val surfaceBuckets = attentionSurfaceBuckets(sortSessionList(hub.sessions, sortOption))
     val attentionTitle = stringResource(R.string.session_hub_attention_title)
     val attentionSubtitle = stringResource(R.string.session_hub_attention_subtitle)
     val changedTitle = stringResource(R.string.session_detail_changed_files)
@@ -80,6 +88,12 @@ internal fun SessionHubList(
         ) {
             item(key = "hub-header") {
                 HubHeader(hub, actions.refresh)
+            }
+            item(key = "session-list-sort") {
+                SessionListSortControl(
+                    option = sortOption,
+                    onOptionSelected = { sortOption = it },
+                )
             }
             operationErrorMessage?.let { resolvedMessage ->
                 item(key = "operation-error") {
@@ -163,7 +177,7 @@ internal fun SessionHubList(
             }
             sessionLaunchers(hub.sessionLaunchers, actions.openSessionCreator)
             sessionSurfaces(
-                sessions = hub.sessions,
+                sessions = sortSessionList(hub.sessions, sortOption),
                 buckets = surfaceBuckets,
                 selectedSessionKey = hub.selectedSessionKey,
                 attentionTitle = attentionTitle,
@@ -179,6 +193,55 @@ internal fun SessionHubList(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.BottomCenter).padding(12.dp),
         )
+    }
+}
+
+@Composable
+private fun SessionListSortControl(
+    option: SessionListSortOption,
+    onOptionSelected: (SessionListSortOption) -> Unit,
+) {
+    var expanded by rememberSaveable { mutableStateOf(false) }
+    Column {
+        TextButton(
+            onClick = { expanded = true },
+            modifier = Modifier.testTag("session-list-sort-control"),
+        ) {
+            Text(
+                stringResource(
+                    R.string.session_list_sort_label,
+                    when (option) {
+                        SessionListSortOption.LAST_APP_INTERACTION ->
+                            stringResource(R.string.session_list_sort_app_interaction)
+                        SessionListSortOption.LAST_LLM_RESPONSE ->
+                            stringResource(R.string.session_list_sort_llm_response)
+                    },
+                ),
+            )
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            SessionListSortOption.entries.forEach { candidate ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            when (candidate) {
+                                SessionListSortOption.LAST_APP_INTERACTION ->
+                                    stringResource(R.string.session_list_sort_app_interaction)
+                                SessionListSortOption.LAST_LLM_RESPONSE ->
+                                    stringResource(R.string.session_list_sort_llm_response)
+                            },
+                        )
+                    },
+                    onClick = {
+                        onOptionSelected(candidate)
+                        expanded = false
+                    },
+                )
+            }
+        }
     }
 }
 
@@ -249,12 +312,17 @@ private fun LazyListScope.sessionSurfaceSection(
     item(key = "$key-heading") {
         SectionHeading(title = title, subtitle = subtitle)
     }
-    items(sessions, key = SessionUiModel::stableKey) { session ->
-        SessionCard(
-            session = session,
-            selected = session.stableKey == selectedSessionKey,
-            onClick = { onSelectSession(session.stableKey) },
-        )
+    sessions.groupBy(SessionUiModel::agentProviderLabel).forEach { (agent, agentSessions) ->
+        item(key = "$key-agent-$agent") {
+            SectionHeading(title = agent, subtitle = subtitle)
+        }
+        items(agentSessions, key = SessionUiModel::stableKey) { session ->
+            SessionCard(
+                session = session,
+                selected = session.stableKey == selectedSessionKey,
+                onClick = { onSelectSession(session.stableKey) },
+            )
+        }
     }
 }
 

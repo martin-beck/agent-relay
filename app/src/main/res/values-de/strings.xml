@@ -105,6 +105,9 @@
     <string name="session_hub_recent_sessions_title">Letzte Sitzungen</string>
     <string name="session_hub_recent_sessions_subtitle">Ungelesene Ausgaben und ausstehende Entscheidungen bleiben verbindungsübergreifend sichtbar.</string>
     <string name="session_hub_sessions_empty">Noch keine Sitzungen gefunden. Verbinden Sie ein Profil, um dessen Agent-Anbieter zu prüfen.</string>
+    <string name="session_list_sort_label">Sortieren: %1$s</string>
+    <string name="session_list_sort_app_interaction">letzte App-Interaktion</string>
+    <string name="session_list_sort_llm_response">letzte LLM-Antwort</string>
     <string name="session_hub_start_subtitle">Wählen Sie einen bereiten Agent-Anbieter und legen Sie optional Arbeitsbereich und Modell fest.</string>
     <string name="session_hub_tagline">Setzen Sie die Agent-Arbeit auf diesem Gerät und vertrauenswürdigen SSH-Hosts fort.</string>
     <string name="session_hub_response_pending_confirmation">Antwort wartet auf Bestätigung durch den Anbieter</string>

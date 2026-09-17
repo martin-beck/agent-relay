@@ -151,6 +151,9 @@
     <string name="quick_navigation_connections">Connections</string>
     <string name="quick_navigation_settings">Settings</string>
     <string name="quick_navigation_help">Help</string>
+    <string name="session_list_sort_label">Sort: %1$s</string>
+    <string name="session_list_sort_app_interaction">last app interaction</string>
+    <string name="session_list_sort_llm_response">last LLM response</string>
     <string name="session_hub_start_subtitle">Choose a ready agent provider and optionally set its workspace and model.</string>
     <string name="session_hub_tagline">Continue agent work across this device and trusted SSH hosts.</string>
     <string name="session_hub_response_pending_confirmation">Response awaiting provider confirmation</string>

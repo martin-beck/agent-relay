@@ -105,6 +105,9 @@
     <string name="session_hub_recent_sessions_title">最近のセッション</string>
     <string name="session_hub_recent_sessions_subtitle">未読の出力と必要な判断は接続をまたいで表示されます。</string>
     <string name="session_hub_sessions_empty">セッションはまだ見つかっていません。プロファイルに接続してエージェントプロバイダーを確認してください。</string>
+    <string name="session_list_sort_label">並べ替え: %1$s</string>
+    <string name="session_list_sort_app_interaction">アプリとの最終操作</string>
+    <string name="session_list_sort_llm_response">LLMの最終応答</string>
     <string name="session_hub_start_subtitle">準備済みのエージェントプロバイダーを選び、必要に応じてワークスペースとモデルを設定します。</string>
     <string name="session_hub_tagline">このデバイスと信頼済み SSH ホストでエージェント作業を続けます。</string>
     <string name="session_hub_response_pending_confirmation">プロバイダーの確認待ち</string>

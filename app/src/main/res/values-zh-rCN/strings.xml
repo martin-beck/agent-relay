@@ -105,6 +105,9 @@
     <string name="session_hub_recent_sessions_title">最近的会话</string>
     <string name="session_hub_recent_sessions_subtitle">未读输出和待处理决定在各连接间始终可见。</string>
     <string name="session_hub_sessions_empty">尚未发现会话。请连接一个配置以检查其代理提供程序。</string>
+    <string name="session_list_sort_label">排序：%1$s</string>
+    <string name="session_list_sort_app_interaction">最近的应用互动</string>
+    <string name="session_list_sort_llm_response">最近的 LLM 回复</string>
     <string name="session_hub_start_subtitle">选择已就绪的代理提供程序，并可选择设置其工作区和模型。</string>
     <string name="session_hub_tagline">在此设备和受信任的 SSH 主机上继续代理工作。</string>
     <string name="session_hub_response_pending_confirmation">响应正在等待提供程序确认</string>

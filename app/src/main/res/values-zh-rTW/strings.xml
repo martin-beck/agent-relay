@@ -105,6 +105,9 @@
     <string name="session_hub_recent_sessions_title">最近的工作階段</string>
     <string name="session_hub_recent_sessions_subtitle">未讀輸出與待處理決定會在各連線間保持可見。</string>
     <string name="session_hub_sessions_empty">尚未發現工作階段。請連線設定檔以檢查其代理提供者。</string>
+    <string name="session_list_sort_label">排序：%1$s</string>
+    <string name="session_list_sort_app_interaction">最近的應用程式互動</string>
+    <string name="session_list_sort_llm_response">最近的 LLM 回覆</string>
     <string name="session_hub_start_subtitle">選擇已就緒的代理提供者，並可選擇設定其工作區與模型。</string>
     <string name="session_hub_tagline">在此裝置和受信任的 SSH 主機上繼續代理工作。</string>
     <string name="session_hub_response_pending_confirmation">回應正在等待提供者確認</string>

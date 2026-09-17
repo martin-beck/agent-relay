@@ -105,6 +105,9 @@
     <string name="session_hub_recent_sessions_title">Sesiones recientes</string>
     <string name="session_hub_recent_sessions_subtitle">Las salidas no leídas y las decisiones pendientes permanecen visibles entre conexiones.</string>
     <string name="session_hub_sessions_empty">Aún no se han encontrado sesiones. Conecte un perfil para comprobar sus proveedores de agentes.</string>
+    <string name="session_list_sort_label">Ordenar: %1$s</string>
+    <string name="session_list_sort_app_interaction">última interacción con la app</string>
+    <string name="session_list_sort_llm_response">última respuesta del LLM</string>
     <string name="session_hub_start_subtitle">Elija un proveedor de agentes listo y, si quiere, defina el espacio de trabajo y el modelo.</string>
     <string name="session_hub_tagline">Continúe el trabajo de los agentes en este dispositivo y en hosts SSH de confianza.</string>
     <string name="session_hub_response_pending_confirmation">Respuesta pendiente de confirmación del proveedor</string>
