@@ -6,6 +6,7 @@
 package com.example.agentrelay.ui.main
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,7 +22,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -31,6 +37,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
+import kotlinx.coroutines.launch
 import com.example.agentrelay.R
 import dev.agentrelay.session.api.SessionActionState
 
@@ -48,22 +55,35 @@ internal fun SessionHubList(
     val surfaceSubtitle = stringResource(R.string.session_hub_recent_sessions_subtitle)
     val runningTitle = stringResource(R.string.session_state_running)
     val recentTitle = stringResource(R.string.session_hub_recent_sessions_title)
-    LazyColumn(
-        modifier = modifier,
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    val undoLabel = stringResource(R.string.action_undo)
+    val operationErrorMessage = hub.operationError?.resolve()
+    fun dismissWithUndo(message: String) {
+        actions.dismissError()
+        scope.launch {
+            if (snackbarHostState.showSnackbar(message, undoLabel) == SnackbarResult.ActionPerformed) {
+                actions.restoreError()
+            }
+        }
+    }
+    Box(modifier) {
+      LazyColumn(
+        modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
+      ) {
         item(key = "hub-header") {
             HubHeader(hub, actions.refresh)
         }
-        hub.operationError?.let { message ->
+        operationErrorMessage?.let { resolvedMessage ->
             item(key = "operation-error") {
                 MessageCard(
-                    message.resolve(),
+                    resolvedMessage,
                     true,
                     stringResource(R.string.action_dismiss),
-                    actions.dismissError,
-                    onSwipeAction = { actions.dismissError() },
+                    { dismissWithUndo(resolvedMessage) },
+                    onSwipeAction = { dismissWithUndo(resolvedMessage) },
                 )
             }
         }
@@ -149,6 +169,11 @@ internal fun SessionHubList(
             recentTitle = recentTitle,
             onSelectSession = onSelectSession,
         )
+      }
+      SnackbarHost(
+          hostState = snackbarHostState,
+          modifier = Modifier.align(Alignment.BottomCenter).padding(12.dp),
+      )
     }
 }
 

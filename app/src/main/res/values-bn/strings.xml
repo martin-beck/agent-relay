@@ -92,6 +92,7 @@
     <string name="session_issue_provider_synchronization">%2$s-এ %1$s সিঙ্ক করা যায়নি।</string>
     <string name="session_issue_session_persistence">%1$s-এর জন্য সেশন অবস্থা সংরক্ষণ করা যায়নি।</string>
     <string name="action_dismiss">বন্ধ করুন</string>
+    <string name="action_undo">পূর্বাবস্থায় ফেরান</string>
     <string name="session_hub_add_profile">%1$s প্রোফাইল যোগ করুন</string>
     <string name="session_hub_start_on_connection">%2$s-এ %1$s শুরু করুন</string>
     <string name="session_hub_review_in">%1$s-এ পর্যালোচনা করুন</string>

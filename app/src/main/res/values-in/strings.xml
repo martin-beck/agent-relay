@@ -92,6 +92,7 @@
     <string name="session_issue_provider_synchronization">%1$s tidak dapat disinkronkan di %2$s.</string>
     <string name="session_issue_session_persistence">Status sesi untuk %1$s tidak dapat disimpan.</string>
     <string name="action_dismiss">Tutup</string>
+    <string name="action_undo">Urungkan</string>
     <string name="session_hub_add_profile">Tambahkan profil %1$s</string>
     <string name="session_hub_start_on_connection">Mulai %1$s di %2$s</string>
     <string name="session_hub_review_in">Tinjau di %1$s</string>

@@ -92,6 +92,7 @@
     <string name="session_issue_provider_synchronization">Não foi possível sincronizar %1$s em %2$s.</string>
     <string name="session_issue_session_persistence">Não foi possível salvar o estado da sessão para %1$s.</string>
     <string name="action_dismiss">Fechar</string>
+    <string name="action_undo">Desfazer</string>
     <string name="session_hub_add_profile">Adicionar perfil de %1$s</string>
     <string name="session_hub_start_on_connection">Iniciar %1$s em %2$s</string>
     <string name="session_hub_review_in">Revisar em %1$s</string>

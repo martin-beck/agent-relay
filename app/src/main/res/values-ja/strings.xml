@@ -92,6 +92,7 @@
     <string name="session_issue_provider_synchronization">%2$s で %1$s を同期できませんでした。</string>
     <string name="session_issue_session_persistence">%1$s のセッション状態を保存できませんでした。</string>
     <string name="action_dismiss">閉じる</string>
+    <string name="action_undo">元に戻す</string>
     <string name="session_hub_add_profile">%1$s プロファイルを追加</string>
     <string name="session_hub_start_on_connection">%2$s で %1$s を開始</string>
     <string name="session_hub_review_in">%1$s で確認</string>

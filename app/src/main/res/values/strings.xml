@@ -133,6 +133,7 @@
     <string name="session_issue_provider_synchronization">%1$s could not be synchronized on %2$s.</string>
     <string name="session_issue_session_persistence">Session state could not be saved for %1$s.</string>
     <string name="action_dismiss">Dismiss</string>
+    <string name="action_undo">Undo</string>
     <string name="session_hub_add_profile">Add %1$s profile</string>
     <string name="session_hub_start_on_connection">Start %1$s on %2$s</string>
     <string name="session_hub_review_in">Review in %1$s</string>

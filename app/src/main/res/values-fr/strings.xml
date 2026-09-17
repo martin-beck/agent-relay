@@ -92,6 +92,7 @@
     <string name="session_issue_provider_synchronization">Impossible de synchroniser %1$s sur %2$s.</string>
     <string name="session_issue_session_persistence">Impossible d’enregistrer l’état de la session pour %1$s.</string>
     <string name="action_dismiss">Fermer</string>
+    <string name="action_undo">Annuler</string>
     <string name="session_hub_add_profile">Ajouter un profil %1$s</string>
     <string name="session_hub_start_on_connection">Démarrer %1$s sur %2$s</string>
     <string name="session_hub_review_in">Examiner dans %1$s</string>

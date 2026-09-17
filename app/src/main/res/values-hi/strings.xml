@@ -92,6 +92,7 @@
     <string name="session_issue_provider_synchronization">%2$s पर %1$s को सिंक्रनाइज़ नहीं किया जा सका।</string>
     <string name="session_issue_session_persistence">%1$s के लिए सेशन की स्थिति सहेजी नहीं जा सकी।</string>
     <string name="action_dismiss">बंद करें</string>
+    <string name="action_undo">पहले जैसा करें</string>
     <string name="session_hub_add_profile">%1$s प्रोफ़ाइल जोड़ें</string>
     <string name="session_hub_start_on_connection">%2$s पर %1$s शुरू करें</string>
     <string name="session_hub_review_in">%1$s में समीक्षा करें</string>
