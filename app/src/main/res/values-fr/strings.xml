@@ -104,6 +104,9 @@
     <string name="session_hub_recent_sessions_title">Sessions récentes</string>
     <string name="session_hub_recent_sessions_subtitle">Les sorties non lues et les décisions requises restent visibles entre les connexions.</string>
     <string name="session_hub_sessions_empty">Aucune session n’a encore été découverte. Connectez un profil pour vérifier ses fournisseurs d’agents.</string>
+    <string name="session_list_sort_label">Trier : %1$s</string>
+    <string name="session_list_sort_app_interaction">dernière interaction avec l’application</string>
+    <string name="session_list_sort_llm_response">dernière réponse du LLM</string>
     <string name="session_hub_start_subtitle">Choisissez un fournisseur d’agents prêt et définissez éventuellement son espace de travail et son modèle.</string>
     <string name="session_hub_tagline">Poursuivez le travail des agents sur cet appareil et des hôtes SSH approuvés.</string>
     <string name="session_hub_response_pending_confirmation">Réponse en attente de confirmation du fournisseur</string>

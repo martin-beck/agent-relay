@@ -104,6 +104,9 @@
     <string name="session_hub_recent_sessions_title">Sessioni recenti</string>
     <string name="session_hub_recent_sessions_subtitle">Output non letti e decisioni richieste restano visibili tra le connessioni.</string>
     <string name="session_hub_sessions_empty">Non è stata ancora trovata alcuna sessione. Connetti un profilo per verificarne i provider di agenti.</string>
+    <string name="session_list_sort_label">Ordina: %1$s</string>
+    <string name="session_list_sort_app_interaction">ultima interazione con l’app</string>
+    <string name="session_list_sort_llm_response">ultima risposta LLM</string>
     <string name="session_hub_start_subtitle">Scegli un provider di agenti pronto e, facoltativamente, imposta area di lavoro e modello.</string>
     <string name="session_hub_tagline">Continua il lavoro degli agenti su questo dispositivo e su host SSH attendibili.</string>
     <string name="session_hub_response_pending_confirmation">Risposta in attesa della conferma del provider</string>

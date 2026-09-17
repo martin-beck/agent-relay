@@ -104,6 +104,9 @@
     <string name="session_hub_recent_sessions_title">हाल के सत्र</string>
     <string name="session_hub_recent_sessions_subtitle">अपठित आउटपुट और आवश्यक निर्णय सभी कनेक्शन में दिखाई देते हैं।</string>
     <string name="session_hub_sessions_empty">अभी कोई सत्र नहीं मिला। उसके एजेंट प्रदाताओं को जाँचने के लिए प्रोफ़ाइल कनेक्ट करें।</string>
+    <string name="session_list_sort_label">क्रमबद्ध करें: %1$s</string>
+    <string name="session_list_sort_app_interaction">ऐप के साथ अंतिम इंटरैक्शन</string>
+    <string name="session_list_sort_llm_response">अंतिम LLM प्रतिक्रिया</string>
     <string name="session_hub_start_subtitle">तैयार एजेंट प्रदाता चुनें और चाहें तो उसका कार्यक्षेत्र और मॉडल सेट करें।</string>
     <string name="session_hub_tagline">इस डिवाइस और विश्वसनीय SSH होस्ट पर एजेंट का काम जारी रखें।</string>
     <string name="session_hub_response_pending_confirmation">प्रतिक्रिया प्रदाता की पुष्टि की प्रतीक्षा में है</string>

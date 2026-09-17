@@ -104,6 +104,9 @@
     <string name="session_hub_recent_sessions_title">সাম্প্রতিক সেশন</string>
     <string name="session_hub_recent_sessions_subtitle">অপঠিত আউটপুট ও প্রয়োজনীয় সিদ্ধান্ত সব সংযোগে দৃশ্যমান থাকে।</string>
     <string name="session_hub_sessions_empty">এখনও কোনো সেশন পাওয়া যায়নি। এর এজেন্ট প্রদানকারীগুলি পরীক্ষা করতে একটি প্রোফাইল সংযুক্ত করুন।</string>
+    <string name="session_list_sort_label">Sort: %1$s</string>
+    <string name="session_list_sort_app_interaction">last app interaction</string>
+    <string name="session_list_sort_llm_response">last LLM response</string>
     <string name="session_hub_start_subtitle">একটি প্রস্তুত এজেন্ট প্রদানকারী বেছে নিন এবং চাইলে তার ওয়ার্কস্পেস ও মডেল সেট করুন।</string>
     <string name="session_hub_tagline">এই ডিভাইস এবং বিশ্বস্ত SSH হোস্টে এজেন্টের কাজ চালিয়ে যান।</string>
     <string name="session_hub_response_pending_confirmation">প্রদানকারীর নিশ্চিতকরণের অপেক্ষায় প্রতিক্রিয়া</string>

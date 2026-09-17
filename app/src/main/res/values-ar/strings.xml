@@ -104,6 +104,9 @@
     <string name="session_hub_recent_sessions_title">الجلسات الأخيرة</string>
     <string name="session_hub_recent_sessions_subtitle">تبقى المخرجات غير المقروءة والقرارات المطلوبة ظاهرة عبر الاتصالات.</string>
     <string name="session_hub_sessions_empty">لم يتم العثور على جلسات بعد. اتصل بملف تعريف للتحقق من مزوّدي الوكلاء.</string>
+    <string name="session_list_sort_label">Sort: %1$s</string>
+    <string name="session_list_sort_app_interaction">last app interaction</string>
+    <string name="session_list_sort_llm_response">last LLM response</string>
     <string name="session_hub_start_subtitle">اختر مزوّد وكيل جاهزًا، وحدد مساحة العمل والنموذج اختياريًا.</string>
     <string name="session_hub_tagline">تابع عمل الوكلاء على هذا الجهاز ومضيفات SSH الموثوقة.</string>
     <string name="session_hub_response_pending_confirmation">الرد بانتظار تأكيد المزوّد</string>

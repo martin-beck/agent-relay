@@ -104,6 +104,9 @@
     <string name="session_hub_recent_sessions_title">Sesi terbaru</string>
     <string name="session_hub_recent_sessions_subtitle">Output yang belum dibaca dan keputusan yang diperlukan tetap terlihat di seluruh koneksi.</string>
     <string name="session_hub_sessions_empty">Belum ada sesi yang ditemukan. Hubungkan profil untuk memeriksa penyedia agennya.</string>
+    <string name="session_list_sort_label">Urutkan: %1$s</string>
+    <string name="session_list_sort_app_interaction">interaksi aplikasi terakhir</string>
+    <string name="session_list_sort_llm_response">respons LLM terakhir</string>
     <string name="session_hub_start_subtitle">Pilih penyedia agen yang siap dan, bila perlu, atur ruang kerja serta modelnya.</string>
     <string name="session_hub_tagline">Lanjutkan pekerjaan agen di perangkat ini dan host SSH tepercaya.</string>
     <string name="session_hub_response_pending_confirmation">Respons menunggu konfirmasi penyedia</string>
