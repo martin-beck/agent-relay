@@ -22,6 +22,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -41,7 +42,7 @@ internal fun SessionHubList(
     onSelectSession: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val surfaceBuckets = attentionSurfaceBuckets(hub.sessions)
+    val surfaceBuckets = remember(hub.sessions) { attentionSurfaceBuckets(hub.sessions) }
     val attentionTitle = stringResource(R.string.session_hub_attention_title)
     val attentionSubtitle = stringResource(R.string.session_hub_attention_subtitle)
     val changedTitle = stringResource(R.string.session_detail_changed_files)

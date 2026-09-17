@@ -60,8 +60,51 @@ import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import kotlin.time.Duration.Companion.seconds
+import kotlin.system.measureNanoTime
 
 class SessionHubUiMapperTest {
+    @Test
+    fun largeSessionListMapsWithinBoundedStartupBudget() {
+        val providerId = ConnectionProviderId("local.device")
+        val records = (0 until 200).map { index ->
+            record(
+                locator(providerId, ConnectionProfileId("profile-$index")),
+                title = "Session $index",
+                connectionLabel = "Device $index",
+            )
+        }
+        val activities = records.flatMap { session ->
+            (0 until 10).map { index ->
+                SessionActivity(
+                    id = "activity-${session.locator.connectionProfileId.value}-$index",
+                    locator = session.locator,
+                    type = SessionActivityType.NEW_OUTPUT,
+                    summary = SessionActivitySummary.Verbatim("Output $index"),
+                    eventAnchorId = null,
+                    occurredAtEpochMillis = index.toLong(),
+                )
+            }
+        }
+        val snapshot = SessionHubSnapshot(sessions = records, activities = activities)
+        val coordinator = SessionCoordinatorSnapshot()
+        val provider = descriptor(providerId, "Local")
+
+        fun map() = SessionHubUiMapper.map(
+            coordinator = coordinator,
+            sessions = snapshot,
+            connectionProviders = listOf(provider),
+            selectedSessionKey = null,
+            operationError = null,
+            busyConnectionKeys = emptySet(),
+        )
+
+        map()
+        val elapsedNanos = measureNanoTime { repeat(3) { map() } }
+
+        assertEquals(records.size, map().sessions.size)
+        assertTrue("large list mapping exceeded 1 second", elapsedNanos < 1_000_000_000L)
+    }
+
     @Test
     fun providerScopedSessionIdentitiesDoNotCollide() {
         val localProvider = ConnectionProviderId("local.device")

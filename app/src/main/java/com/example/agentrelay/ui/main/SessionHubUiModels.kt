@@ -338,6 +338,7 @@ internal object SessionHubUiMapper {
         val manageableProviders = connectionProviders
             .filter { ConnectionCapability.PROFILE_MANAGEMENT in it.capabilities }
             .associateBy(ConnectionProviderDescriptor::id)
+        val recentSessions = sessions.recentSessions()
         val actions = actionModels(sessions, providerNames, busyActionKeys)
         return SessionHubUiModel(
             availableConnectionProviders = connectionProviders.map { it.displayName },
@@ -347,7 +348,7 @@ internal object SessionHubUiMapper {
                 manageableProviders.keys,
                 busyConnectionKeys,
             ),
-            sessions = sessionModels(sessions, providerNames),
+            sessions = sessionModels(sessions, recentSessions, providerNames),
             issues = coordinator.issues.values
                 .sortedByDescending { it.occurredAtEpochMillis }
                 .map { it.toUiModel() },
@@ -368,7 +369,7 @@ internal object SessionHubUiMapper {
             manageableConnectionProviders = manageableProviders.values
                 .map { ConnectionProviderUiModel(it.id.value, it.displayName) }
                 .sortedBy(ConnectionProviderUiModel::name),
-            sessionLaunchers = sessionLaunchers(coordinator, sessions, providerNames),
+            sessionLaunchers = sessionLaunchers(coordinator, recentSessions, providerNames),
             attentionActions = actions.filter { it.state != SessionActionState.RESOLVED },
         )
     }
@@ -451,18 +452,22 @@ internal object SessionHubUiMapper {
 
     private fun sessionModels(
         sessions: SessionHubSnapshot,
+        recentSessions: List<SessionRecord>,
         providerNames: Map<dev.agentrelay.connection.api.ConnectionProviderId, String>,
-    ): List<SessionUiModel> = sessions.recentSessions().map { record ->
-        record.toUiModel(
-            connectionProviderName = providerNames[record.locator.connectionProviderId]
-                ?: record.locator.connectionProviderId.value,
-            activities = sessions.activities.filter { it.locator == record.locator },
-        )
+    ): List<SessionUiModel> {
+        val activitiesByLocator = sessions.activities.groupBy(SessionActivity::locator)
+        return recentSessions.map { record ->
+            record.toUiModel(
+                connectionProviderName = providerNames[record.locator.connectionProviderId]
+                    ?: record.locator.connectionProviderId.value,
+                activities = activitiesByLocator[record.locator].orEmpty(),
+            )
+        }
     }
 
     private fun sessionLaunchers(
         coordinator: SessionCoordinatorSnapshot,
-        sessions: SessionHubSnapshot,
+        recentSessions: List<SessionRecord>,
         providerNames: Map<dev.agentrelay.connection.api.ConnectionProviderId, String>,
     ): List<SessionLauncherUiModel> = coordinator.agentEndpoints.values
         .asSequence()
@@ -472,7 +477,7 @@ internal object SessionHubUiMapper {
         }
         .mapNotNull { endpoint ->
             val profile = coordinator.profile(endpoint.key.connection) ?: return@mapNotNull null
-            val suggestedWorkingDirectory = sessions.recentSessions()
+            val suggestedWorkingDirectory = recentSessions
                 .firstOrNull { record ->
                     record.locator.connectionProviderId == endpoint.key.connection.providerId &&
                         record.locator.connectionProfileId == endpoint.key.connection.profileId &&
