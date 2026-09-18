@@ -86,7 +86,12 @@ internal class SessionNotificationRuntime(
     private suspend fun onSnapshot(snapshot: SessionHubSnapshot) {
         mutex.withLock {
             latestSnapshot = snapshot
-            applyCurrentLocked()
+            // Foreground notifications are suppressed already. Keep only the newest snapshot
+            // for the next background transition instead of repeatedly projecting and cancelling
+            // notifications while the user is actively viewing the app.
+            if (!isForeground) {
+                applyCurrentLocked()
+            }
         }
     }
 
