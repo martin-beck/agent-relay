@@ -6,6 +6,7 @@
 package com.example.agentrelay.background
 
 import android.content.Context
+import com.example.agentrelay.settings.AndroidSettingsStore
 import dev.agentrelay.connection.api.ConnectionProfileSummary
 import dev.agentrelay.connection.api.ConnectionProfileId
 import dev.agentrelay.connection.api.ConnectionProviderId
@@ -21,9 +22,11 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
 internal val BACKGROUND_TRANSPORT_LEASE_DURATION: Duration = 30.minutes
+internal val EXTENDED_BACKGROUND_TRANSPORT_LEASE_DURATION: Duration = 2.hours
 
 internal class BackgroundConnectionLease internal constructor(
     private val documents: SecureDocumentStore,
@@ -36,6 +39,7 @@ internal class BackgroundConnectionLease internal constructor(
             context = context.applicationContext,
             namespace = BACKGROUND_CONNECTION_LEASE_NAMESPACE,
         ),
+        leaseDuration = backgroundTransportLeaseDuration(context),
     )
 
     private val mutex = Mutex()
@@ -153,6 +157,13 @@ internal class BackgroundConnectionLease internal constructor(
         const val MAX_CONNECTIONS = 64
     }
 }
+
+internal fun backgroundTransportLeaseDuration(context: Context): Duration =
+    if (AndroidSettingsStore(context.applicationContext).read().energySavingMode) {
+        BACKGROUND_TRANSPORT_LEASE_DURATION
+    } else {
+        EXTENDED_BACKGROUND_TRANSPORT_LEASE_DURATION
+    }
 
 internal fun configuredBackgroundRecoveryConnections(
     desiredConnections: Set<SessionConnectionKey>,

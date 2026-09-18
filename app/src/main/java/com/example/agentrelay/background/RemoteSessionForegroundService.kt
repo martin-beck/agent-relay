@@ -78,7 +78,7 @@ internal class RemoteSessionForegroundService : Service() {
         startFailed = false
         expiryJob?.cancel()
         expiryJob = serviceScope.launch {
-            kotlinx.coroutines.delay(BACKGROUND_TRANSPORT_LEASE_DURATION)
+            kotlinx.coroutines.delay(backgroundTransportLeaseDuration(this@RemoteSessionForegroundService))
             stopMonitoring()
         }
         try {
