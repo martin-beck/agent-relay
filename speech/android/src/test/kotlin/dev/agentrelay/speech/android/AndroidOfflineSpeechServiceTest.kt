@@ -163,6 +163,26 @@ class AndroidOfflineSpeechServiceTest {
     }
 
     @Test
+    fun closeStopsActivePlatformOperationsBeforeReleasingTheService() = runTest {
+        val recognitionFixture = fixture()
+        val recognitionService = recognitionFixture.service(StandardTestDispatcher(testScheduler))
+        val recognitionId = recognitionService.startListening(recognitionFixture.descriptor.id)
+        runCurrent()
+        recognitionService.close()
+        assertEquals(listOf(recognitionId), recognitionFixture.capture.stopped)
+        assertEquals(listOf(recognitionId), recognitionFixture.inference.cancelled)
+
+        val playbackFixture = fixture()
+        playbackFixture.playback.release = CompletableDeferred()
+        val playbackService = playbackFixture.service(StandardTestDispatcher(testScheduler))
+        val playbackId = playbackService.speak(playbackFixture.descriptor.id, "read this")
+        runCurrent()
+        playbackService.close()
+        assertEquals(listOf(playbackId), playbackFixture.playback.stopped)
+        assertEquals(listOf(playbackId), playbackFixture.inference.cancelled)
+    }
+
+    @Test
     fun removingAnActiveModelStopsItsPipelineBeforeDeletingFiles() = runTest {
         val events = mutableListOf<String>()
         val fixture = fixture(events = events)
