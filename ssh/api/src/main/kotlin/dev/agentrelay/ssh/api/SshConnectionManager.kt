@@ -26,7 +26,7 @@ import java.io.Closeable
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.random.Random
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Duration.Companion.minutes
 
 class SshConnectionManager(
     private val profileStore: SshProfileStore,
@@ -34,7 +34,9 @@ class SshConnectionManager(
     private val hostKeyStore: SshHostKeyStore,
     private val connector: SshConnector,
     private val reconnectPolicy: SshReconnectPolicy = SshReconnectPolicy(),
-    private val heartbeatInterval: Duration = 15.seconds,
+    // One application-level liveness probe is sufficient. The transport connector does not
+    // also emit a second fixed-rate keepalive by default (see JschSshConnector).
+    private val heartbeatInterval: Duration = 5.minutes,
     dispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val clock: SshClock = SshClock(System::currentTimeMillis),
     private val sleeper: SshDelay = SshDelay { delay(it) },

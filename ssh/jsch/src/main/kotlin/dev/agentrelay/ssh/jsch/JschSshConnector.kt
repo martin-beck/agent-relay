@@ -43,7 +43,9 @@ class JschSshConnector(
     private val agentIdentityProvider: JschAgentIdentityProvider? = null,
     private val connectTimeout: Duration = 15.seconds,
     private val channelConnectTimeout: Duration = 10.seconds,
-    private val serverAliveInterval: Duration = 15.seconds,
+    // The connection manager owns the single application-level liveness probe. A second
+    // transport keepalive doubles idle radio wakeups, so transport keepalives are opt-in.
+    private val serverAliveInterval: Duration = Duration.ZERO,
     private val serverAliveCountMax: Int = 3,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val nowEpochMillis: () -> Long = System::currentTimeMillis,
@@ -51,7 +53,9 @@ class JschSshConnector(
     init {
         require(connectTimeout.isPositive()) { "SSH connect timeout must be positive" }
         require(channelConnectTimeout.isPositive()) { "SSH channel timeout must be positive" }
-        require(serverAliveInterval.isPositive()) { "SSH server-alive interval must be positive" }
+        require(serverAliveInterval.isFinite() && !serverAliveInterval.isNegative()) {
+            "SSH server-alive interval must be non-negative"
+        }
         require(serverAliveCountMax >= 1) { "SSH server-alive count must be positive" }
         require(connectTimeout.inWholeMilliseconds <= Int.MAX_VALUE)
         require(channelConnectTimeout.inWholeMilliseconds <= Int.MAX_VALUE)
@@ -153,8 +157,10 @@ class JschSshConnector(
         session.setConfig("enable_strict_kex", "yes")
         session.userInfo = RejectingUserInfo
         session.setDaemonThread(true)
-        session.setServerAliveInterval(serverAliveInterval.inWholeMilliseconds.toInt())
-        session.setServerAliveCountMax(serverAliveCountMax)
+        if (serverAliveInterval.isPositive()) {
+            session.setServerAliveInterval(serverAliveInterval.inWholeMilliseconds.toInt())
+            session.setServerAliveCountMax(serverAliveCountMax)
+        }
 
         when (authentication) {
             is ResolvedSshAuthentication.Password -> {
