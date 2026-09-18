@@ -12,6 +12,7 @@ import com.example.agentrelay.notifications.SessionNotificationPreferences
 import com.example.agentrelay.notifications.SessionNotificationTopic
 
 internal data class AppSettings(
+    val energySavingMode: Boolean = true,
     val backgroundConnections: Boolean = false,
     val notifications: Boolean = true,
     val dynamicColor: Boolean = true,
@@ -34,6 +35,7 @@ internal class AndroidSettingsStore(context: Context) : SettingsStore {
     override fun read(): AppSettings {
         migrate()
         return AppSettings(
+            energySavingMode = preferences.getBoolean(KEY_ENERGY_SAVING, true),
             backgroundConnections = preferences.getBoolean(KEY_BACKGROUND, false),
             notifications = preferences.getBoolean(KEY_NOTIFICATIONS, true),
             dynamicColor = preferences.getBoolean(KEY_DYNAMIC_COLOR, true),
@@ -57,6 +59,7 @@ internal class AndroidSettingsStore(context: Context) : SettingsStore {
     override fun write(settings: AppSettings) {
         preferences.edit {
             putInt(KEY_VERSION, CURRENT_VERSION)
+            putBoolean(KEY_ENERGY_SAVING, settings.energySavingMode)
             putBoolean(KEY_BACKGROUND, settings.backgroundConnections)
             putBoolean(KEY_NOTIFICATIONS, settings.notifications)
             putBoolean(KEY_DYNAMIC_COLOR, settings.dynamicColor)
@@ -87,6 +90,7 @@ internal class AndroidSettingsStore(context: Context) : SettingsStore {
         const val NAME = "agent_relay_settings_v1"
         const val CURRENT_VERSION = 2
         const val KEY_VERSION = "schema_version"
+        const val KEY_ENERGY_SAVING = "energy_saving_mode"
         const val KEY_BACKGROUND = "background_connections"
         const val KEY_NOTIFICATIONS = "notifications"
         const val KEY_DYNAMIC_COLOR = "dynamic_color"

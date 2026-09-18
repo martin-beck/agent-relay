@@ -45,6 +45,7 @@ internal data class SettingDefinition(
 
 @Suppress("MaxLineLength")
 internal val settingDefinitions = listOf(
+    SettingDefinition("Performance and battery", "Energy-saving mode", "Use quiet synchronization, short-lived background transport leases, and lifecycle cleanup by default.", SettingKind.TOGGLE, { it.energySavingMode.toString() }) { s, v -> s.copy(energySavingMode = v.toBoolean()) },
     SettingDefinition("Connection", "Background connections", "Keep explicitly enabled connections active when the app is backgrounded.", SettingKind.TOGGLE, { it.backgroundConnections.toString() }) { s, v -> s.copy(backgroundConnections = v.toBoolean()) },
     SettingDefinition("Sessions", "Restore session drafts", "Drafts are retained in the encrypted session repository until delivery succeeds.", SettingKind.TOGGLE, { "true" }) { s, _ -> s },
     SettingDefinition("Synchronization", "Sync on Wi-Fi only", "Limit future synchronization adapters to unmetered networks.", SettingKind.TOGGLE, { "false" }) { s, _ -> s },

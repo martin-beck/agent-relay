@@ -19,6 +19,7 @@ class SettingsRepositoryTest {
     @Test fun writeThenReadPreservesSettings() {
         val store = MemorySettingsStore()
         val expected = AppSettings(
+            energySavingMode = false,
             backgroundConnections = true,
             language = "de",
             highContrast = true,
