@@ -30,6 +30,7 @@ internal class RemoteSessionForegroundService : Service() {
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     @Volatile private var startFailed = false
+    private var expiryJob: kotlinx.coroutines.Job? = null
     private val relayApplication: AgentRelayApplication
         get() = application as AgentRelayApplication
 
@@ -64,6 +65,7 @@ internal class RemoteSessionForegroundService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onDestroy() {
+        expiryJob?.cancel()
         if (!startFailed) {
             relayApplication.backgroundTransport.serviceStopped()
         }
@@ -74,6 +76,11 @@ internal class RemoteSessionForegroundService : Service() {
 
     private fun startMonitoring(recoverAfterProcessDeath: Boolean): Int {
         startFailed = false
+        expiryJob?.cancel()
+        expiryJob = serviceScope.launch {
+            kotlinx.coroutines.delay(BACKGROUND_TRANSPORT_LEASE_DURATION)
+            stopMonitoring()
+        }
         try {
             ServiceCompat.startForeground(
                 this,
@@ -107,6 +114,7 @@ internal class RemoteSessionForegroundService : Service() {
     }
 
     private fun stopMonitoring() {
+        expiryJob = null
         serviceScope.launch {
             try {
                 relayApplication.graph.disableBackgroundTransportIfInitialized()

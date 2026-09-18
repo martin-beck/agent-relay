@@ -20,10 +20,16 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
+
+internal val BACKGROUND_TRANSPORT_LEASE_DURATION: Duration = 30.minutes
 
 internal class BackgroundConnectionLease internal constructor(
     private val documents: SecureDocumentStore,
     private val json: Json = backgroundConnectionLeaseJson(),
+    private val nowEpochMillis: () -> Long = System::currentTimeMillis,
+    private val leaseDuration: Duration = BACKGROUND_TRANSPORT_LEASE_DURATION,
 ) {
     constructor(context: Context) : this(
         EncryptedFileDocumentStore(
@@ -47,14 +53,25 @@ internal class BackgroundConnectionLease internal constructor(
     }
 
     suspend fun enable() = mutex.withLock {
+        require(leaseDuration.isPositive()) { "Background lease duration must be positive" }
         enabled = true
         persist()
     }
 
     suspend fun restore(): Set<SessionConnectionKey> = mutex.withLock {
-        val restored = checkNotNull(load()) {
+        val document = checkNotNull(load()) {
             "Background connection recovery was not explicitly enabled"
         }
+        if (nowEpochMillis() >= document.expiresAtEpochMillis) {
+            documents.delete(BACKGROUND_CONNECTION_LEASE_DOCUMENT)
+            throw IllegalStateException("Background connection recovery lease expired")
+        }
+        val restored = document.connections.map { entry ->
+            SessionConnectionKey(
+                providerId = ConnectionProviderId(entry.providerId),
+                profileId = ConnectionProfileId(entry.profileId),
+            )
+        }.toCollection(linkedSetOf())
         desiredConnections.clear()
         desiredConnections += restored
         enabled = true
@@ -78,6 +95,7 @@ internal class BackgroundConnectionLease internal constructor(
         }
         val document = BackgroundConnectionLeaseDocument(
             formatVersion = BACKGROUND_CONNECTION_LEASE_FORMAT_VERSION,
+            expiresAtEpochMillis = nowEpochMillis() + leaseDuration.inWholeMilliseconds,
             connections = desiredConnections
                 .sortedWith(
                     compareBy<SessionConnectionKey> { it.providerId.value }
@@ -98,7 +116,7 @@ internal class BackgroundConnectionLease internal constructor(
         }
     }
 
-    private suspend fun load(): Set<SessionConnectionKey>? {
+    private suspend fun load(): BackgroundConnectionLeaseDocument? {
         val plaintext = documents.read(BACKGROUND_CONNECTION_LEASE_DOCUMENT) ?: return null
         return try {
             val document = json.decodeFromString<BackgroundConnectionLeaseDocument>(
@@ -119,7 +137,7 @@ internal class BackgroundConnectionLease internal constructor(
             check(restored.distinct().size == restored.size) {
                 "Duplicate background connections"
             }
-            restored.toCollection(linkedSetOf())
+            document
         } catch (failure: SecureStoreCorruptException) {
             throw failure
         } catch (failure: Throwable) {
@@ -131,7 +149,7 @@ internal class BackgroundConnectionLease internal constructor(
 
     private companion object {
         const val BACKGROUND_CONNECTION_LEASE_DOCUMENT = "background-connection-lease-v1"
-        const val BACKGROUND_CONNECTION_LEASE_FORMAT_VERSION = 1
+        const val BACKGROUND_CONNECTION_LEASE_FORMAT_VERSION = 2
         const val MAX_CONNECTIONS = 64
     }
 }
@@ -168,6 +186,7 @@ private fun backgroundConnectionLeaseJson() = Json {
 @Serializable
 private data class BackgroundConnectionLeaseDocument(
     val formatVersion: Int,
+    val expiresAtEpochMillis: Long,
     val connections: List<BackgroundConnectionLeaseEntry>,
 )
 
