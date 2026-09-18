@@ -14,12 +14,24 @@ The current `main` tree has four high-risk recurring-work sources:
    connection can cause two liveness mechanisms to run.
 3. The explicit foreground background-transport service can retain the user-requested profile
    set indefinitely. It is correctly opt-in, but its lease has no energy-oriented idle expiry.
-4. Provider adapters include polling loops. The Continue adapter currently waits 250 ms between
+4. Provider adapters include polling loops. The Continue adapter currently waits 750 ms between
    probes, which is inappropriate while no active turn needs progress.
 
 These findings come from source and deterministic tests, not from a battery measurement. They
 identify wakeups and network operations that are expected to consume energy; they do not quantify
 percentage drain or thermal impact.
+
+## Implemented source reductions
+
+- SSH application heartbeats now default to five minutes, while the duplicate JSch server-alive
+  probe is disabled unless explicitly configured.
+- Explicit background transport now expires after 30 minutes in energy-saving mode and recovery
+  remains fail-closed; the opt-out policy is bounded to two hours rather than indefinite.
+- Continue polling backs off to 15 seconds while idle, 2 seconds while waiting for approval, and
+  1 second during an active turn.
+- Speech lifecycle close stops capture, playback, and inference before releasing resources.
+- Foreground notification updates retain the latest snapshot without repeatedly projecting and
+  cancelling already-suppressed notifications.
 
 ## Evidence levels
 
