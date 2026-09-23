@@ -23,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -66,7 +67,10 @@ internal val settingDefinitions = listOf(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun SettingsScreen(store: SettingsStore, onBack: () -> Unit) {
-    var settings by rememberSaveable { mutableStateOf(store.read()) }
+    // AppSettings contains a set of notification topics and is intentionally not a
+    // Bundle-saveable UI value. Persist changes through the store and recreate this local
+    // snapshot after process death instead of asking rememberSaveable to serialize it.
+    var settings by remember { mutableStateOf(store.read()) }
     var query by rememberSaveable { mutableStateOf("") }
     val visible = settingDefinitions.filter { definition ->
         query.isBlank() || listOf(definition.section, definition.title, definition.description)
