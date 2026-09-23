@@ -23,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -45,6 +46,7 @@ internal data class SettingDefinition(
 
 @Suppress("MaxLineLength")
 internal val settingDefinitions = listOf(
+    SettingDefinition("Performance and battery", "Energy-saving mode", "Use quiet synchronization, short-lived background transport leases, and lifecycle cleanup by default.", SettingKind.TOGGLE, { it.energySavingMode.toString() }) { s, v -> s.copy(energySavingMode = v.toBoolean()) },
     SettingDefinition("Connection", "Background connections", "Keep explicitly enabled connections active when the app is backgrounded.", SettingKind.TOGGLE, { it.backgroundConnections.toString() }) { s, v -> s.copy(backgroundConnections = v.toBoolean()) },
     SettingDefinition("Sessions", "Restore session drafts", "Drafts are retained in the encrypted session repository until delivery succeeds.", SettingKind.TOGGLE, { "true" }) { s, _ -> s },
     SettingDefinition("Synchronization", "Sync on Wi-Fi only", "Limit future synchronization adapters to unmetered networks.", SettingKind.TOGGLE, { "false" }) { s, _ -> s },
@@ -65,7 +67,10 @@ internal val settingDefinitions = listOf(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun SettingsScreen(store: SettingsStore, onBack: () -> Unit) {
-    var settings by rememberSaveable { mutableStateOf(store.read()) }
+    // AppSettings contains a set of notification topics and is intentionally not a
+    // Bundle-saveable UI value. Persist changes through the store and recreate this local
+    // snapshot after process death instead of asking rememberSaveable to serialize it.
+    var settings by remember { mutableStateOf(store.read()) }
     var query by rememberSaveable { mutableStateOf("") }
     val visible = settingDefinitions.filter { definition ->
         query.isBlank() || listOf(definition.section, definition.title, definition.description)

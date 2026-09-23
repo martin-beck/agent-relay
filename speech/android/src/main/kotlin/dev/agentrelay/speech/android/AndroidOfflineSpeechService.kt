@@ -34,6 +34,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -242,6 +243,13 @@ class AndroidOfflineSpeechService(
             mutableRecognition.value = SpeechRecognitionState.Idle
             mutablePlayback.value = SpeechPlaybackState.Idle
             result
+        }
+        // AutoCloseable cannot be suspend. Stop platform/native operations synchronously before
+        // cancelling the coordinator scope so a lifecycle close cannot leave microphone, audio,
+        // or inference work running after the owning screen has gone away.
+        runBlocking(Dispatchers.IO) {
+            operations.first?.let { stopRecognitionDependencies(it.operationId) }
+            operations.second?.let { stopPlaybackDependencies(it.operationId) }
         }
         operations.first?.job?.cancel()
         operations.second?.job?.cancel()

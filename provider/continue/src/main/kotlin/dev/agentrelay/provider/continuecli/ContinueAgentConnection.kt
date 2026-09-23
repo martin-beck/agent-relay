@@ -24,7 +24,6 @@ import dev.agentrelay.provider.api.StartSessionOptions
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
@@ -254,7 +253,11 @@ internal class ContinueAgentConnection private constructor(
         val job = scope.launch(start = CoroutineStart.LAZY) {
             try {
                 while (currentCoroutineContext().isActive) {
-                    delay(POLL_INTERVAL)
+                    delay(
+                        continuePollInterval(
+                            mutableSessions.value.firstOrNull { it.id == sessionId }?.state,
+                        ),
+                    )
                     try {
                         handleState(sessionId, client, client.state())
                     } catch (error: CancellationException) {
@@ -402,8 +405,6 @@ internal class ContinueAgentConnection private constructor(
     }
 
     companion object {
-        private val POLL_INTERVAL = 750.milliseconds
-
         suspend fun create(
             descriptor: AgentProviderDescriptor,
             runtime: RemoteAgentRuntime,
@@ -438,4 +439,10 @@ internal class ContinueAgentConnection private constructor(
                 dispatcher,
             ).also { it.refreshSessions() }
     }
+}
+
+internal fun continuePollInterval(state: AgentSessionState?): kotlin.time.Duration = when (state) {
+    AgentSessionState.RUNNING -> 1.seconds
+    AgentSessionState.WAITING_FOR_APPROVAL -> 2.seconds
+    else -> 15.seconds
 }

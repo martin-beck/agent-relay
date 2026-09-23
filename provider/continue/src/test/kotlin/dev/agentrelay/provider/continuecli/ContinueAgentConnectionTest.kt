@@ -19,6 +19,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
@@ -32,6 +33,14 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ContinueAgentConnectionTest {
+    @Test
+    fun idlePollingUsesALongIntervalWhileActiveTurnsRemainResponsive() {
+        assertEquals(15.seconds, continuePollInterval(AgentSessionState.IDLE))
+        assertEquals(1.seconds, continuePollInterval(AgentSessionState.RUNNING))
+        assertEquals(2.seconds, continuePollInterval(AgentSessionState.WAITING_FOR_APPROVAL))
+        assertEquals(15.seconds, continuePollInterval(null))
+    }
+
     @Test
     fun attachesHistoryRoutesPermissionsAndEmitsCompletedWork() = runTest {
         val runtime = FakeRuntime(listOf(listing("session-1", "/workspace")))

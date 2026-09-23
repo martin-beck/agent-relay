@@ -16,12 +16,14 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import kotlin.time.Duration.Companion.minutes
 
 class BackgroundConnectionLeaseTest {
     @Test
     fun connectionIntentIsEncryptedStoreReadyOnlyWhileExplicitlyEnabled() = runTest {
         val documents = InMemorySecureDocuments()
-        val first = BackgroundConnectionLease(documents)
+        var now = 1_000L
+        val first = BackgroundConnectionLease(documents, nowEpochMillis = { now })
         val ssh = connection("ssh", "primary")
         val local = connection("local", "device")
 
@@ -33,13 +35,13 @@ class BackgroundConnectionLeaseTest {
         val persisted = requireNotNull(documents.singleDocument())
         assertTrue(persisted.isNotEmpty())
 
-        val restored = BackgroundConnectionLease(documents)
+        val restored = BackgroundConnectionLease(documents, nowEpochMillis = { now })
         assertEquals(setOf(local, ssh), restored.restore())
 
         restored.recordDisconnect(ssh)
         assertEquals(
             setOf(local),
-            BackgroundConnectionLease(documents).restore(),
+            BackgroundConnectionLease(documents, nowEpochMillis = { now }).restore(),
         )
 
         restored.disable()
@@ -48,6 +50,25 @@ class BackgroundConnectionLeaseTest {
             BackgroundConnectionLease(documents).restore()
         }.exceptionOrNull()
         assertEquals(IllegalStateException::class.java, missingFailure?.javaClass)
+    }
+
+    @Test
+    fun expiredLeaseFailsClosedAndDeletesRecoveryDocument() = runTest {
+        val documents = InMemorySecureDocuments()
+        var now = 1_000L
+        val lease = BackgroundConnectionLease(
+            documents = documents,
+            nowEpochMillis = { now },
+            leaseDuration = 1.minutes,
+        )
+        lease.recordConnect(connection("ssh", "primary"))
+        lease.enable()
+        now += 61_000L
+
+        val failure = runCatching { BackgroundConnectionLease(documents, nowEpochMillis = { now }).restore() }
+            .exceptionOrNull()
+        assertEquals(IllegalStateException::class.java, failure?.javaClass)
+        assertNull(documents.singleDocument())
     }
 
     @Test
