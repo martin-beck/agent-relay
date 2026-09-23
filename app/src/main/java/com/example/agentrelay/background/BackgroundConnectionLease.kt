@@ -68,7 +68,7 @@ internal class BackgroundConnectionLease internal constructor(
         }
         if (nowEpochMillis() >= document.expiresAtEpochMillis) {
             documents.delete(BACKGROUND_CONNECTION_LEASE_DOCUMENT)
-            throw IllegalStateException("Background connection recovery lease expired")
+            error("Background connection recovery lease expired")
         }
         val restored = document.connections.map { entry ->
             SessionConnectionKey(
