@@ -30,9 +30,9 @@ internal fun ConnectionSettingsScreen(
     backgroundTransportState: BackgroundTransportState,
     onStartBackgroundTransport: () -> Unit,
     onStopBackgroundTransport: () -> Unit,
-    onManageConnections: () -> Unit = {},
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    onManageConnections: () -> Unit = {},
 ) {
     Column(
         modifier = modifier.fillMaxSize().padding(16.dp),
