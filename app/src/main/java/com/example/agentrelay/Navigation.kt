@@ -171,6 +171,9 @@ internal fun MainNavigation(
                                 backgroundTransportState = backgroundTransportState,
                                 onStartBackgroundTransport = application.backgroundTransport::start,
                                 onStopBackgroundTransport = application.backgroundTransport::stop,
+                                onOpenConnectionSettings = {
+                                    navigateToTopLevel(backStack, ConnectionSettings)
+                                },
                                 quickNavigationDestinations = quickNavigationDestinations,
                             )
                         }
@@ -188,6 +191,9 @@ internal fun MainNavigation(
                                 backgroundTransportState = backgroundTransportState,
                                 onStartBackgroundTransport = application.backgroundTransport::start,
                                 onStopBackgroundTransport = application.backgroundTransport::stop,
+                                onOpenConnectionSettings = {
+                                    navigateToTopLevel(backStack, ConnectionSettings)
+                                },
                                 quickNavigationDestinations = quickNavigationDestinations,
                             )
                         }
@@ -205,6 +211,9 @@ internal fun MainNavigation(
                                 backgroundTransportState = backgroundTransportState,
                                 onStartBackgroundTransport = application.backgroundTransport::start,
                                 onStopBackgroundTransport = application.backgroundTransport::stop,
+                                onOpenConnectionSettings = {
+                                    navigateToTopLevel(backStack, ConnectionSettings)
+                                },
                                 quickNavigationDestinations = quickNavigationDestinations,
                             )
                         }
@@ -242,6 +251,9 @@ internal fun MainNavigation(
                                 backgroundTransportState = backgroundTransportState,
                                 onStartBackgroundTransport = application.backgroundTransport::start,
                                 onStopBackgroundTransport = application.backgroundTransport::stop,
+                                onManageConnections = {
+                                    navigateToTopLevel(backStack, NewSession)
+                                },
                                 onBack = onBack,
                             )
                         }
@@ -292,6 +304,7 @@ private fun MainSurfaceRoute(
     backgroundTransportState: BackgroundTransportState,
     onStartBackgroundTransport: () -> Unit,
     onStopBackgroundTransport: () -> Unit,
+    onOpenConnectionSettings: () -> Unit,
     quickNavigationDestinations: List<QuickNavigationDestination>,
 ) {
     MainScreen(
@@ -305,6 +318,7 @@ private fun MainSurfaceRoute(
         backgroundTransportState = backgroundTransportState,
         onStartBackgroundTransport = onStartBackgroundTransport,
         onStopBackgroundTransport = onStopBackgroundTransport,
+        onOpenConnectionSettings = onOpenConnectionSettings,
         onSaveArtifact = saveArtifact,
         surface = surface,
         quickNavigationDestinations = quickNavigationDestinations,
@@ -348,6 +362,12 @@ private fun topLevelDestinations(
             label = stringResource(R.string.notification_center_open),
             selected = root == NotificationCenter,
             onClick = { onNavigate(NotificationCenter) },
+        ),
+        QuickNavigationDestination(
+            id = QuickNavigationDestinationId.CONNECTIONS,
+            label = stringResource(R.string.quick_navigation_connections),
+            selected = root == ConnectionSettings || root == NewSession,
+            onClick = { onNavigate(ConnectionSettings) },
         ),
     )
 }

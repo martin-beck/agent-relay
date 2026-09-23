@@ -34,6 +34,7 @@ class MainScreenBackgroundTransportTest {
         var permissionState by mutableStateOf(SessionNotificationPermissionState.HIDDEN)
         var starts = 0
         var stops = 0
+        var manageConnections = 0
         composeTestRule.setContent {
             AgentRelayTheme {
                 ConnectionSettingsScreen(
@@ -49,6 +50,7 @@ class MainScreenBackgroundTransportTest {
                         stops += 1
                         state = BackgroundTransportState.STOPPED
                     },
+                    onManageConnections = { manageConnections += 1 },
                     modifier = Modifier.requiredSize(width = 1_000.dp, height = 900.dp),
                     onBack = {},
                 )
@@ -70,5 +72,8 @@ class MainScreenBackgroundTransportTest {
             .assertIsDisplayed()
         composeTestRule.onNodeWithText("Keep connections active").assertIsNotEnabled()
         check(starts == 1)
+
+        composeTestRule.onNodeWithText("Connections").performClick()
+        check(manageConnections == 1)
     }
 }
