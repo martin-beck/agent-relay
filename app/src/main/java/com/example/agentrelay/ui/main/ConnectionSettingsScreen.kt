@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -29,6 +30,7 @@ internal fun ConnectionSettingsScreen(
     backgroundTransportState: BackgroundTransportState,
     onStartBackgroundTransport: () -> Unit,
     onStopBackgroundTransport: () -> Unit,
+    onManageConnections: () -> Unit = {},
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -56,6 +58,12 @@ internal fun ConnectionSettingsScreen(
             onStop = onStopBackgroundTransport,
             modifier = Modifier.fillMaxWidth(),
         )
+        OutlinedButton(
+            onClick = onManageConnections,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(stringResource(R.string.session_hub_connections_title))
+        }
         Button(onClick = onBack) {
             Text(stringResource(R.string.action_go_back))
         }
