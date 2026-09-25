@@ -40,7 +40,7 @@ import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private val notificationNavigationKey = MutableStateFlow<String?>(null)
-    private val appLanguage = MutableStateFlow(AndroidSettingsStore(this).read().language)
+    private lateinit var appLanguage: MutableStateFlow<String>
     private val pairingHandoffState = MutableStateFlow<PairingHandoffUiState?>(null)
     private val pairingEnrollment by lazy { AndroidPairingAppLinkEnrollment(this) }
     private var pairingIntentJob: Job? = null
@@ -61,6 +61,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        appLanguage = MutableStateFlow(AndroidSettingsStore(this).read().language)
         acceptNotificationNavigation(intent)
         acceptPairingAppLink(intent)
         refreshNotificationPermissionState()
