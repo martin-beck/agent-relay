@@ -5,6 +5,9 @@
 
 from __future__ import annotations
 
+import os
+import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 from typing import Any, cast
@@ -109,6 +112,57 @@ class PinnedEmulatorWorkflowTest(unittest.TestCase):
         self.assertIn("unzip is required to install the pinned Android emulator", script)
         self.assertIn("Pinned Android emulator failed to start", script)
         self.assertIn('ldd "$emulator_bin"', script)
+
+    def test_unprivileged_dependency_check_does_not_invoke_sudo(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            marker = root / "sudo-invoked"
+            (root / "sudo").write_text(
+                f"#!/bin/sh\nprintf invoked > {marker}\nexit 99\n",
+                encoding="utf-8",
+            )
+            (root / "dpkg-query").write_text(
+                "#!/bin/sh\nprintf 'install ok installed'\n",
+                encoding="utf-8",
+            )
+            for command in ("sudo", "dpkg-query"):
+                (root / command).chmod(0o755)
+            environment = os.environ | {
+                "AGENT_RELAY_UNPRIVILEGED_RUNNER": "1",
+                "PATH": f"{root}:{os.environ['PATH']}",
+            }
+            result = subprocess.run(  # noqa: S603
+                ["bash", str(RUNTIME_DEPENDENCIES_SCRIPT)],  # noqa: S607
+                check=False,
+                capture_output=True,
+                text=True,
+                env=environment,
+            )
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assertFalse(marker.exists())
+
+    def test_unprivileged_dependency_check_reports_missing_package(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "dpkg-query").write_text(
+                '#!/bin/sh\nif [ "$3" = "libasound2t64" ]; then exit 1; fi\n'
+                "printf 'install ok installed'\n",
+                encoding="utf-8",
+            )
+            (root / "dpkg-query").chmod(0o755)
+            environment = os.environ | {
+                "AGENT_RELAY_UNPRIVILEGED_RUNNER": "1",
+                "PATH": f"{root}:{os.environ['PATH']}",
+            }
+            result = subprocess.run(  # noqa: S603
+                ["bash", str(RUNTIME_DEPENDENCIES_SCRIPT)],  # noqa: S607
+                check=False,
+                capture_output=True,
+                text=True,
+                env=environment,
+            )
+            self.assertEqual(1, result.returncode)
+            self.assertIn("libasound2t64", result.stderr)
 
 
 if __name__ == "__main__":
