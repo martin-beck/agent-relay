@@ -28,14 +28,14 @@ class MainScreenSurfaceTest {
         setContent(MainScreenUiState.Ready(testHub()), recorder, MainScreenSurface.NEW_SESSION)
 
         composeTestRule.onNodeWithText("Connections").assertExists()
-        val hubList = composeTestRule.onNodeWithTag(SESSION_HUB_LIST_TEST_TAG)
+        val hubList = composeTestRule.onNodeWithTag(SESSION_HUB_SCROLL_LIST_TEST_TAG)
         hubList.performScrollToNode(hasText("Connect"))
         composeTestRule.onNodeWithText("Connect").performClick()
         hubList.performScrollToNode(hasText("Replace identity"))
         composeTestRule.onNodeWithText("Replace identity").performClick()
 
         setContent(MainScreenUiState.Ready(testHub()), recorder)
-        val sessionList = composeTestRule.onNodeWithTag(SESSION_HUB_LIST_TEST_TAG)
+        val sessionList = composeTestRule.onNodeWithTag(SESSION_HUB_SCROLL_LIST_TEST_TAG)
         sessionList.performScrollToNode(hasText("Investigate flaky build"))
         composeTestRule.onNodeWithText("Investigate flaky build").performClick()
 
@@ -52,7 +52,7 @@ class MainScreenSurfaceTest {
         setContent(MainScreenUiState.Ready(testHub()), recorder, MainScreenSurface.NEW_SESSION)
 
         composeTestRule
-            .onNodeWithTag(SESSION_HUB_LIST_TEST_TAG)
+            .onNodeWithTag(SESSION_HUB_SCROLL_LIST_TEST_TAG)
             .performScrollToNode(hasText("Add Secure Shell profile"))
         composeTestRule
             .onNodeWithText("Add Secure Shell profile")
@@ -68,7 +68,7 @@ class MainScreenSurfaceTest {
         val recorder = ActionRecorder()
         setContent(MainScreenUiState.Ready(actionHub()), recorder, MainScreenSurface.NEW_SESSION)
 
-        val hubList = composeTestRule.onNodeWithTag(SESSION_HUB_LIST_TEST_TAG)
+        val hubList = composeTestRule.onNodeWithTag(SESSION_HUB_SCROLL_LIST_TEST_TAG)
         hubList.performScrollToNode(hasText("Start Codex on Trusted server"))
         composeTestRule.onNodeWithText("Start Codex on Trusted server").performClick()
 

@@ -262,7 +262,7 @@ class UsageJourneyTest {
 
     private fun scrollToText(text: String) {
         val scrollable = when (screen.value) {
-            is UsageGuideScreen.Hub -> composeTestRule.onNodeWithTag(SESSION_HUB_LIST_TEST_TAG)
+            is UsageGuideScreen.Hub -> composeTestRule.onNodeWithTag(SESSION_HUB_SCROLL_LIST_TEST_TAG)
             is UsageGuideScreen.Detail -> composeTestRule.onNodeWithTag(SESSION_DETAIL_PANE_TEST_TAG)
         }
         scrollable.performScrollToNode(hasText(text))
