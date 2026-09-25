@@ -13,17 +13,14 @@
     {"id":"GHSA-7r82-7xv7-xcpj","ecosystem":"Maven","name":"org.apache.httpcomponents:httpclient","version":"4.5.6"},
     {"id":"GHSA-9pwp-9qqc-pr26","ecosystem":"Maven","name":"org.bouncycastle:bcprov-jdk18on","version":"1.79"},
     {"id":"GHSA-9pwp-9qqc-pr26","ecosystem":"Maven","name":"org.bouncycastle:bcprov-jdk18on","version":"1.81"},
-    {"id":"GHSA-9pwp-9qqc-pr26","ecosystem":"Maven","name":"org.bouncycastle:bcprov-jdk18on","version":"1.84"},
     {"id":"GHSA-c3fc-8qff-9hwx","ecosystem":"Maven","name":"org.bouncycastle:bcprov-jdk18on","version":"1.79"},
     {"id":"GHSA-c3fc-8qff-9hwx","ecosystem":"Maven","name":"org.bouncycastle:bcprov-jdk18on","version":"1.81"},
-    {"id":"GHSA-c3fc-8qff-9hwx","ecosystem":"Maven","name":"org.bouncycastle:bcprov-jdk18on","version":"1.84"},
     {"id":"GHSA-gp7f-rwcx-9369","ecosystem":"Maven","name":"org.jsoup:jsoup","version":"1.15.1"},
     {"id":"GHSA-h4h5-3hr4-j3g2","ecosystem":"Maven","name":"com.google.protobuf:protobuf-javalite","version":"3.19.1"},
     {"id":"GHSA-j288-q9x7-2f5v","ecosystem":"Maven","name":"org.apache.commons:commons-lang3","version":"3.16.0"},
     {"id":"GHSA-pmhh-3w7g-xqp8","ecosystem":"Maven","name":"org.jsoup:jsoup","version":"1.15.1"},
     {"id":"GHSA-qp49-qgx5-5m26","ecosystem":"Maven","name":"org.bouncycastle:bcprov-jdk18on","version":"1.79"},
     {"id":"GHSA-qp49-qgx5-5m26","ecosystem":"Maven","name":"org.bouncycastle:bcprov-jdk18on","version":"1.81"},
-    {"id":"GHSA-qp49-qgx5-5m26","ecosystem":"Maven","name":"org.bouncycastle:bcprov-jdk18on","version":"1.84"},
     {"id":"GHSA-wg6q-6289-32hp","ecosystem":"Maven","name":"org.bouncycastle:bcpkix-jdk18on","version":"1.79"}
   ]
 }
