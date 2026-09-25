@@ -97,7 +97,7 @@ internal fun SessionHubList(
                 modifier = Modifier.clearAndSetSemantics {},
             )
         },
-        modifier = modifier,
+        modifier = modifier.semantics { hideFromAccessibility() },
     ) {
         LazyColumn(
             modifier = Modifier

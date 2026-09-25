@@ -66,6 +66,7 @@ internal fun QuickNavigationFooter(
     Surface(
         modifier = modifier
             .fillMaxWidth()
+            .semantics { hideFromAccessibility() }
             .height(80.dp * density.fontScale.coerceAtLeast(1f))
             .imePadding()
             .navigationBarsPadding(),
