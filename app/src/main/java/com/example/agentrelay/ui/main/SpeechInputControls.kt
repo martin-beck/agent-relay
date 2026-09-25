@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
@@ -221,7 +222,11 @@ private fun SpeechModelSelector(
                     .padding(vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                RadioButton(selected = selected, onClick = null)
+                RadioButton(
+                    selected = selected,
+                    onClick = null,
+                    modifier = Modifier.clearAndSetSemantics {},
+                )
                 Text(
                     text = if (model.isReady) {
                         stringResource(R.string.speech_model_installed, model.name)

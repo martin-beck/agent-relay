@@ -15,7 +15,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
-import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -262,9 +261,11 @@ class UsageJourneyTest {
     }
 
     private fun scrollToText(text: String) {
-        composeTestRule
-            .onNode(hasScrollAction())
-            .performScrollToNode(hasText(text))
+        val scrollable = when (screen.value) {
+            is UsageGuideScreen.Hub -> composeTestRule.onNodeWithTag(SESSION_HUB_LIST_TEST_TAG)
+            is UsageGuideScreen.Detail -> composeTestRule.onNodeWithTag(SESSION_DETAIL_PANE_TEST_TAG)
+        }
+        scrollable.performScrollToNode(hasText(text))
         composeTestRule.onNodeWithText(text).assertIsDisplayed()
     }
 

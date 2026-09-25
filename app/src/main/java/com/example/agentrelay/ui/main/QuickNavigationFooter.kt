@@ -6,7 +6,6 @@
 package com.example.agentrelay.ui.main
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -33,6 +32,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -104,23 +104,19 @@ internal fun QuickNavigationFooter(
                         modifier = Modifier.clearAndSetSemantics {},
                         style = MaterialTheme.typography.labelLarge,
                     )
-                    Box(
-                        modifier = Modifier.testTag(
-                            QUICK_NAVIGATION_LABEL_PREFIX + destination.id.name.lowercase(),
+                    Text(
+                        text = destination.label,
+                        modifier = Modifier.clearAndSetSemantics {
+                            testTag = QUICK_NAVIGATION_LABEL_PREFIX + destination.id.name.lowercase()
+                        },
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontSize = 8.sp / density.fontScale.coerceAtLeast(1f),
+                            lineHeight = 10.sp / density.fontScale.coerceAtLeast(1f),
                         ),
-                    ) {
-                        Text(
-                            text = destination.label,
-                            modifier = Modifier.clearAndSetSemantics {},
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontSize = 8.sp / density.fontScale.coerceAtLeast(1f),
-                                lineHeight = 10.sp / density.fontScale.coerceAtLeast(1f),
-                            ),
-                            maxLines = 1,
-                            softWrap = false,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Ellipsis,
+                    )
                 }
             }
         }
