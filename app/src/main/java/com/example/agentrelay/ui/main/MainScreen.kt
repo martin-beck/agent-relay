@@ -480,6 +480,11 @@ private fun AdaptiveSessionHub(
                 hub = visibleHub,
                 actions = actions,
                 onSelectSession = selectSession,
+                mode = if (surface == MainScreenSurface.NEW_SESSION) {
+                    SessionHubListMode.NEW_SESSION
+                } else {
+                    SessionHubListMode.SESSIONS
+                },
                 modifier = Modifier
                     .fillMaxSize()
                     .testTag(SESSION_HUB_LIST_TEST_TAG),

@@ -106,7 +106,6 @@ internal fun QuickNavigationFooter(
                     Text(
                         text = destination.label,
                         modifier = Modifier
-                            .clearAndSetSemantics {}
                             .testTag(
                                 QUICK_NAVIGATION_LABEL_PREFIX + destination.id.name.lowercase(),
                             ),

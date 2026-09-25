@@ -451,13 +451,15 @@ private fun QuestionInput(
             ) {
                 question.options.forEach { option ->
                     FilterChip(
-                        modifier = Modifier.semantics {
-                            role = if (question.allowsMultiple) {
-                                Role.Checkbox
-                            } else {
-                                Role.RadioButton
-                            }
-                        },
+                        modifier = Modifier
+                            .heightIn(min = 48.dp)
+                            .semantics {
+                                role = if (question.allowsMultiple) {
+                                    Role.Checkbox
+                                } else {
+                                    Role.RadioButton
+                                }
+                            },
                         selected = option.label in selected,
                         onClick = {
                             onSelectedChanged(
