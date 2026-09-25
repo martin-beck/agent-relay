@@ -13,6 +13,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -73,7 +75,7 @@ class MainScreenBackgroundTransportTest {
         composeTestRule.onNodeWithText("Keep connections active").assertIsNotEnabled()
         check(starts == 1)
 
-        composeTestRule.onNodeWithText("Connections").performClick()
+        composeTestRule.onNode(hasText("Connections") and hasClickAction()).performClick()
         check(manageConnections == 1)
     }
 }

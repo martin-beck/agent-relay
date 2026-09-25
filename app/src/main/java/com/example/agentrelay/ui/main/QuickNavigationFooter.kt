@@ -95,6 +95,7 @@ internal fun QuickNavigationFooter(
                 ) {
                     Text(
                         text = destination.label.take(1),
+                        modifier = Modifier.clearAndSetSemantics {},
                         style = MaterialTheme.typography.labelLarge,
                     )
                     Text(

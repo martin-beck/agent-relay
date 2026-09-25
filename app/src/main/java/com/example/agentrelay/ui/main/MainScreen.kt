@@ -162,6 +162,7 @@ internal fun MainScreenContent(
     quickNavigationDestinations: List<QuickNavigationDestination>? = null,
     surface: MainScreenSurface = MainScreenSurface.EXISTING_SESSIONS,
 ) {
+    val footerDestinations = quickNavigationDestinations ?: defaultQuickNavigationDestinations(onQuickNavigation)
     when (state) {
         MainScreenUiState.Loading -> Box(
             modifier = modifier.fillMaxSize().testTag(MAIN_LOADING_TEST_TAG),
@@ -236,9 +237,9 @@ internal fun MainScreenContent(
                     surface = surface,
                     modifier = Modifier.weight(1f),
                 )
-                if (quickNavigationDestinations == null) {
+                if (footerDestinations.isNotEmpty()) {
                     QuickNavigationFooter(
-                        destinations = defaultQuickNavigationDestinations(onQuickNavigation),
+                        destinations = footerDestinations,
                         modifier = Modifier.testTag(QUICK_NAVIGATION_FOOTER_TEST_TAG),
                     )
                 }
