@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW = ROOT / ".github/workflows/ui.yml"
 ACTIONLINT_CONFIG = ROOT / ".github/actionlint.yaml"
 SCRIPT = ROOT / "scripts/ci/install_pinned_emulator.sh"
+RUNTIME_DEPENDENCIES_SCRIPT = ROOT / "scripts/ci/ensure_android_emulator_runtime_dependencies.sh"
 
 
 def load_workflow() -> dict[str, Any]:
@@ -86,7 +87,11 @@ class PinnedEmulatorWorkflowTest(unittest.TestCase):
             emulator_index = emulator_indices[0]
             install_step = steps[emulator_index - 1]
             self.assertEqual("Install Android emulator runtime dependencies", install_step["name"])
-            install_text = str(install_step["run"])
+            self.assertEqual(
+                "bash scripts/ci/ensure_android_emulator_runtime_dependencies.sh",
+                install_step["run"],
+            )
+            install_text = RUNTIME_DEPENDENCIES_SCRIPT.read_text(encoding="utf-8")
             for package in expected:
                 self.assertIn(package, install_text)
         self.assertEqual(2, checked_jobs)
