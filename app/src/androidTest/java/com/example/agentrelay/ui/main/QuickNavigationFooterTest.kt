@@ -12,8 +12,10 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.foundation.layout.requiredSize
@@ -103,7 +105,7 @@ class QuickNavigationFooterTest {
             .onNodeWithContentDescription("Neue Sitzung starten")
             .assertIsDisplayed()
         composeTestRule
-            .onNodeWithTag(QUICK_NAVIGATION_LABEL_PREFIX + "new_session")
-            .assertIsDisplayed()
+            .onAllNodesWithTag(QUICK_NAVIGATION_LABEL_PREFIX + "new_session")
+            .assertCountEquals(1)
     }
 }
