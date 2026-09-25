@@ -21,7 +21,7 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.14.4")
 
     constraints {
-        add("spotbugs", "org.apache.logging.log4j:log4j-api:2.25.5")
+        add("spotbugs", "org.apache.logging.log4j:log4j-api:2.26.1")
         add("spotbugs", "org.apache.logging.log4j:log4j-core:2.26.1")
     }
 }
