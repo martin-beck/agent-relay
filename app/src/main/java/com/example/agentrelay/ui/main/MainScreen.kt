@@ -40,6 +40,7 @@ import dev.agentrelay.provider.api.AgentApprovalDecision
 internal const val MAIN_LOADING_TEST_TAG = "main-loading"
 internal const val MAIN_FATAL_ERROR_TEST_TAG = "main-fatal-error"
 internal const val SESSION_HUB_LIST_TEST_TAG = "session-hub-list"
+internal const val SESSION_HUB_SCROLL_LIST_TEST_TAG = "session-hub-scroll-list"
 internal const val SESSION_DETAIL_PANE_TEST_TAG = "session-detail-pane"
 internal const val SESSION_DETAIL_OPERATION_ERROR_TEST_TAG = "session-detail-operation-error"
 internal const val NOTIFICATION_PERMISSION_TEST_TAG = "notification-permission"

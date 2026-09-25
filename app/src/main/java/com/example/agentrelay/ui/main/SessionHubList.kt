@@ -86,7 +86,9 @@ internal fun SessionHubList(
         modifier = modifier,
     ) {
         LazyColumn(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag(SESSION_HUB_SCROLL_LIST_TEST_TAG),
             contentPadding = PaddingValues(20.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
