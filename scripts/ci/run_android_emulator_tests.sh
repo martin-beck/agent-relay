@@ -72,6 +72,7 @@ export ADB_VENDOR_KEYS="$adb_private_key"
 mkdir -p "$ANDROID_AVD_HOME"
 echo no | "$avdmanager_bin" create avd --force --name "$EMULATOR_AVD_NAME" --path "$ANDROID_AVD_HOME/$EMULATOR_AVD_NAME.avd" --package "system-images;android-$EMULATOR_API_LEVEL;$EMULATOR_TARGET;$EMULATOR_ARCH" --device "$EMULATOR_PROFILE"
 avd_dir="$ANDROID_AVD_HOME/$EMULATOR_AVD_NAME.avd"
+avd_ini="$ANDROID_AVD_HOME/$EMULATOR_AVD_NAME.ini"
 if [[ ! -d "$avd_dir" ]]; then
   echo "avdmanager did not create expected AVD directory: $avd_dir" >&2
   find "$ANDROID_AVD_HOME" -maxdepth 2 -type f -name config.ini -print >&2 || true
@@ -107,6 +108,20 @@ image.sysdir.1=system-images/android-$EMULATOR_API_LEVEL/$EMULATOR_TARGET/$EMULA
 target=android-$EMULATOR_API_LEVEL
 tag.display=default
 EOF
+fi
+# avdmanager may honor --path while omitting the top-level descriptor that the
+# emulator uses to resolve `-avd "$EMULATOR_AVD_NAME"`. Repair only a missing
+# or stale descriptor; a correct descriptor from avdmanager is left intact.
+if [[ ! -f "$avd_ini" ]] || ! grep -Fqx "path=$avd_dir" "$avd_ini"; then
+  avd_ini_tmp="$(mktemp "$ANDROID_AVD_HOME/.${EMULATOR_AVD_NAME}.ini.XXXXXX")"
+  cat > "$avd_ini_tmp" << EOF
+avd.ini.encoding=UTF-8
+path=$avd_dir
+target=android-$EMULATOR_API_LEVEL
+EOF
+  chmod 0644 "$avd_ini_tmp"
+  mv -f "$avd_ini_tmp" "$avd_ini"
+  echo "Registered AVD descriptor: $avd_ini"
 fi
 log_file="$RUNNER_TEMP/agent-relay-emulator-$EMULATOR_PORT.log"
 pid_file="$RUNNER_TEMP/agent-relay-emulator-$EMULATOR_PORT.pid"
