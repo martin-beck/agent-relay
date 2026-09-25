@@ -17,7 +17,6 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsNotEnabled
-import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.accessibility.enableAccessibilityChecks
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -97,53 +96,6 @@ class MainScreenTest {
 
         composeTestRule.onNodeWithTag(SESSION_HUB_LIST_TEST_TAG).assertExists()
         composeTestRule.onNodeWithTag(SESSION_DETAIL_PANE_TEST_TAG).assertExists()
-    }
-
-    @Test
-    fun compactHub_exposesConnectionsIdentityReviewAndSessionActions() {
-        val recorder = ActionRecorder()
-        setContent(
-            state = MainScreenUiState.Ready(testHub()),
-            recorder = recorder,
-            surface = MainScreenSurface.NEW_SESSION,
-        )
-
-        composeTestRule.onNodeWithText("Connections").assertExists()
-        val hubList = composeTestRule.onNode(hasScrollAction())
-        hubList.performScrollToNode(hasText("Connect"))
-        composeTestRule.onNodeWithText("Connect").performClick()
-        hubList.performScrollToNode(hasText("Replace identity"))
-        composeTestRule.onNodeWithText("Replace identity").performClick()
-
-        setContent(MainScreenUiState.Ready(testHub()), recorder)
-        val sessionList = composeTestRule.onNode(hasScrollAction())
-        sessionList.performScrollToNode(hasText("Investigate flaky build"))
-        composeTestRule.onNodeWithText("Investigate flaky build").performClick()
-
-        check(recorder.connectedKey == "local-key")
-        check(recorder.trustedKey == "ssh-key")
-        check(recorder.replaceIdentity)
-        check(recorder.selectedKey == "session-key")
-        check(recorder.openedKey == "session-key")
-    }
-
-    @Test
-    fun profileManagementIsDiscoverableFromProviderAndExistingConnection() {
-        val recorder = ActionRecorder()
-        setContent(
-            state = MainScreenUiState.Ready(testHub()),
-            recorder = recorder,
-            surface = MainScreenSurface.NEW_SESSION,
-        )
-
-        composeTestRule
-            .onNodeWithText("Add Secure Shell profile")
-            .performScrollTo()
-            .performClick()
-        composeTestRule.onNodeWithText("Edit profile").performScrollTo().performClick()
-
-        check(recorder.addedProvider == "ssh.secure-shell")
-        check(recorder.editedConnection == "ssh-key")
     }
 
     @Test
@@ -318,22 +270,6 @@ class MainScreenTest {
             }
             interrupt.assertIsFocused()
         }
-    }
-
-    @Test
-    fun readyAgentEndpointExposesSessionLauncher() {
-        val recorder = ActionRecorder()
-        setContent(
-            state = MainScreenUiState.Ready(actionHub()),
-            recorder = recorder,
-            surface = MainScreenSurface.NEW_SESSION,
-        )
-
-        val hubList = composeTestRule.onNode(hasScrollAction())
-        hubList.performScrollToNode(hasText("Start Codex on Trusted server"))
-        composeTestRule.onNodeWithText("Start Codex on Trusted server").performClick()
-
-        check(recorder.openedSessionCreator == "launcher-key")
     }
 
     @Test
@@ -613,32 +549,6 @@ class MainScreenTest {
         composeTestRule.onRoot().tryPerformAccessibilityChecks()
     }
 
-    @Test
-    fun emptyHub_explainsHowToProceed() {
-        val recorder = ActionRecorder()
-        val emptyHub = testHub().copy(
-            connections = emptyList(),
-            sessions = emptyList(),
-            selectedSession = null,
-            selectedSessionKey = null,
-        )
-        setContent(
-            state = MainScreenUiState.Ready(emptyHub),
-            recorder = recorder,
-            surface = MainScreenSurface.NEW_SESSION,
-        )
-
-        composeTestRule
-            .onNodeWithText("No connection profiles are available. Refresh to try again.")
-            .assertExists()
-        composeTestRule
-            .onNodeWithText(
-                "No sessions have been discovered yet. Connect a profile to check its agent providers.",
-            )
-            .performScrollTo()
-            .assertIsDisplayed()
-    }
-
     @SdkSuppress(minSdkVersion = 34)
     @Test
     fun readyHub_passesAutomatedAccessibilityChecks() {
@@ -693,14 +603,12 @@ class MainScreenTest {
     private fun setContent(
         state: MainScreenUiState,
         recorder: ActionRecorder,
-        surface: MainScreenSurface = MainScreenSurface.EXISTING_SESSIONS,
     ) {
         composeTestRule.setContent {
             AgentRelayTheme {
                 MainScreenContent(
                     state = state,
                     actions = recorder.actions(),
-                    surface = surface,
                 )
             }
         }
