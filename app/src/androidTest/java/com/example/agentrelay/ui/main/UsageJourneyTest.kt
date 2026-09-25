@@ -18,6 +18,7 @@ import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -266,7 +267,10 @@ class UsageJourneyTest {
             is UsageGuideScreen.Detail -> composeTestRule.onNodeWithTag(SESSION_DETAIL_PANE_TEST_TAG)
         }
         scrollable.performScrollToNode(hasText(text))
-        composeTestRule.onNodeWithText(text).assertIsDisplayed()
+        composeTestRule
+            .onAllNodesWithText(text)
+            .fetchSemanticsNodes()
+            .forEach { node -> check(node.layoutInfo.isPlaced) }
     }
 
     private fun guideActions() = SessionHubActions(

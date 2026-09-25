@@ -6,6 +6,7 @@
 package com.example.agentrelay.ui.main
 
 import androidx.activity.ComponentActivity
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -25,7 +26,16 @@ class MainScreenSurfaceTest {
     @Test
     fun compactHub_exposesConnectionsIdentityReviewAndSessionActions() {
         val recorder = ActionRecorder()
-        setContent(MainScreenUiState.Ready(testHub()), recorder, MainScreenSurface.NEW_SESSION)
+        val surface = mutableStateOf(MainScreenSurface.NEW_SESSION)
+        composeTestRule.setContent {
+            AgentRelayTheme {
+                MainScreenContent(
+                    state = MainScreenUiState.Ready(testHub()),
+                    actions = recorder.actions(),
+                    surface = surface.value,
+                )
+            }
+        }
 
         composeTestRule.onNodeWithText("Connections").assertExists()
         val hubList = composeTestRule.onNodeWithTag(SESSION_HUB_SCROLL_LIST_TEST_TAG)
@@ -34,7 +44,8 @@ class MainScreenSurfaceTest {
         hubList.performScrollToNode(hasText("Replace identity"))
         composeTestRule.onNodeWithText("Replace identity").performClick()
 
-        setContent(MainScreenUiState.Ready(testHub()), recorder)
+        composeTestRule.runOnIdle { surface.value = MainScreenSurface.EXISTING_SESSIONS }
+        composeTestRule.waitForIdle()
         val sessionList = composeTestRule.onNodeWithTag(SESSION_HUB_SCROLL_LIST_TEST_TAG)
         sessionList.performScrollToNode(hasText("Investigate flaky build"))
         composeTestRule.onNodeWithText("Investigate flaky build").performClick()
@@ -57,7 +68,7 @@ class MainScreenSurfaceTest {
         composeTestRule
             .onNodeWithText("Add Secure Shell profile")
             .performClick()
-        composeTestRule.onNodeWithText("Edit profile").performClick()
+        composeTestRule.onNodeWithText("Edit profile").performScrollTo().performClick()
 
         check(recorder.addedProvider == "ssh.secure-shell")
         check(recorder.editedConnection == "ssh-key")

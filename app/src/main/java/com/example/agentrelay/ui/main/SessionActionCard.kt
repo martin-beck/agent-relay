@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -453,6 +454,7 @@ private fun QuestionInput(
                     FilterChip(
                         modifier = Modifier
                             .heightIn(min = 48.dp)
+                            .widthIn(min = 48.dp)
                             .semantics {
                                 role = if (question.allowsMultiple) {
                                     Role.Checkbox
