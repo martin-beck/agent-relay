@@ -6,3 +6,4 @@ self-hosted-runner:
     - agent-relay-build-ci
     - agent-relay-device-ci
     - agent-relay-public-ci
+    - agent-relay-ui-kvm
