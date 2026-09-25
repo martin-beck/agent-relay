@@ -57,22 +57,9 @@ jobs:
         run: bash scripts/ci/install_android_native_toolchain.sh
 
       - name: Install Android emulator runtime dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends --yes \
-            libasound2t64 \
-            libdbus-1-3 \
-            libfontconfig1 \
-            libgl1 \
-            libpulse0 \
-            libx11-6 \
-            libxcb1 \
-            libxcomposite1 \
-            libxcursor1 \
-            libxi6 \
-            libxrandr2 \
-            libxtst6 \
-            unzip
+        env:
+          AGENT_RELAY_UNPRIVILEGED_RUNNER: "1"
+        run: bash scripts/ci/ensure_android_emulator_runtime_dependencies.sh
 
       - name: Repair and validate pinned Android emulator
         run: |
@@ -295,22 +282,7 @@ jobs:
         run: bash scripts/ci/install_android_native_toolchain.sh
 
       - name: Install Android emulator runtime dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends --yes \
-            libasound2t64 \
-            libdbus-1-3 \
-            libfontconfig1 \
-            libgl1 \
-            libpulse0 \
-            libx11-6 \
-            libxcb1 \
-            libxcomposite1 \
-            libxcursor1 \
-            libxi6 \
-            libxrandr2 \
-            libxtst6 \
-            unzip
+        run: bash scripts/ci/ensure_android_emulator_runtime_dependencies.sh
 
       - name: Repair and validate pinned Android emulator
         run: |
