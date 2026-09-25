@@ -41,7 +41,7 @@ class SettingsRepositoryTest {
 
     @Test fun languagePickerIncludesSystemAndEveryBundledLanguage() {
         assertEquals(
-            listOf("system", "ar", "bn", "de", "es", "fr", "hi", "id", "it", "ja", "pt-BR", "ru", "zh-CN", "zh-TW"),
+            listOf("system", "ar", "bn", "de", "en", "es", "fr", "hi", "id", "it", "ja", "pt-BR", "ru", "zh-CN", "zh-TW"),
             supportedAppLanguages.map(SupportedAppLanguage::tag),
         )
     }
