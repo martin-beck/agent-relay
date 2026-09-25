@@ -37,6 +37,17 @@ dependencyLocking {
     lockMode.set(LockMode.STRICT)
 }
 
+// PMD's test auxiliary classpath supplies its own JUnit 5 API. Keep the
+// JUnit 6 test runtime out of that analysis-only configuration so the two
+// BOMs cannot impose incompatible constraints on one another.
+configurations.configureEach {
+    if (name == "testPmdAuxClasspath") {
+        exclude(group = "org.junit.jupiter")
+        exclude(group = "org.junit.platform")
+        exclude(group = "org.junit")
+    }
+}
+
 gradlePlugin {
     plugins {
         create("nativeBuildLogic") {
