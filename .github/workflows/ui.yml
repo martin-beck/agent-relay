@@ -23,7 +23,7 @@ jobs:
   current-phone:
     name: UI and accessibility (current phone)
     if: github.event_name == 'push'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, agent-relay-ui-kvm]
     timeout-minutes: 40
 
     steps:
