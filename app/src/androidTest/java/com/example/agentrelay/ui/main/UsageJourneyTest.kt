@@ -270,9 +270,11 @@ class UsageJourneyTest {
         val matches = composeTestRule.onAllNodesWithText(text)
         val count = matches.fetchSemanticsNodes().size
         check(count > 0) { "No node found for $text" }
-        check((0 until count).any { index ->
-            runCatching { matches[index].assertIsDisplayed() }.isSuccess
-        }) { "No visible node found for $text" }
+        check(
+            (0 until count).any { index ->
+                runCatching { matches[index].assertIsDisplayed() }.isSuccess
+            },
+        ) { "No visible node found for $text" }
     }
 
     private fun guideActions() = SessionHubActions(
