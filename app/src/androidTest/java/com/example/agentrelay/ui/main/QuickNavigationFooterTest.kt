@@ -106,7 +106,10 @@ class QuickNavigationFooterTest {
             .onNodeWithContentDescription("Neue Sitzung starten")
             .assertIsDisplayed()
         composeTestRule
-            .onAllNodesWithTag(QUICK_NAVIGATION_LABEL_PREFIX + "new_session")
+            .onAllNodesWithTag(
+                QUICK_NAVIGATION_LABEL_PREFIX + "new_session",
+                useUnmergedTree = true,
+            )
             .assertCountEquals(1)
         val destinationBounds = composeTestRule
             .onAllNodesWithTag(QUICK_NAVIGATION_DESTINATION_PREFIX + "new_session")

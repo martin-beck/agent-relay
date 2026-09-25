@@ -295,7 +295,7 @@ private fun defaultQuickNavigationDestinations(
     QuickNavigationDestination(
         id = QuickNavigationDestinationId.ATTENTION,
         label = stringResource(R.string.quick_navigation_attention),
-        onClick = { onQuickNavigation(QuickNavigationDestinationId.NOTIFICATIONS) },
+        onClick = { onQuickNavigation(QuickNavigationDestinationId.ATTENTION) },
     ),
     QuickNavigationDestination(
         id = QuickNavigationDestinationId.CONNECTIONS,
@@ -305,7 +305,7 @@ private fun defaultQuickNavigationDestinations(
     QuickNavigationDestination(
         id = QuickNavigationDestinationId.HELP,
         label = stringResource(R.string.quick_navigation_help),
-        onClick = { onQuickNavigation(QuickNavigationDestinationId.SETTINGS) },
+        onClick = { onQuickNavigation(QuickNavigationDestinationId.HELP) },
     ),
 )
 
