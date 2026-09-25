@@ -13,6 +13,7 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -69,10 +70,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val language by appLanguage.collectAsStateWithLifecycle()
-            val localizedContext = remember(language) {
-                appLocaleContext(this@MainActivity, language)
-            }
-            CompositionLocalProvider(LocalContext provides localizedContext) {
+            LocalizedAppContent(language) {
                 val navigationKey by notificationNavigationKey.collectAsStateWithLifecycle()
                 val permissionState by notificationPermissionState.collectAsStateWithLifecycle()
                 AgentRelayTheme {
@@ -215,4 +213,29 @@ class MainActivity : ComponentActivity() {
         const val NOTIFICATION_PERMISSION_PREFERENCES = "notification-permission"
         const val NOTIFICATION_PERMISSION_REQUESTED = "requested"
     }
+}
+
+/**
+ * Applies the selected resource locale without hiding the Activity owners that Compose contracts
+ * resolve from [LocalContext]. In particular, activity-compose's activity-result launcher must
+ * continue to see the registry owner after this provider replaces the context with a
+ * configuration context.
+ */
+@androidx.compose.runtime.Composable
+internal fun LocalizedAppContent(
+    language: String,
+    content: @androidx.compose.runtime.Composable () -> Unit,
+) {
+    val activityResultRegistryOwner = checkNotNull(LocalActivityResultRegistryOwner.current) {
+        "LocalizedAppContent requires an ActivityResultRegistryOwner"
+    }
+    val baseContext = LocalContext.current
+    val localizedContext = remember(language, baseContext) {
+        appLocaleContext(baseContext, language)
+    }
+    CompositionLocalProvider(
+        LocalContext provides localizedContext,
+        LocalActivityResultRegistryOwner provides activityResultRegistryOwner,
+        content = content,
+    )
 }
