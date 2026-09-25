@@ -17,6 +17,10 @@ curl --fail --location --retry 3 --proto '=https' --output "$archive" "$url"
 printf '%s  %s\n' "$archive_sha256" "$archive" | sha256sum --check --strict
 rm -rf "$ANDROID_HOME/emulator"
 mkdir -p "$ANDROID_HOME/emulator"
+command -v unzip > /dev/null 2>&1 || {
+  printf 'unzip is required to install the pinned Android emulator\n' >&2
+  exit 127
+}
 unzip -oq "$archive" -d "$ANDROID_HOME"
 emulator_bin="$ANDROID_HOME/emulator/emulator"
 test -x "$emulator_bin"
@@ -35,6 +39,15 @@ test -s "$ANDROID_HOME/emulator/package.xml"
 source_properties="$ANDROID_HOME/emulator/source.properties"
 test -s "$source_properties"
 grep -Eq '^Pkg.Revision[[:space:]]*=[[:space:]]*36\.6\.11$' "$source_properties"
-version_raw="$($emulator_bin -version 2>&1)"
+if version_raw="$($emulator_bin -version 2>&1)"; then
+  :
+else
+  status=$?
+  printf 'Pinned Android emulator failed to start (exit %s):\n%s\n' "$status" "$version_raw" >&2
+  if command -v ldd > /dev/null 2>&1; then
+    ldd "$emulator_bin" >&2 || true
+  fi
+  exit "$status"
+fi
 printf '%s\n' "$version_raw"
 grep -q "^Android emulator version $version\." <<< "$version_raw"
