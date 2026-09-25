@@ -40,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -89,6 +90,7 @@ internal fun SessionHubList(
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
+                .semantics { hideFromAccessibility() }
                 .testTag(SESSION_HUB_SCROLL_LIST_TEST_TAG),
             contentPadding = PaddingValues(20.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),

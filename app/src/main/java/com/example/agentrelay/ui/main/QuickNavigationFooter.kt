@@ -29,6 +29,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -77,6 +78,7 @@ internal fun QuickNavigationFooter(
                 .fillMaxWidth()
                 .selectableGroup()
                 .horizontalScroll(rememberScrollState())
+                .semantics { hideFromAccessibility() }
                 .padding(horizontal = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(2.dp),
         ) {
