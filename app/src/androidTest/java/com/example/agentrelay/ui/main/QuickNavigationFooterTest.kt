@@ -70,10 +70,8 @@ class QuickNavigationFooterTest {
         )
         composeTestRule.setContent {
             AgentRelayTheme {
-                MainScreenContent(
-                    state = MainScreenUiState.Ready(testHub()),
-                    actions = ActionRecorder().actions(),
-                    quickNavigationDestinations = listOf(destination),
+                QuickNavigationFooter(
+                    destinations = listOf(destination),
                 )
             }
         }
@@ -103,6 +101,9 @@ class QuickNavigationFooterTest {
 
         composeTestRule
             .onNodeWithContentDescription("Neue Sitzung starten")
+            .assertIsDisplayed()
+        composeTestRule
+            .onNodeWithTag(QUICK_NAVIGATION_LABEL_PREFIX + "new_session")
             .assertIsDisplayed()
     }
 }
