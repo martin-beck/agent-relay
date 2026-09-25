@@ -57,6 +57,8 @@ jobs:
         run: bash scripts/ci/install_android_native_toolchain.sh
 
       - name: Install Android emulator runtime dependencies
+        env:
+          AGENT_RELAY_UNPRIVILEGED_RUNNER: "1"
         run: bash scripts/ci/ensure_android_emulator_runtime_dependencies.sh
 
       - name: Repair and validate pinned Android emulator

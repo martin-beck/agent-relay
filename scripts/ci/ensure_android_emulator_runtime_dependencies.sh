@@ -20,9 +20,9 @@ packages=(
   unzip
 )
 
-if sudo -n true > /dev/null 2>&1; then
-  sudo apt-get update
-  sudo apt-get install --no-install-recommends --yes "${packages[@]}"
+if [[ "${AGENT_RELAY_UNPRIVILEGED_RUNNER:-0}" != "1" ]] && sudo -n true > /dev/null 2>&1; then
+  sudo -n apt-get update
+  sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --yes "${packages[@]}"
   exit 0
 fi
 

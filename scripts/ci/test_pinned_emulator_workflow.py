@@ -91,9 +91,16 @@ class PinnedEmulatorWorkflowTest(unittest.TestCase):
                 "bash scripts/ci/ensure_android_emulator_runtime_dependencies.sh",
                 install_step["run"],
             )
+            if job is workflow["jobs"]["current-phone"]:
+                self.assertEqual(
+                    "1",
+                    install_step["env"]["AGENT_RELAY_UNPRIVILEGED_RUNNER"],
+                )
             install_text = RUNTIME_DEPENDENCIES_SCRIPT.read_text(encoding="utf-8")
             for package in expected:
                 self.assertIn(package, install_text)
+        self.assertIn("sudo -n apt-get", install_text)
+        self.assertIn("AGENT_RELAY_UNPRIVILEGED_RUNNER:-0", install_text)
         self.assertEqual(2, checked_jobs)
 
     def test_emulator_bootstrap_reports_missing_tools_and_launch_errors(self) -> None:
