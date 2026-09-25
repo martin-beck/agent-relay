@@ -106,6 +106,7 @@ internal fun SettingsScreen(store: SettingsStore, onBack: () -> Unit, onLanguage
             Button(onClick = {
                 store.reset()
                 settings = AppSettings()
+                onLanguageChanged(SYSTEM_LANGUAGE_TAG)
             }) { Text("Reset settings") }
         }
         Text("Settings", modifier = Modifier.semantics { heading() })

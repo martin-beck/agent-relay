@@ -6,27 +6,31 @@
 package com.example.agentrelay.ui.main
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 internal enum class QuickNavigationDestinationId {
     SESSIONS,
@@ -54,9 +58,11 @@ internal fun QuickNavigationFooter(
 ) {
     if (destinations.isEmpty()) return
 
-    NavigationBar(
+    val density = LocalDensity.current
+    Surface(
         modifier = modifier
             .fillMaxWidth()
+            .height(80.dp * density.fontScale.coerceAtLeast(1f))
             .imePadding()
             .navigationBarsPadding(),
         tonalElevation = 3.dp,
@@ -64,37 +70,45 @@ internal fun QuickNavigationFooter(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
                 .selectableGroup()
                 .padding(horizontal = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             destinations.forEach { destination ->
-                NavigationBarItem(
-                    selected = destination.selected,
-                    onClick = destination.onClick,
-                    enabled = destination.enabled,
+                Column(
                     modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 4.dp)
+                        .selectable(
+                            selected = destination.selected,
+                            enabled = destination.enabled,
+                            role = Role.Tab,
+                            onClick = destination.onClick,
+                        )
                         .testTag(QUICK_NAVIGATION_DESTINATION_PREFIX + destination.id.name.lowercase())
                         .semantics {
-                            role = Role.Tab
                             selected = destination.selected
+                            contentDescription = destination.label
                         },
-                    icon = {
-                        Text(
-                            text = destination.label.take(1),
-                            style = MaterialTheme.typography.labelLarge,
-                        )
-                    },
-                    label = {
-                        Text(
-                            text = destination.label,
-                            maxLines = 1,
-                            softWrap = false,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    },
-                )
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        text = destination.label.take(1),
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                    Text(
+                        text = destination.label,
+                        modifier = Modifier.clearAndSetSemantics {},
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontSize = 8.sp / density.fontScale.coerceAtLeast(1f),
+                            lineHeight = 10.sp / density.fontScale.coerceAtLeast(1f),
+                        ),
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
         }
     }
