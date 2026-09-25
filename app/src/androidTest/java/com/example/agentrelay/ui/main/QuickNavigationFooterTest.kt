@@ -108,5 +108,14 @@ class QuickNavigationFooterTest {
         composeTestRule
             .onAllNodesWithTag(QUICK_NAVIGATION_LABEL_PREFIX + "new_session")
             .assertCountEquals(1)
+        val destinationBounds = composeTestRule
+            .onAllNodesWithTag(QUICK_NAVIGATION_DESTINATION_PREFIX + "new_session")
+            .fetchSemanticsNodes()
+            .single()
+            .boundsInRoot
+        with(composeTestRule.density) {
+            check(destinationBounds.width >= 48.dp.toPx())
+            check(destinationBounds.height >= 48.dp.toPx())
+        }
     }
 }

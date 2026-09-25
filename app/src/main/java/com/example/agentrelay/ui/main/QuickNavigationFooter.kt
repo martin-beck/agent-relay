@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -82,6 +83,7 @@ internal fun QuickNavigationFooter(
                 Column(
                     modifier = Modifier
                         .width(48.dp)
+                        .heightIn(min = 48.dp)
                         .selectable(
                             selected = destination.selected,
                             enabled = destination.enabled,
