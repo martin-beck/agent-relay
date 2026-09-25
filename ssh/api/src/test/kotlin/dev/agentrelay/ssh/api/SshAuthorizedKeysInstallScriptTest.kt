@@ -423,12 +423,11 @@ class SshAuthorizedKeysInstallScriptTest {
 
             try {
                 assertTrue(waitForPath(lockDirectory.resolve("owner")))
-                val descendants = process.descendants().toList()
-                // The fake awk intentionally blocks through a shell and sleep child. A
-                // graceful signal to the intermediate shell can leave the parent waiting
-                // for that tree before its TERM trap can run.
-                descendants.asReversed().forEach { it.destroyForcibly() }
                 signal(process, "TERM")
+                // The fake awk intentionally blocks through a shell and sleep child. Queue
+                // TERM on the parent first, then release the blocked command so its trap
+                // runs before the normal command-failure path can return status 70.
+                process.descendants().toList().asReversed().forEach { it.destroyForcibly() }
                 assertTrue(process.waitFor(5, TimeUnit.SECONDS))
                 val result = complete(process)
 
