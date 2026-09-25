@@ -102,7 +102,11 @@ class MainScreenTest {
     @Test
     fun compactHub_exposesConnectionsIdentityReviewAndSessionActions() {
         val recorder = ActionRecorder()
-        setContent(MainScreenUiState.Ready(testHub()), recorder)
+        setContent(
+            state = MainScreenUiState.Ready(testHub()),
+            recorder = recorder,
+            surface = MainScreenSurface.NEW_SESSION,
+        )
 
         composeTestRule.onNodeWithText("Connections").assertExists()
         val hubList = composeTestRule.onNode(hasScrollAction())
@@ -110,7 +114,10 @@ class MainScreenTest {
         composeTestRule.onNodeWithText("Connect").performClick()
         hubList.performScrollToNode(hasText("Replace identity"))
         composeTestRule.onNodeWithText("Replace identity").performClick()
-        hubList.performScrollToNode(hasText("Investigate flaky build"))
+
+        setContent(MainScreenUiState.Ready(testHub()), recorder)
+        val sessionList = composeTestRule.onNode(hasScrollAction())
+        sessionList.performScrollToNode(hasText("Investigate flaky build"))
         composeTestRule.onNodeWithText("Investigate flaky build").performClick()
 
         check(recorder.connectedKey == "local-key")
@@ -123,7 +130,11 @@ class MainScreenTest {
     @Test
     fun profileManagementIsDiscoverableFromProviderAndExistingConnection() {
         val recorder = ActionRecorder()
-        setContent(MainScreenUiState.Ready(testHub()), recorder)
+        setContent(
+            state = MainScreenUiState.Ready(testHub()),
+            recorder = recorder,
+            surface = MainScreenSurface.NEW_SESSION,
+        )
 
         composeTestRule
             .onNodeWithText("Add Secure Shell profile")
@@ -226,7 +237,7 @@ class MainScreenTest {
             }
         }
 
-        composeTestRule.onNodeWithText("Connections").assertExists()
+        composeTestRule.onNodeWithText("Recent sessions").assertExists()
         val detailPane = composeTestRule.onNodeWithTag(SESSION_DETAIL_PANE_TEST_TAG)
         detailPane.performScrollToNode(hasText("Changed files"))
         composeTestRule.onNodeWithText("Changed files").assertIsDisplayed()
@@ -312,7 +323,11 @@ class MainScreenTest {
     @Test
     fun readyAgentEndpointExposesSessionLauncher() {
         val recorder = ActionRecorder()
-        setContent(MainScreenUiState.Ready(actionHub()), recorder)
+        setContent(
+            state = MainScreenUiState.Ready(actionHub()),
+            recorder = recorder,
+            surface = MainScreenSurface.NEW_SESSION,
+        )
 
         val hubList = composeTestRule.onNode(hasScrollAction())
         hubList.performScrollToNode(hasText("Start Codex on Trusted server"))
@@ -607,7 +622,11 @@ class MainScreenTest {
             selectedSession = null,
             selectedSessionKey = null,
         )
-        setContent(MainScreenUiState.Ready(emptyHub), recorder)
+        setContent(
+            state = MainScreenUiState.Ready(emptyHub),
+            recorder = recorder,
+            surface = MainScreenSurface.NEW_SESSION,
+        )
 
         composeTestRule
             .onNodeWithText("No connection profiles are available. Refresh to try again.")
@@ -674,12 +693,14 @@ class MainScreenTest {
     private fun setContent(
         state: MainScreenUiState,
         recorder: ActionRecorder,
+        surface: MainScreenSurface = MainScreenSurface.EXISTING_SESSIONS,
     ) {
         composeTestRule.setContent {
             AgentRelayTheme {
                 MainScreenContent(
                     state = state,
                     actions = recorder.actions(),
+                    surface = surface,
                 )
             }
         }

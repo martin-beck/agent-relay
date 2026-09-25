@@ -52,7 +52,7 @@ class QuickNavigationFooterTest {
                 .performClick()
         }
 
-        check(activated == QuickNavigationDestinationId.entries)
+        check(activated.toList() == QuickNavigationDestinationId.entries)
         composeTestRule
             .onNodeWithTag(QUICK_NAVIGATION_DESTINATION_PREFIX + "sessions")
             .assertIsSelected()
@@ -97,6 +97,7 @@ class QuickNavigationFooterTest {
                             onClick = {},
                         ),
                     ),
+                    modifier = Modifier.requiredSize(width = 420.dp, height = 120.dp),
                 )
             }
         }
