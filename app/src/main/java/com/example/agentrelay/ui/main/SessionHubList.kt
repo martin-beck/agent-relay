@@ -188,6 +188,14 @@ internal fun SessionHubList(
             if (mode == SessionHubListMode.NEW_SESSION) {
                 sessionLaunchers(hub.sessionLaunchers, actions.openSessionCreator)
             }
+            if (mode == SessionHubListMode.NEW_SESSION && hub.sessions.isEmpty()) {
+                item(key = "new-session-sessions-empty-heading") {
+                    SectionHeading(title = recentTitle, subtitle = surfaceSubtitle)
+                }
+                item(key = "new-session-sessions-empty") {
+                    EmptyCard(stringResource(R.string.session_hub_sessions_empty))
+                }
+            }
             if (mode != SessionHubListMode.NEW_SESSION) {
                 sessionSurfaces(
                     sessions = sortSessionList(hub.sessions, sortOption),
@@ -324,6 +332,11 @@ private fun LazyListScope.sessionSurfaces(
         onSelectSession = onSelectSession,
         onTogglePinned = onTogglePinned,
     )
+    if (buckets.recentlyCompleted.isEmpty()) {
+        item(key = "sessions-recent-empty-heading") {
+            SectionHeading(title = recentTitle, subtitle = surfaceSubtitle)
+        }
+    }
 }
 
 private fun LazyListScope.sessionSurfaceSection(

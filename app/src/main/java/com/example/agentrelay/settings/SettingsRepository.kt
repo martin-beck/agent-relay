@@ -23,6 +23,7 @@ internal val supportedAppLanguages = listOf(
     SupportedAppLanguage("ar", "العربية"),
     SupportedAppLanguage("bn", "বাংলা"),
     SupportedAppLanguage("de", "Deutsch"),
+    SupportedAppLanguage("en", "English"),
     SupportedAppLanguage("es", "Español"),
     SupportedAppLanguage("fr", "Français"),
     SupportedAppLanguage("hi", "हिन्दी"),
