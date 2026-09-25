@@ -1,7 +1,6 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
-# To regenerate this file, run: ./gradlew :lint-checks:dependencies --write-locks
 com.android.tools.analytics-library:protos:32.0.1=testRuntimeClasspath
 com.android.tools.analytics-library:shared:32.0.1=testRuntimeClasspath
 com.android.tools.analytics-library:tracker:32.0.1=testRuntimeClasspath

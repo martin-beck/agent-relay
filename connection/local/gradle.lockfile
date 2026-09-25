@@ -1,7 +1,6 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
-# To regenerate this file, run: ./gradlew :connection:local:dependencies --write-locks
 io.github.java-diff-utils:java-diff-utils:4.12=kotlinInternalAbiValidation
 junit:junit:4.13.2=testCompileClasspath,testRuntimeClasspath
 org.bouncycastle:bcprov-jdk18on:1.84=runtimeClasspath,testRuntimeClasspath
