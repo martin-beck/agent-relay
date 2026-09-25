@@ -13,6 +13,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW = ROOT / ".github/workflows/ui.yml"
+ACTIONLINT_CONFIG = ROOT / ".github/actionlint.yaml"
 SCRIPT = ROOT / "scripts/ci/install_pinned_emulator.sh"
 
 
@@ -26,6 +27,31 @@ def load_workflow() -> dict[str, Any]:
 
 class PinnedEmulatorWorkflowTest(unittest.TestCase):
     """Keep Ubuntu runners ready for the pinned emulator binary."""
+
+    def test_current_phone_uses_the_dedicated_kvm_runner(self) -> None:
+        workflow = load_workflow()
+        current_phone = workflow["jobs"]["current-phone"]
+        self.assertEqual(
+            ["self-hosted", "linux", "x64", "agent-relay-ui-kvm"],
+            current_phone["runs-on"],
+        )
+        self.assertIn(
+            "test -c /dev/kvm",
+            "\n".join(
+                str(step.get("run", ""))
+                for step in current_phone["steps"]
+                if isinstance(step, dict)
+            ),
+        )
+        actionlint = yaml.safe_load(ACTIONLINT_CONFIG.read_text(encoding="utf-8"))
+        self.assertIn(
+            "agent-relay-ui-kvm",
+            actionlint["self-hosted-runner"]["labels"],
+        )
+
+    def test_extended_matrix_stays_on_hosted_runners(self) -> None:
+        workflow = load_workflow()
+        self.assertEqual("ubuntu-latest", workflow["jobs"]["extended-matrix"]["runs-on"])
 
     def test_all_ui_jobs_install_emulator_runtime_dependencies(self) -> None:
         workflow = load_workflow()
