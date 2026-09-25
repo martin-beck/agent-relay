@@ -35,6 +35,11 @@ ignoreUntil = 2026-12-01
 reason = "Accepted only for the listed Maven finding tuples; every locked configuration is assurance-only and absent from shipped artifacts."
 
 [[IgnoredVulns]]
+id = "GHSA-9pwp-9qqc-pr26"
+ignoreUntil = 2026-12-01
+reason = "Accepted only for the listed Maven finding tuples; every locked configuration is assurance-only and absent from shipped artifacts."
+
+[[IgnoredVulns]]
 id = "GHSA-c3fc-8qff-9hwx"
 ignoreUntil = 2026-12-01
 reason = "Accepted only for the listed Maven finding tuples; every locked configuration is assurance-only and absent from shipped artifacts."
@@ -56,6 +61,11 @@ reason = "Accepted only for the listed Maven finding tuples; every locked config
 
 [[IgnoredVulns]]
 id = "GHSA-pmhh-3w7g-xqp8"
+ignoreUntil = 2026-12-01
+reason = "Accepted only for the listed Maven finding tuples; every locked configuration is assurance-only and absent from shipped artifacts."
+
+[[IgnoredVulns]]
+id = "GHSA-qp49-qgx5-5m26"
 ignoreUntil = 2026-12-01
 reason = "Accepted only for the listed Maven finding tuples; every locked configuration is assurance-only and absent from shipped artifacts."
 
