@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -225,7 +226,9 @@ private fun SpeechModelSelector(
                 RadioButton(
                     selected = selected,
                     onClick = null,
-                    modifier = Modifier.clearAndSetSemantics {},
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clearAndSetSemantics {},
                 )
                 Text(
                     text = if (model.isReady) {

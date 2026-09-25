@@ -102,7 +102,9 @@ internal fun SessionDetailRoute(
                     detail = state.hub.selectedSession,
                     speechInput = state.speechInput,
                     speechActions = speechActions,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .testTag(SESSION_DETAIL_PANE_TEST_TAG),
                     onDraftChanged = onDraftChanged,
                     onSubmitDraft = onSubmitDraft,
                     onResumeSession = onResumeSession,

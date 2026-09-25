@@ -44,6 +44,7 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.launch
 import com.example.agentrelay.R
@@ -235,7 +236,9 @@ private fun SessionListSortControl(
     Column {
         TextButton(
             onClick = { expanded = true },
-            modifier = Modifier.testTag("session-list-sort-control"),
+            modifier = Modifier
+                .widthIn(min = 48.dp)
+                .testTag("session-list-sort-control"),
         ) {
             Text(
                 stringResource(
