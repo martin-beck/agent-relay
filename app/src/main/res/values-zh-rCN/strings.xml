@@ -53,6 +53,7 @@
     <string name="background_transport_retry">重试</string>
     <string name="background_transport_stop_button">停止后台连接</string>
     <string name="session_creator_title">启动新会话</string>
+    <string name="settings_language_reset">使用系统语言</string>
     <string name="session_creator_context">%1$s  -  %2$s  -  %3$s</string>
     <string name="session_creator_guidance">只选择与提供程序无关的启动设置。字段留空即可使用代理提供程序的默认值。</string>
     <string name="session_creator_working_directory">工作目录（可选）</string>
@@ -431,4 +432,6 @@
     <string name="notification_topic_decisions">Decisions</string>
     <string name="notification_topic_task_completion">Task completion</string>
     <string name="notification_topic_task_blocked">Task blocked</string>
+    <string name="quick_navigation_pinned">置顶</string>
+    <string name="quick_navigation_new">新建</string>
 </resources>

@@ -53,6 +53,7 @@
     <string name="background_transport_retry">Erneut versuchen</string>
     <string name="background_transport_stop_button">Hintergrundverbindung beenden</string>
     <string name="session_creator_title">Neue Sitzung starten</string>
+    <string name="settings_language_reset">Systemsprache verwenden</string>
     <string name="session_creator_context">%1$s  -  %2$s  -  %3$s</string>
     <string name="session_creator_guidance">Wählen Sie nur anbieterneutrale Starteinstellungen. Lassen Sie ein Feld leer, um den Standard des Agent-Anbieters zu verwenden.</string>
     <string name="session_creator_working_directory">Arbeitsverzeichnis (optional)</string>
@@ -439,4 +440,6 @@
     <string name="notification_topic_decisions">Decisions</string>
     <string name="notification_topic_task_completion">Task completion</string>
     <string name="notification_topic_task_blocked">Task blocked</string>
+    <string name="quick_navigation_pinned">Angepinnt</string>
+    <string name="quick_navigation_new">Neu</string>
 </resources>

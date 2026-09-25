@@ -53,6 +53,7 @@
     <string name="background_transport_retry">Повторить</string>
     <string name="background_transport_stop_button">Остановить фоновое подключение</string>
     <string name="session_creator_title">Начать новый сеанс</string>
+    <string name="settings_language_reset">Использовать язык системы</string>
     <string name="session_creator_context">%1$s  -  %2$s  -  %3$s</string>
     <string name="session_creator_guidance">Выберите только независимые от поставщика параметры запуска. Оставьте поле пустым, чтобы использовать значение по умолчанию поставщика агента.</string>
     <string name="session_creator_working_directory">Рабочий каталог (необязательно)</string>
@@ -455,4 +456,6 @@
     <string name="notification_topic_decisions">Decisions</string>
     <string name="notification_topic_task_completion">Task completion</string>
     <string name="notification_topic_task_blocked">Task blocked</string>
+    <string name="quick_navigation_pinned">Закреплённые</string>
+    <string name="quick_navigation_new">Новый</string>
 </resources>

@@ -114,6 +114,7 @@
     <string name="background_transport_retry">Try again</string>
     <string name="background_transport_stop_button">Stop background connection</string>
     <string name="session_creator_title">Start a new session</string>
+    <string name="settings_language_reset">Use system language</string>
     <string name="session_creator_context">%1$s  -  %2$s  -  %3$s</string>
     <string name="session_creator_guidance">Choose only provider-neutral launch settings. Leave a field empty to use the agent provider\'s default.</string>
     <string name="session_creator_working_directory">Working directory (optional)</string>
@@ -480,4 +481,6 @@
     <string name="home_widget_action_acknowledge">Acknowledge</string>
     <string name="home_widget_action_defer">Defer</string>
     <string name="home_widget_action_mute_confirm">Mute…</string>
+    <string name="quick_navigation_pinned">Pinned</string>
+    <string name="quick_navigation_new">New</string>
 </resources>

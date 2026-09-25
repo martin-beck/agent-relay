@@ -271,12 +271,12 @@ private fun defaultQuickNavigationDestinations(
     ),
     QuickNavigationDestination(
         id = QuickNavigationDestinationId.PINNED,
-        label = stringResource(R.string.session_card_pinned),
+        label = stringResource(R.string.quick_navigation_pinned),
         onClick = { onQuickNavigation(QuickNavigationDestinationId.PINNED) },
     ),
     QuickNavigationDestination(
         id = QuickNavigationDestinationId.NEW_SESSION,
-        label = stringResource(R.string.session_creator_title),
+        label = stringResource(R.string.quick_navigation_new),
         onClick = { onQuickNavigation(QuickNavigationDestinationId.NEW_SESSION) },
     ),
     QuickNavigationDestination(
@@ -297,7 +297,7 @@ private fun defaultQuickNavigationDestinations(
     QuickNavigationDestination(
         id = QuickNavigationDestinationId.CONNECTIONS,
         label = stringResource(R.string.quick_navigation_connections),
-        onClick = { onQuickNavigation(QuickNavigationDestinationId.NEW_SESSION) },
+        onClick = { onQuickNavigation(QuickNavigationDestinationId.CONNECTIONS) },
     ),
     QuickNavigationDestination(
         id = QuickNavigationDestinationId.HELP,

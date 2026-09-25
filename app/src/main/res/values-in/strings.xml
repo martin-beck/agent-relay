@@ -53,6 +53,7 @@
     <string name="background_transport_retry">Coba lagi</string>
     <string name="background_transport_stop_button">Hentikan koneksi latar belakang</string>
     <string name="session_creator_title">Mulai sesi baru</string>
+    <string name="settings_language_reset">Gunakan bahasa sistem</string>
     <string name="session_creator_context">%1$s  -  %2$s  -  %3$s</string>
     <string name="session_creator_guidance">Pilih hanya setelan peluncuran yang netral terhadap penyedia. Kosongkan bidang untuk menggunakan nilai bawaan penyedia agen.</string>
     <string name="session_creator_working_directory">Direktori kerja (opsional)</string>
@@ -431,4 +432,6 @@
     <string name="notification_topic_decisions">Decisions</string>
     <string name="notification_topic_task_completion">Task completion</string>
     <string name="notification_topic_task_blocked">Task blocked</string>
+    <string name="quick_navigation_pinned">Disematkan</string>
+    <string name="quick_navigation_new">Baru</string>
 </resources>

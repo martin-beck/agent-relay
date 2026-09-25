@@ -38,6 +38,23 @@ class SettingsRepositoryTest {
         store.reset()
         assertEquals(AppSettings(), store.read())
     }
+
+    @Test fun languagePickerIncludesSystemAndEveryBundledLanguage() {
+        assertEquals(
+            listOf("system", "ar", "bn", "de", "es", "fr", "hi", "id", "it", "ja", "pt-BR", "ru", "zh-CN", "zh-TW"),
+            supportedAppLanguages.map(SupportedAppLanguage::tag),
+        )
+    }
+
+    @Test fun selectingAndResettingLanguagePersistsTheSystemChoice() {
+        val store = MemorySettingsStore()
+
+        store.write(store.read().copy(language = "ja"))
+        assertEquals("ja", store.read().language)
+
+        store.write(store.read().copy(language = "system"))
+        assertEquals("system", store.read().language)
+    }
 }
 
 private class MemorySettingsStore(private var value: AppSettings = AppSettings()) : SettingsStore {

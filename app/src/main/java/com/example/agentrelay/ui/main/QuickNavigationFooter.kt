@@ -25,6 +25,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
 internal enum class QuickNavigationDestinationId {
@@ -86,7 +87,12 @@ internal fun QuickNavigationFooter(
                         )
                     },
                     label = {
-                        Text(text = destination.label)
+                        Text(
+                            text = destination.label,
+                            maxLines = 1,
+                            softWrap = false,
+                            overflow = TextOverflow.Ellipsis,
+                        )
                     },
                 )
             }

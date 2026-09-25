@@ -53,6 +53,7 @@
     <string name="background_transport_retry">फिर कोशिश करें</string>
     <string name="background_transport_stop_button">बैकग्राउंड कनेक्शन रोकें</string>
     <string name="session_creator_title">नया सत्र शुरू करें</string>
+    <string name="settings_language_reset">सिस्टम भाषा का उपयोग करें</string>
     <string name="session_creator_context">%1$s  -  %2$s  -  %3$s</string>
     <string name="session_creator_guidance">केवल प्रदाता-स्वतंत्र लॉन्च सेटिंग चुनें। एजेंट प्रदाता का डिफ़ॉल्ट उपयोग करने के लिए फ़ील्ड खाली छोड़ें।</string>
     <string name="session_creator_working_directory">कार्यशील डायरेक्टरी (वैकल्पिक)</string>
@@ -439,4 +440,6 @@
     <string name="notification_topic_decisions">Decisions</string>
     <string name="notification_topic_task_completion">Task completion</string>
     <string name="notification_topic_task_blocked">Task blocked</string>
+    <string name="quick_navigation_pinned">Pinned</string>
+    <string name="quick_navigation_new">New</string>
 </resources>
