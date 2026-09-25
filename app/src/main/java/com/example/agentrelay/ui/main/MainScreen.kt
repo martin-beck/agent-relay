@@ -46,6 +46,7 @@ internal const val NOTIFICATION_PERMISSION_TEST_TAG = "notification-permission"
 internal const val BACKGROUND_TRANSPORT_TEST_TAG = "background-transport"
 internal const val QUICK_NAVIGATION_FOOTER_TEST_TAG = "quick-navigation-footer"
 internal const val QUICK_NAVIGATION_DESTINATION_PREFIX = "quick-navigation-"
+internal const val QUICK_NAVIGATION_LABEL_PREFIX = "quick-navigation-label-"
 
 internal enum class MainScreenSurface {
     EXISTING_SESSIONS,
@@ -162,6 +163,7 @@ internal fun MainScreenContent(
     quickNavigationDestinations: List<QuickNavigationDestination>? = null,
     surface: MainScreenSurface = MainScreenSurface.EXISTING_SESSIONS,
 ) {
+    val footerDestinations = quickNavigationDestinations ?: defaultQuickNavigationDestinations(onQuickNavigation)
     when (state) {
         MainScreenUiState.Loading -> Box(
             modifier = modifier.fillMaxSize().testTag(MAIN_LOADING_TEST_TAG),
@@ -236,9 +238,9 @@ internal fun MainScreenContent(
                     surface = surface,
                     modifier = Modifier.weight(1f),
                 )
-                if (quickNavigationDestinations == null) {
+                if (quickNavigationDestinations == null && footerDestinations.isNotEmpty()) {
                     QuickNavigationFooter(
-                        destinations = defaultQuickNavigationDestinations(onQuickNavigation),
+                        destinations = footerDestinations,
                         modifier = Modifier.testTag(QUICK_NAVIGATION_FOOTER_TEST_TAG),
                     )
                 }

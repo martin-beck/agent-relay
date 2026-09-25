@@ -12,8 +12,8 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.foundation.layout.requiredSize
@@ -70,10 +70,8 @@ class QuickNavigationFooterTest {
         )
         composeTestRule.setContent {
             AgentRelayTheme {
-                MainScreenContent(
-                    state = MainScreenUiState.Ready(testHub()),
-                    actions = ActionRecorder().actions(),
-                    quickNavigationDestinations = listOf(destination),
+                QuickNavigationFooter(
+                    destinations = listOf(destination),
                 )
             }
         }
@@ -101,6 +99,11 @@ class QuickNavigationFooterTest {
             }
         }
 
-        composeTestRule.onNodeWithText("Neue Sitzung starten").assertIsDisplayed()
+        composeTestRule
+            .onNodeWithContentDescription("Neue Sitzung starten")
+            .assertIsDisplayed()
+        composeTestRule
+            .onNodeWithTag(QUICK_NAVIGATION_LABEL_PREFIX + "new_session")
+            .assertIsDisplayed()
     }
 }

@@ -6,13 +6,13 @@
 package com.example.agentrelay.ui.main
 
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -28,7 +28,7 @@ class SessionListSearchFilterTest {
 
     @Test
     fun searchAndResetControlsExposeSemanticStates() {
-        composeTestRule.activity.setContent {
+        composeTestRule.setContent {
             var filters by remember { mutableStateOf(SessionListSearchFilterState()) }
             SessionListSearchFilterControls(
                 filters = filters,
@@ -40,7 +40,9 @@ class SessionListSearchFilterTest {
         composeTestRule.onNodeWithTag("session-search-field").assertIsDisplayed()
         composeTestRule.onNodeWithText("3 sessions").assertIsDisplayed()
         composeTestRule.onNodeWithTag("session-search-field").performTextReplacement("missing")
-        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(timeoutMillis = 2_000) {
+            composeTestRule.onAllNodesWithText("No sessions match these filters").fetchSemanticsNodes().isNotEmpty()
+        }
         composeTestRule.onNodeWithText("No sessions match these filters").assertIsDisplayed()
         composeTestRule.onNodeWithTag("session-search-reset").performClick()
         composeTestRule.waitForIdle()

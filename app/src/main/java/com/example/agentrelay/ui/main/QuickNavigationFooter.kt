@@ -95,11 +95,16 @@ internal fun QuickNavigationFooter(
                 ) {
                     Text(
                         text = destination.label.take(1),
+                        modifier = Modifier.clearAndSetSemantics {},
                         style = MaterialTheme.typography.labelLarge,
                     )
                     Text(
                         text = destination.label,
-                        modifier = Modifier.clearAndSetSemantics {},
+                        modifier = Modifier
+                            .clearAndSetSemantics {}
+                            .testTag(
+                                QUICK_NAVIGATION_LABEL_PREFIX + destination.id.name.lowercase(),
+                            ),
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontSize = 8.sp / density.fontScale.coerceAtLeast(1f),
                             lineHeight = 10.sp / density.fontScale.coerceAtLeast(1f),
