@@ -357,7 +357,7 @@ internal object SshAuthorizedKeysInstallScript {
               fi
             }
             trap cleanup_lock 0
-            trap 'cleanup_lock; exit 74' 1 2 15
+            trap 'cleanup_lock || :; exit 74' 1 2 15
             lock_attempt=0
             # Two generation observations and one owner/recovery collision can consume five waits.
             lock_attempt_limit=8
