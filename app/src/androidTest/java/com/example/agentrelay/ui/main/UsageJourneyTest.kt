@@ -267,10 +267,12 @@ class UsageJourneyTest {
             is UsageGuideScreen.Detail -> composeTestRule.onNodeWithTag(SESSION_DETAIL_PANE_TEST_TAG)
         }
         scrollable.performScrollToNode(hasText(text))
-        composeTestRule
-            .onAllNodesWithText(text)
-            .fetchSemanticsNodes()
-            .forEach { node -> check(node.layoutInfo.isPlaced) }
+        val matches = composeTestRule.onAllNodesWithText(text)
+        val count = matches.fetchSemanticsNodes().size
+        check(count > 0) { "No node found for $text" }
+        check((0 until count).any { index ->
+            runCatching { matches[index].assertIsDisplayed() }.isSuccess
+        }) { "No visible node found for $text" }
     }
 
     private fun guideActions() = SessionHubActions(
