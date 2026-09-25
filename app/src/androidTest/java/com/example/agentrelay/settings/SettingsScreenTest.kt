@@ -8,6 +8,8 @@ package com.example.agentrelay.settings
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 
@@ -22,6 +24,24 @@ class SettingsScreenTest {
         }
 
         composeRule.onNodeWithText("Settings").assertIsDisplayed()
+    }
+
+    @Test
+    fun resetSettingsImmediatelyRestoresSystemLanguage() {
+        val store = MemorySettingsStore(AppSettings(language = "de"))
+        val languageChanges = mutableListOf<String>()
+        composeRule.setContent {
+            SettingsScreen(
+                store = store,
+                onBack = {},
+                onLanguageChanged = languageChanges::add,
+            )
+        }
+
+        composeRule.onNodeWithText("Reset settings").performClick()
+
+        assertEquals(listOf(SYSTEM_LANGUAGE_TAG), languageChanges)
+        assertEquals(SYSTEM_LANGUAGE_TAG, store.read().language)
     }
 }
 

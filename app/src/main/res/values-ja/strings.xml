@@ -53,6 +53,7 @@
     <string name="background_transport_retry">もう一度試す</string>
     <string name="background_transport_stop_button">バックグラウンド接続を停止</string>
     <string name="session_creator_title">新しいセッションを開始</string>
+    <string name="settings_language_reset">システム言語を使用</string>
     <string name="session_creator_context">%1$s  -  %2$s  -  %3$s</string>
     <string name="session_creator_guidance">プロバイダーに依存しない起動設定のみを選択してください。空欄にすると、エージェントプロバイダーの既定値を使用します。</string>
     <string name="session_creator_working_directory">作業ディレクトリ（任意）</string>
@@ -431,4 +432,6 @@
     <string name="notification_topic_decisions">Decisions</string>
     <string name="notification_topic_task_completion">Task completion</string>
     <string name="notification_topic_task_blocked">Task blocked</string>
+    <string name="quick_navigation_pinned">固定</string>
+    <string name="quick_navigation_new">新規</string>
 </resources>

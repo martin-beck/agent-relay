@@ -20,6 +20,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.core.content.edit
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -28,6 +31,8 @@ import com.example.agentrelay.notifications.SESSION_NAVIGATION_KEY_EXTRA
 import com.example.agentrelay.notifications.SessionNotificationPermissionState
 import com.example.agentrelay.notifications.resolveSessionNotificationPermissionState
 import com.example.agentrelay.notifications.sessionNotificationNavigationKey
+import com.example.agentrelay.settings.AndroidSettingsStore
+import com.example.agentrelay.settings.appLocaleContext
 import com.example.agentrelay.theme.AgentRelayTheme
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.Job
@@ -35,6 +40,7 @@ import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private val notificationNavigationKey = MutableStateFlow<String?>(null)
+    private val appLanguage = MutableStateFlow(AndroidSettingsStore(this).read().language)
     private val pairingHandoffState = MutableStateFlow<PairingHandoffUiState?>(null)
     private val pairingEnrollment by lazy { AndroidPairingAppLinkEnrollment(this) }
     private var pairingIntentJob: Job? = null
@@ -61,20 +67,27 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
-            val navigationKey by notificationNavigationKey.collectAsStateWithLifecycle()
-            val permissionState by notificationPermissionState.collectAsStateWithLifecycle()
-            AgentRelayTheme {
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-                    MainNavigation(
-                        notificationNavigationKey = navigationKey,
-                        onNotificationNavigationConsumed = ::consumeNotificationNavigation,
-                        notificationPermissionState = permissionState,
-                        onRequestNotificationPermission = ::requestNotificationPermission,
-                        onOpenNotificationSettings = ::openNotificationSettings,
-                        pairingHandoffState = pairingHandoffState,
-                        onPairingApproved = ::approvePairing,
-                        onPairingDismissed = ::dismissPairing,
-                    )
+            val language by appLanguage.collectAsStateWithLifecycle()
+            val localizedContext = remember(language) {
+                appLocaleContext(this@MainActivity, language)
+            }
+            CompositionLocalProvider(LocalContext provides localizedContext) {
+                val navigationKey by notificationNavigationKey.collectAsStateWithLifecycle()
+                val permissionState by notificationPermissionState.collectAsStateWithLifecycle()
+                AgentRelayTheme {
+                    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                        MainNavigation(
+                            notificationNavigationKey = navigationKey,
+                            onNotificationNavigationConsumed = ::consumeNotificationNavigation,
+                            notificationPermissionState = permissionState,
+                            onRequestNotificationPermission = ::requestNotificationPermission,
+                            onOpenNotificationSettings = ::openNotificationSettings,
+                            pairingHandoffState = pairingHandoffState,
+                            onPairingApproved = ::approvePairing,
+                            onPairingDismissed = ::dismissPairing,
+                            onLanguageChanged = { appLanguage.value = it },
+                        )
+                    }
                 }
             }
         }

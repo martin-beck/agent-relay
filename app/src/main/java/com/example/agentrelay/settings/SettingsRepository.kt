@@ -11,6 +11,30 @@ import com.example.agentrelay.notifications.SessionNotificationLevel
 import com.example.agentrelay.notifications.SessionNotificationPreferences
 import com.example.agentrelay.notifications.SessionNotificationTopic
 
+internal data class SupportedAppLanguage(
+    val tag: String,
+    val displayName: String,
+)
+
+internal const val SYSTEM_LANGUAGE_TAG = "system"
+
+internal val supportedAppLanguages = listOf(
+    SupportedAppLanguage(SYSTEM_LANGUAGE_TAG, "System"),
+    SupportedAppLanguage("ar", "العربية"),
+    SupportedAppLanguage("bn", "বাংলা"),
+    SupportedAppLanguage("de", "Deutsch"),
+    SupportedAppLanguage("es", "Español"),
+    SupportedAppLanguage("fr", "Français"),
+    SupportedAppLanguage("hi", "हिन्दी"),
+    SupportedAppLanguage("id", "Bahasa Indonesia"),
+    SupportedAppLanguage("it", "Italiano"),
+    SupportedAppLanguage("ja", "日本語"),
+    SupportedAppLanguage("pt-BR", "Português (Brasil)"),
+    SupportedAppLanguage("ru", "Русский"),
+    SupportedAppLanguage("zh-CN", "简体中文"),
+    SupportedAppLanguage("zh-TW", "繁體中文"),
+)
+
 internal data class AppSettings(
     val energySavingMode: Boolean = true,
     val backgroundConnections: Boolean = false,
@@ -41,7 +65,9 @@ internal class AndroidSettingsStore(context: Context) : SettingsStore {
             dynamicColor = preferences.getBoolean(KEY_DYNAMIC_COLOR, true),
             highContrast = preferences.getBoolean(KEY_HIGH_CONTRAST, false),
             reduceMotion = preferences.getBoolean(KEY_REDUCE_MOTION, false),
-            language = preferences.getString(KEY_LANGUAGE, "system") ?: "system",
+            language = preferences.getString(KEY_LANGUAGE, SYSTEM_LANGUAGE_TAG)
+                ?.takeIf(::isSupportedAppLanguage)
+                ?: SYSTEM_LANGUAGE_TAG,
             offlineSpeech = preferences.getBoolean(KEY_OFFLINE_SPEECH, true),
             notificationPreferences = SessionNotificationPreferences(
                 enabled = preferences.getBoolean(KEY_NOTIFICATIONS, true),
@@ -65,7 +91,7 @@ internal class AndroidSettingsStore(context: Context) : SettingsStore {
             putBoolean(KEY_DYNAMIC_COLOR, settings.dynamicColor)
             putBoolean(KEY_HIGH_CONTRAST, settings.highContrast)
             putBoolean(KEY_REDUCE_MOTION, settings.reduceMotion)
-            putString(KEY_LANGUAGE, settings.language)
+            putString(KEY_LANGUAGE, settings.language.takeIf(::isSupportedAppLanguage) ?: SYSTEM_LANGUAGE_TAG)
             putBoolean(KEY_OFFLINE_SPEECH, settings.offlineSpeech)
             putStringSet(KEY_NOTIFICATION_TOPICS, settings.notificationPreferences.topics.map { it.name }.toSet())
             putString(KEY_NOTIFICATION_LEVEL, settings.notificationPreferences.level.name)
@@ -102,6 +128,9 @@ internal class AndroidSettingsStore(context: Context) : SettingsStore {
         const val KEY_NOTIFICATION_LEVEL = "notification_level"
     }
 }
+
+internal fun isSupportedAppLanguage(tag: String): Boolean =
+    supportedAppLanguages.any { it.tag == tag }
 
 private fun String.toNotificationTopic(): SessionNotificationTopic? =
     runCatching { SessionNotificationTopic.valueOf(this) }.getOrNull()

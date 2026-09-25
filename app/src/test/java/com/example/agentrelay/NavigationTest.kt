@@ -48,4 +48,14 @@ class NavigationTest {
         assertEquals(Main, topLevelRoot(SessionDetails("b".repeat(64))))
         assertEquals(NotificationCenter, topLevelRoot(NotificationCenter))
     }
+
+    @Test
+    fun connectionsRouteReplacesTheCurrentTopLevelDestination() {
+        val stack = mutableListOf<NavKey>(Main, NewSession)
+
+        navigateToTopLevel(stack, ConnectionSettings)
+
+        assertEquals(listOf<NavKey>(Main, ConnectionSettings), stack)
+        assertEquals(ConnectionSettings, topLevelRoot(ConnectionSettings))
+    }
 }

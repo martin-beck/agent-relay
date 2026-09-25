@@ -13,6 +13,7 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.foundation.layout.requiredSize
@@ -82,5 +83,24 @@ class QuickNavigationFooterTest {
             .assertIsNotEnabled()
             .performClick()
         check(activated.isEmpty())
+    }
+
+    @Test
+    fun footerLabelsStayOnOneLineForLongLocalizedLabels() {
+        composeTestRule.setContent {
+            AgentRelayTheme {
+                QuickNavigationFooter(
+                    destinations = listOf(
+                        QuickNavigationDestination(
+                            id = QuickNavigationDestinationId.NEW_SESSION,
+                            label = "Neue Sitzung starten",
+                            onClick = {},
+                        ),
+                    ),
+                )
+            }
+        }
+
+        composeTestRule.onNodeWithText("Neue Sitzung starten").assertIsDisplayed()
     }
 }

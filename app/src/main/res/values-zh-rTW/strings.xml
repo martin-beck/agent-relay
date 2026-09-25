@@ -53,6 +53,7 @@
     <string name="background_transport_retry">再試一次</string>
     <string name="background_transport_stop_button">停止背景連線</string>
     <string name="session_creator_title">啟動新工作階段</string>
+    <string name="settings_language_reset">使用系統語言</string>
     <string name="session_creator_context">%1$s  -  %2$s  -  %3$s</string>
     <string name="session_creator_guidance">只選擇與提供者無關的啟動設定。欄位留空即可使用代理提供者的預設值。</string>
     <string name="session_creator_working_directory">工作目錄（選填）</string>
@@ -431,4 +432,6 @@
     <string name="notification_topic_decisions">Decisions</string>
     <string name="notification_topic_task_completion">Task completion</string>
     <string name="notification_topic_task_blocked">Task blocked</string>
+    <string name="quick_navigation_pinned">置頂</string>
+    <string name="quick_navigation_new">新增</string>
 </resources>

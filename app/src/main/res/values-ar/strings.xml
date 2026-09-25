@@ -53,6 +53,7 @@
     <string name="background_transport_retry">المحاولة مرة أخرى</string>
     <string name="background_transport_stop_button">إيقاف الاتصال في الخلفية</string>
     <string name="session_creator_title">بدء جلسة جديدة</string>
+    <string name="settings_language_reset">استخدام لغة النظام</string>
     <string name="session_creator_context">%1$s  -  %2$s  -  %3$s</string>
     <string name="session_creator_guidance">اختر فقط إعدادات تشغيل مستقلة عن المزوّد. اترك الحقل فارغًا لاستخدام الإعداد الافتراضي لمزوّد الوكيل.</string>
     <string name="session_creator_working_directory">دليل العمل (اختياري)</string>
@@ -471,4 +472,6 @@
     <string name="notification_topic_decisions">Decisions</string>
     <string name="notification_topic_task_completion">Task completion</string>
     <string name="notification_topic_task_blocked">Task blocked</string>
+    <string name="quick_navigation_pinned">Pinned</string>
+    <string name="quick_navigation_new">New</string>
 </resources>

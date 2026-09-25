@@ -53,6 +53,7 @@
     <string name="background_transport_retry">আবার চেষ্টা করুন</string>
     <string name="background_transport_stop_button">ব্যাকগ্রাউন্ড সংযোগ বন্ধ করুন</string>
     <string name="session_creator_title">নতুন সেশন শুরু করুন</string>
+    <string name="settings_language_reset">সিস্টেম ভাষা ব্যবহার করুন</string>
     <string name="session_creator_context">%1$s  -  %2$s  -  %3$s</string>
     <string name="session_creator_guidance">শুধু প্রদানকারী-নিরপেক্ষ চালুর সেটিংস বেছে নিন। এজেন্ট প্রদানকারীর ডিফল্ট ব্যবহার করতে ঘরটি খালি রাখুন।</string>
     <string name="session_creator_working_directory">কাজের ডিরেক্টরি (ঐচ্ছিক)</string>
@@ -439,4 +440,6 @@
     <string name="notification_topic_decisions">Decisions</string>
     <string name="notification_topic_task_completion">Task completion</string>
     <string name="notification_topic_task_blocked">Task blocked</string>
+    <string name="quick_navigation_pinned">Pinned</string>
+    <string name="quick_navigation_new">New</string>
 </resources>

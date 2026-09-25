@@ -76,6 +76,7 @@ internal fun MainNavigation(
     pairingHandoffState: kotlinx.coroutines.flow.StateFlow<PairingHandoffUiState?>? = null,
     onPairingApproved: (VerifiedPairingAppLink) -> Unit = {},
     onPairingDismissed: () -> Unit = {},
+    onLanguageChanged: (String) -> Unit = {},
 ) {
     val application = LocalContext.current.applicationContext as AgentRelayApplication
     val backgroundTransportState by
@@ -241,6 +242,7 @@ internal fun MainNavigation(
                             SettingsScreen(
                                 store = AndroidSettingsStore(LocalContext.current.applicationContext),
                                 onBack = onBack,
+                                onLanguageChanged = onLanguageChanged,
                             )
                         }
                         entry<ConnectionSettings> {
@@ -341,13 +343,13 @@ private fun topLevelDestinations(
         ),
         QuickNavigationDestination(
             id = QuickNavigationDestinationId.PINNED,
-            label = stringResource(R.string.session_card_pinned),
+            label = stringResource(R.string.quick_navigation_pinned),
             selected = root == PinnedSessions,
             onClick = { onNavigate(PinnedSessions) },
         ),
         QuickNavigationDestination(
             id = QuickNavigationDestinationId.NEW_SESSION,
-            label = stringResource(R.string.session_creator_title),
+            label = stringResource(R.string.quick_navigation_new),
             selected = root == NewSession,
             onClick = { onNavigate(NewSession) },
         ),
@@ -366,7 +368,7 @@ private fun topLevelDestinations(
         QuickNavigationDestination(
             id = QuickNavigationDestinationId.CONNECTIONS,
             label = stringResource(R.string.quick_navigation_connections),
-            selected = root == ConnectionSettings || root == NewSession,
+            selected = root == ConnectionSettings,
             onClick = { onNavigate(ConnectionSettings) },
         ),
     )
