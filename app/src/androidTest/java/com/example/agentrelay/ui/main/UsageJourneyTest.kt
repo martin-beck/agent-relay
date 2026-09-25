@@ -72,7 +72,9 @@ class UsageJourneyTest {
     fun capturesVerifiedJourneys() {
         resetCaptureDirectory()
         capturedFrameSignatures.clear()
-        screen = mutableStateOf(UsageGuideScreen.Hub(freshHub()))
+        screen = mutableStateOf(
+            UsageGuideScreen.Hub(freshHub(), surface = MainScreenSurface.NEW_SESSION),
+        )
         composeTestRule.setContent {
             AgentRelayTheme {
                 when (val current = screen.value) {
@@ -82,6 +84,7 @@ class UsageJourneyTest {
                             profileEditor = current.profileEditor,
                             sessionCreator = current.sessionCreator,
                         ),
+                        surface = current.surface,
                         actions = guideActions(),
                         modifier = Modifier.padding(16.dp),
                     )
@@ -116,7 +119,7 @@ class UsageJourneyTest {
     }
 
     private fun captureFreshStartJourney() {
-        showHub(freshHub())
+        showHub(freshHub(), MainScreenSurface.NEW_SESSION)
         composeTestRule
             .onNodeWithText("No connection profiles are available. Refresh to try again.")
             .assertIsDisplayed()
@@ -142,7 +145,7 @@ class UsageJourneyTest {
     }
 
     private fun captureIdentityJourney() {
-        showHub(changedIdentityHub())
+        showHub(changedIdentityHub(), MainScreenSurface.NEW_SESSION)
         scrollToText("Workshop host")
         capture("host-identity-review", "changed-host-identity.png")
 
@@ -202,7 +205,7 @@ class UsageJourneyTest {
     }
 
     private fun captureDurableRecoveryJourney() {
-        showHub(reconnectingRecoveryHub())
+        showHub(reconnectingRecoveryHub(), MainScreenSurface.NEW_SESSION)
         scrollToText("Network unavailable. Retrying 2 of 4 in 8 seconds.")
         capture("durable-recovery", "bounded-reconnect.png")
 
@@ -238,9 +241,12 @@ class UsageJourneyTest {
         capture("voice-input", "review-transcript.png")
     }
 
-    private fun showHub(hub: SessionHubUiModel) {
+    private fun showHub(
+        hub: SessionHubUiModel,
+        surface: MainScreenSurface = MainScreenSurface.EXISTING_SESSIONS,
+    ) {
         composeTestRule.runOnIdle {
-            screen.value = UsageGuideScreen.Hub(hub)
+            screen.value = UsageGuideScreen.Hub(hub, surface = surface)
         }
         composeTestRule.waitForIdle()
     }
@@ -267,7 +273,12 @@ class UsageJourneyTest {
         refresh = {},
         connect = {},
         disconnect = {},
-        trustIdentity = { _, _ -> screen.value = UsageGuideScreen.Hub(onlineHub()) },
+        trustIdentity = { _, _ ->
+            screen.value = UsageGuideScreen.Hub(
+                onlineHub(),
+                surface = MainScreenSurface.NEW_SESSION,
+            )
+        },
         rejectIdentity = {},
         selectSession = {},
         openSession = {},
@@ -276,6 +287,7 @@ class UsageJourneyTest {
             screen.value = UsageGuideScreen.Hub(
                 hub = freshHub(),
                 profileEditor = newSshEditor(),
+                surface = MainScreenSurface.NEW_SESSION,
             )
         },
         updateProfileField = { fieldId, value ->
@@ -285,7 +297,12 @@ class UsageJourneyTest {
                 screen.value = current.copy(profileEditor = editor.updateField(fieldId, value))
             }
         },
-        saveProfile = { screen.value = UsageGuideScreen.Hub(firstUseIdentityHub()) },
+        saveProfile = {
+            screen.value = UsageGuideScreen.Hub(
+                firstUseIdentityHub(),
+                surface = MainScreenSurface.NEW_SESSION,
+            )
+        },
         openSessionCreator = {
             val current = screen.value as UsageGuideScreen.Hub
             screen.value = current.copy(sessionCreator = testSessionCreator())
@@ -407,6 +424,7 @@ private sealed interface UsageGuideScreen {
         val hub: SessionHubUiModel,
         val profileEditor: ConnectionProfileEditorUiState? = null,
         val sessionCreator: SessionCreatorUiState? = null,
+        val surface: MainScreenSurface = MainScreenSurface.EXISTING_SESSIONS,
     ) : UsageGuideScreen
 
     data class Detail(

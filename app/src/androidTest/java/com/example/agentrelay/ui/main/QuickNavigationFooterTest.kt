@@ -52,7 +52,7 @@ class QuickNavigationFooterTest {
                 .performClick()
         }
 
-        check(activated == QuickNavigationDestinationId.entries)
+        check(activated.toList() == QuickNavigationDestinationId.entries)
         composeTestRule
             .onNodeWithTag(QUICK_NAVIGATION_DESTINATION_PREFIX + "sessions")
             .assertIsSelected()
@@ -97,6 +97,7 @@ class QuickNavigationFooterTest {
                             onClick = {},
                         ),
                     ),
+                    modifier = Modifier.requiredSize(width = 420.dp, height = 120.dp),
                 )
             }
         }
@@ -107,5 +108,14 @@ class QuickNavigationFooterTest {
         composeTestRule
             .onAllNodesWithTag(QUICK_NAVIGATION_LABEL_PREFIX + "new_session")
             .assertCountEquals(1)
+        val destinationBounds = composeTestRule
+            .onAllNodesWithTag(QUICK_NAVIGATION_DESTINATION_PREFIX + "new_session")
+            .fetchSemanticsNodes()
+            .single()
+            .boundsInRoot
+        with(composeTestRule.density) {
+            check(destinationBounds.width >= 48.dp.toPx())
+            check(destinationBounds.height >= 48.dp.toPx())
+        }
     }
 }

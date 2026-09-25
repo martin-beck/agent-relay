@@ -10,11 +10,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -71,14 +75,15 @@ internal fun QuickNavigationFooter(
             modifier = Modifier
                 .fillMaxWidth()
                 .selectableGroup()
+                .horizontalScroll(rememberScrollState())
                 .padding(horizontal = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             destinations.forEach { destination ->
                 Column(
                     modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 4.dp)
+                        .width(48.dp)
+                        .heightIn(min = 48.dp)
                         .selectable(
                             selected = destination.selected,
                             enabled = destination.enabled,
@@ -90,8 +95,8 @@ internal fun QuickNavigationFooter(
                             selected = destination.selected
                             contentDescription = destination.label
                         },
-                    verticalArrangement = Arrangement.Center,
                     horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
                 ) {
                     Text(
                         text = destination.label.take(1),
