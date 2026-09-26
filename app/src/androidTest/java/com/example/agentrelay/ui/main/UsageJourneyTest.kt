@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onAllNodesWithText
@@ -154,7 +155,9 @@ class UsageJourneyTest {
         composeTestRule.waitForIdle()
         composeTestRule
             .onNodeWithTag(SESSION_HUB_SCROLL_LIST_TEST_TAG, useUnmergedTree = true)
-            .performScrollToNode(hasText(composeTestRule.resourceText(R.string.connection_status_online)))
+            .performScrollToNode(
+                hasContentDescription(composeTestRule.resourceText(R.string.connection_status_online)),
+            )
         composeTestRule
             .onNodeWithText(
                 composeTestRule.resourceText(R.string.connection_status_online),
