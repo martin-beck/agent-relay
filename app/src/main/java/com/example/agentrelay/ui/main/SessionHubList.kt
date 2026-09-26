@@ -47,6 +47,7 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.launch
@@ -77,6 +78,9 @@ internal fun SessionHubList(
     val pullToRefreshState = rememberPullToRefreshState()
     val undoLabel = stringResource(R.string.action_undo)
     val operationErrorMessage = hub.operationError?.resolve()
+    val footerClearance = with(LocalDensity.current) {
+        (80.dp * fontScale.coerceAtLeast(1f) * 2f) + 16.dp
+    }
     fun dismissWithUndo(message: String) {
         actions.dismissError()
         scope.launch {
@@ -104,7 +108,7 @@ internal fun SessionHubList(
                 .testTag(SESSION_HUB_SCROLL_LIST_TEST_TAG),
             // The persistent quick-navigation footer occupies the lower edge of the
             // screen. Leave enough scroll clearance for the last hub card to move above it.
-            contentPadding = PaddingValues(start = 20.dp, top = 20.dp, end = 20.dp, bottom = 180.dp),
+            contentPadding = PaddingValues(start = 20.dp, top = 20.dp, end = 20.dp, bottom = footerClearance),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item(key = "hub-header") {

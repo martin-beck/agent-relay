@@ -366,8 +366,7 @@ private fun SensitiveActionConfirmation(
             Column(
                 modifier = Modifier
                     .heightIn(max = 420.dp)
-                    .verticalScroll(rememberScrollState())
-                    .semantics { hideFromAccessibility() },
+                    .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text(stringResource(R.string.session_action_confirm_guidance))

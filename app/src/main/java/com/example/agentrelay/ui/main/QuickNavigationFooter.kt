@@ -73,7 +73,11 @@ internal fun QuickNavigationFooter(
             val singleRowWidth = 48.dp * destinations.size +
                 8.dp +
                 (2.dp * (destinations.size - 1).coerceAtLeast(0))
-            val destinationsPerRow = if (maxWidth < singleRowWidth && destinations.size > 4) 4 else destinations.size
+            val destinationsPerRow = if (maxWidth < singleRowWidth) {
+                ((maxWidth.value + 2f) / 50f).toInt().coerceIn(1, 4)
+            } else {
+                destinations.size
+            }
             val rows = destinations.chunked(destinationsPerRow.coerceAtLeast(1))
             Column(
                 modifier = Modifier
@@ -134,8 +138,8 @@ internal fun QuickNavigationFooter(
                                             testTag = QUICK_NAVIGATION_LABEL_PREFIX + destination.id.name.lowercase()
                                         },
                                         style = MaterialTheme.typography.labelSmall.copy(
-                                            fontSize = 8.sp / density.fontScale.coerceAtLeast(1f),
-                                            lineHeight = 10.sp / density.fontScale.coerceAtLeast(1f),
+                                            fontSize = 8.sp,
+                                            lineHeight = 10.sp,
                                         ),
                                         maxLines = 1,
                                         softWrap = false,
