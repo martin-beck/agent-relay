@@ -121,4 +121,34 @@ class QuickNavigationFooterTest {
             check(destinationBounds.height >= 48.dp.toPx())
         }
     }
+
+    @Test
+    fun wrapsDestinationsBeforeTargetsBecomeSmallerThan48Dp() {
+        composeTestRule.setContent {
+            AgentRelayTheme {
+                QuickNavigationFooter(
+                    destinations = QuickNavigationDestinationId.entries.map { destination ->
+                        QuickNavigationDestination(
+                            id = destination,
+                            label = destination.name,
+                            onClick = {},
+                        )
+                    },
+                    modifier = Modifier.requiredSize(width = 405.dp, height = 200.dp),
+                )
+            }
+        }
+
+        QuickNavigationDestinationId.entries.forEach { destination ->
+            val bounds = composeTestRule
+                .onAllNodesWithTag(QUICK_NAVIGATION_DESTINATION_PREFIX + destination.name.lowercase())
+                .fetchSemanticsNodes()
+                .single()
+                .boundsInRoot
+            with(composeTestRule.density) {
+                check(bounds.width >= 48.dp.toPx())
+                check(bounds.height >= 48.dp.toPx())
+            }
+        }
+    }
 }

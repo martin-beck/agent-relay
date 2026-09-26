@@ -72,7 +72,10 @@ internal fun QuickNavigationFooter(
         tonalElevation = 3.dp,
     ) {
         BoxWithConstraints(Modifier.fillMaxWidth()) {
-            val destinationsPerRow = if (maxWidth < 400.dp && destinations.size > 4) 4 else destinations.size
+            val singleRowWidth = 48.dp * destinations.size +
+                8.dp +
+                (2.dp * (destinations.size - 1).coerceAtLeast(0))
+            val destinationsPerRow = if (maxWidth < singleRowWidth && destinations.size > 4) 4 else destinations.size
             val rows = destinations.chunked(destinationsPerRow.coerceAtLeast(1))
             Column(
                 modifier = Modifier
