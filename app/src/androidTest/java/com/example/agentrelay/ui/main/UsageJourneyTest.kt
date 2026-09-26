@@ -18,6 +18,7 @@ import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -147,7 +148,10 @@ class UsageJourneyTest {
         composeTestRule.onNodeWithText("Replace identity").performClick()
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(SESSION_HUB_LIST_TEST_TAG).assertIsDisplayed()
-        composeTestRule.onNodeWithText("Online").performScrollTo().assertIsDisplayed()
+        composeTestRule
+            .onNodeWithContentDescription("Online", useUnmergedTree = true)
+            .performScrollTo()
+            .assertIsDisplayed()
         capture("host-identity-review", "trusted-host-online.png")
     }
 
