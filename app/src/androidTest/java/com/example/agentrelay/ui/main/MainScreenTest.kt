@@ -6,6 +6,7 @@
 package com.example.agentrelay.ui.main
 
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -320,7 +321,10 @@ class MainScreenTest {
                 MainScreenContent(
                     state = MainScreenUiState.Ready(actionHub()),
                     actions = recorder.actions(),
-                    modifier = Modifier.requiredSize(width = 1_000.dp, height = 900.dp),
+                    // Accessibility checks must run against the measured phone surface.  A
+                    // deliberately oversized root is centered and clipped by Compose on the
+                    // KVM device, which creates artificial sliver touch targets at the edges.
+                    modifier = Modifier.fillMaxSize(),
                 )
             }
         }
@@ -375,7 +379,9 @@ class MainScreenTest {
                 MainScreenContent(
                     state = MainScreenUiState.Ready(hub),
                     actions = recorder.actions(),
-                    modifier = Modifier.requiredSize(width = 1_000.dp, height = 900.dp),
+                    // Keep this check on the real device surface; expanded-layout behavior is
+                    // covered separately by the breakpoint tests above.
+                    modifier = Modifier.fillMaxSize(),
                 )
             }
         }
