@@ -25,6 +25,7 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.unit.dp
 import androidx.test.platform.app.InstrumentationRegistry
+import com.example.agentrelay.R
 import com.example.agentrelay.theme.AgentRelayTheme
 import java.io.File
 import java.io.FileOutputStream
@@ -152,9 +153,13 @@ class UsageJourneyTest {
         composeTestRule.onNodeWithText("Replace identity").performClick()
         composeTestRule.waitForIdle()
         composeTestRule
-            .onNodeWithTag(SESSION_HUB_SCROLL_LIST_TEST_TAG)
-            .performScrollToNode(hasText("Online"))
-        composeTestRule.onNodeWithText("Online").assertIsDisplayed()
+            .onNodeWithTag(SESSION_HUB_SCROLL_LIST_TEST_TAG, useUnmergedTree = true)
+            .performScrollToNode(hasText(composeTestRule.resourceText(R.string.connection_status_online)))
+        composeTestRule
+            .onNodeWithText(
+                composeTestRule.resourceText(R.string.connection_status_online),
+                useUnmergedTree = true,
+            ).assertIsDisplayed()
         capture("host-identity-review", "trusted-host-online.png")
     }
 
