@@ -544,6 +544,7 @@ class MainScreenTest {
                 statusMessage = UiMessage.Localized(R.string.speech_status_ready_private),
             ),
             recorder = recorder,
+            modifier = Modifier.fillMaxSize(),
         )
 
         composeTestRule.enableAccessibilityChecks()
@@ -621,6 +622,7 @@ class MainScreenTest {
     private fun setExpandedSpeechContent(
         speechInput: SpeechInputUiState,
         recorder: ActionRecorder,
+        modifier: Modifier = Modifier.requiredSize(width = 1_000.dp, height = 900.dp),
     ) {
         composeTestRule.setContent {
             AgentRelayTheme {
@@ -630,9 +632,7 @@ class MainScreenTest {
                         speechInput = speechInput,
                     ),
                     actions = recorder.actions(),
-                    // Keep this check on the real device surface; expanded-layout behavior is
-                    // covered separately by the breakpoint tests above.
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = modifier,
                 )
             }
         }
