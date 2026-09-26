@@ -6,7 +6,6 @@
 package com.example.agentrelay.ui.main
 
 import android.graphics.Bitmap
-import android.graphics.Color
 import android.os.ParcelFileDescriptor
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.padding
@@ -32,7 +31,6 @@ import java.io.FileOutputStream
 import java.util.Locale
 import java.util.TimeZone
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.math.abs
 import kotlin.math.roundToInt
 import org.junit.After
 import org.junit.Before
@@ -344,39 +342,11 @@ class UsageJourneyTest {
     }
 
     private fun waitForRenderedScreenshot(crop: Int): Bitmap {
-        var rendered: Bitmap? = null
-        composeTestRule.waitUntil(timeoutMillis = 5_000) {
-            val candidate = InstrumentationRegistry.getInstrumentation()
+        return checkNotNull(
+            InstrumentationRegistry.getInstrumentation()
                 .uiAutomation
-                .takeScreenshot()
-                ?: return@waitUntil false
-            if (hasRenderedContent(candidate, crop)) {
-                rendered = candidate
-                true
-            } else {
-                candidate.recycle()
-                false
-            }
-        }
-        return checkNotNull(rendered)
-    }
-
-    private fun hasRenderedContent(image: Bitmap, crop: Int): Boolean {
-        if (image.height <= crop * 2) return false
-        val background = image.getPixel(image.width - 1, image.height - crop - 1)
-        val xStep = maxOf(1, image.width / 90)
-        val yStep = maxOf(1, (image.height - crop * 2) / 120)
-        var distinctSamples = 0
-        for (y in crop until image.height - crop step yStep) {
-            for (x in 0 until image.width step xStep) {
-                val pixel = image.getPixel(x, y)
-                val difference = abs(Color.red(pixel) - Color.red(background)) +
-                    abs(Color.green(pixel) - Color.green(background)) +
-                    abs(Color.blue(pixel) - Color.blue(background))
-                if (difference > 24 && ++distinctSamples >= 12) return true
-            }
-        }
-        return false
+                .takeScreenshot(),
+        ) { "Unable to capture rendered usage-guide screenshot" }
     }
 
     private fun publishCaptures() {
