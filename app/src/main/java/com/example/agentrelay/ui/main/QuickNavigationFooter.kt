@@ -89,42 +89,59 @@ internal fun QuickNavigationFooter(
                         horizontalArrangement = Arrangement.spacedBy(2.dp),
                     ) {
                         rowDestinations.forEach { destination ->
-                            Column(
+                            Surface(
                                 modifier = Modifier
                                     .weight(1f)
-                                    .heightIn(min = 48.dp)
-                                    .selectable(
-                                        selected = destination.selected,
-                                        enabled = destination.enabled,
-                                        role = Role.Tab,
-                                        onClick = destination.onClick,
-                                    )
-                                    .testTag(QUICK_NAVIGATION_DESTINATION_PREFIX + destination.id.name.lowercase())
-                                    .semantics {
-                                        selected = destination.selected
-                                        contentDescription = destination.label
-                                    },
-                                horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center,
+                                    .heightIn(min = 48.dp),
+                                color = if (destination.selected) {
+                                    MaterialTheme.colorScheme.primaryContainer
+                                } else {
+                                    MaterialTheme.colorScheme.surface
+                                },
+                                contentColor = if (destination.selected) {
+                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                },
+                                shape = MaterialTheme.shapes.medium,
                             ) {
-                                Text(
-                                    text = destination.label.take(1),
-                                    modifier = Modifier.clearAndSetSemantics {},
-                                    style = MaterialTheme.typography.labelLarge,
-                                )
-                                Text(
-                                    text = destination.label,
-                                    modifier = Modifier.clearAndSetSemantics {
-                                        testTag = QUICK_NAVIGATION_LABEL_PREFIX + destination.id.name.lowercase()
-                                    },
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontSize = 8.sp / density.fontScale.coerceAtLeast(1f),
-                                        lineHeight = 10.sp / density.fontScale.coerceAtLeast(1f),
-                                    ),
-                                    maxLines = 1,
-                                    softWrap = false,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .heightIn(min = 48.dp)
+                                        .selectable(
+                                            selected = destination.selected,
+                                            enabled = destination.enabled,
+                                            role = Role.Tab,
+                                            onClick = destination.onClick,
+                                        )
+                                        .testTag(QUICK_NAVIGATION_DESTINATION_PREFIX + destination.id.name.lowercase())
+                                        .semantics {
+                                            selected = destination.selected
+                                            contentDescription = destination.label
+                                        },
+                                    horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center,
+                                ) {
+                                    Text(
+                                        text = destination.label.take(1),
+                                        modifier = Modifier.clearAndSetSemantics {},
+                                        style = MaterialTheme.typography.labelLarge,
+                                    )
+                                    Text(
+                                        text = destination.label,
+                                        modifier = Modifier.clearAndSetSemantics {
+                                            testTag = QUICK_NAVIGATION_LABEL_PREFIX + destination.id.name.lowercase()
+                                        },
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontSize = 8.sp / density.fontScale.coerceAtLeast(1f),
+                                            lineHeight = 10.sp / density.fontScale.coerceAtLeast(1f),
+                                        ),
+                                        maxLines = 1,
+                                        softWrap = false,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
                             }
                         }
                     }

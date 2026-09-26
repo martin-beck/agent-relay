@@ -102,7 +102,9 @@ internal fun SessionHubList(
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag(SESSION_HUB_SCROLL_LIST_TEST_TAG),
-            contentPadding = PaddingValues(20.dp),
+            // The persistent quick-navigation footer occupies the lower edge of the
+            // screen. Leave enough scroll clearance for the last hub card to move above it.
+            contentPadding = PaddingValues(start = 20.dp, top = 20.dp, end = 20.dp, bottom = 180.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item(key = "hub-header") {
