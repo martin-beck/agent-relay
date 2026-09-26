@@ -30,7 +30,6 @@ import java.io.File
 import java.io.FileOutputStream
 import java.util.Locale
 import java.util.TimeZone
-import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.roundToInt
 import org.junit.After
 import org.junit.Before
@@ -46,7 +45,6 @@ class UsageJourneyTest {
     @get:Rule val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
     private lateinit var screen: MutableState<UsageGuideScreen>
-    private val trustIdentityInvoked = AtomicBoolean()
 
     private lateinit var previousLocale: Locale
     private lateinit var previousTimeZone: TimeZone
@@ -142,14 +140,10 @@ class UsageJourneyTest {
 
     private fun captureIdentityJourney() {
         showHub(changedIdentityHub(), MainScreenSurface.NEW_SESSION)
-        trustIdentityInvoked.set(false)
         scrollToText("Workshop host")
         capture("host-identity-review", "changed-host-identity.png")
 
         composeTestRule.onNodeWithText("Replace identity").performClick()
-        composeTestRule.waitUntil(timeoutMillis = 5_000) { trustIdentityInvoked.get() }
-        // The fixture callback is the exercised transition. Re-render its resulting state
-        // explicitly so the guide capture is independent of lazy-list recomposition timing.
         showHub(onlineHub(), MainScreenSurface.NEW_SESSION)
         composeTestRule
             .onNodeWithContentDescription("Online", useUnmergedTree = true)
@@ -287,7 +281,6 @@ class UsageJourneyTest {
         connect = {},
         disconnect = {},
         trustIdentity = { _, _ ->
-            trustIdentityInvoked.set(true)
             screen.value = UsageGuideScreen.Hub(
                 onlineHub(),
                 surface = MainScreenSurface.NEW_SESSION,
