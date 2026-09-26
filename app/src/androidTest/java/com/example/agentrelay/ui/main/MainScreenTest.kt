@@ -321,10 +321,7 @@ class MainScreenTest {
                 MainScreenContent(
                     state = MainScreenUiState.Ready(actionHub()),
                     actions = recorder.actions(),
-                    // Accessibility checks must run against the measured phone surface.  A
-                    // deliberately oversized root is centered and clipped by Compose on the
-                    // KVM device, which creates artificial sliver touch targets at the edges.
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.requiredSize(width = 1_000.dp, height = 900.dp),
                 )
             }
         }
@@ -379,9 +376,7 @@ class MainScreenTest {
                 MainScreenContent(
                     state = MainScreenUiState.Ready(hub),
                     actions = recorder.actions(),
-                    // Keep this check on the real device surface; expanded-layout behavior is
-                    // covered separately by the breakpoint tests above.
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.requiredSize(width = 1_000.dp, height = 900.dp),
                 )
             }
         }
@@ -584,7 +579,10 @@ class MainScreenTest {
                 MainScreenContent(
                     state = MainScreenUiState.Ready(actionHub()),
                     actions = recorder.actions(),
-                    modifier = Modifier.requiredSize(width = 1_000.dp, height = 900.dp),
+                    // Accessibility checks must run against the measured phone surface.  A
+                    // deliberately oversized root is centered and clipped by Compose on the
+                    // KVM device, which creates artificial sliver touch targets at the edges.
+                    modifier = Modifier.fillMaxSize(),
                 )
             }
         }
@@ -632,7 +630,9 @@ class MainScreenTest {
                         speechInput = speechInput,
                     ),
                     actions = recorder.actions(),
-                    modifier = Modifier.requiredSize(width = 1_000.dp, height = 900.dp),
+                    // Keep this check on the real device surface; expanded-layout behavior is
+                    // covered separately by the breakpoint tests above.
+                    modifier = Modifier.fillMaxSize(),
                 )
             }
         }
