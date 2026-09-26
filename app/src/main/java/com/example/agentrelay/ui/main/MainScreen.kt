@@ -55,6 +55,10 @@ internal enum class MainScreenSurface {
     NEW_SESSION,
 }
 
+internal enum class MainScreenLayoutOverride {
+    EXPANDED,
+}
+
 @Composable
 @Suppress("UnusedParameter")
 internal fun MainScreen(
@@ -80,6 +84,7 @@ internal fun MainScreen(
     onQuickNavigation: (QuickNavigationDestinationId) -> Unit = {},
     surface: MainScreenSurface = MainScreenSurface.EXISTING_SESSIONS,
     quickNavigationDestinations: List<QuickNavigationDestination>? = null,
+    layoutOverride: MainScreenLayoutOverride? = null,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val actions = remember(viewModel, onOpenSession, onSaveArtifact, speechActions, onOpenSettings) {
@@ -140,6 +145,7 @@ internal fun MainScreen(
         surface = surface,
         quickNavigationDestinations = quickNavigationDestinations,
         modifier = modifier,
+        layoutOverride = layoutOverride,
     )
 }
 
@@ -163,6 +169,7 @@ internal fun MainScreenContent(
     onQuickNavigation: (QuickNavigationDestinationId) -> Unit = {},
     quickNavigationDestinations: List<QuickNavigationDestination>? = null,
     surface: MainScreenSurface = MainScreenSurface.EXISTING_SESSIONS,
+    layoutOverride: MainScreenLayoutOverride? = null,
 ) {
     val footerDestinations = quickNavigationDestinations ?: defaultQuickNavigationDestinations(onQuickNavigation)
     when (state) {
@@ -237,6 +244,7 @@ internal fun MainScreenContent(
                     speechInput = state.speechInput,
                     actions = actions,
                     surface = surface,
+                    layoutOverride = layoutOverride,
                     modifier = Modifier.weight(1f),
                 )
                 if (quickNavigationDestinations == null && footerDestinations.isNotEmpty()) {
@@ -437,11 +445,13 @@ private fun AdaptiveSessionHub(
     speechInput: SpeechInputUiState,
     actions: SessionHubActions,
     surface: MainScreenSurface,
+    layoutOverride: MainScreenLayoutOverride?,
     modifier: Modifier,
 ) {
     val visibleHub = visibleHubForSurface(hub, surface)
     BoxWithConstraints(modifier.fillMaxSize()) {
-        val expanded = maxWidth >= EXPANDED_LAYOUT_MIN_WIDTH
+        val expanded = layoutOverride == MainScreenLayoutOverride.EXPANDED ||
+            maxWidth >= EXPANDED_LAYOUT_MIN_WIDTH
         val selectSession: (String) -> Unit = { key ->
             actions.selectSession(key)
             if (!expanded) {

@@ -584,6 +584,7 @@ class MainScreenTest {
                     // deliberately oversized root is centered and clipped by Compose on the
                     // KVM device, which creates artificial sliver touch targets at the edges.
                     modifier = Modifier.fillMaxSize(),
+                    layoutOverride = MainScreenLayoutOverride.EXPANDED,
                 )
             }
         }
