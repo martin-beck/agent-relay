@@ -6,6 +6,7 @@
 package com.example.agentrelay.ui.main
 
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -189,6 +190,9 @@ class MainScreenTest {
             }
         }
 
+        composeTestRule
+            .onNodeWithTag(SESSION_HUB_SCROLL_LIST_TEST_TAG)
+            .performScrollToNode(hasText("Recent sessions"))
         composeTestRule.onNodeWithText("Recent sessions").assertExists()
         val detailPane = composeTestRule.onNodeWithTag(SESSION_DETAIL_PANE_TEST_TAG)
         detailPane.performScrollToNode(hasText("Changed files"))
@@ -543,6 +547,7 @@ class MainScreenTest {
                 statusMessage = UiMessage.Localized(R.string.speech_status_ready_private),
             ),
             recorder = recorder,
+            modifier = Modifier.fillMaxSize(),
         )
 
         composeTestRule.enableAccessibilityChecks()
@@ -578,7 +583,11 @@ class MainScreenTest {
                 MainScreenContent(
                     state = MainScreenUiState.Ready(actionHub()),
                     actions = recorder.actions(),
-                    modifier = Modifier.requiredSize(width = 1_000.dp, height = 900.dp),
+                    // Accessibility checks must run against the measured phone surface.  A
+                    // deliberately oversized root is centered and clipped by Compose on the
+                    // KVM device, which creates artificial sliver touch targets at the edges.
+                    modifier = Modifier.fillMaxSize(),
+                    layoutOverride = MainScreenLayoutOverride.EXPANDED,
                 )
             }
         }
@@ -617,6 +626,7 @@ class MainScreenTest {
     private fun setExpandedSpeechContent(
         speechInput: SpeechInputUiState,
         recorder: ActionRecorder,
+        modifier: Modifier = Modifier.requiredSize(width = 1_000.dp, height = 900.dp),
     ) {
         composeTestRule.setContent {
             AgentRelayTheme {
@@ -626,7 +636,7 @@ class MainScreenTest {
                         speechInput = speechInput,
                     ),
                     actions = recorder.actions(),
-                    modifier = Modifier.requiredSize(width = 1_000.dp, height = 900.dp),
+                    modifier = modifier,
                 )
             }
         }

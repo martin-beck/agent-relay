@@ -28,6 +28,8 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -40,11 +42,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.hideFromAccessibility
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.launch
@@ -72,8 +75,12 @@ internal fun SessionHubList(
     val recentTitle = stringResource(R.string.session_hub_recent_sessions_title)
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val pullToRefreshState = rememberPullToRefreshState()
     val undoLabel = stringResource(R.string.action_undo)
     val operationErrorMessage = hub.operationError?.resolve()
+    val footerClearance = with(LocalDensity.current) {
+        (80.dp * fontScale.coerceAtLeast(1f) * 2f) + 16.dp
+    }
     fun dismissWithUndo(message: String) {
         actions.dismissError()
         scope.launch {
@@ -85,14 +92,23 @@ internal fun SessionHubList(
     PullToRefreshBox(
         isRefreshing = hub.isRefreshingProfiles,
         onRefresh = actions.refresh,
+        state = pullToRefreshState,
+        indicator = {
+            PullToRefreshDefaults.Indicator(
+                state = pullToRefreshState,
+                isRefreshing = hub.isRefreshingProfiles,
+                modifier = Modifier.clearAndSetSemantics {},
+            )
+        },
         modifier = modifier,
     ) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .semantics { hideFromAccessibility() }
                 .testTag(SESSION_HUB_SCROLL_LIST_TEST_TAG),
-            contentPadding = PaddingValues(20.dp),
+            // The persistent quick-navigation footer occupies the lower edge of the
+            // screen. Leave enough scroll clearance for the last hub card to move above it.
+            contentPadding = PaddingValues(start = 20.dp, top = 20.dp, end = 20.dp, bottom = footerClearance),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item(key = "hub-header") {

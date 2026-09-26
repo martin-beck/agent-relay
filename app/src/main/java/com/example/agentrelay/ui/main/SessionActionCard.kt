@@ -46,6 +46,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.role
@@ -461,6 +462,7 @@ private fun QuestionInput(
                                 } else {
                                     Role.RadioButton
                                 }
+                                contentDescription = option.label
                             },
                         selected = option.label in selected,
                         onClick = {

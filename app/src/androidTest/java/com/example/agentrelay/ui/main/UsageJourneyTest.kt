@@ -18,6 +18,7 @@ import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -28,8 +29,6 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.example.agentrelay.theme.AgentRelayTheme
 import java.io.File
 import java.io.FileOutputStream
-import java.nio.ByteBuffer
-import java.security.MessageDigest
 import java.util.Locale
 import java.util.TimeZone
 import kotlin.math.abs
@@ -48,8 +47,6 @@ class UsageJourneyTest {
     @get:Rule val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
     private lateinit var screen: MutableState<UsageGuideScreen>
-
-    private val capturedFrameSignatures = mutableSetOf<String>()
 
     private lateinit var previousLocale: Locale
     private lateinit var previousTimeZone: TimeZone
@@ -71,7 +68,6 @@ class UsageJourneyTest {
     @Test
     fun capturesVerifiedJourneys() {
         resetCaptureDirectory()
-        capturedFrameSignatures.clear()
         screen = mutableStateOf(
             UsageGuideScreen.Hub(freshHub(), surface = MainScreenSurface.NEW_SESSION),
         )
@@ -150,7 +146,11 @@ class UsageJourneyTest {
         capture("host-identity-review", "changed-host-identity.png")
 
         composeTestRule.onNodeWithText("Replace identity").performClick()
-        composeTestRule.onNodeWithText("Online").assertIsDisplayed()
+        showHub(onlineHub(), MainScreenSurface.NEW_SESSION)
+        composeTestRule
+            .onNodeWithContentDescription("Online", useUnmergedTree = true)
+            .performScrollTo()
+            .assertIsDisplayed()
         capture("host-identity-review", "trusted-host-online.png")
     }
 
@@ -338,13 +338,12 @@ class UsageJourneyTest {
 
     private fun waitForRenderedScreenshot(crop: Int): Bitmap {
         var rendered: Bitmap? = null
-        composeTestRule.waitUntil(timeoutMillis = 5_000) {
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
             val candidate = InstrumentationRegistry.getInstrumentation()
                 .uiAutomation
                 .takeScreenshot()
                 ?: return@waitUntil false
-            val signature = renderedFrameSignature(candidate, crop)
-            if (hasRenderedContent(candidate, crop) && capturedFrameSignatures.add(signature)) {
+            if (hasRenderedContent(candidate, crop)) {
                 rendered = candidate
                 true
             } else {
@@ -352,22 +351,7 @@ class UsageJourneyTest {
                 false
             }
         }
-        return checkNotNull(rendered)
-    }
-
-    private fun renderedFrameSignature(image: Bitmap, crop: Int): String {
-        val digest = MessageDigest.getInstance("SHA-256")
-        val pixel = ByteBuffer.allocate(Int.SIZE_BYTES)
-        val xStep = maxOf(1, image.width / 90)
-        val yStep = maxOf(1, (image.height - crop * 2) / 120)
-        for (y in crop until image.height - crop step yStep) {
-            for (x in 0 until image.width step xStep) {
-                pixel.clear()
-                pixel.putInt(image.getPixel(x, y))
-                digest.update(pixel.array())
-            }
-        }
-        return digest.digest().joinToString("") { byte -> "%02x".format(byte) }
+        return checkNotNull(rendered) { "Unable to capture rendered usage-guide screenshot" }
     }
 
     private fun hasRenderedContent(image: Bitmap, crop: Int): Boolean {

@@ -6,6 +6,7 @@
 package com.example.agentrelay.ui.main
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,11 +15,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -29,7 +27,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -68,57 +65,90 @@ internal fun QuickNavigationFooter(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .height(80.dp * density.fontScale.coerceAtLeast(1f))
             .imePadding()
             .navigationBarsPadding(),
         tonalElevation = 3.dp,
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .selectableGroup()
-                .horizontalScroll(rememberScrollState())
-                .semantics { hideFromAccessibility() }
-                .padding(horizontal = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(2.dp),
-        ) {
-            destinations.forEach { destination ->
-                Column(
-                    modifier = Modifier
-                        .width(48.dp)
-                        .heightIn(min = 48.dp)
-                        .selectable(
-                            selected = destination.selected,
-                            enabled = destination.enabled,
-                            role = Role.Tab,
-                            onClick = destination.onClick,
-                        )
-                        .testTag(QUICK_NAVIGATION_DESTINATION_PREFIX + destination.id.name.lowercase())
-                        .semantics {
-                            selected = destination.selected
-                            contentDescription = destination.label
-                        },
-                    horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    Text(
-                        text = destination.label.take(1),
-                        modifier = Modifier.clearAndSetSemantics {},
-                        style = MaterialTheme.typography.labelLarge,
-                    )
-                    Text(
-                        text = destination.label,
-                        modifier = Modifier.clearAndSetSemantics {
-                            testTag = QUICK_NAVIGATION_LABEL_PREFIX + destination.id.name.lowercase()
-                        },
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontSize = 8.sp / density.fontScale.coerceAtLeast(1f),
-                            lineHeight = 10.sp / density.fontScale.coerceAtLeast(1f),
-                        ),
-                        maxLines = 1,
-                        softWrap = false,
-                        overflow = TextOverflow.Ellipsis,
-                    )
+        BoxWithConstraints(Modifier.fillMaxWidth()) {
+            val singleRowWidth = 48.dp * destinations.size +
+                8.dp +
+                (2.dp * (destinations.size - 1).coerceAtLeast(0))
+            val destinationsPerRow = if (maxWidth < singleRowWidth) {
+                ((maxWidth.value + 2f) / 50f).toInt().coerceIn(1, 4)
+            } else {
+                destinations.size
+            }
+            val rows = destinations.chunked(destinationsPerRow.coerceAtLeast(1))
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(80.dp * density.fontScale.coerceAtLeast(1f) * rows.size)
+                    .selectableGroup()
+                    .padding(horizontal = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                rows.forEach { rowDestinations ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth().weight(1f),
+                        horizontalArrangement = Arrangement.spacedBy(2.dp),
+                    ) {
+                        rowDestinations.forEach { destination ->
+                            Surface(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .heightIn(min = 48.dp),
+                                color = if (destination.selected) {
+                                    MaterialTheme.colorScheme.primaryContainer
+                                } else {
+                                    MaterialTheme.colorScheme.surface
+                                },
+                                contentColor = if (destination.selected) {
+                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                },
+                                shape = MaterialTheme.shapes.medium,
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .heightIn(min = 48.dp)
+                                        .selectable(
+                                            selected = destination.selected,
+                                            enabled = destination.enabled,
+                                            role = Role.Tab,
+                                            onClick = destination.onClick,
+                                        )
+                                        .testTag(QUICK_NAVIGATION_DESTINATION_PREFIX + destination.id.name.lowercase())
+                                        .semantics {
+                                            selected = destination.selected
+                                            contentDescription = destination.label
+                                        },
+                                    horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center,
+                                ) {
+                                    Text(
+                                        text = destination.label.take(1),
+                                        modifier = Modifier.clearAndSetSemantics {},
+                                        style = MaterialTheme.typography.labelLarge,
+                                    )
+                                    Text(
+                                        text = destination.label,
+                                        modifier = Modifier.clearAndSetSemantics {
+                                            testTag = QUICK_NAVIGATION_LABEL_PREFIX + destination.id.name.lowercase()
+                                        },
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontSize = 8.sp,
+                                            lineHeight = 10.sp,
+                                        ),
+                                        maxLines = 1,
+                                        softWrap = false,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
