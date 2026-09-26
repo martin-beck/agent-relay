@@ -150,6 +150,7 @@ class UsageJourneyTest {
         capture("host-identity-review", "changed-host-identity.png")
 
         composeTestRule.onNodeWithText("Replace identity").performClick()
+        composeTestRule.waitForIdle()
         composeTestRule
             .onNodeWithTag(SESSION_HUB_SCROLL_LIST_TEST_TAG)
             .performScrollToNode(hasText("Online"))
