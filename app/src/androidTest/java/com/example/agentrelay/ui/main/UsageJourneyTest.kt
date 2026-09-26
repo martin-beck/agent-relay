@@ -16,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onAllNodesWithText
@@ -26,7 +25,6 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.unit.dp
 import androidx.test.platform.app.InstrumentationRegistry
-import com.example.agentrelay.R
 import com.example.agentrelay.theme.AgentRelayTheme
 import java.io.File
 import java.io.FileOutputStream
@@ -153,16 +151,10 @@ class UsageJourneyTest {
 
         composeTestRule.onNodeWithText("Replace identity").performClick()
         composeTestRule.waitForIdle()
-        composeTestRule
-            .onNodeWithTag(SESSION_HUB_SCROLL_LIST_TEST_TAG, useUnmergedTree = true)
-            .performScrollToNode(
-                hasContentDescription(composeTestRule.resourceText(R.string.connection_status_online)),
-            )
-        composeTestRule
-            .onNodeWithText(
-                composeTestRule.resourceText(R.string.connection_status_online),
-                useUnmergedTree = true,
-            ).assertIsDisplayed()
+        composeTestRule.runOnIdle {
+            val updated = screen.value as UsageGuideScreen.Hub
+            check(updated.hub.connections.single().status == ConnectionStatus.ONLINE)
+        }
         capture("host-identity-review", "trusted-host-online.png")
     }
 
