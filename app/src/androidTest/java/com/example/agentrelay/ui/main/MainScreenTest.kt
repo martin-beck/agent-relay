@@ -190,7 +190,7 @@ class MainScreenTest {
             }
         }
 
-        composeTestRule.onNodeWithText("Recent sessions").assertExists()
+        composeTestRule.onNodeWithText("Recent sessions").performScrollTo().assertExists()
         val detailPane = composeTestRule.onNodeWithTag(SESSION_DETAIL_PANE_TEST_TAG)
         detailPane.performScrollToNode(hasText("Changed files"))
         composeTestRule.onNodeWithText("Changed files").assertIsDisplayed()

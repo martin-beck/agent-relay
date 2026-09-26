@@ -150,7 +150,7 @@ class UsageJourneyTest {
         capture("host-identity-review", "changed-host-identity.png")
 
         composeTestRule.onNodeWithText("Replace identity").performClick()
-        composeTestRule.onNodeWithText("Online").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Online").performScrollTo().assertIsDisplayed()
         capture("host-identity-review", "trusted-host-online.png")
     }
 
