@@ -18,7 +18,7 @@ repositories {
 dependencies {
     implementation("org.apache.commons:commons-compress:1.28.0")
     testImplementation("org.junit.jupiter:junit-jupiter:6.1.3")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.14.4")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.3")
 
     constraints {
         add("spotbugs", "org.apache.logging.log4j:log4j-api:2.26.1")
