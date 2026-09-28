@@ -1,6 +1,7 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
+# To regenerate this file, run: ./gradlew :ssh:jsch:dependencies --write-locks
 com.code-intelligence:jazzer-api:0.30.0=testCompileClasspath,testRuntimeClasspath
 com.code-intelligence:jazzer-junit:0.30.0=testCompileClasspath,testRuntimeClasspath
 com.code-intelligence:jazzer:0.30.0=testCompileClasspath,testRuntimeClasspath
@@ -15,16 +16,16 @@ io.github.pdvrieze.xmlutil:core-jvmcommon:0.91.3=testRuntimeClasspath
 io.github.pdvrieze.xmlutil:core:0.91.3=testRuntimeClasspath
 io.github.pdvrieze.xmlutil:serialization-jvm:0.91.3=testRuntimeClasspath
 io.github.pdvrieze.xmlutil:serialization:0.91.3=testRuntimeClasspath
-io.kotest:kotest-assertions-core-jvm:6.2.4=testCompileClasspath,testRuntimeClasspath
-io.kotest:kotest-assertions-core:6.2.4=testCompileClasspath,testRuntimeClasspath
-io.kotest:kotest-assertions-shared-jvm:6.2.4=testCompileClasspath,testRuntimeClasspath
-io.kotest:kotest-assertions-shared:6.2.4=testCompileClasspath,testRuntimeClasspath
-io.kotest:kotest-common-jvm:6.2.4=testCompileClasspath,testRuntimeClasspath
-io.kotest:kotest-common:6.2.4=testCompileClasspath,testRuntimeClasspath
-io.kotest:kotest-framework-engine-jvm:6.2.4=testCompileClasspath,testRuntimeClasspath
-io.kotest:kotest-framework-engine:6.2.4=testCompileClasspath,testRuntimeClasspath
-io.kotest:kotest-property-jvm:6.2.4=testCompileClasspath,testRuntimeClasspath
-io.kotest:kotest-property:6.2.4=testCompileClasspath,testRuntimeClasspath
+io.kotest:kotest-assertions-core-jvm:6.2.5=testCompileClasspath,testRuntimeClasspath
+io.kotest:kotest-assertions-core:6.2.5=testCompileClasspath,testRuntimeClasspath
+io.kotest:kotest-assertions-shared-jvm:6.2.5=testCompileClasspath,testRuntimeClasspath
+io.kotest:kotest-assertions-shared:6.2.5=testCompileClasspath,testRuntimeClasspath
+io.kotest:kotest-common-jvm:6.2.5=testCompileClasspath,testRuntimeClasspath
+io.kotest:kotest-common:6.2.5=testCompileClasspath,testRuntimeClasspath
+io.kotest:kotest-framework-engine-jvm:6.2.5=testCompileClasspath,testRuntimeClasspath
+io.kotest:kotest-framework-engine:6.2.5=testCompileClasspath,testRuntimeClasspath
+io.kotest:kotest-property-jvm:6.2.5=testCompileClasspath,testRuntimeClasspath
+io.kotest:kotest-property:6.2.5=testCompileClasspath,testRuntimeClasspath
 junit:junit:4.13.2=testCompileClasspath,testRuntimeClasspath
 net.bytebuddy:byte-buddy-agent:1.17.6=testRuntimeClasspath
 net.bytebuddy:byte-buddy:1.17.6=testRuntimeClasspath
