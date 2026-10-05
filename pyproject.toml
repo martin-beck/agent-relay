@@ -9,7 +9,7 @@ dependencies = []
 
 [dependency-groups]
 quality = [
-  "coverage==7.16.1",
+  "coverage==7.16.2",
   "defusedxml==0.7.1",
   "hypothesis==6.168.0",
   "lizard==1.24.0",
