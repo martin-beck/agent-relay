@@ -234,7 +234,7 @@ jobs:
         id: upload_test_results
         if: ${{ !cancelled() }}
         continue-on-error: true
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: unit-test-results-${{ github.run_attempt }}
           path: "**/build/test-results/**/*.xml"
@@ -245,7 +245,7 @@ jobs:
         id: upload_quality_reports
         if: ${{ !cancelled() }}
         continue-on-error: true
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: quality-reports-${{ github.run_attempt }}
           path: |
@@ -262,7 +262,7 @@ jobs:
         id: upload_lint_reports
         if: ${{ !cancelled() }}
         continue-on-error: true
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: lint-reports-${{ github.run_attempt }}
           path: |
@@ -276,7 +276,7 @@ jobs:
         id: upload_debug_apk
         if: ${{ success() }}
         continue-on-error: true
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: agent-relay-debug-${{ github.sha }}
           path: app/build/outputs/apk/debug/*.apk
@@ -326,7 +326,7 @@ jobs:
         id: upload_visual_evidence
         if: ${{ !cancelled() }}
         continue-on-error: true
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: visual-regression-${{ github.run_attempt }}
           path: |
