@@ -154,7 +154,7 @@ jobs:
         id: upload_ui_evidence
         if: ${{ always() }}
         continue-on-error: true
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ui-test-results-current-phone-${{ github.run_attempt }}
           path: |
@@ -171,7 +171,7 @@ jobs:
         id: upload_usage_guide
         if: ${{ success() }}
         continue-on-error: true
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: usage-guide-site-${{ github.run_attempt }}
           path: build/site
@@ -350,7 +350,7 @@ jobs:
         id: upload_ui_evidence
         if: ${{ always() }}
         continue-on-error: true
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ui-test-results-${{ matrix.name }}-${{ github.run_attempt }}
           path: |
